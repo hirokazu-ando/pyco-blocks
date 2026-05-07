@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="g22a_mu">mute</variable>
+  </variables>
+  <block type="var_set"><field name="VAR" id="g22a_mu">mute</field><value name="VALUE"><block type="val_bool"><field name="BOOL">False</field></block></value><next><block type="py_custom_stmt"><field name="CODE"># ゲームループ内 — イベント処理で M キーを検出</field><next><block type="pico_if"><mutation elseif="0" else="0" /><value name="IF0"><block type="py_custom_expr"><field name="CODE">pyco_game.key_just_pressed('K_m')</field></block></value><statement name="DO0"><block type="var_set"><field name="VAR" id="g22a_mu">mute</field><value name="VALUE"><block type="py_custom_expr"><field name="CODE">not mute</field></block></value><next><block type="py_custom_stmt"><field name="CODE">pygame.mixer.music.set_volume(0 if mute else 1.0)</field></block></next></block></statement><next><block type="game_draw_text"><value name="TEXT"><block type="py_custom_expr"><field name="CODE">'BGM: OFF' if mute else 'BGM: ON'</field></block></value><value name="X"><block type="val_number"><field name="NUM">10</field></block></value><value name="Y"><block type="val_number"><field name="NUM">370</field></block></value><value name="SIZE"><block type="val_number"><field name="NUM">22</field></block></value><value name="COLOR"><block type="colour_picker"><field name="COLOUR">#aaaaaa</field></block></value></block></next></block></next></block></next></block>
+</xml>
