@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vcol">COLORS</variable>
+    <variable id="vbl">blocks</variable>
+    <variable id="vr">r</variable>
+    <variable id="vc">c</variable>
+    <variable id="vb">b</variable>
+  </variables>
+  <!-- 課題4-17-2 初期化: COLORSリスト定義 + ブロック生成時に行番号rを追加 -->
+  <block type="var_set" x="20" y="20">
+    <field name="VAR" id="vcol">COLORS</field>
+    <value name="VALUE">
+      <block type="py_list_literal">
+        <mutation items="3" />
+        <value name="ITEM0"><block type="colour_picker"><field name="COLOUR">#ff3232</field></block></value>
+        <value name="ITEM1"><block type="colour_picker"><field name="COLOUR">#ffdc00</field></block></value>
+        <value name="ITEM2"><block type="colour_picker"><field name="COLOUR">#32dc32</field></block></value>
+      </block>
+    </value>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="vbl">blocks</field>
+        <value name="VALUE"><block type="py_list_empty" /></value>
+        <next>
+          <block type="pico_for_from_to">
+            <field name="VAR" id="vr">r</field>
+            <value name="START"><block type="val_number"><field name="NUM">0</field></block></value>
+            <value name="STOP"><block type="val_number"><field name="NUM">3</field></block></value>
+            <value name="STEP"><block type="val_number"><field name="NUM">1</field></block></value>
+            <statement name="DO">
+              <block type="pico_for_from_to">
+                <field name="VAR" id="vc">c</field>
+                <value name="START"><block type="val_number"><field name="NUM">0</field></block></value>
+                <value name="STOP"><block type="val_number"><field name="NUM">8</field></block></value>
+                <value name="STEP"><block type="val_number"><field name="NUM">1</field></block></value>
+                <statement name="DO">
+                  <block type="py_list_append">
+                    <field name="LIST" id="vbl">blocks</field>
+                    <value name="VALUE">
+                      <block type="py_list_literal">
+                        <mutation items="4" />
+                        <value name="ITEM0">
+                          <block type="py_math_op">
+                            <field name="OP">+</field>
+                            <value name="LEFT">
+                              <block type="py_math_op">
+                                <field name="OP">*</field>
+                                <value name="LEFT"><block type="val_var"><field name="VAR" id="vc">c</field></block></value>
+                                <value name="RIGHT"><block type="val_number"><field name="NUM">76</field></block></value>
+                              </block>
+                            </value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">10</field></block></value>
+                          </block>
+                        </value>
+                        <value name="ITEM1">
+                          <block type="py_math_op">
+                            <field name="OP">+</field>
+                            <value name="LEFT">
+                              <block type="py_math_op">
+                                <field name="OP">*</field>
+                                <value name="LEFT"><block type="val_var"><field name="VAR" id="vr">r</field></block></value>
+                                <value name="RIGHT"><block type="val_number"><field name="NUM">32</field></block></value>
+                              </block>
+                            </value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                          </block>
+                        </value>
+                        <value name="ITEM2">
+                          <block type="val_bool"><field name="BOOL">True</field></block>
+                        </value>
+                        <value name="ITEM3">
+                          <block type="val_var"><field name="VAR" id="vr">r</field></block>
+                        </value>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+  <!-- 課題4-17-2 描画: COLORS[b[3]%3] で段ごとに色を変える -->
+  <block type="py_for_list" x="700" y="20">
+    <field name="VAR" id="vb">b</field>
+    <field name="LIST" id="vbl">blocks</field>
+    <statement name="DO">
+      <block type="pico_if">
+        <mutation elseif="0" else="0" />
+        <value name="IF0">
+          <block type="py_list_get">
+            <field name="LIST" id="vb">b</field>
+            <value name="INDEX"><block type="val_number"><field name="NUM">2</field></block></value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="game_draw_rect">
+            <value name="X">
+              <block type="py_list_get">
+                <field name="LIST" id="vb">b</field>
+                <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+              </block>
+            </value>
+            <value name="Y">
+              <block type="py_list_get">
+                <field name="LIST" id="vb">b</field>
+                <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+              </block>
+            </value>
+            <value name="W"><block type="val_number"><field name="NUM">72</field></block></value>
+            <value name="H"><block type="val_number"><field name="NUM">24</field></block></value>
+            <value name="COLOR">
+              <block type="py_list_get">
+                <field name="LIST" id="vcol">COLORS</field>
+                <value name="INDEX">
+                  <block type="py_math_op">
+                    <field name="OP">%</field>
+                    <value name="LEFT">
+                      <block type="py_list_get">
+                        <field name="LIST" id="vb">b</field>
+                        <value name="INDEX"><block type="val_number"><field name="NUM">3</field></block></value>
+                      </block>
+                    </value>
+                    <value name="RIGHT"><block type="val_number"><field name="NUM">3</field></block></value>
+                  </block>
+                </value>
+              </block>
+            </value>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+</xml>

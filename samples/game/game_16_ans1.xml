@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vbl">blocks</variable>
+    <variable id="vr">r</variable>
+    <variable id="vc">c</variable>
+  </variables>
+  <!-- 課題4-17-1: ブロックを4段に増やす(range(3)→range(4)) -->
+  <block type="var_set" x="20" y="20">
+    <field name="VAR" id="vbl">blocks</field>
+    <value name="VALUE"><block type="py_list_empty" /></value>
+    <next>
+      <block type="pico_for_from_to">
+        <field name="VAR" id="vr">r</field>
+        <value name="START"><block type="val_number"><field name="NUM">0</field></block></value>
+        <value name="STOP"><block type="val_number"><field name="NUM">4</field></block></value>
+        <value name="STEP"><block type="val_number"><field name="NUM">1</field></block></value>
+        <statement name="DO">
+          <block type="pico_for_from_to">
+            <field name="VAR" id="vc">c</field>
+            <value name="START"><block type="val_number"><field name="NUM">0</field></block></value>
+            <value name="STOP"><block type="val_number"><field name="NUM">8</field></block></value>
+            <value name="STEP"><block type="val_number"><field name="NUM">1</field></block></value>
+            <statement name="DO">
+              <block type="py_list_append">
+                <field name="LIST" id="vbl">blocks</field>
+                <value name="VALUE">
+                  <block type="py_list_literal">
+                    <mutation items="3" />
+                    <value name="ITEM0">
+                      <block type="py_math_op">
+                        <field name="OP">+</field>
+                        <value name="LEFT">
+                          <block type="py_math_op">
+                            <field name="OP">*</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="vc">c</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">76</field></block></value>
+                          </block>
+                        </value>
+                        <value name="RIGHT"><block type="val_number"><field name="NUM">10</field></block></value>
+                      </block>
+                    </value>
+                    <value name="ITEM1">
+                      <block type="py_math_op">
+                        <field name="OP">+</field>
+                        <value name="LEFT">
+                          <block type="py_math_op">
+                            <field name="OP">*</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="vr">r</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">32</field></block></value>
+                          </block>
+                        </value>
+                        <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                      </block>
+                    </value>
+                    <value name="ITEM2">
+                      <block type="val_bool"><field name="BOOL">True</field></block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

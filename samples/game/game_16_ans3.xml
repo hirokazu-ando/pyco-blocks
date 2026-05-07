@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vsc">score</variable>
+    <variable id="vvx">vx</variable>
+    <variable id="vvy">vy</variable>
+    <variable id="vsp">sp</variable>
+  </variables>
+  <!-- 課題4-17-3: ブロック衝突時の速度加速スニペット(ブロック消去・スコア後) -->
+  <block type="var_change" x="20" y="20">
+    <field name="VAR" id="vsc">score</field>
+    <value name="AMOUNT"><block type="val_number"><field name="NUM">1</field></block></value>
+    <next>
+      <!-- sp = 3 + score // 5 -->
+      <block type="var_set">
+        <field name="VAR" id="vsp">sp</field>
+        <value name="VALUE">
+          <block type="py_math_op">
+            <field name="OP">+</field>
+            <value name="LEFT"><block type="val_number"><field name="NUM">3</field></block></value>
+            <value name="RIGHT">
+              <block type="py_math_op">
+                <field name="OP">//</field>
+                <value name="LEFT"><block type="val_var"><field name="VAR" id="vsc">score</field></block></value>
+                <value name="RIGHT"><block type="val_number"><field name="NUM">5</field></block></value>
+              </block>
+            </value>
+          </block>
+        </value>
+        <next>
+          <!-- if vx > 0: vx = sp else: vx = -sp -->
+          <block type="pico_if">
+            <mutation elseif="0" else="1" />
+            <value name="IF0">
+              <block type="cond_compare">
+                <field name="OP">&gt;</field>
+                <value name="LEFT"><block type="val_var"><field name="VAR" id="vvx">vx</field></block></value>
+                <value name="RIGHT"><block type="val_number"><field name="NUM">0</field></block></value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="var_set">
+                <field name="VAR" id="vvx">vx</field>
+                <value name="VALUE"><block type="val_var"><field name="VAR" id="vsp">sp</field></block></value>
+              </block>
+            </statement>
+            <statement name="ELSE">
+              <block type="var_set">
+                <field name="VAR" id="vvx">vx</field>
+                <value name="VALUE">
+                  <block type="py_math_op">
+                    <field name="OP">-</field>
+                    <value name="LEFT"><block type="val_number"><field name="NUM">0</field></block></value>
+                    <value name="RIGHT"><block type="val_var"><field name="VAR" id="vsp">sp</field></block></value>
+                  </block>
+                </value>
+              </block>
+            </statement>
+            <next>
+              <!-- if vy < 0: vy = -sp else: vy = sp -->
+              <block type="pico_if">
+                <mutation elseif="0" else="1" />
+                <value name="IF0">
+                  <block type="cond_compare">
+                    <field name="OP">&lt;</field>
+                    <value name="LEFT"><block type="val_var"><field name="VAR" id="vvy">vy</field></block></value>
+                    <value name="RIGHT"><block type="val_number"><field name="NUM">0</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="var_set">
+                    <field name="VAR" id="vvy">vy</field>
+                    <value name="VALUE">
+                      <block type="py_math_op">
+                        <field name="OP">-</field>
+                        <value name="LEFT"><block type="val_number"><field name="NUM">0</field></block></value>
+                        <value name="RIGHT"><block type="val_var"><field name="VAR" id="vsp">sp</field></block></value>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <statement name="ELSE">
+                  <block type="var_set">
+                    <field name="VAR" id="vvy">vy</field>
+                    <value name="VALUE"><block type="val_var"><field name="VAR" id="vsp">sp</field></block></value>
+                  </block>
+                </statement>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

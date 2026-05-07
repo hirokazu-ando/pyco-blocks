@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="venm">enemies</variable>
+    <variable id="ve">e</variable>
+    <variable id="vpx">px</variable>
+    <variable id="vpy">py</variable>
+    <variable id="vsc">score</variable>
+    <variable id="vst">state</variable>
+  </variables>
+  <!-- 課題4-16-3: 敵を2体リストで管理(スニペット) -->
+  <!-- enemies = [[random, -48], [random, -200]] -->
+  <block type="var_set" x="20" y="20">
+    <field name="VAR" id="venm">enemies</field>
+    <value name="VALUE">
+      <block type="py_list_literal">
+        <mutation items="2" />
+        <value name="ITEM0">
+          <block type="py_list_literal">
+            <mutation items="2" />
+            <value name="ITEM0">
+              <block type="game_random_int">
+                <value name="MIN"><block type="val_number"><field name="NUM">0</field></block></value>
+                <value name="MAX"><block type="val_number"><field name="NUM">592</field></block></value>
+              </block>
+            </value>
+            <value name="ITEM1"><block type="val_number"><field name="NUM">-48</field></block></value>
+          </block>
+        </value>
+        <value name="ITEM1">
+          <block type="py_list_literal">
+            <mutation items="2" />
+            <value name="ITEM0">
+              <block type="game_random_int">
+                <value name="MIN"><block type="val_number"><field name="NUM">0</field></block></value>
+                <value name="MAX"><block type="val_number"><field name="NUM">592</field></block></value>
+              </block>
+            </value>
+            <value name="ITEM1"><block type="val_number"><field name="NUM">-200</field></block></value>
+          </block>
+        </value>
+      </block>
+    </value>
+    <next>
+      <!-- for e in enemies: -->
+      <block type="py_for_list">
+        <field name="VAR" id="ve">e</field>
+        <field name="LIST" id="venm">enemies</field>
+        <statement name="DO">
+          <!-- e[1] += 3 -->
+          <block type="py_list_set">
+            <field name="LIST" id="ve">e</field>
+            <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+            <value name="VALUE">
+              <block type="py_math_op">
+                <field name="OP">+</field>
+                <value name="LEFT">
+                  <block type="py_list_get">
+                    <field name="LIST" id="ve">e</field>
+                    <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                  </block>
+                </value>
+                <value name="RIGHT"><block type="val_number"><field name="NUM">3</field></block></value>
+              </block>
+            </value>
+            <next>
+              <!-- if e[1] > 400: reset -->
+              <block type="pico_if">
+                <mutation elseif="0" else="0" />
+                <value name="IF0">
+                  <block type="cond_compare">
+                    <field name="OP">&gt;</field>
+                    <value name="LEFT">
+                      <block type="py_list_get">
+                        <field name="LIST" id="ve">e</field>
+                        <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                      </block>
+                    </value>
+                    <value name="RIGHT"><block type="val_number"><field name="NUM">400</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="py_list_set">
+                    <field name="LIST" id="ve">e</field>
+                    <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+                    <value name="VALUE">
+                      <block type="game_random_int">
+                        <value name="MIN"><block type="val_number"><field name="NUM">0</field></block></value>
+                        <value name="MAX"><block type="val_number"><field name="NUM">592</field></block></value>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="py_list_set">
+                        <field name="LIST" id="ve">e</field>
+                        <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                        <value name="VALUE"><block type="val_number"><field name="NUM">-48</field></block></value>
+                        <next>
+                          <block type="var_change">
+                            <field name="VAR" id="vsc">score</field>
+                            <value name="AMOUNT"><block type="val_number"><field name="NUM">1</field></block></value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <next>
+                  <!-- if abs(px-e[0])<48 and abs(py-e[1])<48: state="over" -->
+                  <block type="pico_if">
+                    <mutation elseif="0" else="0" />
+                    <value name="IF0">
+                      <block type="cond_and">
+                        <value name="A">
+                          <block type="cond_compare">
+                            <field name="OP">&lt;</field>
+                            <value name="LEFT">
+                              <block type="py_abs">
+                                <value name="VALUE">
+                                  <block type="py_math_op">
+                                    <field name="OP">-</field>
+                                    <value name="LEFT"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
+                                    <value name="RIGHT">
+                                      <block type="py_list_get">
+                                        <field name="LIST" id="ve">e</field>
+                                        <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">48</field></block></value>
+                          </block>
+                        </value>
+                        <value name="B">
+                          <block type="cond_compare">
+                            <field name="OP">&lt;</field>
+                            <value name="LEFT">
+                              <block type="py_abs">
+                                <value name="VALUE">
+                                  <block type="py_math_op">
+                                    <field name="OP">-</field>
+                                    <value name="LEFT"><block type="val_var"><field name="VAR" id="vpy">py</field></block></value>
+                                    <value name="RIGHT">
+                                      <block type="py_list_get">
+                                        <field name="LIST" id="ve">e</field>
+                                        <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">48</field></block></value>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="var_set">
+                        <field name="VAR" id="vst">state</field>
+                        <value name="VALUE"><block type="val_str"><field name="TEXT">over</field></block></value>
+                      </block>
+                    </statement>
+                    <next>
+                      <!-- draw_rect(e[0], e[1], 48, 48) -->
+                      <block type="game_draw_rect">
+                        <value name="X">
+                          <block type="py_list_get">
+                            <field name="LIST" id="ve">e</field>
+                            <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+                          </block>
+                        </value>
+                        <value name="Y">
+                          <block type="py_list_get">
+                            <field name="LIST" id="ve">e</field>
+                            <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                          </block>
+                        </value>
+                        <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
+                        <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
+                        <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#ff4466</field></block></value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

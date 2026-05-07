@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from build_helpers import wp_update  # noqa
 
 PAGE_ID      = 4077
-CACHE_BUSTER = "?v=20260507i"
+CACHE_BUSTER = "?v=20260507j"
 GAME_BASE    = "https://hirokazu-ando.github.io/pyco-blocks/samples/game"
 EYECATCH_URL = "https://sakigake-robo.com/wp-content/uploads/2026/05/eyecatch_game-4-16_paddle.png"
 
@@ -189,24 +189,12 @@ CONTENT = f"""\
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p><code>main.py</code> のゲームループ内でマウス座標を取得し、すぐ <code>paddle.get_x(mx)</code> に渡します。戻り値が安全なパドル中心 X 座標です。</p>
+<p><code>main.py</code> のゲームループ内でマウス座標を取得し、すぐ <code>paddle.get_x(mx)</code> に渡します。戻り値が安全なパドル中心 X 座標です。以下はパドルゲーム完成版の全ブロック図と完成コードです。</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:html -->
-{shot("game_16_main_calls", 859)}
+{shot("game_16_main_full", 1444)}
 <!-- /wp:html -->
-
-<!-- wp:html -->
-{code_block(STEP1_CODE)}
-<!-- /wp:html -->
-
-<!-- wp:heading {{"level":2}} -->
-<h2>コーディングモード（完成コード）</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
-<p><code>import paddle</code> はモジュール呼び出しブロックで自動生成されます。ブロック崩しの生成・ボール反射・衝突判定・クリア／ゲームオーバー判定を含む完成コードです。</p>
-<!-- /wp:paragraph -->
 
 <!-- wp:html -->
 {code_block(FULL_CODE)}
@@ -227,6 +215,7 @@ CONTENT = f"""\
 <!-- wp:html -->
 <details>
 <summary>&#x25b6; 模範解答と解説を見る</summary>
+{shot("game_16_ans1", 1728)}
 {code_block(ANS1_CODE)}
 <p><strong>解説：</strong> ループの上限を変えるだけです。段が増えると初期 Y 座標が下がるので、ボールが届きやすくなるメリットもあります。</p>
 </details>
@@ -243,6 +232,7 @@ CONTENT = f"""\
 <!-- wp:html -->
 <details>
 <summary>&#x25b6; 模範解答と解説を見る</summary>
+{shot("game_16_ans2", 1818)}
 {code_block(ANS2_CODE)}
 <p><strong>解説：</strong> ブロックの生成時に <code>r</code>（行番号）を 4 要素目として追加します。描画時に <code>COLORS[b[3] % 3]</code> で行に対応した色を選ぶだけです。<code>% 3</code> で4段目以降も循環します。</p>
 </details>
@@ -259,6 +249,7 @@ CONTENT = f"""\
 <!-- wp:html -->
 <details>
 <summary>&#x25b6; 模範解答と解説を見る</summary>
+{shot("game_16_ans3", 806)}
 {code_block(ANS3_CODE)}
 <p><strong>解説：</strong> <code>score // 5</code> でブロックを5個壊すごとに速度が 1 上がります。<code>vx</code> と <code>vy</code> は符号（方向）を保ちながら絶対値だけ変えるのがコツです。速くなりすぎる場合は上限を設けましょう。</p>
 </details>

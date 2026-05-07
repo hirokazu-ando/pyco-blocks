@@ -405,7 +405,7 @@ SPEC = Spec(
     ],
     kadais=[
         Kadai(
-            number="5-18-1",
+            number="5-19-1",
             title="ハートアイコンで残機を表示する",
             lead='「Lives: N」のテキスト HUD を、<code>heart.svg</code> アイコンを 3 つ並べる表示に改造してみましょう。残機が減ったら左から順に消えていく見た目になればゴールです。',
             figure_basename="game_18a_heart_hud",
@@ -414,7 +414,7 @@ SPEC = Spec(
             explanation='<code>pico_for_from_to</code> で <code>i</code> を <code>0</code> から <code>lives</code> 未満まで回し、ハート画像を <code>10 + i * 36</code> の x 座標に描画します。間隔を一定にしてループで描くと、ライフ数に応じて自動的に表示数が変わります。',
         ),
         Kadai(
-            number="5-18-2",
+            number="5-19-2",
             title="ハートを拾うとライフ +1（最大 5）",
             lead='画面の上から落ちてくるハートを拾うと <code>lives</code> が 1 増える「回復アイテム」を追加してみましょう。最大 5 機まで増やせる上限も付けると、バランスが取りやすくなります。',
             figure_basename="game_18b_heart_heal",
@@ -423,7 +423,7 @@ SPEC = Spec(
             explanation='ハート用に <code>hx</code>, <code>hy</code> という位置変数を作り、敵と同じ要領で落下と当たり判定を実装します。プレイヤーと衝突したときに <code>lives &lt; 5</code> なら <code>lives += 1</code>、その後にハートを画面外へリスポーンさせれば「拾える」感覚が出ます。',
         ),
         Kadai(
-            number="5-18-3",
+            number="5-19-3",
             title="無敵中だけ敵がスローモーションに",
             lead='無敵時間の効果をもっと体感できるよう、無敵中は敵の落下速度を遅くしてみましょう。「ヒットストップ」のような演出が作れます。',
             figure_basename="game_18c_slow_invincible",
@@ -452,7 +452,8 @@ def main() -> int:
     print(f"Built page {SPEC.page_id} ({SPEC.slug}): {len(new_content)} chars")
 
     if args.push:
-        wp_update(SPEC.page_id, new_content, status="draft")
+        wp_update(SPEC.page_id, new_content, status="draft",
+                  title="【Pygameでゲーム⑲】ライフ制とリスポーン")
         print("反映完了（status=draft）。WP 管理画面で公開してください。")
     else:
         try:

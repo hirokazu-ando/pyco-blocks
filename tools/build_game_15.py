@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from build_helpers import wp_update  # noqa
 
 PAGE_ID      = 4076
-CACHE_BUSTER = "?v=20260507i"
+CACHE_BUSTER = "?v=20260507j"
 GAME_BASE    = "https://hirokazu-ando.github.io/pyco-blocks/samples/game"
 EYECATCH_URL = "https://sakigake-robo.com/wp-content/uploads/2026/05/eyecatch_game-4-15_dodge.png"
 
@@ -198,24 +198,12 @@ CONTENT = f"""\
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p><code>main.py</code> タブに切り替えて、ゲームループ内でモジュール呼び出しブロックを使い <code>player.move_x(px)</code> と <code>player.move_y(py)</code> を呼びます。戻り値をそのまま <code>px</code> / <code>py</code> に代入するだけです。</p>
+<p><code>main.py</code> タブに切り替えて、ゲームループ内でモジュール呼び出しブロックを使い <code>player.move_x(px)</code> と <code>player.move_y(py)</code> を呼びます。戻り値をそのまま <code>px</code> / <code>py</code> に代入するだけです。以下はよけゲーム完成版の全ブロック図と完成コードです。</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:html -->
-{shot("game_15_main_calls", 837)}
+{shot("game_15_main_full", 1454)}
 <!-- /wp:html -->
-
-<!-- wp:html -->
-{code_block(STEP1_CODE)}
-<!-- /wp:html -->
-
-<!-- wp:heading {{"level":2}} -->
-<h2>コーディングモード（完成コード）</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
-<p><code>import player</code> はモジュール呼び出しブロックを使うと自動生成されます。敵の回避・スコア加算・GAME OVER 判定・リスタートを含む完成コードです。</p>
-<!-- /wp:paragraph -->
 
 <!-- wp:html -->
 {code_block(FULL_CODE)}
@@ -236,6 +224,7 @@ CONTENT = f"""\
 <!-- wp:html -->
 <details>
 <summary>&#x25b6; 模範解答と解説を見る</summary>
+{shot("game_15_ans1_player", 654)}
 {code_block(ANS1_CODE)}
 <p><strong>解説：</strong> <code>speed=4</code> はデフォルト引数です。呼び出し側で <code>player.move_x(px, 6)</code> と書けば速さ6で動きます。<code>player.py</code> の1行だけ変えればゲームの難易度が変わる――これがモジュール化の力です。</p>
 </details>
@@ -252,6 +241,7 @@ CONTENT = f"""\
 <!-- wp:html -->
 <details>
 <summary>&#x25b6; 模範解答と解説を見る</summary>
+{shot("game_15_ans2_main", 1022)}
 {code_block(ANS2_CODE)}
 <p><strong>解説：</strong> <code>timer.remain(TIME_LIMIT)</code> が 0 以下になると <code>state = "over"</code> に移行します。残り10秒で文字を赤くするのも ⑭ で学んだテクニックです。複数のモジュールを組み合わせると機能が増えても <code>main.py</code> は短いまま保てます。</p>
 </details>
@@ -268,6 +258,7 @@ CONTENT = f"""\
 <!-- wp:html -->
 <details>
 <summary>&#x25b6; 模範解答と解説を見る</summary>
+{shot("game_15_ans3_main", 1785)}
 {code_block(ANS3_CODE)}
 <p><strong>解説：</strong> <code>enemies</code> リストに <code>[x, y]</code> を格納して <code>for e in enemies:</code> でループします。体数が増えても処理の書き方は変わりません。初期 y 座標をずらすと出現タイミングがばらけて自然に見えます。</p>
 </details>

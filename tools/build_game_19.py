@@ -276,7 +276,7 @@ SPEC = Spec(
     slug="game-19-shoot",
     title="弾を撃ってみよう",
     intro_paragraphs=[
-        '⑱ で残機の概念を入れたら、次は反撃です。シューティングゲームの花、'
+        '⑲ で残機の概念を入れたら、次は反撃です。シューティングゲームの花、'
         '<strong>弾</strong>を撃てるようにしましょう。'
         'まずは「1 発だけ撃てる」シンプルな仕組みから始めて、ステップ 2 で '
         '<code>リスト</code> を使って何発でも飛ばせるように改造していきます。',
@@ -331,7 +331,7 @@ SPEC = Spec(
     ],
     kadais=[
         Kadai(
-            number="5-19-1",
+            number="5-20-1",
             title="弾を当てて敵を消そう",
             lead='⑪ で作った敵キャラと組み合わせて、弾が当たったら敵をリスポーンさせる「シューティングらしさ」を加えましょう。各弾と敵の距離を判定して、当たったら敵を初期位置へ戻します。',
             figure_basename="game_19a_bullet_hit",
@@ -340,7 +340,7 @@ SPEC = Spec(
             explanation='<code>for b in bullets:</code> の中で、弾の <code>b[0], b[1]</code> と敵の <code>ex, ey</code> の距離を <code>abs</code> で比較します。当たったら敵をランダムにリスポーン、当たった弾は <code>b[1] = -1000</code> として画面外へ追いやれば「消えた」ように見えます。',
         ),
         Kadai(
-            number="5-19-2",
+            number="5-20-2",
             title="連射しすぎを防ぐクールダウン",
             lead='SPACE 連打で弾が一気に大量発射されてしまうのを抑えるため、<code>game_timer_set</code> と <code>game_timer_done</code> で「<strong>0.3 秒に 1 発まで</strong>」のクールダウンを実装しましょう。⑱ の無敵タイマーと同じパターンです。',
             figure_basename="game_19b_cooldown",
@@ -349,7 +349,7 @@ SPEC = Spec(
             explanation='変数 <code>ctimer</code> を作り、<code>game_timer_done(ctimer)</code> が True のときだけ発射を許可します。発射と同時に <code>game_timer_set</code> で 0.3 秒後を <code>ctimer</code> にセットすれば、その間は再発射できなくなります。',
         ),
         Kadai(
-            number="5-19-3",
+            number="5-20-3",
             title="3 方向に弾をばらまく",
             lead='1 回の SPACE で <strong>3 つの弾</strong>を扇状に発射するようにしてみましょう。リストの要素を <code>[x, y, vx]</code> の 3 つ組にすると、弾ごとに横方向の速度を持たせられます。',
             figure_basename="game_19c_three_way",
@@ -378,7 +378,8 @@ def main() -> int:
     print(f"Built page {SPEC.page_id} ({SPEC.slug}): {len(new_content)} chars")
 
     if args.push:
-        wp_update(SPEC.page_id, new_content, status="draft")
+        wp_update(SPEC.page_id, new_content, status="draft",
+                  title="【Pygameでゲーム⑳】弾を撃ってみよう")
         print("反映完了（status=draft）。WP 管理画面で公開してください。")
     else:
         try:
