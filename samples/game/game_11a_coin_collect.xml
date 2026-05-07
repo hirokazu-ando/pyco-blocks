@@ -5,136 +5,342 @@
     <variable id="vcx">cx</variable>
     <variable id="vcy">cy</variable>
     <variable id="vs">score</variable>
+    <variable id="vpy">py</variable>
   </variables>
   <block type="game_import_random" x="20" y="20">
-        <next><block type="game_init">
-    <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
-    <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
-    <value name="TITLE"><block type="val_str"><field name="TEXT">Coin Collect</field></block></value>
     <next>
+      <block type="game_init">
+        <value name="W">
+          <block type="val_number">
+            <field name="NUM">640</field>
+          </block>
+        </value>
+        <value name="H">
+          <block type="val_number">
+            <field name="NUM">400</field>
+          </block>
+        </value>
+        <value name="TITLE">
+          <block type="val_str">
+            <field name="TEXT">Coin Collect</field>
+          </block>
+        </value>
+        <next>
           <block type="var_set">
             <field name="VAR" id="vpx">px</field>
-            <value name="VALUE"><block type="val_number"><field name="NUM">300</field></block></value>
+            <value name="VALUE">
+              <block type="val_number">
+                <field name="NUM">300</field>
+              </block>
+            </value>
             <next>
               <block type="var_set">
-                <field name="VAR" id="vcx">cx</field>
-                <value name="VALUE"><block type="game_random_int"><field name="LO">0</field><field name="HI">600</field></block></value>
+                <field name="VAR" id="vpy">py</field>
+                <value name="VALUE">
+                  <block type="val_number">
+                    <field name="NUM">330</field>
+                  </block>
+                </value>
                 <next>
                   <block type="var_set">
-                    <field name="VAR" id="vcy">cy</field>
-                    <value name="VALUE"><block type="game_random_int"><field name="LO">0</field><field name="HI">360</field></block></value>
+                    <field name="VAR" id="vcx">cx</field>
+                    <value name="VALUE">
+                      <block type="game_random_int">
+                        <field name="LO">0</field>
+                        <field name="HI">600</field>
+                      </block>
+                    </value>
                     <next>
                       <block type="var_set">
-                        <field name="VAR" id="vs">score</field>
-                        <value name="VALUE"><block type="val_number"><field name="NUM">0</field></block></value>
+                        <field name="VAR" id="vcy">cy</field>
+                        <value name="VALUE">
+                          <block type="game_random_int">
+                            <field name="LO">0</field>
+                            <field name="HI">360</field>
+                          </block>
+                        </value>
                         <next>
-                          <block type="game_loop">
-                            <statement name="DO">
-                              <block type="game_events">
-                                <next>
-                                  <block type="game_fill">
-                                    <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#0a1628</field></block></value>
+                          <block type="var_set">
+                            <field name="VAR" id="vs">score</field>
+                            <value name="VALUE">
+                              <block type="val_number">
+                                <field name="NUM">0</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="game_loop">
+                                <statement name="DO">
+                                  <block type="game_events">
                                     <next>
-                                      <block type="pico_if">
-                                        <mutation elseif="0" else="0" />
-                                        <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_RIGHT</field></block></value>
-                                        <statement name="DO0">
-                                          <block type="var_change">
-                                            <field name="VAR" id="vpx">px</field>
-                                            <value name="AMOUNT"><block type="val_number"><field name="NUM">4</field></block></value>
+                                      <block type="game_fill">
+                                        <value name="COLOR">
+                                          <block type="colour_picker">
+                                            <field name="COLOUR">#0a1628</field>
                                           </block>
-                                        </statement>
+                                        </value>
                                         <next>
                                           <block type="pico_if">
                                             <mutation elseif="0" else="0" />
-                                            <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_LEFT</field></block></value>
+                                            <value name="IF0">
+                                              <block type="game_key_pressed">
+                                                <field name="KEY">K_RIGHT</field>
+                                              </block>
+                                            </value>
                                             <statement name="DO0">
                                               <block type="var_change">
                                                 <field name="VAR" id="vpx">px</field>
-                                                <value name="AMOUNT"><block type="val_number"><field name="NUM">-4</field></block></value>
+                                                <value name="AMOUNT">
+                                                  <block type="val_number">
+                                                    <field name="NUM">4</field>
+                                                  </block>
+                                                </value>
                                               </block>
                                             </statement>
                                             <next>
                                               <block type="pico_if">
                                                 <mutation elseif="0" else="0" />
                                                 <value name="IF0">
-                                                  <block type="cond_and">
-                                                    <value name="A">
-                                                      <block type="cond_compare">
-                                                        <field name="OP">&lt;</field>
-                                                        <value name="LEFT">
-                                                          <block type="py_abs">
-                                                            <value name="VALUE">
-                                                              <block type="py_math_op">
-                                                                <field name="OP">-</field>
-                                                                <value name="LEFT"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
-                                                                <value name="RIGHT"><block type="val_var"><field name="VAR" id="vcx">cx</field></block></value>
-                                                              </block>
-                                                            </value>
-                                                          </block>
-                                                        </value>
-                                                        <value name="RIGHT"><block type="val_number"><field name="NUM">40</field></block></value>
-                                                      </block>
-                                                    </value>
-                                                    <value name="B">
-                                                      <block type="cond_compare">
-                                                        <field name="OP">&lt;</field>
-                                                        <value name="LEFT">
-                                                          <block type="py_abs">
-                                                            <value name="VALUE">
-                                                              <block type="py_math_op">
-                                                                <field name="OP">-</field>
-                                                                <value name="LEFT"><block type="val_number"><field name="NUM">340</field></block></value>
-                                                                <value name="RIGHT"><block type="val_var"><field name="VAR" id="vcy">cy</field></block></value>
-                                                              </block>
-                                                            </value>
-                                                          </block>
-                                                        </value>
-                                                        <value name="RIGHT"><block type="val_number"><field name="NUM">40</field></block></value>
-                                                      </block>
-                                                    </value>
+                                                  <block type="game_key_pressed">
+                                                    <field name="KEY">K_LEFT</field>
                                                   </block>
                                                 </value>
                                                 <statement name="DO0">
                                                   <block type="var_change">
-                                                    <field name="VAR" id="vs">score</field>
-                                                    <value name="AMOUNT"><block type="val_number"><field name="NUM">1</field></block></value>
-                                                    <next>
-                                                      <block type="var_set">
-                                                        <field name="VAR" id="vcx">cx</field>
-                                                        <value name="VALUE"><block type="game_random_int"><field name="LO">0</field><field name="HI">600</field></block></value>
-                                                        <next>
-                                                          <block type="var_set">
-                                                            <field name="VAR" id="vcy">cy</field>
-                                                            <value name="VALUE"><block type="game_random_int"><field name="LO">0</field><field name="HI">360</field></block></value>
-                                                          </block>
-                                                        </next>
+                                                    <field name="VAR" id="vpx">px</field>
+                                                    <value name="AMOUNT">
+                                                      <block type="val_number">
+                                                        <field name="NUM">-4</field>
                                                       </block>
-                                                    </next>
+                                                    </value>
                                                   </block>
                                                 </statement>
                                                 <next>
-                                                  <block type="game_draw_image">
-                                                    <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/player_ship.svg</field></block></value>
-                                                    <value name="X"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
-                                                    <value name="Y"><block type="val_number"><field name="NUM">330</field></block></value>
-                                                    <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
-                                                    <value name="H"><block type="val_number"><field name="NUM">48</field></block></value><next>
-                                                      <block type="game_draw_image">
-                                                        <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/coin.svg</field></block></value>
-                                                        <value name="X"><block type="val_var"><field name="VAR" id="vcx">cx</field></block></value>
-                                                        <value name="Y"><block type="val_var"><field name="VAR" id="vcy">cy</field></block></value>
-                                                        <value name="W"><block type="val_number"><field name="NUM">32</field></block></value>
-                                                        <value name="H"><block type="val_number"><field name="NUM">32</field></block></value><next>
-                                                          <block type="game_draw_text">
-                                                            <value name="TEXT"><block type="val_var"><field name="VAR" id="vs">score</field></block></value>
-                                                            <value name="X"><block type="val_number"><field name="NUM">10</field></block></value>
-                                                            <value name="Y"><block type="val_number"><field name="NUM">10</field></block></value>
-                                                            <value name="SIZE"><block type="val_number"><field name="NUM">28</field></block></value>
-                                                            <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#ffee44</field></block></value>
+                                                  <block type="pico_if">
+                                                    <mutation elseif="0" else="0" />
+                                                    <value name="IF0">
+                                                      <block type="game_key_pressed">
+                                                        <field name="KEY">K_UP</field>
+                                                      </block>
+                                                    </value>
+                                                    <statement name="DO0">
+                                                      <block type="var_change">
+                                                        <field name="VAR" id="vpy">py</field>
+                                                        <value name="AMOUNT">
+                                                          <block type="val_number">
+                                                            <field name="NUM">-4</field>
+                                                          </block>
+                                                        </value>
+                                                      </block>
+                                                    </statement>
+                                                    <next>
+                                                      <block type="pico_if">
+                                                        <mutation elseif="0" else="0" />
+                                                        <value name="IF0">
+                                                          <block type="game_key_pressed">
+                                                            <field name="KEY">K_DOWN</field>
+                                                          </block>
+                                                        </value>
+                                                        <statement name="DO0">
+                                                          <block type="var_change">
+                                                            <field name="VAR" id="vpy">py</field>
+                                                            <value name="AMOUNT">
+                                                              <block type="val_number">
+                                                                <field name="NUM">4</field>
+                                                              </block>
+                                                            </value>
+                                                          </block>
+                                                        </statement>
+                                                        <next>
+                                                          <block type="pico_if">
+                                                            <mutation elseif="0" else="0" />
+                                                            <value name="IF0">
+                                                              <block type="cond_and">
+                                                                <value name="A">
+                                                                  <block type="cond_compare">
+                                                                    <field name="OP">&lt;</field>
+                                                                    <value name="LEFT">
+                                                                      <block type="py_abs">
+                                                                        <value name="VALUE">
+                                                                          <block type="py_math_op">
+                                                                            <field name="OP">-</field>
+                                                                            <value name="LEFT">
+                                                                              <block type="val_var">
+                                                                                <field name="VAR" id="vpx">px</field>
+                                                                              </block>
+                                                                            </value>
+                                                                            <value name="RIGHT">
+                                                                              <block type="val_var">
+                                                                                <field name="VAR" id="vcx">cx</field>
+                                                                              </block>
+                                                                            </value>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="RIGHT">
+                                                                      <block type="val_number">
+                                                                        <field name="NUM">40</field>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="B">
+                                                                  <block type="cond_compare">
+                                                                    <field name="OP">&lt;</field>
+                                                                    <value name="LEFT">
+                                                                      <block type="py_abs">
+                                                                        <value name="VALUE">
+                                                                          <block type="py_math_op">
+                                                                            <field name="OP">-</field>
+                                                                            <value name="LEFT">
+                                                                              <block type="val_var">
+                                                                                <field name="VAR" id="vpy">py</field>
+                                                                              </block>
+                                                                            </value>
+                                                                            <value name="RIGHT">
+                                                                              <block type="val_var">
+                                                                                <field name="VAR" id="vcy">cy</field>
+                                                                              </block>
+                                                                            </value>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="RIGHT">
+                                                                      <block type="val_number">
+                                                                        <field name="NUM">40</field>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                            <statement name="DO0">
+                                                              <block type="var_change">
+                                                                <field name="VAR" id="vs">score</field>
+                                                                <value name="AMOUNT">
+                                                                  <block type="val_number">
+                                                                    <field name="NUM">1</field>
+                                                                  </block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="var_set">
+                                                                    <field name="VAR" id="vcx">cx</field>
+                                                                    <value name="VALUE">
+                                                                      <block type="game_random_int">
+                                                                        <field name="LO">0</field>
+                                                                        <field name="HI">600</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <next>
+                                                                      <block type="var_set">
+                                                                        <field name="VAR" id="vcy">cy</field>
+                                                                        <value name="VALUE">
+                                                                          <block type="game_random_int">
+                                                                            <field name="LO">0</field>
+                                                                            <field name="HI">360</field>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </statement>
                                                             <next>
-                                                              <block type="game_flip">
-                                                                <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
+                                                              <block type="game_draw_image">
+                                                                <value name="URL">
+                                                                  <block type="game_image_preset">
+                                                                    <field name="IMG">assets/game-icons/player_ship.svg</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="X">
+                                                                  <block type="val_var">
+                                                                    <field name="VAR" id="vpx">px</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="Y">
+                                                                  <block type="val_var">
+                                                                    <field name="VAR" id="vpy">py</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="W">
+                                                                  <block type="val_number">
+                                                                    <field name="NUM">48</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="H">
+                                                                  <block type="val_number">
+                                                                    <field name="NUM">48</field>
+                                                                  </block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="game_draw_image">
+                                                                    <value name="URL">
+                                                                      <block type="game_image_preset">
+                                                                        <field name="IMG">assets/game-icons/coin.svg</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="X">
+                                                                      <block type="val_var">
+                                                                        <field name="VAR" id="vcx">cx</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="Y">
+                                                                      <block type="val_var">
+                                                                        <field name="VAR" id="vcy">cy</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="W">
+                                                                      <block type="val_number">
+                                                                        <field name="NUM">32</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="H">
+                                                                      <block type="val_number">
+                                                                        <field name="NUM">32</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <next>
+                                                                      <block type="game_draw_text">
+                                                                        <value name="TEXT">
+                                                                          <block type="val_var">
+                                                                            <field name="VAR" id="vs">score</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <value name="X">
+                                                                          <block type="val_number">
+                                                                            <field name="NUM">10</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <value name="Y">
+                                                                          <block type="val_number">
+                                                                            <field name="NUM">10</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <value name="SIZE">
+                                                                          <block type="val_number">
+                                                                            <field name="NUM">28</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <value name="COLOR">
+                                                                          <block type="colour_picker">
+                                                                            <field name="COLOUR">#ffee44</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <next>
+                                                                          <block type="game_flip">
+                                                                            <value name="FPS">
+                                                                              <block type="val_number">
+                                                                                <field name="NUM">60</field>
+                                                                              </block>
+                                                                            </value>
+                                                                          </block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
                                                               </block>
                                                             </next>
                                                           </block>
@@ -150,11 +356,11 @@
                                       </block>
                                     </next>
                                   </block>
+                                </statement>
+                                <next>
+                                  <block type="game_quit" />
                                 </next>
                               </block>
-                            </statement>
-                            <next>
-                              <block type="game_quit" />
                             </next>
                           </block>
                         </next>
@@ -167,5 +373,6 @@
           </block>
         </next>
       </block>
-</next></block>
-    </xml>
+    </next>
+  </block>
+</xml>

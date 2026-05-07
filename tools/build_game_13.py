@@ -10,14 +10,14 @@ sys.path.insert(0, str(Path(__file__).parent))
 from build_helpers import wp_get, wp_update  # noqa
 
 PAGE_ID = 4074
-CACHE_BUSTER = "?v=20260507e"
+CACHE_BUSTER = "?v=20260507i"
 GAME_BASE = "https://hirokazu-ando.github.io/pyco-blocks/samples/game"
 
-IMAGE_WIDTHS = {"game_13_step1_final": 680,
-    "game_13_step2_final": 680,
-    "game_13a_game_over": 680,
-    "game_13b_reset_func": 680,
-    "game_13c_lives": 680,}
+IMAGE_WIDTHS = {"game_13_step1_final": 1413,
+    "game_13_step2_final": 1429,
+    "game_13a_game_over": 1429,
+    "game_13b_reset_func": 1429,
+    "game_13c_lives": 1476,}
 
 
 def update_image(content: str, basename: str, width: int) -> str:
