@@ -80,6 +80,11 @@
       mouseY = Math.round((e.clientY - rect.top  - bt) * scaleY);
     }, { passive: true });
 
+    window.addEventListener('contextmenu', function(e) {
+      var area = document.getElementById('game-canvas-area');
+      if (area && area.contains(e.target)) e.preventDefault();
+    });
+
     window.addEventListener('mousedown', function(e) {
       if (e.button >= 0 && e.button <= 2) mouseButtons[e.button] = true;
       eventQueue.push({ type: MOUSEBUTTONDOWN, button: e.button });
