@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vpx">px</variable>
+  </variables>
+  <block type="py_def" x="20" y="20">
+    <field name="NAME">move_x</field>
+    <field name="PARAM" id="vpx">px</field>
+    <statement name="BODY">
+      <block type="pico_if">
+        <mutation elseif="0" else="0" />
+        <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_LEFT</field></block></value>
+        <statement name="DO0">
+          <block type="var_change">
+            <field name="VAR" id="vpx">px</field>
+            <value name="AMOUNT"><block type="val_number"><field name="NUM">-4</field></block></value>
+          </block>
+        </statement>
+        <next>
+          <block type="pico_if">
+            <mutation elseif="0" else="0" />
+            <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_RIGHT</field></block></value>
+            <statement name="DO0">
+              <block type="var_change">
+                <field name="VAR" id="vpx">px</field>
+                <value name="AMOUNT"><block type="val_number"><field name="NUM">4</field></block></value>
+              </block>
+            </statement>
+            <next>
+              <block type="py_return">
+                <value name="VALUE"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
