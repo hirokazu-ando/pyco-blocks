@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vscore">score</variable>
+  </variables>
+  <!-- player.py: get_color(score) → score >= 10 なら "#ff6600" そうでなければ "#5cd6ff" -->
+  <block type="py_def" x="20" y="20">
+    <field name="NAME">get_color</field>
+    <field name="PARAM" id="vscore">score</field>
+    <statement name="BODY">
+      <block type="pico_if">
+        <mutation elseif="0" else="0" />
+        <value name="IF0">
+          <block type="cond_compare">
+            <field name="OP">&gt;=</field>
+            <value name="LEFT"><block type="val_var"><field name="VAR" id="vscore">score</field></block></value>
+            <value name="RIGHT"><block type="val_number"><field name="NUM">10</field></block></value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="py_return">
+            <value name="VALUE"><block type="val_str"><field name="TEXT">#ff6600</field></block></value>
+          </block>
+        </statement>
+        <next>
+          <block type="py_return">
+            <value name="VALUE"><block type="val_str"><field name="TEXT">#5cd6ff</field></block></value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
