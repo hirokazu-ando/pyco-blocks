@@ -67,8 +67,17 @@
       var cnv = area.querySelector('canvas');
       if (!cnv) { mouseX = e.clientX; mouseY = e.clientY; return; }
       var rect = cnv.getBoundingClientRect();
-      mouseX = Math.round(e.clientX - rect.left);
-      mouseY = Math.round(e.clientY - rect.top);
+      var style = getComputedStyle(cnv);
+      var bl = parseFloat(style.borderLeftWidth) || 0;
+      var bt = parseFloat(style.borderTopWidth)  || 0;
+      var br = parseFloat(style.borderRightWidth) || 0;
+      var bb = parseFloat(style.borderBottomWidth)|| 0;
+      var contentW = rect.width  - bl - br;
+      var contentH = rect.height - bt - bb;
+      var scaleX = contentW > 0 ? cnv.width  / contentW : 1;
+      var scaleY = contentH > 0 ? cnv.height / contentH : 1;
+      mouseX = Math.round((e.clientX - rect.left - bl) * scaleX);
+      mouseY = Math.round((e.clientY - rect.top  - bt) * scaleY);
     }, { passive: true });
 
     window.addEventListener('mousedown', function(e) {
@@ -441,9 +450,34 @@
       }
       img.onload = function() {
         var cnv = document.createElement('canvas');
-        cnv.width = img.width; cnv.height = img.height;
+        cnv.width = img.width || 64; cnv.height = img.height || 64;
         var ctx = cnv.getContext('2d');
         ctx.drawImage(img, 0, 0);
+        // SVG の透明マージンを除去して (0,0) 配置が直感通りになるようにする
+        if (/\.svg($|\?)/i.test(url)) {
+          try {
+            var d = ctx.getImageData(0, 0, cnv.width, cnv.height).data;
+            var w = cnv.width, h = cnv.height;
+            var x0 = w, y0 = h, x1 = 0, y1 = 0;
+            for (var i = 0; i < d.length; i += 4) {
+              if (d[i + 3] > 2) {
+                var px = (i >> 2) % w, py = (i >> 2) / w | 0;
+                if (px < x0) x0 = px; if (py < y0) y0 = py;
+                if (px > x1) x1 = px; if (py > y1) y1 = py;
+              }
+            }
+            if (x1 > x0 && y1 > y0) {
+              var pad = 1;
+              x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+              x1 = Math.min(w - 1, x1 + pad); y1 = Math.min(h - 1, y1 + pad);
+              var cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+              var c2 = document.createElement('canvas');
+              c2.width = cw; c2.height = ch;
+              c2.getContext('2d').drawImage(cnv, x0, y0, cw, ch, 0, 0, cw, ch);
+              cnv = c2;
+            }
+          } catch (e) { /* SecurityError 等は無視してクロップなしで続行 */ }
+        }
         var surf = makeSurface(cnv);
         _imageCache[resolved] = surf;
         resolve(surf);
