@@ -2065,6 +2065,24 @@ Blockly.Blocks['py_import_module'] = {
   }
 };
 
+// import モジュール as エイリアス 文
+Blockly.Blocks['py_import_as'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('モジュール')
+      .appendField(new Blockly.FieldTextInput('game_funcs'), 'MODULE')
+      .appendField('を別名')
+      .appendField(new Blockly.FieldTextInput('gf'), 'ALIAS')
+      .appendField('で読み込む（import as）');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.modules);
+    this.setTooltip('モジュールに短い別名を付けて読み込みます（import モジュール名 as エイリアス）');
+    this.setHelpUrl('');
+  }
+};
+
 // from モジュール import 名前 文
 Blockly.Blocks['py_from_import'] = {
   init: function() {
