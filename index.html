@@ -1435,6 +1435,188 @@
       </block>
       <block type="py_dict_comp" gap="8"></block>
     </category>
+    <category name="モジュール" colour="#546E7A">
+      <block type="py_import_module" gap="8"></block>
+      <block type="py_from_import" gap="8"></block>
+      <block type="py_module_call_stmt" gap="8"></block>
+      <block type="py_module_call_val" gap="8"></block>
+    </category>
+    <category name="カスタム" colour="#455A64">
+      <block type="py_custom_stmt" gap="8">
+        <field name="CODE">pass</field>
+      </block>
+      <block type="py_custom_expr" gap="8">
+        <field name="CODE">0</field>
+      </block>
+    </category>
+  </xml>
+
+  <!-- ゲームモードのサブファイル（モジュール）用ツールボックス -->
+  <xml id="toolbox-game-module" style="display:none">
+    <category name="関数定義" colour="#FF7043">
+      <block type="py_def_noarg" gap="8"></block>
+      <block type="py_def" gap="8"></block>
+      <block type="py_def_args2" gap="8"></block>
+      <block type="py_def_args3" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="py_return" gap="8"></block>
+    </category>
+    <category name="描画" colour="#0288D1">
+      <block type="game_draw_rect" gap="8">
+        <value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="W"><shadow type="val_number"><field name="NUM">30</field></shadow></value>
+        <value name="H"><shadow type="val_number"><field name="NUM">30</field></shadow></value>
+        <value name="COLOR"><shadow type="colour_picker"><field name="COLOUR">#00c864</field></shadow></value>
+      </block>
+      <block type="game_draw_circle" gap="8">
+        <value name="X"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+        <value name="Y"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+        <value name="R"><shadow type="val_number"><field name="NUM">20</field></shadow></value>
+        <value name="COLOR"><shadow type="colour_picker"><field name="COLOUR">#ff0000</field></shadow></value>
+      </block>
+      <block type="game_draw_line" gap="8">
+        <value name="X1"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="Y1"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="X2"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+        <value name="Y2"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+        <value name="COLOR"><shadow type="colour_picker"><field name="COLOUR">#ffffff</field></shadow></value>
+      </block>
+      <sep gap="20"></sep>
+      <block type="game_font_set" gap="8">
+        <value name="SIZE"><shadow type="val_number"><field name="NUM">28</field></shadow></value>
+      </block>
+      <block type="game_draw_text" gap="8">
+        <value name="TEXT"><shadow type="val_str"><field name="TEXT">Hello</field></shadow></value>
+        <value name="X"><shadow type="val_number"><field name="NUM">10</field></shadow></value>
+        <value name="Y"><shadow type="val_number"><field name="NUM">10</field></shadow></value>
+        <value name="SIZE"><shadow type="val_number"><field name="NUM">24</field></shadow></value>
+        <value name="COLOR"><shadow type="colour_picker"><field name="COLOUR">#ffffff</field></shadow></value>
+      </block>
+      <block type="game_image_preset" gap="8"></block>
+      <block type="game_draw_image" gap="8">
+        <field name="FLIP">NONE</field>
+        <value name="URL"><shadow type="game_image_preset"></shadow></value>
+        <value name="X"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+        <value name="Y"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+        <value name="W"><shadow type="val_number"><field name="NUM">-1</field></shadow></value>
+        <value name="H"><shadow type="val_number"><field name="NUM">-1</field></shadow></value>
+        <value name="ROT"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+    </category>
+    <category name="入力" colour="#26A69A">
+      <block type="game_key_pressed" gap="8"></block>
+      <block type="game_keys_held" gap="8"></block>
+      <block type="game_mouse_x" gap="8"></block>
+      <block type="game_mouse_y" gap="8"></block>
+      <block type="game_mouse_pressed" gap="8"></block>
+    </category>
+    <category name="当たり判定" colour="#FB8C00">
+      <block type="game_rect" gap="8">
+        <value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="W"><shadow type="val_number"><field name="NUM">30</field></shadow></value>
+        <value name="H"><shadow type="val_number"><field name="NUM">30</field></shadow></value>
+      </block>
+      <block type="game_collide" gap="8"></block>
+      <block type="game_rect_collidepoint" gap="8"></block>
+      <block type="game_rect_attr" gap="8"></block>
+    </category>
+    <category name="タイマー" colour="#7E57C2">
+      <block type="game_get_ticks" gap="8"></block>
+    </category>
+    <category name="サウンド" colour="#26C6DA">
+      <block type="game_sound_load" gap="8">
+        <value name="URL"><shadow type="game_sound_preset"></shadow></value>
+      </block>
+      <block type="game_sound_play" gap="8"></block>
+      <block type="game_sound_preset" gap="8"></block>
+    </category>
+    <category name="変数" colour="#558B2F">
+      <block type="var_set" gap="8">
+        <value name="VALUE"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="var_change" gap="8">
+        <value name="AMOUNT"><shadow type="val_number"><field name="NUM">1</field></shadow></value>
+      </block>
+    </category>
+    <category name="分岐" colour="#5E35B1">
+      <block type="pico_if" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="cond_compare" gap="8">
+        <value name="LEFT"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="RIGHT"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="cond_and" gap="8"></block>
+      <block type="cond_or" gap="8"></block>
+      <block type="cond_not" gap="8"></block>
+    </category>
+    <category name="繰り返し" colour="#F9A825">
+      <block type="pico_for_range" gap="8">
+        <value name="N"><shadow type="val_number"><field name="NUM">10</field></shadow></value>
+      </block>
+      <block type="py_while" gap="8"></block>
+      <block type="py_for_list" gap="8"></block>
+    </category>
+    <category name="リスト" colour="#689F38">
+      <block type="py_list_empty" gap="8"></block>
+      <block type="py_list_append" gap="8">
+        <value name="VALUE"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_list_get" gap="8">
+        <value name="INDEX"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_list_set" gap="8">
+        <value name="INDEX"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="VALUE"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_list_len" gap="8"></block>
+    </category>
+    <category name="辞書" colour="#6D4C41">
+      <block type="py_dict_new" gap="8"></block>
+      <block type="py_dict_set" gap="8">
+        <value name="KEY"><shadow type="val_str"><field name="TEXT">キー</field></shadow></value>
+        <value name="VAL"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_dict_get" gap="8">
+        <value name="KEY"><shadow type="val_str"><field name="TEXT">キー</field></shadow></value>
+      </block>
+    </category>
+    <category name="計算" colour="#FB8C00">
+      <block type="py_math_op" gap="8">
+        <value name="LEFT"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="RIGHT"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_abs" gap="8">
+        <value name="VALUE"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_min2" gap="8">
+        <value name="A"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="B"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_max2" gap="8">
+        <value name="A"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="B"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="py_random_int" gap="8">
+        <value name="FROM"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
+        <value name="TO"><shadow type="val_number"><field name="NUM">100</field></shadow></value>
+      </block>
+    </category>
+    <category name="値" colour="#5C6BC0">
+      <block type="val_var" gap="8"></block>
+      <block type="val_number" gap="8"></block>
+      <block type="val_str" gap="8"></block>
+      <block type="val_bool" gap="8"></block>
+      <block type="py_fstring" gap="8"></block>
+      <block type="game_color" gap="8"></block>
+      <block type="colour_picker" gap="8"></block>
+    </category>
+    <category name="モジュール" colour="#546E7A">
+      <block type="py_import_module" gap="8"></block>
+      <block type="py_module_call_stmt" gap="8"></block>
+      <block type="py_module_call_val" gap="8"></block>
+    </category>
     <category name="カスタム" colour="#455A64">
       <block type="py_custom_stmt" gap="8">
         <field name="CODE">pass</field>

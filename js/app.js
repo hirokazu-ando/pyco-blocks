@@ -163,6 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
           if (currentMode === 'python') {
             const tbId = activeFileIdx === 0 ? 'toolbox-python' : 'toolbox-module';
             workspace.updateToolbox(document.getElementById(tbId));
+          } else if (currentMode === 'game') {
+            const tbId = activeFileIdx === 0 ? 'toolbox-game' : 'toolbox-game-module';
+            workspace.updateToolbox(document.getElementById(tbId));
           }
           renderFileTabs();
         });
@@ -201,9 +204,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // ツールボックス切替: main.py → python/micropython、サブファイル → module
+    // ツールボックス切替: main.py → python/game、サブファイル → module
     if (currentMode === 'python') {
       const tbId = idx === 0 ? 'toolbox-python' : 'toolbox-module';
+      workspace.updateToolbox(document.getElementById(tbId));
+    } else if (currentMode === 'game') {
+      const tbId = idx === 0 ? 'toolbox-game' : 'toolbox-game-module';
       workspace.updateToolbox(document.getElementById(tbId));
     }
 
@@ -2703,8 +2709,21 @@ document.addEventListener('DOMContentLoaded', function() {
       header = importLines.length ? importLines.join('\n') + '\n\n' : '';
     } else if (currentMode === 'game') {
       const needsRandom = blockTypes.has('py_random_int');
-      header = (showComments ? '# ゲーム（pygame互換）\n' : '') + `${cm}import pygame\n` +
-               (needsRandom ? `${cm}import random\n` : '') + '\n';
+      const importLines = [];
+      importLines.push((showComments ? '# ゲーム（pygame互換）\n' : '') + `${cm}import pygame`);
+      if (needsRandom) importLines.push(`${cm}import random`);
+      // 自作モジュール呼び出しブロックで使われているモジュールを収集してimport
+      const usedModules = new Set();
+      allBlocks.forEach(function(b) {
+        if (b.type === 'py_module_call_stmt' || b.type === 'py_module_call_val') {
+          const mod = b.getFieldValue('MODULE');
+          if (mod && mod !== '__none__') usedModules.add(mod);
+        }
+      });
+      usedModules.forEach(function(mod) {
+        importLines.push((showComments ? `# 自作モジュール ${mod} をインポート\n` : '') + `${cm}import ${mod}`);
+      });
+      header = importLines.join('\n') + '\n\n';
     } else {
       // ─── MicroPythonモード：既存ロジック ───
       const motorTypes = ['pvb_forward','pvb_backward','pvb_turn_right','pvb_turn_left','pvb_stop'];
@@ -2752,9 +2771,16 @@ document.addEventListener('DOMContentLoaded', function() {
       code += blockToCode(block, '');
     }
     // サブファイル（モジュール）はheaderなし・空でもプレースホルダーなし
+    // ゲームモードのサブファイルはpygame/randomを自動付与（ゲームブロックが pygame. を参照するため）
+    let subHeader = '';
+    if (!isMain && currentMode === 'game') {
+      const subImports = ['import pygame'];
+      if (blockTypes.has('py_random_int')) subImports.push('import random');
+      subHeader = subImports.join('\n') + '\n\n';
+    }
     const generated = isMain
       ? header + (code || '# ブロックを追加してください')
-      : (code || '');
+      : subHeader + (code || '');
     pyFiles[activeFileIdx].content = generated;
     if (!codingMode) {
       editor.setValue(generated);
@@ -3429,8 +3455,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btn-mode-game').classList.toggle('mode-btn--active', mode === 'game');
     document.getElementById('btn-mode-micropython').classList.toggle('mode-btn--active', mode === 'micropython');
 
-    // ツールボックス切り替え
-    workspace.updateToolbox(document.getElementById('toolbox-' + mode));
+    // ツールボックス切り替え（サブファイルなら module 用ツールボックスを優先）
+    let toolboxId = 'toolbox-' + mode;
+    if (activeFileIdx !== 0) {
+      if (mode === 'python') toolboxId = 'toolbox-module';
+      else if (mode === 'game') toolboxId = 'toolbox-game-module';
+    }
+    workspace.updateToolbox(document.getElementById(toolboxId));
 
     // ラベル更新
     document.getElementById('title-sub').textContent =
@@ -3577,15 +3608,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // チュートリアルリセット
     Tutorial.resetForMode();
 
-    // ファイルタブバー表示切り替え（Python入門モードのみ）
+    // ファイルタブバー表示切り替え（Python入門・ゲームモードでマルチファイル対応）
     const fileTabs = document.getElementById('file-tabs');
     if (fileTabs) {
-      fileTabs.style.display = mode === 'python' ? '' : 'none';
-      if (mode === 'python') renderFileTabs();
+      const tabsVisible = (mode === 'python' || mode === 'game');
+      fileTabs.style.display = tabsVisible ? '' : 'none';
+      if (tabsVisible) renderFileTabs();
     }
 
-    // Python入門以外は main.py を実体コードとして扱う（隠れタブ混線を防止）
-    if (mode !== 'python' && activeFileIdx !== 0) {
+    // MicroPython モードのみ main.py を実体コードとして扱う（隠れタブ混線を防止）
+    if (mode === 'micropython' && activeFileIdx !== 0) {
       saveCurrentFile();
       activeFileIdx = 0;
       editor.setValue(pyFiles[0].content || '');
