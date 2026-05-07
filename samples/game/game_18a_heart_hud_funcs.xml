@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vpx">px</variable>
+    <variable id="vex">ex</variable>
+    <variable id="vey">ey</variable>
+    <variable id="vli">lives</variable>
+    <variable id="vst">state</variable>
+  </variables>
+  <block type="game_import_random" x="20" y="20">
+    <next>
+      <block type="game_init">
+        <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
+        <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
+        <value name="TITLE"><block type="val_str"><field name="TEXT">Heart HUD</field></block></value>
+        <next>
+          <block type="var_set">
+            <field name="VAR" id="vpx">px</field>
+            <value name="VALUE"><block type="val_number"><field name="NUM">300</field></block></value>
+            <next>
+              <block type="var_set">
+                <field name="VAR" id="vex">ex</field>
+                <value name="VALUE"><block type="game_random_int"><field name="LO">0</field><field name="HI">576</field></block></value>
+                <next>
+                  <block type="var_set">
+                    <field name="VAR" id="vey">ey</field>
+                    <value name="VALUE"><block type="val_number"><field name="NUM">-48</field></block></value>
+                    <next>
+                      <block type="var_set">
+                        <field name="VAR" id="vli">lives</field>
+                        <value name="VALUE"><block type="val_number"><field name="NUM">3</field></block></value>
+                        <next>
+                          <block type="var_set">
+                            <field name="VAR" id="vst">state</field>
+                            <value name="VALUE"><block type="val_str"><field name="TEXT">play</field></block></value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

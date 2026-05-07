@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vpx">px</variable>
+    <variable id="vex">ex</variable>
+    <variable id="vey">ey</variable>
+    <variable id="vli">lives</variable>
+  </variables>
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME">draw_play</field>
+    <statement name="BODY">
+      <block type="game_draw_image">
+        <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/player_ship.svg</field></block></value>
+        <value name="X"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
+        <value name="Y"><block type="val_number"><field name="NUM">330</field></block></value>
+        <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
+        <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
+        <next>
+          <block type="game_draw_image">
+            <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/enemy_bug.svg</field></block></value>
+            <value name="X"><block type="val_var"><field name="VAR" id="vex">ex</field></block></value>
+            <value name="Y"><block type="val_var"><field name="VAR" id="vey">ey</field></block></value>
+            <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
+            <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
+            <next>
+              <block type="game_draw_text">
+                <value name="TEXT">
+                  <block type="py_fstring">
+                    <field name="PRE">Lives: </field>
+                    <field name="POST"></field>
+                    <value name="VAR"><block type="val_var"><field name="VAR" id="vli">lives</field></block></value>
+                  </block>
+                </value>
+                <value name="X"><block type="val_number"><field name="NUM">10</field></block></value>
+                <value name="Y"><block type="val_number"><field name="NUM">10</field></block></value>
+                <value name="SIZE"><block type="val_number"><field name="NUM">24</field></block></value>
+                <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#ffffff</field></block></value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

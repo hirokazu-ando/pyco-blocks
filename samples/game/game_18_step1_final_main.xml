@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+  </variables>
+  <block type="game_loop" x="20" y="20">
+    <statement name="DO">
+      <block type="game_events">
+        <next>
+          <block type="game_fill">
+            <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#0a0a2e</field></block></value>
+            <next>
+              <block type="pico_if">
+                <mutation elseif="0" else="1" />
+                <value name="IF0">
+                  <block type="cond_compare">
+                    <field name="OP">==</field>
+                    <value name="LEFT"><block type="val_var"><field name="VAR" id="vst">state</field></block></value>
+                    <value name="RIGHT"><block type="val_str"><field name="TEXT">play</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="py_call_stmt">
+                    <field name="NAME">update_play</field>
+                    <next>
+                      <block type="py_call_stmt">
+                        <field name="NAME">draw_play</field>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <statement name="ELSE">
+                  <block type="py_call_stmt">
+                    <field name="NAME">update_over</field>
+                    <next>
+                      <block type="py_call_stmt">
+                        <field name="NAME">draw_over</field>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="game_flip">
+                    <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+    <next>
+      <block type="game_quit" />
+    </next>
+  </block>
+</xml>
