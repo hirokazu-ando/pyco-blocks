@@ -10,13 +10,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 from build_helpers import wp_get, wp_update  # noqa
 
 PAGE_ID = 4070
-CACHE_BUSTER = "?v=20260507e"
+CACHE_BUSTER = "?v=20260507h"
 GAME_BASE = "https://hirokazu-ando.github.io/pyco-blocks/samples/game"
 
-IMAGE_WIDTHS = {"game_05_ball_bounce": 720,
-    "game_09_steps_final": 720,
-    "game_09a_accelerate": 643,
-    "game_09b_paddle_bounce": 708,}
+IMAGE_WIDTHS = {"game_05_ball_bounce": 1221,
+    "game_09_steps_final": 799,
+    "game_09a_accelerate": 799,
+    "game_09b_paddle_bounce": 1437,}
 
 
 def update_image(content: str, basename: str, width: int) -> str:
@@ -79,6 +79,16 @@ REPLACEMENTS = [
     (
         '<ul><li>速度変数<code>vx, vy</code>を使って毎フレーム座標を更新します</li><li>壁に達したとき<code>v = -v</code>で速度を反転させます</li><li>このパターンはブロック崩し・ピンポン・ビリヤードゲームの基本です</li></ul>',
         '<ul><li>速度変数 <code>vx, vy</code> を使い、毎フレーム座標を更新するのが「動き」の基本です。</li><li>壁に達したら <code>v = -v</code> で速度を反転させると、跳ね返りが表現できます。</li><li>このパターンは、ブロック崩し・ピンポン・ビリヤード系ゲームすべての土台になります。</li></ul>'
+    ),
+    # ===== 課題4-9-2 コード修正（符号を保った加速へ） =====
+    (
+        '    vx += 0.05\n    vy += 0.05\n    bx += vx\n    by += vy',
+        '    if vx &gt; 0:\n        vx += 0.05\n    else:\n        vx -= 0.05\n    if vy &gt; 0:\n        vy += 0.05\n    else:\n        vy -= 0.05\n    bx += vx\n    by += vy',
+    ),
+    # ===== 課題4-9-2 解説修正 =====
+    (
+        '<p><strong>解説：</strong> 初速 <code>vx, vy = 1, 1</code> から始め、毎フレーム <code>vx += 0.05; vy += 0.05</code> で少しずつ加算します。これは「等加速度運動」のシンプルな表現で、時間経過とともにボールの速度が線形に増えていきます。なお速度が大きくなりすぎると、1 フレームで壁を飛び越えてしまう「トンネリング」が起きやすくなる点には注意してください。</p>',
+        '<p><strong>解説：</strong> 毎フレーム、<code>vx</code> が正なら <code>vx += 0.05</code>、負なら <code>vx -= 0.05</code> として、速度の方向（符号）を保ちながら大きさだけを増やします。<code>vy</code> も同様です。これにより、壁で跳ね返ったあとも同じ方向へ加速し続けます。速度が大きくなりすぎると壁を飛び越える「トンネリング」が起きやすくなる点には注意してください。</p>',
     ),
 ]
 
