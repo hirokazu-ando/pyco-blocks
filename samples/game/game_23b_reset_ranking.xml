@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="g23b_rk">ranking</variable>
+  </variables>
+  <block type="var_set"><field name="VAR" id="g23b_rk">ranking</field><value name="VALUE"><block type="py_list_empty"></block></value><next><block type="py_custom_stmt"><field name="CODE"># ゲームオーバー画面内（over 状態のブロック）</field><next><block type="pico_if"><mutation elseif="0" else="0" /><value name="IF0"><block type="py_custom_expr"><field name="CODE">pyco_game.key_just_pressed('K_d')</field></block></value><statement name="DO0"><block type="var_set"><field name="VAR" id="g23b_rk">ranking</field><value name="VALUE"><block type="py_list_empty"></block></value><next><block type="py_file_write"><field name="FILENAME">ranking.txt</field><value name="CONTENT"><block type="val_str"><field name="TEXT"></field></block></value></block></next></block></statement><next><block type="py_custom_stmt"><field name="CODE"># ランキング表示（for ループ）</field><next><block type="py_enumerate_start_for"><field name="START">1</field><field name="IDX" id="g23b_i">i</field><field name="VAL" id="g23b_s">s</field><field name="LIST" id="g23b_rk">ranking</field><statement name="DO"><block type="py_custom_stmt"><field name="CODE">pyco_game.draw_text(f"{i}\u4f4d: {s // 60}", 200, 258 + (i-1) * 28, 24, "#ffcc00")</field></block></statement></block></next></block></next></block></next></block></next></block>
+</xml>
