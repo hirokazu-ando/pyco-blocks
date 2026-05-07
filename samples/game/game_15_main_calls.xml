@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vpx">px</variable>
+    <variable id="vpy">py</variable>
+  </variables>
+  <!-- main.py: px = player.move_x(px)  /  py = player.move_y(py) -->
+  <block type="var_set" x="20" y="20">
+    <field name="VAR" id="vpx">px</field>
+    <value name="VALUE">
+      <block type="py_module_call_val">
+        <field name="MODULE">player</field>
+        <field name="FUNC">move_x</field>
+        <value name="ARG">
+          <block type="val_var"><field name="VAR" id="vpx">px</field></block>
+        </value>
+      </block>
+    </value>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="vpy">py</field>
+        <value name="VALUE">
+          <block type="py_module_call_val">
+            <field name="MODULE">player</field>
+            <field name="FUNC">move_y</field>
+            <value name="ARG">
+              <block type="val_var"><field name="VAR" id="vpy">py</field></block>
+            </value>
+          </block>
+        </value>
+      </block>
+    </next>
+  </block>
+</xml>

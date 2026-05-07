@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vmx">mx</variable>
+    <variable id="vpad_x">pad_x</variable>
+  </variables>
+  <!-- main.py: mx = game_mouse_x()  →  pad_x = paddle.get_x(mx) -->
+  <block type="var_set" x="20" y="20">
+    <field name="VAR" id="vmx">mx</field>
+    <value name="VALUE">
+      <block type="game_mouse_x" />
+    </value>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="vpad_x">pad_x</field>
+        <value name="VALUE">
+          <block type="py_module_call_val">
+            <field name="MODULE">paddle</field>
+            <field name="FUNC">get_x</field>
+            <value name="ARG">
+              <block type="val_var"><field name="VAR" id="vmx">mx</field></block>
+            </value>
+          </block>
+        </value>
+      </block>
+    </next>
+  </block>
+</xml>
