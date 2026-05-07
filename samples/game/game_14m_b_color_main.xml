@@ -1,44 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="var_set" x="20" y="20">
-    <field name="VAR" id="vcolor">color</field>
-    <value name="VALUE">
-      <block type="py_module_call_val">
-        <field name="MODULE">player</field>
-        <field name="FUNC">get_color</field>
-        <value name="ARG">
-          <block type="val_var">
-            <field name="VAR" id="vscore">score</field>
-          </block>
-        </value>
-      </block>
-    </value>
+  <variables>
+    <variable id="vpx">px</variable>
+    <variable id="vscore">score</variable>
+    <variable id="vcolor">color</variable>
+  </variables>
+  <block type="game_init" x="20" y="20">
+    <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
+    <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
+    <value name="TITLE"><block type="val_str"><field name="TEXT">Module Game</field></block></value>
     <next>
-      <block type="game_draw_rect">
-        <value name="X">
-          <block type="val_var">
-            <field name="VAR" id="vpx">px</field>
+      <block type="var_set">
+        <field name="VAR" id="vpx">px</field>
+        <value name="VALUE"><block type="val_number"><field name="NUM">296</field></block></value>
+        <next>
+          <block type="var_set">
+            <field name="VAR" id="vscore">score</field>
+            <value name="VALUE"><block type="val_number"><field name="NUM">0</field></block></value>
+            <next>
+              <block type="game_loop">
+                <statement name="DO">
+                  <block type="game_events">
+                    <next>
+                      <block type="game_fill">
+                        <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#0a0a2e</field></block></value>
+                        <next>
+                          <block type="var_set">
+                            <field name="VAR" id="vpx">px</field>
+                            <value name="VALUE">
+                              <block type="py_module_call_val">
+                                <field name="MODULE">player</field>
+                                <field name="FUNC">move_x</field>
+                                <value name="ARG"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="var_set">
+                                <field name="VAR" id="vcolor">color</field>
+                                <value name="VALUE">
+                                  <block type="py_module_call_val">
+                                    <field name="MODULE">player</field>
+                                    <field name="FUNC">get_color</field>
+                                    <value name="ARG"><block type="val_var"><field name="VAR" id="vscore">score</field></block></value>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="game_draw_rect">
+                                    <value name="X"><block type="val_var"><field name="VAR" id="vpx">px</field></block></value>
+                                    <value name="Y"><block type="val_number"><field name="NUM">330</field></block></value>
+                                    <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
+                                    <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
+                                    <value name="COLOR"><block type="val_var"><field name="VAR" id="vcolor">color</field></block></value>
+                                    <next>
+                                      <block type="game_flip">
+                                        <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="game_quit" />
+                </next>
+              </block>
+            </next>
           </block>
-        </value>
-        <value name="Y">
-          <block type="val_number">
-            <field name="NUM">330</field>
-          </block>
-        </value>
-        <value name="W">
-          <block type="val_number">
-            <field name="NUM">48</field>
-          </block>
-        </value>
-        <value name="H">
-          <block type="val_number">
-            <field name="NUM">48</field>
-          </block>
-        </value>
-        <value name="COLOR">
-          <block type="val_var">
-            <field name="VAR" id="vcolor">color</field>
-          </block>
-        </value>
+        </next>
       </block>
     </next>
   </block>
