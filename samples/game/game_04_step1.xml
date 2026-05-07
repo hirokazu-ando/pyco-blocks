@@ -2,8 +2,6 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables>
     <variable id="vsh">ship_img</variable>
-    <variable id="vci">coin_img</variable>
-    <variable id="vhe">heart_img</variable>
   </variables>
   <block type="game_init" x="20" y="20">
     <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
@@ -18,70 +16,32 @@
           </block>
         </value>
         <next>
-          <block type="var_set">
-            <field name="VAR" id="vci">coin_img</field>
-            <value name="VALUE">
-              <block type="game_image_preset">
-                <field name="IMG">assets/game-icons/coin.svg</field>
-              </block>
-            </value>
-            <next>
-              <block type="var_set">
-                <field name="VAR" id="vhe">heart_img</field>
-                <value name="VALUE">
-                  <block type="game_image_preset">
-                    <field name="IMG">assets/game-icons/heart.svg</field>
-                  </block>
-                </value>
+          <block type="game_loop">
+            <statement name="DO">
+              <block type="game_events">
                 <next>
-                  <block type="game_loop">
-                    <statement name="DO">
-                      <block type="game_events">
+                  <block type="game_fill">
+                    <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#000000</field></block></value>
+                    <next>
+                      <block type="game_image_blit">
+                        <value name="URL"><block type="val_var"><field name="VAR" id="vsh">ship_img</field></block></value>
+                        <value name="X"><block type="val_number"><field name="NUM">280</field></block></value>
+                        <value name="Y"><block type="val_number"><field name="NUM">320</field></block></value>
+                        <value name="W"><block type="val_number"><field name="NUM">64</field></block></value>
+                        <value name="H"><block type="val_number"><field name="NUM">64</field></block></value>
                         <next>
-                          <block type="game_fill">
-                            <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#000000</field></block></value>
-                            <next>
-                              <block type="game_image_blit">
-                                <value name="URL"><block type="val_var"><field name="VAR" id="vsh">ship_img</field></block></value>
-                                <value name="X"><block type="val_number"><field name="NUM">280</field></block></value>
-                                <value name="Y"><block type="val_number"><field name="NUM">320</field></block></value>
-                                <value name="W"><block type="val_number"><field name="NUM">64</field></block></value>
-                                <value name="H"><block type="val_number"><field name="NUM">64</field></block></value>
-                                <next>
-                                  <block type="game_image_blit">
-                                    <value name="URL"><block type="val_var"><field name="VAR" id="vci">coin_img</field></block></value>
-                                    <value name="X"><block type="val_number"><field name="NUM">100</field></block></value>
-                                    <value name="Y"><block type="val_number"><field name="NUM">100</field></block></value>
-                                    <value name="W"><block type="val_number"><field name="NUM">32</field></block></value>
-                                    <value name="H"><block type="val_number"><field name="NUM">32</field></block></value>
-                                    <next>
-                                      <block type="game_image_blit">
-                                        <value name="URL"><block type="val_var"><field name="VAR" id="vhe">heart_img</field></block></value>
-                                        <value name="X"><block type="val_number"><field name="NUM">560</field></block></value>
-                                        <value name="Y"><block type="val_number"><field name="NUM">10</field></block></value>
-                                        <value name="W"><block type="val_number"><field name="NUM">32</field></block></value>
-                                        <value name="H"><block type="val_number"><field name="NUM">32</field></block></value>
-                                        <next>
-                                          <block type="game_flip">
-                                            <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
-                                          </block>
-                                        </next>
-                                      </block>
-                                    </next>
-                                  </block>
-                                </next>
-                              </block>
-                            </next>
+                          <block type="game_flip">
+                            <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
                           </block>
                         </next>
                       </block>
-                    </statement>
-                    <next>
-                      <block type="game_quit"></block>
                     </next>
                   </block>
                 </next>
               </block>
+            </statement>
+            <next>
+              <block type="game_quit"></block>
             </next>
           </block>
         </next>
