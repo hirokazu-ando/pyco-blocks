@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="g25a_sc">score</variable>
+    <variable id="g25a_sg">stage</variable>
+  </variables>
+  <block type="py_custom_stmt"><field name="CODE"># stage 計算（15 秒ごとにステージアップ）</field><next><block type="var_set"><field name="VAR" id="g25a_sg">stage</field><value name="VALUE"><block type="py_math_op"><field name="OP">+</field><value name="LEFT"><block type="py_math_op"><field name="OP">//</field><value name="LEFT"><block type="val_var"><field name="VAR" id="g25a_sc">score</field></block></value><value name="RIGHT"><block type="val_number"><field name="NUM">900</field></block></value></block></value><value name="RIGHT"><block type="val_number"><field name="NUM">1</field></block></value></block></value></block></next></block>
+</xml>
