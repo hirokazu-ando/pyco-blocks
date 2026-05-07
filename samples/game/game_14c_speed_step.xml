@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vlimit">limit</variable>
+    <variable id="vbase">base</variable>
+    <variable id="vaccel">accel</variable>
+  </variables>
+  <!-- elapsed(): return game_get_ticks / 1000 -->
+  <!-- remain(limit): return max(0, limit - elapsed()) -->
+  <!-- speed_step(base, accel): return base + accel * int(elapsed() // 10) -->
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME">elapsed</field>
+    <statement name="BODY">
+      <block type="py_return">
+        <value name="VALUE">
+          <block type="py_math_op">
+            <field name="OP">/</field>
+            <value name="LEFT"><block type="game_get_ticks" /></value>
+            <value name="RIGHT"><block type="val_number"><field name="NUM">1000</field></block></value>
+          </block>
+        </value>
+      </block>
+    </statement>
+    <next>
+      <block type="py_def">
+        <field name="NAME">remain</field>
+        <field name="PARAM" id="vlimit">limit</field>
+        <statement name="BODY">
+          <block type="py_return">
+            <value name="VALUE">
+              <block type="py_max2">
+                <value name="A">
+                  <block type="val_number"><field name="NUM">0</field></block>
+                </value>
+                <value name="B">
+                  <block type="py_math_op">
+                    <field name="OP">-</field>
+                    <value name="LEFT">
+                      <block type="val_var"><field name="VAR" id="vlimit">limit</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="py_call_val">
+                        <field name="NAME">elapsed</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </value>
+          </block>
+        </statement>
+        <next>
+          <block type="py_def_args2">
+            <field name="NAME">speed_step</field>
+            <field name="PARAM1">base</field>
+            <field name="PARAM2">accel</field>
+            <statement name="BODY">
+              <block type="py_return">
+                <value name="VALUE">
+                  <block type="py_math_op">
+                    <field name="OP">+</field>
+                    <value name="LEFT">
+                      <block type="val_var"><field name="VAR" id="vbase">base</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="py_math_op">
+                        <field name="OP">*</field>
+                        <value name="LEFT">
+                          <block type="val_var"><field name="VAR" id="vaccel">accel</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="py_int">
+                            <value name="VALUE">
+                              <block type="py_math_op">
+                                <field name="OP">//</field>
+                                <value name="LEFT">
+                                  <block type="py_call_val">
+                                    <field name="NAME">elapsed</field>
+                                  </block>
+                                </value>
+                                <value name="RIGHT">
+                                  <block type="val_number"><field name="NUM">10</field></block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>
