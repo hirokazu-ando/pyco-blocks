@@ -1,49 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables>
-    <variable id="vpx">px</variable>
-    <variable id="vex">ex</variable>
-    <variable id="vey">ey</variable>
-    <variable id="vli">lives</variable>
     <variable id="vst">state</variable>
   </variables>
-  <block type="game_import_random" x="20" y="20">
-    <next>
-      <block type="game_init">
-        <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
-        <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
-        <value name="TITLE"><block type="val_str"><field name="TEXT">Lives System</field></block></value>
-        <next>
-          <block type="var_set">
-            <field name="VAR" id="vpx">px</field>
-            <value name="VALUE"><block type="val_number"><field name="NUM">300</field></block></value>
-            <next>
-              <block type="var_set">
-                <field name="VAR" id="vex">ex</field>
-                <value name="VALUE"><block type="game_random_int"><field name="LO">0</field><field name="HI">576</field></block></value>
-                <next>
-                  <block type="var_set">
-                    <field name="VAR" id="vey">ey</field>
-                    <value name="VALUE"><block type="val_number"><field name="NUM">-48</field></block></value>
-                    <next>
-                      <block type="var_set">
-                        <field name="VAR" id="vli">lives</field>
-                        <value name="VALUE"><block type="val_number"><field name="NUM">3</field></block></value>
-                        <next>
-                          <block type="var_set">
-                            <field name="VAR" id="vst">state</field>
-                            <value name="VALUE"><block type="val_str"><field name="TEXT">play</field></block></value>
-                          </block>
-                        </next>
-                      </block>
-                    </next>
-                  </block>
-                </next>
-              </block>
-            </next>
-          </block>
-        </next>
-      </block>
-    </next>
-  </block>
+  <block type="py_custom_stmt"><field name="CODE">import random</field><next><block type="game_init"><value name="W"><block type="val_number"><field name="NUM">640</field></block></value><value name="H"><block type="val_number"><field name="NUM">400</field></block></value><value name="TITLE"><block type="val_str"><field name="TEXT">Lives System</field></block></value><next><block type="var_set"><field name="VAR" id="vst">state</field><value name="VALUE"><block type="py_dict_literal"><mutation items="4"></mutation><field name="COUNT">4</field><field name="KEY0">mode</field><value name="PAIR0"><block type="val_str"><field name="TEXT">play</field></block></value><field name="KEY1">lives</field><value name="PAIR1"><block type="val_number"><field name="NUM">3</field></block></value><field name="KEY2">px</field><value name="PAIR2"><block type="val_number"><field name="NUM">300</field></block></value><field name="KEY3">ex</field><value name="PAIR3"><block type="game_random_int"><field name="LO">0</field><field name="HI">576</field></block></value></block></value><next><block type="py_dict_set"><field name="DICT" id="vst">state</field><value name="KEY"><block type="val_str"><field name="TEXT">ey</field></block></value><value name="VAL"><block type="val_number"><field name="NUM">-48</field></block></value></block></next></block></next></block></next></block>
 </xml>

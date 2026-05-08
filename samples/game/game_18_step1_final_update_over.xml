@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="py_def_noarg" x="20" y="20">
-    <field name="NAME" variabletype="function">update_over</field>
-  </block>
+  <variables>
+    <variable id="vst">state</variable>
+  </variables>
+  <block type="py_def"><field name="NAME" variabletype="function">update_over</field><field name="PARAM" id="vst">state</field><statement name="BODY"></statement></block>
 </xml>
