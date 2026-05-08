@@ -376,6 +376,25 @@ Blockly.Blocks['py_call_stmt'] = {
   }
 };
 
+Blockly.Blocks['py_call_stmt_arg2'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('関数')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
+      .appendField('を呼び出す（引数1:');
+    this.appendValueInput('ARG1').setCheck(null);
+    this.appendDummyInput().appendField(',  引数2:');
+    this.appendValueInput('ARG2').setCheck(null);
+    this.appendDummyInput().appendField('）');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.functions);
+    this.setTooltip('2つの引数を渡して関数を呼び出します。関数名はプルダウンから定義済み関数を選択できます');
+    this.setHelpUrl('');
+  }
+};
+
 Blockly.Blocks['py_call_val'] = {
   init: function() {
     this.appendDummyInput()

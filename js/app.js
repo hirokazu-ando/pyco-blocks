@@ -581,6 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_def_args3':  return `関数「${getVarName(block, 'NAME')}」（引数: ${block.getFieldValue('PARAM1')}, ${block.getFieldValue('PARAM2')}, ${block.getFieldValue('PARAM3')}）を定義する`;
       case 'py_return':     return '戻り値を返す（return）';
       case 'py_call_stmt':        return `関数「${getVarName(block, 'NAME')}」を呼び出す`;
+      case 'py_call_stmt_arg2':   return `関数「${getVarName(block, 'NAME')}」（2引数）を呼び出す`;
       case 'py_call_val':         return `関数「${getVarName(block, 'NAME')}」の結果`;
       case 'py_call_val2':        return `関数「${getVarName(block, 'NAME')}」（2引数）の結果`;
       case 'py_fstring2_expr':    return 'f文字列（2式埋め込み）';
@@ -2279,6 +2280,16 @@ document.addEventListener('DOMContentLoaded', function() {
         registerExprBlocksAtLineFromInput(block, 'ARG', lnCall);
         const arg = valueToCode(block, 'ARG', '');
         code = appendLocal(code, indent + `${name}(${arg})\n`);
+        break;
+      }
+      case 'py_call_stmt_arg2': {
+        const name = getVarName(block, 'NAME');
+        const lnCall = _emitCtx.line;
+        registerExprBlocksAtLineFromInput(block, 'ARG1', lnCall);
+        registerExprBlocksAtLineFromInput(block, 'ARG2', lnCall);
+        const arg1 = valueToCode(block, 'ARG1', '');
+        const arg2 = valueToCode(block, 'ARG2', '');
+        code = appendLocal(code, indent + `${name}(${arg1}, ${arg2})\n`);
         break;
       }
       case 'py_module_call_stmt': {
