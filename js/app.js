@@ -561,14 +561,14 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_map_call':      return `リスト「${getVarName(block, 'LIST')}」を一括変換（map）`;
       case 'py_break':         return 'ループを抜ける（break）';
       case 'py_continue':      return '次のループへ（continue）';
-      case 'py_def_noarg':  return `関数「${block.getFieldValue('NAME')}」を定義する`;
-      case 'py_def':        return `関数「${block.getFieldValue('NAME')}」（引数: ${getVarName(block, 'PARAM')}）を定義する`;
-      case 'py_def_args2':  return `関数「${block.getFieldValue('NAME')}」（引数: ${block.getFieldValue('PARAM1')}, ${block.getFieldValue('PARAM2')}）を定義する`;
-      case 'py_def_args3':  return `関数「${block.getFieldValue('NAME')}」（引数: ${block.getFieldValue('PARAM1')}, ${block.getFieldValue('PARAM2')}, ${block.getFieldValue('PARAM3')}）を定義する`;
+      case 'py_def_noarg':  return `関数「${getVarName(block, 'NAME')}」を定義する`;
+      case 'py_def':        return `関数「${getVarName(block, 'NAME')}」（引数: ${getVarName(block, 'PARAM')}）を定義する`;
+      case 'py_def_args2':  return `関数「${getVarName(block, 'NAME')}」（引数: ${block.getFieldValue('PARAM1')}, ${block.getFieldValue('PARAM2')}）を定義する`;
+      case 'py_def_args3':  return `関数「${getVarName(block, 'NAME')}」（引数: ${block.getFieldValue('PARAM1')}, ${block.getFieldValue('PARAM2')}, ${block.getFieldValue('PARAM3')}）を定義する`;
       case 'py_return':     return '戻り値を返す（return）';
-      case 'py_call_stmt':        return `関数「${block.getFieldValue('NAME')}」を呼び出す`;
-      case 'py_call_val':         return `関数「${block.getFieldValue('NAME')}」の結果`;
-      case 'py_call_val2':        return `関数「${block.getFieldValue('NAME')}」（2引数）の結果`;
+      case 'py_call_stmt':        return `関数「${getVarName(block, 'NAME')}」を呼び出す`;
+      case 'py_call_val':         return `関数「${getVarName(block, 'NAME')}」の結果`;
+      case 'py_call_val2':        return `関数「${getVarName(block, 'NAME')}」（2引数）の結果`;
       case 'py_fstring2_expr':    return 'f文字列（2式埋め込み）';
       case 'py_list_range':       return `0 から ${block.getFieldValue('N')} 個の整数リスト`;
       case 'py_module_call_stmt': return `モジュール「${block.getFieldValue('MODULE')}」の「${block.getFieldValue('FUNC')}」を呼び出す`;
@@ -586,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_str_isdigit':   return '文字列が数字だけか（isdigit）';
       case 'py_list_slice':    return `リスト「${getVarName(block, 'LIST')}」の範囲を取り出す（slice）`;
       case 'py_list_get_negative': return `リスト「${getVarName(block, 'LIST')}」の末尾から${block.getFieldValue('OFFSET')}番目`;
-      case 'py_call_val3':     return `関数「${block.getFieldValue('NAME')}」（3引数）の結果`;
+      case 'py_call_val3':     return `関数「${getVarName(block, 'NAME')}」（3引数）の結果`;
       case 'py_fstring3':      return 'f文字列（3式埋め込み）';
       case 'py_deque_init':    return 'deque（両端キュー）を作る';
       case 'py_deque_popleft': return `deque「${getVarName(block, 'DEQUE')}」の先頭を取り出す（popleft）`;
@@ -1121,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${lgnList}[-${lgnOffset}]`;
       }
       case 'py_call_val3': {
-        const cv3Name = block.getFieldValue('NAME');
+        const cv3Name = getVarName(block, 'NAME');
         const cv3A1   = valueToCode(block, 'ARG1', '');
         const cv3A2   = valueToCode(block, 'ARG2', '');
         const cv3A3   = valueToCode(block, 'ARG3', '');
@@ -1219,12 +1219,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return `max(${a}, ${b})`;
       }
       case 'py_call_val': {
-        const name = block.getFieldValue('NAME');
+        const name = getVarName(block, 'NAME');
         const arg  = valueToCode(block, 'ARG', '');
         return `${name}(${arg})`;
       }
       case 'py_call_val2': {
-        const cv2Name = block.getFieldValue('NAME');
+        const cv2Name = getVarName(block, 'NAME');
         const cv2Arg1 = valueToCode(block, 'ARG1', '');
         const cv2Arg2 = valueToCode(block, 'ARG2', '');
         return `${cv2Name}(${cv2Arg1}, ${cv2Arg2})`;
@@ -2219,14 +2219,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // ===== 関数 =====
       case 'py_def_noarg': {
-        const name = block.getFieldValue('NAME');
+        const name = getVarName(block, 'NAME');
         code = appendLocal(code, indent + `def ${name}():\n`);
         const body = statementToCode(block, 'BODY', indent + '    ');
         code = appendChildBody(code, body, indent + '    pass\n');
         break;
       }
       case 'py_def': {
-        const name  = block.getFieldValue('NAME');
+        const name  = getVarName(block, 'NAME');
         const param = getVarName(block, 'PARAM');
         code = appendLocal(code, indent + `def ${name}(${param}):\n`);
         const body = statementToCode(block, 'BODY', indent + '    ');
@@ -2234,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
       case 'py_def_args2': {
-        const name = block.getFieldValue('NAME');
+        const name = getVarName(block, 'NAME');
         const p1   = block.getFieldValue('PARAM1');
         const p2   = block.getFieldValue('PARAM2');
         code = appendLocal(code, indent + `def ${name}(${p1}, ${p2}):\n`);
@@ -2243,7 +2243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
       case 'py_def_args3': {
-        const name = block.getFieldValue('NAME');
+        const name = getVarName(block, 'NAME');
         const p1   = block.getFieldValue('PARAM1');
         const p2   = block.getFieldValue('PARAM2');
         const p3   = block.getFieldValue('PARAM3');
@@ -2260,7 +2260,7 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
       case 'py_call_stmt': {
-        const name = block.getFieldValue('NAME');
+        const name = getVarName(block, 'NAME');
         const lnCall = _emitCtx.line;
         registerExprBlocksAtLineFromInput(block, 'ARG', lnCall);
         const arg = valueToCode(block, 'ARG', '');

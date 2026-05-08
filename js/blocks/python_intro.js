@@ -278,13 +278,13 @@ Blockly.Blocks['py_def_noarg'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('を定義する');
     this.appendStatementInput('BODY').setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.functions);
-    this.setTooltip('引数なしの関数を定義します（def name():）');
+    this.setTooltip('引数なしの関数を定義します（def name():）。関数名はプルダウンから選択でき、右クリックで名前変更すると全ブロック同期します');
     this.setHelpUrl('');
   }
 };
@@ -293,7 +293,7 @@ Blockly.Blocks['py_def'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('（引数:')
       .appendField(new Blockly.FieldVariable('x'), 'PARAM')
       .appendField('）を定義する');
@@ -301,7 +301,7 @@ Blockly.Blocks['py_def'] = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.functions);
-    this.setTooltip('引数1つの関数を定義します（def name(param):）');
+    this.setTooltip('引数1つの関数を定義します（def name(param):）。関数名はプルダウンから選択でき、右クリックで名前変更すると全ブロック同期します');
     this.setHelpUrl('');
   }
 };
@@ -310,7 +310,7 @@ Blockly.Blocks['py_def_args2'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('（引数:')
       .appendField(new Blockly.FieldTextInput('a'), 'PARAM1')
       .appendField(',')
@@ -320,7 +320,7 @@ Blockly.Blocks['py_def_args2'] = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.functions);
-    this.setTooltip('引数2つの関数を定義します（def name(a, b):）');
+    this.setTooltip('引数2つの関数を定義します（def name(a, b):）。関数名はプルダウンから選択でき、右クリックで名前変更すると全ブロック同期します');
     this.setHelpUrl('');
   }
 };
@@ -329,7 +329,7 @@ Blockly.Blocks['py_def_args3'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('（引数:')
       .appendField(new Blockly.FieldTextInput('a'), 'PARAM1')
       .appendField(',')
@@ -341,7 +341,7 @@ Blockly.Blocks['py_def_args3'] = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.functions);
-    this.setTooltip('引数3つの関数を定義します（def name(a, b, c):）');
+    this.setTooltip('引数3つの関数を定義します（def name(a, b, c):）。関数名はプルダウンから選択でき、右クリックで名前変更すると全ブロック同期します');
     this.setHelpUrl('');
   }
 };
@@ -363,7 +363,7 @@ Blockly.Blocks['py_call_stmt'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('を呼び出す（引数:');
     this.appendValueInput('ARG').setCheck(null);
     this.appendDummyInput().appendField('）');
@@ -371,7 +371,7 @@ Blockly.Blocks['py_call_stmt'] = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.functions);
-    this.setTooltip('関数を呼び出します。引数不要なら何もつなげないでください');
+    this.setTooltip('関数を呼び出します。関数名はプルダウンから定義済み関数を選択できます。引数不要なら何もつなげないでください');
     this.setHelpUrl('');
   }
 };
@@ -380,14 +380,14 @@ Blockly.Blocks['py_call_val'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('（引数:');
     this.appendValueInput('ARG').setCheck(null);
     this.appendDummyInput().appendField('）の結果');
     this.setInputsInline(true);
     this.setOutput(true, null);
     this.setColour(P.functions);
-    this.setTooltip('関数の戻り値を取得します');
+    this.setTooltip('関数の戻り値を取得します。関数名はプルダウンから定義済み関数を選択できます');
     this.setHelpUrl('');
   }
 };
@@ -396,7 +396,7 @@ Blockly.Blocks['py_call_val2'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('（引数1:');
     this.appendValueInput('ARG1').setCheck(null);
     this.appendDummyInput().appendField(',  引数2:');
@@ -405,7 +405,7 @@ Blockly.Blocks['py_call_val2'] = {
     this.setInputsInline(true);
     this.setOutput(true, null);
     this.setColour(P.functions);
-    this.setTooltip('2つの引数を渡して関数を呼び出し、戻り値を取得します');
+    this.setTooltip('2つの引数を渡して関数を呼び出し、戻り値を取得します。関数名はプルダウンから定義済み関数を選択できます');
     this.setHelpUrl('');
   }
 };
@@ -2189,7 +2189,7 @@ Blockly.Blocks['py_call_val3'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('関数')
-      .appendField(new Blockly.FieldTextInput('my_func'), 'NAME')
+      .appendField(new Blockly.FieldVariable('my_func', null, ['function'], 'function'), 'NAME')
       .appendField('（引数1:');
     this.appendValueInput('ARG1').setCheck(null);
     this.appendDummyInput().appendField(',  引数2:');
@@ -2200,7 +2200,7 @@ Blockly.Blocks['py_call_val3'] = {
     this.setInputsInline(true);
     this.setOutput(true, null);
     this.setColour(P.functions);
-    this.setTooltip('3つの引数を渡して関数を呼び出し、戻り値を取得します');
+    this.setTooltip('3つの引数を渡して関数を呼び出し、戻り値を取得します。関数名はプルダウンから定義済み関数を選択できます');
     this.setHelpUrl('');
   }
 };
