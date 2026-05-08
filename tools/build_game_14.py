@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from build_helpers import wp_update  # noqa
 
 PAGE_ID      = 4075
-CACHE_BUSTER = "?v=20260507i"
+CACHE_BUSTER = "?v=20260508f"
 GAME_BASE    = "https://hirokazu-ando.github.io/pyco-blocks/samples/game"
 EYECATCH_URL = "https://sakigake-robo.com/wp-content/uploads/2026/05/eyecatch_game-4-14_timer.png"
 
