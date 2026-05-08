@@ -2083,20 +2083,20 @@ Blockly.Blocks['py_import_as'] = {
   }
 };
 
-// from モジュール import 名前 文
+// from モジュール import 名前 文（自作モジュール+関数名をプルダウン選択）
 Blockly.Blocks['py_from_import'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('モジュール')
-      .appendField(new Blockly.FieldTextInput('collections'), 'MODULE')
+      .appendField(new Blockly.FieldDropdown(_moduleOptions), 'MODULE')
       .appendField('から')
-      .appendField(new Blockly.FieldTextInput('deque'), 'NAMES')
+      .appendField(new Blockly.FieldDropdown(_funcOptions), 'NAMES')
       .appendField('を読み込む（from import）');
     this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.modules);
-    this.setTooltip('モジュール内の特定の名前を読み込みます（from モジュール import 名前）');
+    this.setTooltip('自作モジュールから関数を読み込みます。モジュールを選んでから関数を選択してください（py_module_call_stmt と同じプルダウン候補を共有）');
     this.setHelpUrl('');
   }
 };
