@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from build_helpers import wp_get, wp_update  # noqa
 
 PAGE_ID = 4070
-CACHE_BUSTER = "?v=20260507h"
+CACHE_BUSTER = "?v=20260508a"
 GAME_BASE = "https://hirokazu-ando.github.io/pyco-blocks/samples/game"
 
 IMAGE_WIDTHS = {"game_05_ball_bounce": 1221,
