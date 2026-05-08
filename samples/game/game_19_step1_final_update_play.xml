@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v19px">px</variable>
+    <variable id="v19bx">bx</variable>
+    <variable id="v19by">by</variable>
+  </variables>
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME" variabletype="function">update_play</field>
+    <statement name="BODY">
+      <block type="pico_if">
+        <mutation elseif="0" else="0" />
+        <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_RIGHT</field></block></value>
+        <statement name="DO0">
+          <block type="var_change">
+            <field name="VAR" id="v19px">px</field>
+            <value name="AMOUNT"><block type="val_number"><field name="NUM">4</field></block></value>
+          </block>
+        </statement>
+        <next>
+          <block type="pico_if">
+            <mutation elseif="0" else="0" />
+            <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_LEFT</field></block></value>
+            <statement name="DO0">
+              <block type="var_change">
+                <field name="VAR" id="v19px">px</field>
+                <value name="AMOUNT"><block type="val_number"><field name="NUM">-4</field></block></value>
+              </block>
+            </statement>
+            <next>
+              <block type="var_change">
+                <field name="VAR" id="v19by">by</field>
+                <value name="AMOUNT"><block type="val_number"><field name="NUM">-6</field></block></value>
+                <next>
+                  <block type="pico_if">
+                    <mutation elseif="0" else="0" />
+                    <value name="IF0">
+                      <block type="cond_and">
+                        <value name="A"><block type="game_key_pressed"><field name="KEY">K_SPACE</field></block></value>
+                        <value name="B">
+                          <block type="cond_compare">
+                            <field name="OP">&lt;</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="v19by">by</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">0</field></block></value>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="var_set">
+                        <field name="VAR" id="v19bx">bx</field>
+                        <value name="VALUE">
+                          <block type="py_math_op">
+                            <field name="OP">+</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="var_set">
+                            <field name="VAR" id="v19by">by</field>
+                            <value name="VALUE"><block type="val_number"><field name="NUM">330</field></block></value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

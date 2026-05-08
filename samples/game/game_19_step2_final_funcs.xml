@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v19px">px</variable>
+    <variable id="v19bs">bullets</variable>
+  </variables>
+  <block type="game_init" x="20" y="20">
+    <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
+    <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
+    <value name="TITLE"><block type="val_str"><field name="TEXT">Bullet List</field></block></value>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="v19px">px</field>
+        <value name="VALUE"><block type="val_number"><field name="NUM">300</field></block></value>
+        <next>
+          <block type="var_set">
+            <field name="VAR" id="v19bs">bullets</field>
+            <value name="VALUE"><block type="py_list_empty" /></value>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

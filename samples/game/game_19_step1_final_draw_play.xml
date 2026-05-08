@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v19px">px</variable>
+    <variable id="v19bx">bx</variable>
+    <variable id="v19by">by</variable>
+  </variables>
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME" variabletype="function">draw_play</field>
+    <statement name="BODY">
+      <block type="game_draw_image">
+        <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/player_ship.svg</field></block></value>
+        <value name="X"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+        <value name="Y"><block type="val_number"><field name="NUM">330</field></block></value>
+        <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
+        <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
+        <next>
+          <block type="pico_if">
+            <mutation elseif="0" else="0" />
+            <value name="IF0">
+              <block type="cond_compare">
+                <field name="OP">&gt;=</field>
+                <value name="LEFT"><block type="val_var"><field name="VAR" id="v19by">by</field></block></value>
+                <value name="RIGHT"><block type="val_number"><field name="NUM">0</field></block></value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="game_draw_image">
+                <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/bullet.svg</field></block></value>
+                <value name="X"><block type="val_var"><field name="VAR" id="v19bx">bx</field></block></value>
+                <value name="Y"><block type="val_var"><field name="VAR" id="v19by">by</field></block></value>
+                <value name="W"><block type="val_number"><field name="NUM">16</field></block></value>
+                <value name="H"><block type="val_number"><field name="NUM">24</field></block></value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

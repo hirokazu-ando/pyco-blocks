@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v19px">px</variable>
+    <variable id="v19bs">bullets</variable>
+    <variable id="v19ct">ctimer</variable>
+    <variable id="v19b">b</variable>
+  </variables>
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME" variabletype="function">update_play</field>
+    <statement name="BODY">
+      <block type="pico_if">
+        <mutation elseif="0" else="0" />
+        <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_RIGHT</field></block></value>
+        <statement name="DO0">
+          <block type="var_change">
+            <field name="VAR" id="v19px">px</field>
+            <value name="AMOUNT"><block type="val_number"><field name="NUM">4</field></block></value>
+          </block>
+        </statement>
+        <next>
+          <block type="pico_if">
+            <mutation elseif="0" else="0" />
+            <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_LEFT</field></block></value>
+            <statement name="DO0">
+              <block type="var_change">
+                <field name="VAR" id="v19px">px</field>
+                <value name="AMOUNT"><block type="val_number"><field name="NUM">-4</field></block></value>
+              </block>
+            </statement>
+            <next>
+              <block type="pico_if">
+                <mutation elseif="0" else="0" />
+                <value name="IF0">
+                  <block type="cond_and">
+                    <value name="A"><block type="game_timer_done"><field name="VAR" id="v19ct">ctimer</field></block></value>
+                    <value name="B"><block type="game_key_pressed"><field name="KEY">K_SPACE</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="py_list_append">
+                    <field name="LIST" id="v19bs">bullets</field>
+                    <value name="VALUE">
+                      <block type="py_list_literal">
+                        <mutation items="3" />
+                        <value name="ITEM0">
+                          <block type="py_math_op">
+                            <field name="OP">+</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                          </block>
+                        </value>
+                        <value name="ITEM1"><block type="val_number"><field name="NUM">330</field></block></value>
+                        <value name="ITEM2"><block type="val_number"><field name="NUM">-2</field></block></value>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="py_list_append">
+                        <field name="LIST" id="v19bs">bullets</field>
+                        <value name="VALUE">
+                          <block type="py_list_literal">
+                            <mutation items="3" />
+                            <value name="ITEM0">
+                              <block type="py_math_op">
+                                <field name="OP">+</field>
+                                <value name="LEFT"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+                                <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                              </block>
+                            </value>
+                            <value name="ITEM1"><block type="val_number"><field name="NUM">330</field></block></value>
+                            <value name="ITEM2"><block type="val_number"><field name="NUM">0</field></block></value>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="py_list_append">
+                            <field name="LIST" id="v19bs">bullets</field>
+                            <value name="VALUE">
+                              <block type="py_list_literal">
+                                <mutation items="3" />
+                                <value name="ITEM0">
+                                  <block type="py_math_op">
+                                    <field name="OP">+</field>
+                                    <value name="LEFT"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+                                    <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                                  </block>
+                                </value>
+                                <value name="ITEM1"><block type="val_number"><field name="NUM">330</field></block></value>
+                                <value name="ITEM2"><block type="val_number"><field name="NUM">2</field></block></value>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="game_timer_set">
+                                <field name="VAR" id="v19ct">ctimer</field>
+                                <value name="SEC"><block type="val_number"><field name="NUM">0.3</field></block></value>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="py_for_list">
+                    <field name="VAR" id="v19b">b</field>
+                    <field name="LIST" id="v19bs">bullets</field>
+                    <statement name="DO">
+                      <block type="py_list_set">
+                        <field name="LIST" id="v19b">b</field>
+                        <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                        <value name="VALUE">
+                          <block type="py_math_op">
+                            <field name="OP">-</field>
+                            <value name="LEFT">
+                              <block type="py_list_get">
+                                <field name="LIST" id="v19b">b</field>
+                                <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                              </block>
+                            </value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">6</field></block></value>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="py_list_set">
+                            <field name="LIST" id="v19b">b</field>
+                            <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+                            <value name="VALUE">
+                              <block type="py_math_op">
+                                <field name="OP">+</field>
+                                <value name="LEFT">
+                                  <block type="py_list_get">
+                                    <field name="LIST" id="v19b">b</field>
+                                    <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+                                  </block>
+                                </value>
+                                <value name="RIGHT">
+                                  <block type="py_list_get">
+                                    <field name="LIST" id="v19b">b</field>
+                                    <value name="INDEX"><block type="val_number"><field name="NUM">2</field></block></value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
