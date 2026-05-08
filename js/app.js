@@ -131,6 +131,44 @@ document.addEventListener('DOMContentLoaded', function() {
     return funcs.length > 0 ? funcs : [['（関数なし）', '__none__']];
   };
 
+  // 指定モジュールから「from import で読み込めそうな名前」を抽出
+  // = トップレベルの def / class / 代入。imports は除外
+  window.getPyModuleNames = function(modName) {
+    if (!modName || modName === '__none__') return [['（モジュールを選択）', '__none__']];
+    const file = pyFiles.find(function(f) { return f.name === modName + '.py'; });
+    if (!file) return [['（モジュールなし）', '__none__']];
+    const names = [];
+    const seen = new Set();
+    const push = function(n) {
+      if (n && !seen.has(n)) { seen.add(n); names.push([n, n]); }
+    };
+    const content = file.content || '';
+    content.split('\n').forEach(function(line) {
+      if (/^\s/.test(line)) return;             // インデント行はスキップ
+      if (/^\s*#/.test(line)) return;           // コメント行
+      if (/^(import|from)\s/.test(line)) return; // import 自体
+      let m = line.match(/^def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/);
+      if (m) { push(m[1]); return; }
+      m = line.match(/^class\s+([A-Za-z_][A-Za-z0-9_]*)/);
+      if (m) { push(m[1]); return; }
+      m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)/);
+      if (m) push(m[1]);
+    });
+    if (file.blockXml) {
+      try {
+        const dom = new DOMParser().parseFromString(file.blockXml, 'text/xml');
+        const defTypes = ['py_def_noarg', 'py_def', 'py_def_args2', 'py_def_args3'];
+        defTypes.forEach(function(t) {
+          dom.querySelectorAll('block[type="' + t + '"]').forEach(function(b) {
+            const fld = b.querySelector(':scope > field[name="NAME"]');
+            if (fld) push((fld.textContent || '').trim());
+          });
+        });
+      } catch (e) { /* ignore */ }
+    }
+    return names.length > 0 ? names : [['（名前なし）', '__none__']];
+  };
+
   function saveCurrentFile() {
     pyFiles[activeFileIdx].content = editor.getValue();
   }
@@ -649,7 +687,18 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_import_module': return `モジュール「${block.getFieldValue('MODULE')}」を読み込む（import）`;
       case 'py_import_as':     return `モジュール「${block.getFieldValue('MODULE')}」を別名「${block.getFieldValue('ALIAS')}」で読み込む（import as）`;
       case 'py_from_import':   return `モジュール「${block.getFieldValue('MODULE')}」から「${block.getFieldValue('NAMES')}」を読み込む（from import）`;
-      case 'py_from_import_multi': return `モジュール「${block.getFieldValue('MODULE')}」から「${block.getFieldValue('NAMES')}」を読み込む（from import 複数）`;
+      case 'py_from_import_multi': {
+        const _fimNames = [];
+        for (let k = 0; block.getField && block.getField('NAME' + k); k++) {
+          const v = block.getFieldValue('NAME' + k);
+          if (v && v !== '__none__') _fimNames.push(v);
+        }
+        if (_fimNames.length === 0) {
+          const legacy = block.getFieldValue('NAMES') || '';
+          legacy.split(',').map(s => s.trim()).filter(Boolean).forEach(s => _fimNames.push(s));
+        }
+        return `モジュール「${block.getFieldValue('MODULE')}」から「${_fimNames.join(', ')}」を読み込む（from import 複数）`;
+      }
       case 'py_bisect_left':   return `整列済みリスト「${getVarName(block, 'LIST')}」で値が入る左端の位置（bisect_left）`;
       case 'py_bisect_right':  return `整列済みリスト「${getVarName(block, 'LIST')}」で値が入る右端の位置（bisect_right）`;
       case 'py_str_isdigit':   return '文字列が数字だけか（isdigit）';
@@ -2036,9 +2085,18 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
       case 'py_from_import_multi': {
-        const fimMod   = block.getFieldValue('MODULE') || '';
-        const fimNames = (block.getFieldValue('NAMES') || '')
-          .split(',').map(s => s.trim()).filter(Boolean).join(', ');
+        const fimMod = block.getFieldValue('MODULE') || '';
+        const fimList = [];
+        for (let k = 0; block.getField && block.getField('NAME' + k); k++) {
+          const v = block.getFieldValue('NAME' + k);
+          if (v && v !== '__none__') fimList.push(v);
+        }
+        // 旧形式（単一の NAMES フィールド）も読み取れるようフォールバック
+        if (fimList.length === 0) {
+          const legacy = block.getFieldValue('NAMES') || '';
+          legacy.split(',').map(s => s.trim()).filter(Boolean).forEach(s => fimList.push(s));
+        }
+        const fimNames = fimList.join(', ');
         code = appendLocal(code, indent + `from ${fimMod} import ${fimNames}\n`);
         break;
       }

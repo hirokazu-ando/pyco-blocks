@@ -2120,21 +2120,120 @@ Blockly.Blocks['py_from_import'] = {
   }
 };
 
-// from モジュール import 名前1, 名前2, ...（複数名・自由入力）
+// from モジュール import 名前1, 名前2, ...（複数名・プルダウン×mutator）
+function _nameOptionsForModule() {
+  const block = this.getSourceBlock ? this.getSourceBlock() : this.sourceBlock_;
+  const mod = block ? block.getFieldValue('MODULE') : '__none__';
+  let opts = (typeof window.getPyModuleNames === 'function')
+    ? window.getPyModuleNames(mod)
+    : [['（読込中）', '__none__']];
+  // 現在のフィールド値が候補に無いと Blockly が警告するので、必ず先頭に含める
+  if (block && this.name) {
+    const cur = block.getFieldValue(this.name);
+    if (cur && cur !== '__none__' && !opts.some(function(p) { return p[1] === cur; })) {
+      opts = [[cur, cur]].concat(opts);
+    }
+  }
+  return opts;
+}
+
+const _MULTI_PLUS_ICON = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">' +
+  '<circle cx="9" cy="9" r="8" fill="#28c83b"/>' +
+  '<path d="M5 9h8M9 5v8" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>'
+);
+const _MULTI_MINUS_ICON = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">' +
+  '<circle cx="9" cy="9" r="8" fill="#cc4400"/>' +
+  '<path d="M5 9h8" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>'
+);
+
 Blockly.Blocks['py_from_import_multi'] = {
   init: function() {
-    this.appendDummyInput()
+    this.itemCount_ = 1;
+    this.appendDummyInput('HEADER')
       .appendField('モジュール')
       .appendField(new Blockly.FieldDropdown(_moduleOptions), 'MODULE')
-      .appendField('から')
-      .appendField(new Blockly.FieldTextInput('screen, clock, state'), 'NAMES')
-      .appendField('を読み込む（from import）');
+      .appendField('から');
     this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.modules);
-    this.setTooltip('モジュールから複数の名前を読み込みます。NAMESはカンマ区切りで複数指定できます（例: screen, clock, state）');
+    this.setTooltip('モジュールから複数の名前を読み込みます。＋／−ボタンで読み込む名前を増減できます。');
     this.setHelpUrl('');
+    this.updateShape_();
+  },
+
+  mutationToDom: function() {
+    const c = Blockly.utils.xml.createElement('mutation');
+    c.setAttribute('items', String(this.itemCount_ || 1));
+    return c;
+  },
+
+  domToMutation: function(xmlElement) {
+    const itemsAttr = xmlElement.getAttribute('items');
+    let legacyNames = null;
+    if (!itemsAttr) {
+      // 旧形式（NAMES="screen, clock, state"）→ 新形式に移行
+      const parent = xmlElement.parentElement;
+      if (parent) {
+        const nf = parent.querySelector(':scope > field[name="NAMES"]');
+        if (nf) legacyNames = (nf.textContent || '').split(',').map(s => s.trim()).filter(Boolean);
+      }
+      this.itemCount_ = legacyNames && legacyNames.length ? legacyNames.length : 1;
+    } else {
+      this.itemCount_ = Math.max(1, Math.min(20, parseInt(itemsAttr, 10) || 1));
+    }
+    this.updateShape_();
+    if (legacyNames) {
+      for (let i = 0; i < legacyNames.length; i++) {
+        const f = this.getField('NAME' + i);
+        if (f) { try { f.setValue(legacyNames[i]); } catch (e) { /* ignore */ } }
+      }
+    }
+  },
+
+  _addItem: function() {
+    if (this.itemCount_ >= 12) return;
+    this.itemCount_++;
+    this.updateShape_();
+  },
+
+  _removeItem: function() {
+    if (this.itemCount_ <= 1) return;
+    this.itemCount_--;
+    this.updateShape_();
+  },
+
+  updateShape_: function() {
+    // 既存値を保存
+    const oldValues = [];
+    for (let k = 0; this.getField('NAME' + k); k++) {
+      oldValues.push(this.getFieldValue('NAME' + k));
+    }
+    // 既存入力を削除
+    for (let k = 0; this.getInput('NAME' + k); k++) {
+      this.removeInput('NAME' + k);
+    }
+    if (this.getInput('CONTROLS')) this.removeInput('CONTROLS');
+    if (this.getInput('TAIL')) this.removeInput('TAIL');
+
+    const self = this;
+    for (let j = 0; j < this.itemCount_; j++) {
+      this.appendDummyInput('NAME' + j)
+        .appendField(new Blockly.FieldDropdown(_nameOptionsForModule), 'NAME' + j);
+    }
+    // 値を復元（ドロップダウンの options に無くても _nameOptionsForModule が当該値を含めて返す）
+    for (let j = 0; j < Math.min(oldValues.length, this.itemCount_); j++) {
+      const f = this.getField('NAME' + j);
+      if (f && oldValues[j] && oldValues[j] !== '__none__') {
+        try { f.setValue(oldValues[j]); } catch (e) { /* ignore */ }
+      }
+    }
+    this.appendDummyInput('CONTROLS')
+      .appendField(new Blockly.FieldImage(_MULTI_MINUS_ICON, 18, 18, '−', function() { self._removeItem(); }))
+      .appendField(new Blockly.FieldImage(_MULTI_PLUS_ICON, 18, 18, '＋', function() { self._addItem(); }));
+    this.appendDummyInput('TAIL').appendField('を読み込む（from import）');
   }
 };
 
