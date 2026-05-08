@@ -107,12 +107,26 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!modName || modName === '__none__') return [['（モジュールを選択）', '__none__']];
     const file = pyFiles.find(function(f) { return f.name === modName + '.py'; });
     if (!file) return [['（モジュールなし）', '__none__']];
-    const content = file.content || '';
     const funcs = [];
+    const seen = new Set();
+    const pushFunc = function(name) {
+      if (name && !seen.has(name)) { seen.add(name); funcs.push([name, name]); }
+    };
+    const content = file.content || '';
     const re = /^def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
     let m;
-    while ((m = re.exec(content)) !== null) {
-      funcs.push([m[1], m[1]]);
+    while ((m = re.exec(content)) !== null) pushFunc(m[1]);
+    if (file.blockXml) {
+      try {
+        const dom = new DOMParser().parseFromString(file.blockXml, 'text/xml');
+        const defTypes = ['py_def_noarg', 'py_def', 'py_def_args2', 'py_def_args3'];
+        defTypes.forEach(function(t) {
+          dom.querySelectorAll('block[type="' + t + '"]').forEach(function(b) {
+            const fld = b.querySelector(':scope > field[name="NAME"]');
+            if (fld) pushFunc((fld.textContent || '').trim());
+          });
+        });
+      } catch (e) { /* ignore */ }
     }
     return funcs.length > 0 ? funcs : [['（関数なし）', '__none__']];
   };
@@ -4707,7 +4721,11 @@ document.addEventListener('DOMContentLoaded', function() {
       pyFiles.push({ name: name, content: '', blockXml: xmlText });
     });
     var mainIdx = pyFiles.findIndex(function(f) { return f.name === 'main.py'; });
-    activeFileIdx = mainIdx >= 0 ? mainIdx : 0;
+    if (mainIdx > 0) {
+      var mainFile = pyFiles.splice(mainIdx, 1)[0];
+      pyFiles.unshift(mainFile);
+    }
+    activeFileIdx = 0;
     workspace.clear();
     if (pyFiles[activeFileIdx].blockXml) {
       try {
