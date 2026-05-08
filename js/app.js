@@ -4725,21 +4725,29 @@ document.addEventListener('DOMContentLoaded', function() {
       var mainFile = pyFiles.splice(mainIdx, 1)[0];
       pyFiles.unshift(mainFile);
     }
-    activeFileIdx = 0;
-    workspace.clear();
-    if (pyFiles[activeFileIdx].blockXml) {
-      try {
-        var dom = new DOMParser().parseFromString(pyFiles[activeFileIdx].blockXml, 'text/xml');
-        Blockly.Xml.domToWorkspace(dom.documentElement, workspace);
-      } catch (e) { console.warn('project main load failed:', e); }
+    var subToolboxId = currentMode === 'game' ? 'toolbox-game-module'
+                     : currentMode === 'python' ? 'toolbox-module' : null;
+    var mainToolboxId = currentMode === 'game' ? 'toolbox-game'
+                      : currentMode === 'python' ? 'toolbox-python' : null;
+    function _loadFileToWorkspace(idx, toolboxId) {
+      activeFileIdx = idx;
+      if (toolboxId) {
+        var tb = document.getElementById(toolboxId);
+        if (tb) workspace.updateToolbox(tb);
+      }
+      workspace.clear();
+      if (pyFiles[idx].blockXml) {
+        try {
+          var dom = new DOMParser().parseFromString(pyFiles[idx].blockXml, 'text/xml');
+          Blockly.Xml.domToWorkspace(dom.documentElement, workspace);
+        } catch (e) { console.warn('project file load failed:', pyFiles[idx].name, e); }
+      }
+      if (typeof generateCode === 'function') generateCode();
     }
-    if (currentMode === 'game') {
-      var tbId = activeFileIdx === 0 ? 'toolbox-game' : 'toolbox-game-module';
-      workspace.updateToolbox(document.getElementById(tbId));
-    } else if (currentMode === 'python') {
-      var tbId2 = activeFileIdx === 0 ? 'toolbox-python' : 'toolbox-module';
-      workspace.updateToolbox(document.getElementById(tbId2));
+    for (var i = 1; i < pyFiles.length; i++) {
+      _loadFileToWorkspace(i, subToolboxId);
     }
+    _loadFileToWorkspace(0, mainToolboxId);
     if (typeof renderFileTabs === 'function') renderFileTabs();
   }
 
