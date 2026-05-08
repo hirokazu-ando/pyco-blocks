@@ -7,7 +7,7 @@
 
   <!-- move_x(px): 左右移動 + クランプ + return -->
   <block type="py_def" x="20" y="20">
-    <field name="NAME">move_x</field>
+    <field name="NAME" variabletype="function">move_x</field>
     <field name="PARAM" id="vpx">px</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -78,7 +78,7 @@
 
   <!-- move_y(py): 上下移動 + クランプ + return -->
   <block type="py_def" x="560" y="20">
-    <field name="NAME">move_y</field>
+    <field name="NAME" variabletype="function">move_y</field>
     <field name="PARAM" id="vpy">py</field>
     <statement name="BODY">
       <block type="pico_if">

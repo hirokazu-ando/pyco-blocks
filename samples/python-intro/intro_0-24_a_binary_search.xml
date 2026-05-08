@@ -8,7 +8,7 @@
     <variable id="var_mid">mid</variable>
   </variables>
   <block type="py_def_args2" x="30" y="30">
-    <field name="NAME">binary_search</field>
+    <field name="NAME" variabletype="function">binary_search</field>
     <field name="PARAM1">data</field>
     <field name="PARAM2">target</field>
     <statement name="BODY">
@@ -141,7 +141,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val2">
-                <field name="NAME">binary_search</field>
+                <field name="NAME" variabletype="function">binary_search</field>
                 <value name="ARG1"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
                 <value name="ARG2"><block type="val_number"><field name="NUM">7</field></block></value>
               </block>
@@ -150,7 +150,7 @@
               <block type="py_print">
                 <value name="VALUE">
                   <block type="py_call_val2">
-                    <field name="NAME">binary_search</field>
+                    <field name="NAME" variabletype="function">binary_search</field>
                     <value name="ARG1"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
                     <value name="ARG2"><block type="val_number"><field name="NUM">4</field></block></value>
                   </block>

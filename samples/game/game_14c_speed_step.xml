@@ -9,7 +9,7 @@
   <!-- remain(limit): return max(0, limit - elapsed()) -->
   <!-- speed_step(base, accel): return base + accel * int(elapsed() // 10) -->
   <block type="py_def_noarg" x="20" y="20">
-    <field name="NAME">elapsed</field>
+    <field name="NAME" variabletype="function">elapsed</field>
     <statement name="BODY">
       <block type="py_return">
         <value name="VALUE">
@@ -23,7 +23,7 @@
     </statement>
     <next>
       <block type="py_def">
-        <field name="NAME">remain</field>
+        <field name="NAME" variabletype="function">remain</field>
         <field name="PARAM" id="vlimit">limit</field>
         <statement name="BODY">
           <block type="py_return">
@@ -40,7 +40,7 @@
                     </value>
                     <value name="RIGHT">
                       <block type="py_call_val">
-                        <field name="NAME">elapsed</field>
+                        <field name="NAME" variabletype="function">elapsed</field>
                       </block>
                     </value>
                   </block>
@@ -51,7 +51,7 @@
         </statement>
         <next>
           <block type="py_def_args2">
-            <field name="NAME">speed_step</field>
+            <field name="NAME" variabletype="function">speed_step</field>
             <field name="PARAM1">base</field>
             <field name="PARAM2">accel</field>
             <statement name="BODY">
@@ -75,7 +75,7 @@
                                 <field name="OP">//</field>
                                 <value name="LEFT">
                                   <block type="py_call_val">
-                                    <field name="NAME">elapsed</field>
+                                    <field name="NAME" variabletype="function">elapsed</field>
                                   </block>
                                 </value>
                                 <value name="RIGHT">

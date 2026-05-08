@@ -34,7 +34,7 @@
         <value name="VALUE"><block type="val_number"><field name="NUM">23</field></block></value>
         <next>
           <block type="py_def_args2">
-            <field name="NAME">binary_search</field>
+            <field name="NAME" variabletype="function">binary_search</field>
             <field name="PARAM1">data</field>
             <field name="PARAM2">target</field>
             <statement name="BODY">
@@ -182,7 +182,7 @@
                 <field name="VAR" id="var_res">result</field>
                 <value name="VALUE">
                   <block type="py_call_val2">
-                    <field name="NAME">binary_search</field>
+                    <field name="NAME" variabletype="function">binary_search</field>
                     <value name="ARG1"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
                     <value name="ARG2"><block type="val_var"><field name="VAR" id="var_target">target</field></block></value>
                   </block>

@@ -4,7 +4,7 @@
     <variable id="vlst">lst</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">rec_sum</field>
+    <field name="NAME" variabletype="function">rec_sum</field>
     <field name="PARAM" id="vlst">lst</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -34,7 +34,7 @@
                 </value>
                 <value name="RIGHT">
                   <block type="py_call_val">
-                    <field name="NAME">rec_sum</field>
+                    <field name="NAME" variabletype="function">rec_sum</field>
                     <value name="ARG"><block type="py_custom_expr"><field name="CODE">lst[1:]</field></block></value>
                   </block>
                 </value>
@@ -48,7 +48,7 @@
       <block type="py_print">
         <value name="VALUE">
           <block type="py_call_val">
-            <field name="NAME">rec_sum</field>
+            <field name="NAME" variabletype="function">rec_sum</field>
             <value name="ARG">
               <block type="py_list_literal">
                 <mutation items="5"/>
@@ -65,7 +65,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">rec_sum</field>
+                <field name="NAME" variabletype="function">rec_sum</field>
                 <value name="ARG"><block type="py_list_empty"/></value>
               </block>
             </value>

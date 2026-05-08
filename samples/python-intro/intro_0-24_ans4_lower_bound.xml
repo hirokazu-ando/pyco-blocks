@@ -10,7 +10,7 @@
     <variable id="var_idx">idx</variable>
   </variables>
   <block type="py_def_args2" x="30" y="30">
-    <field name="NAME">lower_bound</field>
+    <field name="NAME" variabletype="function">lower_bound</field>
     <field name="PARAM1">data</field>
     <field name="PARAM2">target</field>
     <statement name="BODY">
@@ -141,7 +141,7 @@
             <field name="VAR" id="var_idx">idx</field>
             <value name="VALUE">
               <block type="py_call_val2">
-                <field name="NAME">lower_bound</field>
+                <field name="NAME" variabletype="function">lower_bound</field>
                 <value name="ARG1"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
                 <value name="ARG2"><block type="val_number"><field name="NUM">20</field></block></value>
               </block>

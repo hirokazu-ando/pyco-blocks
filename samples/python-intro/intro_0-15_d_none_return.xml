@@ -2,7 +2,7 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables><variable id="var_result">result</variable></variables>
   <block type="py_def_noarg" id="b1" x="30" y="30">
-    <field name="NAME">say_hello</field>
+    <field name="NAME" variabletype="function">say_hello</field>
     <statement name="BODY">
       <block type="py_print" id="b2">
         <value name="VALUE"><block type="val_str" id="b3"><field name="TEXT">Hello!</field></block></value>
@@ -12,7 +12,7 @@
       <block type="var_set" id="b4">
         <field name="VAR" id="var_result">result</field>
         <value name="VALUE">
-          <block type="py_call_val" id="b5"><field name="NAME">say_hello</field></block>
+          <block type="py_call_val" id="b5"><field name="NAME" variabletype="function">say_hello</field></block>
         </value>
         <next>
           <block type="py_print" id="b6">

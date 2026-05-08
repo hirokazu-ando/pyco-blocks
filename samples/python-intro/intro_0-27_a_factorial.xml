@@ -4,7 +4,7 @@
     <variable id="var_n">n</variable>
   </variables>
   <block type="py_def" id="b1" x="30" y="30">
-    <field name="NAME">factorial</field>
+    <field name="NAME" variabletype="function">factorial</field>
     <field name="PARAM" id="var_n">n</field>
     <statement name="BODY">
       <block type="pico_if" id="b2">
@@ -29,7 +29,7 @@
                 <value name="LEFT"><block type="val_var" id="b10"><field name="VAR" id="var_n">n</field></block></value>
                 <value name="RIGHT">
                   <block type="py_call_val" id="b11">
-                    <field name="NAME">factorial</field>
+                    <field name="NAME" variabletype="function">factorial</field>
                     <value name="ARG">
                       <block type="py_math_op" id="b12">
                         <field name="OP">-</field>
@@ -49,7 +49,7 @@
       <block type="py_print">
         <value name="VALUE">
           <block type="py_call_val">
-            <field name="NAME">factorial</field>
+            <field name="NAME" variabletype="function">factorial</field>
             <value name="ARG"><block type="val_number"><field name="NUM">5</field></block></value>
           </block>
         </value>
@@ -57,7 +57,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">factorial</field>
+                <field name="NAME" variabletype="function">factorial</field>
                 <value name="ARG"><block type="val_number"><field name="NUM">0</field></block></value>
               </block>
             </value>

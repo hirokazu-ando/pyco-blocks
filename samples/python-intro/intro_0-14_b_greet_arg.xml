@@ -2,7 +2,7 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables><variable id="var_name">name</variable></variables>
   <block type="py_def" id="b1" x="30" y="30">
-    <field name="NAME">greet</field>
+    <field name="NAME" variabletype="function">greet</field>
     <field name="PARAM" id="var_name">name</field>
     <statement name="BODY">
       <block type="py_print" id="b2">
@@ -16,7 +16,7 @@
     </statement>
     <next>
       <block type="py_call_stmt" id="b4">
-        <field name="NAME">greet</field>
+        <field name="NAME" variabletype="function">greet</field>
         <value name="ARG"><block type="val_str" id="b5"><field name="TEXT">Taro</field></block></value>
       </block>
     </next>

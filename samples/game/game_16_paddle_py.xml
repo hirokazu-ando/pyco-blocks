@@ -5,7 +5,7 @@
   </variables>
   <!-- paddle.py: get_x(mx) → クランプして返す (パドルが画面端からはみ出ないように) -->
   <block type="py_def" x="20" y="20">
-    <field name="NAME">get_x</field>
+    <field name="NAME" variabletype="function">get_x</field>
     <field name="PARAM" id="vmx">mx</field>
     <statement name="BODY">
       <block type="pico_if">

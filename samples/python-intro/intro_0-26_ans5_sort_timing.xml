@@ -12,7 +12,7 @@
     <variable id="vu">_</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">bubble_sort</field>
+    <field name="NAME" variabletype="function">bubble_sort</field>
     <field name="PARAM" id="vd">data</field>
     <statement name="BODY">
       <block type="var_set">
@@ -126,7 +126,7 @@
     </statement>
     <next>
       <block type="py_def">
-        <field name="NAME">insertion_sort</field>
+        <field name="NAME" variabletype="function">insertion_sort</field>
         <field name="PARAM" id="vd">data</field>
         <statement name="BODY">
           <block type="var_set">
@@ -269,10 +269,10 @@
                         <next>
                           <block type="var_set">
                             <field name="VAR" id="vtm">t</field>
-                            <value name="VALUE"><block type="py_call_val"><field name="NAME">time.time</field></block></value>
+                            <value name="VALUE"><block type="py_call_val"><field name="NAME" variabletype="function">time.time</field></block></value>
                             <next>
                               <block type="py_call_stmt">
-                                <field name="NAME">bubble_sort</field>
+                                <field name="NAME" variabletype="function">bubble_sort</field>
                                 <value name="ARG">
                                   <block type="py_list_slice">
                                     <field name="LIST" id="vd">data</field>
@@ -286,7 +286,7 @@
                                         <value name="VALUE">
                                           <block type="py_math_op">
                                             <field name="OP">-</field>
-                                            <value name="LEFT"><block type="py_call_val"><field name="NAME">time.time</field></block></value>
+                                            <value name="LEFT"><block type="py_call_val"><field name="NAME" variabletype="function">time.time</field></block></value>
                                             <value name="RIGHT"><block type="val_var"><field name="VAR" id="vtm">t</field></block></value>
                                           </block>
                                         </value>
@@ -305,10 +305,10 @@
                                         <next>
                                           <block type="var_set">
                                             <field name="VAR" id="vtm">t</field>
-                                            <value name="VALUE"><block type="py_call_val"><field name="NAME">time.time</field></block></value>
+                                            <value name="VALUE"><block type="py_call_val"><field name="NAME" variabletype="function">time.time</field></block></value>
                                             <next>
                                               <block type="py_call_stmt">
-                                                <field name="NAME">insertion_sort</field>
+                                                <field name="NAME" variabletype="function">insertion_sort</field>
                                                 <value name="ARG">
                                                   <block type="py_list_slice">
                                                     <field name="LIST" id="vd">data</field>
@@ -322,7 +322,7 @@
                                                         <value name="VALUE">
                                                           <block type="py_math_op">
                                                             <field name="OP">-</field>
-                                                            <value name="LEFT"><block type="py_call_val"><field name="NAME">time.time</field></block></value>
+                                                            <value name="LEFT"><block type="py_call_val"><field name="NAME" variabletype="function">time.time</field></block></value>
                                                             <value name="RIGHT"><block type="val_var"><field name="VAR" id="vtm">t</field></block></value>
                                                           </block>
                                                         </value>
@@ -341,10 +341,10 @@
                                                         <next>
                                                           <block type="var_set">
                                                             <field name="VAR" id="vtm">t</field>
-                                                            <value name="VALUE"><block type="py_call_val"><field name="NAME">time.time</field></block></value>
+                                                            <value name="VALUE"><block type="py_call_val"><field name="NAME" variabletype="function">time.time</field></block></value>
                                                             <next>
                                                               <block type="py_call_stmt">
-                                                                <field name="NAME">sorted</field>
+                                                                <field name="NAME" variabletype="function">sorted</field>
                                                                 <value name="ARG"><block type="val_var"><field name="VAR" id="vd">data</field></block></value>
                                                                 <next>
                                                                   <block type="var_set">
@@ -354,7 +354,7 @@
                                                                         <value name="VALUE">
                                                                           <block type="py_math_op">
                                                                             <field name="OP">-</field>
-                                                                            <value name="LEFT"><block type="py_call_val"><field name="NAME">time.time</field></block></value>
+                                                                            <value name="LEFT"><block type="py_call_val"><field name="NAME" variabletype="function">time.time</field></block></value>
                                                                             <value name="RIGHT"><block type="val_var"><field name="VAR" id="vtm">t</field></block></value>
                                                                           </block>
                                                                         </value>

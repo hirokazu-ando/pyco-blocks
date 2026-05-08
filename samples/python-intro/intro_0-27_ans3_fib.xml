@@ -8,7 +8,7 @@
     <variable id="vt">tmp</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">fib_recursive</field>
+    <field name="NAME" variabletype="function">fib_recursive</field>
     <field name="PARAM" id="vn">n</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -32,7 +32,7 @@
                 <field name="OP">+</field>
                 <value name="LEFT">
                   <block type="py_call_val">
-                    <field name="NAME">fib_recursive</field>
+                    <field name="NAME" variabletype="function">fib_recursive</field>
                     <value name="ARG">
                       <block type="py_math_op">
                         <field name="OP">-</field>
@@ -44,7 +44,7 @@
                 </value>
                 <value name="RIGHT">
                   <block type="py_call_val">
-                    <field name="NAME">fib_recursive</field>
+                    <field name="NAME" variabletype="function">fib_recursive</field>
                     <value name="ARG">
                       <block type="py_math_op">
                         <field name="OP">-</field>
@@ -62,7 +62,7 @@
     </statement>
     <next>
       <block type="py_def">
-        <field name="NAME">fib_iterative</field>
+        <field name="NAME" variabletype="function">fib_iterative</field>
         <field name="PARAM" id="vn">n</field>
         <statement name="BODY">
           <block type="pico_if">
@@ -143,7 +143,7 @@
                 <field name="PRE">再帰版 fib(20) = </field>
                 <value name="VAR">
                   <block type="py_call_val">
-                    <field name="NAME">fib_recursive</field>
+                    <field name="NAME" variabletype="function">fib_recursive</field>
                     <value name="ARG"><block type="val_number"><field name="NUM">20</field></block></value>
                   </block>
                 </value>
@@ -157,7 +157,7 @@
                     <field name="PRE">反復版 fib(20) = </field>
                     <value name="VAR">
                       <block type="py_call_val">
-                        <field name="NAME">fib_iterative</field>
+                        <field name="NAME" variabletype="function">fib_iterative</field>
                         <value name="ARG"><block type="val_number"><field name="NUM">20</field></block></value>
                       </block>
                     </value>
@@ -171,7 +171,7 @@
                         <field name="PRE">反復版 fib(35) = </field>
                         <value name="VAR">
                           <block type="py_call_val">
-                            <field name="NAME">fib_iterative</field>
+                            <field name="NAME" variabletype="function">fib_iterative</field>
                             <value name="ARG"><block type="val_number"><field name="NUM">35</field></block></value>
                           </block>
                         </value>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xml xmlns="https://developers.google.com/blockly/xml">
   <block type="py_def_noarg" id="b1" x="30" y="30">
-    <field name="NAME">greet</field>
+    <field name="NAME" variabletype="function">greet</field>
     <statement name="BODY">
       <block type="py_print" id="b2">
         <value name="VALUE"><block type="val_str" id="b3"><field name="TEXT">Hello!</field></block></value>
       </block>
     </statement>
-    <next><block type="py_call_stmt" id="b4"><field name="NAME">greet</field></block></next>
+    <next><block type="py_call_stmt" id="b4"><field name="NAME" variabletype="function">greet</field></block></next>
   </block>
 </xml>

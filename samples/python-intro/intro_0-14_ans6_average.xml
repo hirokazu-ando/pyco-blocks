@@ -6,7 +6,7 @@
     <variable id="var_total">total</variable>
   </variables>
   <block type="py_def" id="b1" x="30" y="30">
-    <field name="NAME">average</field>
+    <field name="NAME" variabletype="function">average</field>
     <field name="PARAM" id="var_scores">scores</field>
     <statement name="BODY">
       <block type="var_set" id="b2">
@@ -45,7 +45,7 @@
       <block type="py_print" id="b9">
         <value name="VALUE">
           <block type="py_call_val" id="b10">
-            <field name="NAME">average</field>
+            <field name="NAME" variabletype="function">average</field>
             <value name="ARG">
               <block type="py_list_literal" id="bll">
                 <mutation items="3"></mutation>

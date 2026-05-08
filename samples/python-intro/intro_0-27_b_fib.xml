@@ -5,7 +5,7 @@
     <variable id="vi">i</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">fib</field>
+    <field name="NAME" variabletype="function">fib</field>
     <field name="PARAM" id="vn">n</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -29,7 +29,7 @@
                 <field name="OP">+</field>
                 <value name="LEFT">
                   <block type="py_call_val">
-                    <field name="NAME">fib</field>
+                    <field name="NAME" variabletype="function">fib</field>
                     <value name="ARG">
                       <block type="py_math_op">
                         <field name="OP">-</field>
@@ -41,7 +41,7 @@
                 </value>
                 <value name="RIGHT">
                   <block type="py_call_val">
-                    <field name="NAME">fib</field>
+                    <field name="NAME" variabletype="function">fib</field>
                     <value name="ARG">
                       <block type="py_math_op">
                         <field name="OP">-</field>
@@ -67,7 +67,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">fib</field>
+                <field name="NAME" variabletype="function">fib</field>
                 <value name="ARG"><block type="val_var"><field name="VAR" id="vi">i</field></block></value>
               </block>
             </value>

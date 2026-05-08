@@ -7,7 +7,7 @@
     <variable id="var_nums">nums</variable>
   </variables>
   <block type="py_def" id="b1" x="30" y="30">
-    <field name="NAME">argmax</field>
+    <field name="NAME" variabletype="function">argmax</field>
     <field name="PARAM" id="var_data">data</field>
     <statement name="BODY">
       <block type="var_set" id="b2">
@@ -90,7 +90,7 @@
           <block type="py_print" id="b19">
             <value name="VALUE">
               <block type="py_call_val" id="b20">
-                <field name="NAME">argmax</field>
+                <field name="NAME" variabletype="function">argmax</field>
                 <value name="ARG">
                   <block type="val_var" id="b21"><field name="VAR" id="var_nums">nums</field></block>
                 </value>
@@ -103,7 +103,7 @@
                     <field name="LIST" id="var_nums">nums</field>
                     <value name="INDEX">
                       <block type="py_call_val" id="b24">
-                        <field name="NAME">argmax</field>
+                        <field name="NAME" variabletype="function">argmax</field>
                         <value name="ARG">
                           <block type="val_var" id="b25"><field name="VAR" id="var_nums">nums</field></block>
                         </value>

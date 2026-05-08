@@ -22,7 +22,7 @@
         <value name="VALUE"><block type="val_number"><field name="NUM">7532</field></block></value>
         <next>
           <block type="py_def_args2">
-            <field name="NAME">linear_count</field>
+            <field name="NAME" variabletype="function">linear_count</field>
             <field name="PARAM1">data</field>
             <field name="PARAM2">target</field>
             <statement name="BODY">
@@ -72,7 +72,7 @@
             </statement>
             <next>
               <block type="py_def_args2">
-                <field name="NAME">binary_count</field>
+                <field name="NAME" variabletype="function">binary_count</field>
                 <field name="PARAM1">data</field>
                 <field name="PARAM2">target</field>
                 <statement name="BODY">
@@ -211,7 +211,7 @@
                     </value>
                     <value name="ITEM1">
                       <block type="py_call_val2">
-                        <field name="NAME">linear_count</field>
+                        <field name="NAME" variabletype="function">linear_count</field>
                         <value name="ARG1"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
                         <value name="ARG2"><block type="val_var"><field name="VAR" id="var_target">target</field></block></value>
                       </block>
@@ -227,7 +227,7 @@
                         </value>
                         <value name="ITEM1">
                           <block type="py_call_val2">
-                            <field name="NAME">binary_count</field>
+                            <field name="NAME" variabletype="function">binary_count</field>
                             <value name="ARG1"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
                             <value name="ARG2"><block type="val_var"><field name="VAR" id="var_target">target</field></block></value>
                           </block>

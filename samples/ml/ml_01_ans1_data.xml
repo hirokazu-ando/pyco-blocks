@@ -21,7 +21,7 @@
               <block type="py_print" id="b3">
                 <value name="VALUE">
                   <block type="py_call_val" id="b4">
-                    <field name="NAME">len</field>
+                    <field name="NAME" variabletype="function">len</field>
                     <value name="ARG"><block type="val_var" id="bv1"><field name="VAR" id="var_X">X</field></block></value>
                   </block>
                 </value>

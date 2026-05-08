@@ -10,7 +10,7 @@
     <variable id="vv">v</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">insertion_sort_count</field>
+    <field name="NAME" variabletype="function">insertion_sort_count</field>
     <field name="PARAM" id="vd">data</field>
     <statement name="BODY">
       <block type="var_set">
@@ -166,7 +166,7 @@
         <value name="ITEM0"><block type="val_str"><field name="TEXT">ほぼ整列済みの移動回数:</field></block></value>
         <value name="ITEM1">
           <block type="py_call_val">
-            <field name="NAME">insertion_sort_count</field>
+            <field name="NAME" variabletype="function">insertion_sort_count</field>
             <value name="ARG">
               <block type="py_list_literal">
                 <mutation items="5"/>
@@ -185,7 +185,7 @@
             <value name="ITEM0"><block type="val_str"><field name="TEXT">逆順の移動回数:</field></block></value>
             <value name="ITEM1">
               <block type="py_call_val">
-                <field name="NAME">insertion_sort_count</field>
+                <field name="NAME" variabletype="function">insertion_sort_count</field>
                 <value name="ARG">
                   <block type="py_list_literal">
                     <mutation items="5"/>

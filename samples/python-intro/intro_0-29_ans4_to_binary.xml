@@ -4,7 +4,7 @@
     <variable id="vn">n</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">to_binary</field>
+    <field name="NAME" variabletype="function">to_binary</field>
     <field name="PARAM" id="vn">n</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -40,7 +40,7 @@
                 <field name="OP">+</field>
                 <value name="LEFT">
                   <block type="py_call_val">
-                    <field name="NAME">to_binary</field>
+                    <field name="NAME" variabletype="function">to_binary</field>
                     <value name="ARG">
                       <block type="py_math_op">
                         <field name="OP">//</field>
@@ -72,7 +72,7 @@
       <block type="py_print">
         <value name="VALUE">
           <block type="py_call_val">
-            <field name="NAME">to_binary</field>
+            <field name="NAME" variabletype="function">to_binary</field>
             <value name="ARG"><block type="val_number"><field name="NUM">13</field></block></value>
           </block>
         </value>
@@ -80,7 +80,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">to_binary</field>
+                <field name="NAME" variabletype="function">to_binary</field>
                 <value name="ARG"><block type="val_number"><field name="NUM">255</field></block></value>
               </block>
             </value>
@@ -88,7 +88,7 @@
               <block type="py_print">
                 <value name="VALUE">
                   <block type="py_call_val">
-                    <field name="NAME">to_binary</field>
+                    <field name="NAME" variabletype="function">to_binary</field>
                     <value name="ARG"><block type="val_number"><field name="NUM">1024</field></block></value>
                   </block>
                 </value>

@@ -9,7 +9,7 @@
     <variable id="vbig">big</variable>
   </variables>
   <block type="py_def_args2" x="30" y="30">
-    <field name="NAME">linear_search</field>
+    <field name="NAME" variabletype="function">linear_search</field>
     <field name="PARAM1">data</field>
     <field name="PARAM2">target</field>
     <statement name="BODY">
@@ -87,7 +87,7 @@
             </value>
             <value name="ITEM1">
               <block type="py_call_val2">
-                <field name="NAME">linear_search</field>
+                <field name="NAME" variabletype="function">linear_search</field>
                 <value name="ARG1">
                   <block type="val_var"><field name="VAR" id="vs">small</field></block>
                 </value>
@@ -115,7 +115,7 @@
                     </value>
                     <value name="ITEM1">
                       <block type="py_call_val2">
-                        <field name="NAME">linear_search</field>
+                        <field name="NAME" variabletype="function">linear_search</field>
                         <value name="ARG1">
                           <block type="val_var"><field name="VAR" id="vbig">big</field></block>
                         </value>

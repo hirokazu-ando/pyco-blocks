@@ -11,7 +11,7 @@
     <variable id="vds">data_s</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">bubble_sort</field>
+    <field name="NAME" variabletype="function">bubble_sort</field>
     <field name="PARAM" id="vd">data</field>
     <statement name="BODY">
       <block type="var_set">
@@ -129,7 +129,7 @@
     </statement>
     <next>
       <block type="py_def">
-        <field name="NAME">selection_sort</field>
+        <field name="NAME" variabletype="function">selection_sort</field>
         <field name="PARAM" id="vd">data</field>
         <statement name="BODY">
           <block type="var_set">
@@ -271,7 +271,7 @@
                         <field name="POST"></field>
                         <value name="VAR">
                           <block type="py_call_val">
-                            <field name="NAME">bubble_sort</field>
+                            <field name="NAME" variabletype="function">bubble_sort</field>
                             <value name="ARG"><block type="val_var"><field name="VAR" id="vdb">data_b</field></block></value>
                           </block>
                         </value>
@@ -285,7 +285,7 @@
                             <field name="POST"></field>
                             <value name="VAR">
                               <block type="py_call_val">
-                                <field name="NAME">selection_sort</field>
+                                <field name="NAME" variabletype="function">selection_sort</field>
                                 <value name="ARG"><block type="val_var"><field name="VAR" id="vds">data_s</field></block></value>
                               </block>
                             </value>

@@ -8,7 +8,7 @@
     <variable id="vst">state</variable>
   </variables>
   <block type="py_def_noarg" x="20" y="20">
-    <field name="NAME">update_play</field>
+    <field name="NAME" variabletype="function">update_play</field>
     <statement name="BODY">
       <block type="pico_if">
         <mutation elseif="0" else="0" />

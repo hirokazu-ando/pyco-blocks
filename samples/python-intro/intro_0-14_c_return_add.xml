@@ -5,7 +5,7 @@
     <variable id="var_b">b</variable>
   </variables>
   <block type="py_def_args2" id="b1" x="30" y="30">
-    <field name="NAME">add</field>
+    <field name="NAME" variabletype="function">add</field>
     <field name="PARAM1" id="var_a">a</field>
     <field name="PARAM2" id="var_b">b</field>
     <statement name="BODY">
@@ -23,7 +23,7 @@
       <block type="py_print" id="b4">
         <value name="VALUE">
           <block type="py_call_val2" id="b5">
-            <field name="NAME">add</field>
+            <field name="NAME" variabletype="function">add</field>
             <value name="ARG1"><block type="val_number" id="bn1"><field name="NUM">3</field></block></value>
             <value name="ARG2"><block type="val_number" id="bn2"><field name="NUM">5</field></block></value>
           </block>

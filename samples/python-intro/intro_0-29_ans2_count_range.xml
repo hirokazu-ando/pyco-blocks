@@ -28,7 +28,7 @@
         </value>
         <next>
           <block type="py_def_args3">
-            <field name="NAME">count_in_range</field>
+            <field name="NAME" variabletype="function">count_in_range</field>
             <field name="PARAM1">data</field>
             <field name="PARAM2">lo</field>
             <field name="PARAM3">hi</field>
@@ -69,7 +69,7 @@
               <block type="py_print">
                 <value name="VALUE">
                   <block type="py_call_val3">
-                    <field name="NAME">count_in_range</field>
+                    <field name="NAME" variabletype="function">count_in_range</field>
                     <value name="ARG1"><block type="val_var"><field name="VAR" id="vd">data</field></block></value>
                     <value name="ARG2"><block type="val_number"><field name="NUM">6</field></block></value>
                     <value name="ARG3"><block type="val_number"><field name="NUM">14</field></block></value>
@@ -79,7 +79,7 @@
                   <block type="py_print">
                     <value name="VALUE">
                       <block type="py_call_val3">
-                        <field name="NAME">count_in_range</field>
+                        <field name="NAME" variabletype="function">count_in_range</field>
                         <value name="ARG1"><block type="val_var"><field name="VAR" id="vd">data</field></block></value>
                         <value name="ARG2"><block type="val_number"><field name="NUM">1</field></block></value>
                         <value name="ARG3"><block type="val_number"><field name="NUM">19</field></block></value>
@@ -89,7 +89,7 @@
                       <block type="py_print">
                         <value name="VALUE">
                           <block type="py_call_val3">
-                            <field name="NAME">count_in_range</field>
+                            <field name="NAME" variabletype="function">count_in_range</field>
                             <value name="ARG1"><block type="val_var"><field name="VAR" id="vd">data</field></block></value>
                             <value name="ARG2"><block type="val_number"><field name="NUM">10</field></block></value>
                             <value name="ARG3"><block type="val_number"><field name="NUM">12</field></block></value>

@@ -6,7 +6,7 @@
     <variable id="vch">ch</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">check_parens</field>
+    <field name="NAME" variabletype="function">check_parens</field>
     <field name="PARAM" id="vs">s</field>
     <statement name="BODY">
       <block type="var_set">
@@ -80,7 +80,7 @@
       <block type="py_print">
         <value name="VALUE">
           <block type="py_call_val">
-            <field name="NAME">check_parens</field>
+            <field name="NAME" variabletype="function">check_parens</field>
             <value name="ARG"><block type="val_str"><field name="TEXT">(a + (b * c))</field></block></value>
           </block>
         </value>
@@ -88,7 +88,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">check_parens</field>
+                <field name="NAME" variabletype="function">check_parens</field>
                 <value name="ARG"><block type="val_str"><field name="TEXT">(a + b))</field></block></value>
               </block>
             </value>

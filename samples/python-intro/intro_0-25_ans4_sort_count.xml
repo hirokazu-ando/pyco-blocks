@@ -12,7 +12,7 @@
     <variable id="var_v">v</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">bubble_sort_count</field>
+    <field name="NAME" variabletype="function">bubble_sort_count</field>
     <field name="PARAM" id="vd">data</field>
     <statement name="BODY">
       <block type="var_set">
@@ -156,7 +156,7 @@
     </statement>
     <next>
       <block type="py_def">
-        <field name="NAME">selection_sort_count</field>
+        <field name="NAME" variabletype="function">selection_sort_count</field>
         <field name="PARAM" id="vd">data</field>
         <statement name="BODY">
           <block type="var_set">
@@ -326,7 +326,7 @@
                 <value name="ITEM0"><block type="val_str"><field name="TEXT">バブルソートのスワップ回数:</field></block></value>
                 <value name="ITEM1">
                   <block type="py_call_val">
-                    <field name="NAME">bubble_sort_count</field>
+                    <field name="NAME" variabletype="function">bubble_sort_count</field>
                     <value name="ARG"><block type="val_var"><field name="VAR" id="vo">original</field></block></value>
                   </block>
                 </value>
@@ -336,7 +336,7 @@
                     <value name="ITEM0"><block type="val_str"><field name="TEXT">選択ソートのスワップ回数:</field></block></value>
                     <value name="ITEM1">
                       <block type="py_call_val">
-                        <field name="NAME">selection_sort_count</field>
+                        <field name="NAME" variabletype="function">selection_sort_count</field>
                         <value name="ARG"><block type="val_var"><field name="VAR" id="vo">original</field></block></value>
                       </block>
                     </value>

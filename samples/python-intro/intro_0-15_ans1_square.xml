@@ -2,7 +2,7 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables><variable id="var_n">n</variable></variables>
   <block type="py_def" id="b1" x="30" y="30">
-    <field name="NAME">square</field>
+    <field name="NAME" variabletype="function">square</field>
     <field name="PARAM" id="var_n">n</field>
     <statement name="BODY">
       <block type="py_return" id="b2">
@@ -19,7 +19,7 @@
       <block type="py_print" id="b4">
         <value name="VALUE">
           <block type="py_call_val" id="b5">
-            <field name="NAME">square</field>
+            <field name="NAME" variabletype="function">square</field>
             <value name="ARG"><block type="val_number" id="b6"><field name="NUM">6</field></block></value>
           </block>
         </value>

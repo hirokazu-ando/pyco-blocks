@@ -6,7 +6,7 @@
     <value name="VALUE"><block type="val_str" id="b2"><field name="TEXT">外側</field></block></value>
     <next>
       <block type="py_def_noarg" id="b3">
-        <field name="NAME">make_message</field>
+        <field name="NAME" variabletype="function">make_message</field>
         <statement name="BODY">
           <block type="var_set" id="b4">
             <field name="VAR" id="var_message">message</field>
@@ -20,7 +20,7 @@
         </statement>
         <next>
           <block type="py_print" id="b8">
-            <value name="VALUE"><block type="py_call_val" id="b9"><field name="NAME">make_message</field></block></value>
+            <value name="VALUE"><block type="py_call_val" id="b9"><field name="NAME" variabletype="function">make_message</field></block></value>
             <next>
               <block type="py_print" id="b10">
                 <value name="VALUE"><block type="val_var" id="b11"><field name="VAR" id="var_message">message</field></block></value>

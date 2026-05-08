@@ -5,7 +5,7 @@
   </variables>
   <!-- player.py: get_color(score) → score >= 10 なら "#ff6600" そうでなければ "#5cd6ff" -->
   <block type="py_def" x="20" y="20">
-    <field name="NAME">get_color</field>
+    <field name="NAME" variabletype="function">get_color</field>
     <field name="PARAM" id="vscore">score</field>
     <statement name="BODY">
       <block type="pico_if">

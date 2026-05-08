@@ -24,7 +24,7 @@
           <block type="py_print" id="b2">
             <value name="VALUE">
               <block type="py_call_val" id="b3">
-                <field name="NAME">len</field>
+                <field name="NAME" variabletype="function">len</field>
                 <value name="ARG"><block type="val_var" id="bv1"><field name="VAR" id="var_X_tr">X_tr</field></block></value>
               </block>
             </value>
@@ -32,7 +32,7 @@
               <block type="py_print" id="b4">
                 <value name="VALUE">
                   <block type="py_call_val" id="b5">
-                    <field name="NAME">len</field>
+                    <field name="NAME" variabletype="function">len</field>
                     <value name="ARG"><block type="val_var" id="bv2"><field name="VAR" id="var_X_te">X_te</field></block></value>
                   </block>
                 </value>

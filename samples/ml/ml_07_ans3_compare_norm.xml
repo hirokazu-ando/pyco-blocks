@@ -55,7 +55,7 @@
                                     <field name="VAR" id="var_Xn">X_norm</field>
                                     <value name="VALUE">
                                       <block type="py_call_val" id="bpnorm">
-                                        <field name="NAME">pyco_ml.normalize</field>
+                                        <field name="NAME" variabletype="function">pyco_ml.normalize</field>
                                         <value name="ARG"><block type="val_var" id="bvXn"><field name="VAR" id="var_X">X</field></block></value>
                                       </block>
                                     </value>

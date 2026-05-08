@@ -4,7 +4,7 @@
     <variable id="vn">n</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">hanoi_moves</field>
+    <field name="NAME" variabletype="function">hanoi_moves</field>
     <field name="PARAM" id="vn">n</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -32,7 +32,7 @@
                     <value name="LEFT"><block type="val_number"><field name="NUM">2</field></block></value>
                     <value name="RIGHT">
                       <block type="py_call_val">
-                        <field name="NAME">hanoi_moves</field>
+                        <field name="NAME" variabletype="function">hanoi_moves</field>
                         <value name="ARG">
                           <block type="py_math_op">
                             <field name="OP">-</field>
@@ -58,7 +58,7 @@
             <field name="PRE">3枚のときの手数: </field>
             <value name="VAR">
               <block type="py_call_val">
-                <field name="NAME">hanoi_moves</field>
+                <field name="NAME" variabletype="function">hanoi_moves</field>
                 <value name="ARG"><block type="val_number"><field name="NUM">3</field></block></value>
               </block>
             </value>
@@ -72,7 +72,7 @@
                 <field name="PRE">10枚のときの手数: </field>
                 <value name="VAR">
                   <block type="py_call_val">
-                    <field name="NAME">hanoi_moves</field>
+                    <field name="NAME" variabletype="function">hanoi_moves</field>
                     <value name="ARG"><block type="val_number"><field name="NUM">10</field></block></value>
                   </block>
                 </value>

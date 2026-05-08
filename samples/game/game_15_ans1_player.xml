@@ -6,7 +6,7 @@
   </variables>
   <!-- 課題4-16-1: player.py の move_x に speed 引数を追加 -->
   <block type="py_def_args2" x="20" y="20">
-    <field name="NAME">move_x</field>
+    <field name="NAME" variabletype="function">move_x</field>
     <field name="PARAM1">px</field>
     <field name="PARAM2">speed=4</field>
     <statement name="BODY">

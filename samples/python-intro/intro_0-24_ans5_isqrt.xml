@@ -7,7 +7,7 @@
     <variable id="var_mid">mid</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">isqrt</field>
+    <field name="NAME" variabletype="function">isqrt</field>
     <field name="PARAM" id="var_n">n</field>
     <statement name="BODY">
       <block type="var_set">
@@ -119,7 +119,7 @@
       <block type="py_print">
         <value name="VALUE">
           <block type="py_call_val">
-            <field name="NAME">isqrt</field>
+            <field name="NAME" variabletype="function">isqrt</field>
             <value name="ARG"><block type="val_number"><field name="NUM">25</field></block></value>
           </block>
         </value>
@@ -127,7 +127,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">isqrt</field>
+                <field name="NAME" variabletype="function">isqrt</field>
                 <value name="ARG"><block type="val_number"><field name="NUM">30</field></block></value>
               </block>
             </value>
@@ -135,7 +135,7 @@
               <block type="py_print">
                 <value name="VALUE">
                   <block type="py_call_val">
-                    <field name="NAME">isqrt</field>
+                    <field name="NAME" variabletype="function">isqrt</field>
                     <value name="ARG"><block type="val_number"><field name="NUM">144</field></block></value>
                   </block>
                 </value>

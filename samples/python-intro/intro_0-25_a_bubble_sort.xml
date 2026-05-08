@@ -8,7 +8,7 @@
       <variable id="var_tmp">tmp</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">bubble_sort</field>
+    <field name="NAME" variabletype="function">bubble_sort</field>
     <field name="PARAM" id="var_data">data</field>
     <statement name="BODY">
       <block type="var_set">
@@ -137,7 +137,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">bubble_sort</field>
+                <field name="NAME" variabletype="function">bubble_sort</field>
                 <value name="ARG"><block type="val_var"><field name="VAR" id="var_data">data</field></block></value>
               </block>
             </value>

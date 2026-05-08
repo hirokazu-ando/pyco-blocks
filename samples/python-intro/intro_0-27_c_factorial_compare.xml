@@ -6,7 +6,7 @@
     <variable id="vr">result</variable>
   </variables>
   <block type="py_def" x="30" y="30">
-    <field name="NAME">factorial_recursive</field>
+    <field name="NAME" variabletype="function">factorial_recursive</field>
     <field name="PARAM" id="vn">n</field>
     <statement name="BODY">
       <block type="pico_if">
@@ -31,7 +31,7 @@
                 <value name="LEFT"><block type="val_var"><field name="VAR" id="vn">n</field></block></value>
                 <value name="RIGHT">
                   <block type="py_call_val">
-                    <field name="NAME">factorial_recursive</field>
+                    <field name="NAME" variabletype="function">factorial_recursive</field>
                     <value name="ARG">
                       <block type="py_math_op">
                         <field name="OP">-</field>
@@ -49,7 +49,7 @@
     </statement>
     <next>
       <block type="py_def">
-        <field name="NAME">factorial_iterative</field>
+        <field name="NAME" variabletype="function">factorial_iterative</field>
         <field name="PARAM" id="vn">n</field>
         <statement name="BODY">
           <block type="var_set">
@@ -86,7 +86,7 @@
           <block type="py_print">
             <value name="VALUE">
               <block type="py_call_val">
-                <field name="NAME">factorial_recursive</field>
+                <field name="NAME" variabletype="function">factorial_recursive</field>
                 <value name="ARG"><block type="val_number"><field name="NUM">10</field></block></value>
               </block>
             </value>
@@ -94,7 +94,7 @@
               <block type="py_print">
                 <value name="VALUE">
                   <block type="py_call_val">
-                    <field name="NAME">factorial_iterative</field>
+                    <field name="NAME" variabletype="function">factorial_iterative</field>
                     <value name="ARG"><block type="val_number"><field name="NUM">10</field></block></value>
                   </block>
                 </value>

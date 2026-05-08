@@ -41,20 +41,20 @@
                                     </value>
                                     <statement name="DO0">
                                       <block type="py_call_stmt">
-                                        <field name="NAME">update_play</field>
+                                        <field name="NAME" variabletype="function">update_play</field>
                                         <next>
                                           <block type="py_call_stmt">
-                                            <field name="NAME">draw_play</field>
+                                            <field name="NAME" variabletype="function">draw_play</field>
                                           </block>
                                         </next>
                                       </block>
                                     </statement>
                                     <statement name="ELSE">
                                       <block type="py_call_stmt">
-                                        <field name="NAME">update_over</field>
+                                        <field name="NAME" variabletype="function">update_over</field>
                                         <next>
                                           <block type="py_call_stmt">
-                                            <field name="NAME">draw_over</field>
+                                            <field name="NAME" variabletype="function">draw_over</field>
                                           </block>
                                         </next>
                                       </block>
