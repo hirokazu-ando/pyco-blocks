@@ -4695,6 +4695,36 @@ document.addEventListener('DOMContentLoaded', function() {
   applyMode(_urlMode === 'micropython' ? 'micropython' : (_urlMode === 'game' ? 'game' : 'python'), false);
 
   // URLパラメータ ?src=path/to/file.xml でワークスペースにXMLを自動読み込み
+  // ルートが <project> ならマルチファイルとして展開、 <xml> なら従来通り単一ロード
+  function _loadProjectXml(projectEl) {
+    var fileEls = projectEl.querySelectorAll(':scope > file');
+    if (fileEls.length === 0) return;
+    pyFiles = [];
+    fileEls.forEach(function(fileEl) {
+      var name = fileEl.getAttribute('name') || 'unnamed.py';
+      var xmlEl = fileEl.querySelector(':scope > xml');
+      var xmlText = xmlEl ? Blockly.Xml.domToText(xmlEl) : '';
+      pyFiles.push({ name: name, content: '', blockXml: xmlText });
+    });
+    var mainIdx = pyFiles.findIndex(function(f) { return f.name === 'main.py'; });
+    activeFileIdx = mainIdx >= 0 ? mainIdx : 0;
+    workspace.clear();
+    if (pyFiles[activeFileIdx].blockXml) {
+      try {
+        var dom = new DOMParser().parseFromString(pyFiles[activeFileIdx].blockXml, 'text/xml');
+        Blockly.Xml.domToWorkspace(dom.documentElement, workspace);
+      } catch (e) { console.warn('project main load failed:', e); }
+    }
+    if (currentMode === 'game') {
+      var tbId = activeFileIdx === 0 ? 'toolbox-game' : 'toolbox-game-module';
+      workspace.updateToolbox(document.getElementById(tbId));
+    } else if (currentMode === 'python') {
+      var tbId2 = activeFileIdx === 0 ? 'toolbox-python' : 'toolbox-module';
+      workspace.updateToolbox(document.getElementById(tbId2));
+    }
+    if (typeof renderFileTabs === 'function') renderFileTabs();
+  }
+
   const _urlSrc = _urlParams.get('src');
   if (_urlSrc) {
     window.__PCO_LAST_XML_SRC = _urlSrc;
@@ -4702,7 +4732,12 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(function(r) { return r.ok ? r.text() : Promise.reject('HTTP ' + r.status); })
       .then(function(xmlText) {
         var dom = Blockly.utils.xml.textToDom(xmlText);
-        Blockly.Xml.domToWorkspace(dom, workspace);
+        var rootName = (dom.tagName || dom.localName || '').toLowerCase();
+        if (rootName === 'project') {
+          _loadProjectXml(dom);
+        } else {
+          Blockly.Xml.domToWorkspace(dom, workspace);
+        }
       })
       .catch(function(err) { console.warn('PycoBlocks: ?src= load failed:', err); });
   }

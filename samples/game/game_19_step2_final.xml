@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xml xmlns="https://developers.google.com/blockly/xml">
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="https://developers.google.com/blockly/xml"><file name="game_funcs.py"><xml xmlns="https://developers.google.com/blockly/xml">
   <variables>
-    <variable id="g19s2_px">px</variable>
-    <variable id="g19s2_bul">bullets</variable>
-    <variable id="g19s2_b">b</variable>
-    <variable id="g19s2_run">running</variable>
+    <variable id="v19px">px</variable>
+    <variable id="v19bs">bullets</variable>
   </variables>
   <block type="game_init" x="20" y="20">
     <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
@@ -12,116 +9,169 @@
     <value name="TITLE"><block type="val_str"><field name="TEXT">Bullet List</field></block></value>
     <next>
       <block type="var_set">
-        <field name="VAR" id="g19s2_px">px</field>
+        <field name="VAR" id="v19px">px</field>
         <value name="VALUE"><block type="val_number"><field name="NUM">300</field></block></value>
         <next>
           <block type="var_set">
-            <field name="VAR" id="g19s2_bul">bullets</field>
-            <value name="VALUE"><block type="py_list_empty" /></value>
+            <field name="VAR" id="v19bs">bullets</field>
+            <value name="VALUE"><block type="py_list_empty"/></value>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml></file><file name="update_play.py"><xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v19px">px</variable>
+    <variable id="v19bs">bullets</variable>
+    <variable id="v19b">b</variable>
+  </variables>
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME" variabletype="function">update_play</field>
+    <statement name="BODY">
+      <block type="pico_if">
+        <mutation elseif="0" else="0"/>
+        <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_RIGHT</field></block></value>
+        <statement name="DO0">
+          <block type="var_change">
+            <field name="VAR" id="v19px">px</field>
+            <value name="AMOUNT"><block type="val_number"><field name="NUM">4</field></block></value>
+          </block>
+        </statement>
+        <next>
+          <block type="pico_if">
+            <mutation elseif="0" else="0"/>
+            <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_LEFT</field></block></value>
+            <statement name="DO0">
+              <block type="var_change">
+                <field name="VAR" id="v19px">px</field>
+                <value name="AMOUNT"><block type="val_number"><field name="NUM">-4</field></block></value>
+              </block>
+            </statement>
             <next>
-              <block type="var_set">
-                <field name="VAR" id="g19s2_run">running</field>
-                <value name="VALUE"><block type="val_bool"><field name="BOOL">True</field></block></value>
+              <block type="pico_if">
+                <mutation elseif="0" else="0"/>
+                <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_SPACE</field></block></value>
+                <statement name="DO0">
+                  <block type="py_list_append">
+                    <field name="LIST" id="v19bs">bullets</field>
+                    <value name="VALUE">
+                      <block type="py_list_literal">
+                        <mutation items="2"/>
+                        <value name="ITEM0">
+                          <block type="py_math_op">
+                            <field name="OP">+</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
+                          </block>
+                        </value>
+                        <value name="ITEM1"><block type="val_number"><field name="NUM">330</field></block></value>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
                 <next>
-                  <block type="game_loop">
+                  <block type="py_for_list">
+                    <field name="VAR" id="v19b">b</field>
+                    <field name="LIST" id="v19bs">bullets</field>
                     <statement name="DO">
-                      <block type="game_events">
+                      <block type="py_list_set">
+                        <field name="LIST" id="v19b">b</field>
+                        <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                        <value name="VALUE">
+                          <block type="py_math_op">
+                            <field name="OP">-</field>
+                            <value name="LEFT">
+                              <block type="py_list_get">
+                                <field name="LIST" id="v19b">b</field>
+                                <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                              </block>
+                            </value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">6</field></block></value>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml></file><file name="draw_play.py"><xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v19px">px</variable>
+    <variable id="v19bs">bullets</variable>
+    <variable id="v19b">b</variable>
+  </variables>
+  <block type="py_def_noarg" x="20" y="20">
+    <field name="NAME" variabletype="function">draw_play</field>
+    <statement name="BODY">
+      <block type="game_draw_image">
+        <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/player_ship.svg</field></block></value>
+        <value name="X"><block type="val_var"><field name="VAR" id="v19px">px</field></block></value>
+        <value name="Y"><block type="val_number"><field name="NUM">330</field></block></value>
+        <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
+        <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
+        <next>
+          <block type="py_for_list">
+            <field name="VAR" id="v19b">b</field>
+            <field name="LIST" id="v19bs">bullets</field>
+            <statement name="DO">
+              <block type="game_draw_image">
+                <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/bullet.svg</field></block></value>
+                <value name="X">
+                  <block type="py_list_get">
+                    <field name="LIST" id="v19b">b</field>
+                    <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
+                  </block>
+                </value>
+                <value name="Y">
+                  <block type="py_list_get">
+                    <field name="LIST" id="v19b">b</field>
+                    <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
+                  </block>
+                </value>
+                <value name="W"><block type="val_number"><field name="NUM">16</field></block></value>
+                <value name="H"><block type="val_number"><field name="NUM">24</field></block></value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml></file><file name="main.py"><xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="py_import_as" x="20" y="20">
+    <field name="MODULE">game_funcs</field>
+    <field name="ALIAS">gf</field>
+    <next>
+      <block type="py_from_import">
+        <field name="MODULE">update_play</field>
+        <field name="NAMES">update_play</field>
+        <next>
+          <block type="py_from_import">
+            <field name="MODULE">draw_play</field>
+            <field name="NAMES">draw_play</field>
+            <next>
+              <block type="game_loop">
+                <statement name="DO">
+                  <block type="game_events">
+                    <next>
+                      <block type="game_fill">
+                        <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#0a0a2e</field></block></value>
                         <next>
-                          <block type="game_fill">
-                            <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#0a0a2e</field></block></value>
+                          <block type="py_call_stmt">
+                            <field name="NAME" variabletype="function">update_play</field>
                             <next>
-                              <block type="pico_if">
-                                <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_RIGHT</field></block></value>
-                                <statement name="DO0">
-                                  <block type="var_change">
-                                    <field name="VAR" id="g19s2_px">px</field>
-                                    <value name="AMOUNT"><block type="val_number"><field name="NUM">4</field></block></value>
-                                  </block>
-                                </statement>
+                              <block type="py_call_stmt">
+                                <field name="NAME" variabletype="function">draw_play</field>
                                 <next>
-                                  <block type="pico_if">
-                                    <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_LEFT</field></block></value>
-                                    <statement name="DO0">
-                                      <block type="var_change">
-                                        <field name="VAR" id="g19s2_px">px</field>
-                                        <value name="AMOUNT"><block type="val_number"><field name="NUM">-4</field></block></value>
-                                      </block>
-                                    </statement>
-                                    <next>
-                                      <block type="pico_if">
-                                        <value name="IF0"><block type="game_key_pressed"><field name="KEY">K_SPACE</field></block></value>
-                                        <statement name="DO0">
-                                          <block type="py_list_append">
-                                            <field name="LIST" id="g19s2_bul">bullets</field>
-                                            <value name="VALUE">
-                                              <block type="py_list_literal">
-                                                <mutation items="2" />
-                                                <value name="ITEM0">
-                                                  <block type="py_math_op">
-                                                    <field name="OP">+</field>
-                                                    <value name="LEFT"><block type="val_var"><field name="VAR" id="g19s2_px">px</field></block></value>
-                                                    <value name="RIGHT"><block type="val_number"><field name="NUM">20</field></block></value>
-                                                  </block>
-                                                </value>
-                                                <value name="ITEM1"><block type="val_number"><field name="NUM">330</field></block></value>
-                                              </block>
-                                            </value>
-                                          </block>
-                                        </statement>
-                                        <next>
-                                          <block type="py_for_list">
-                                            <field name="VAR" id="g19s2_b">b</field>
-                                            <field name="LIST" id="g19s2_bul">bullets</field>
-                                            <statement name="DO">
-                                              <block type="py_list_set">
-                                                <field name="LIST" id="g19s2_b">b</field>
-                                                <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
-                                                <value name="VALUE"><block type="py_custom_expr"><field name="CODE">b[1] - 6</field></block></value>
-                                              </block>
-                                            </statement>
-                                            <next>
-                                              <block type="game_draw_image">
-                                                <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/player_ship.svg</field></block></value>
-                                                <value name="X"><block type="val_var"><field name="VAR" id="g19s2_px">px</field></block></value>
-                                                <value name="Y"><block type="val_number"><field name="NUM">330</field></block></value>
-                                                <value name="W"><block type="val_number"><field name="NUM">48</field></block></value>
-                                                <value name="H"><block type="val_number"><field name="NUM">48</field></block></value>
-                                                <next>
-                                                  <block type="py_for_list">
-                                                    <field name="VAR" id="g19s2_b">b</field>
-                                                    <field name="LIST" id="g19s2_bul">bullets</field>
-                                                    <statement name="DO">
-                                                      <block type="game_draw_image">
-                                                        <value name="URL"><block type="game_image_preset"><field name="IMG">assets/game-icons/bullet.svg</field></block></value>
-                                                        <value name="X">
-                                                          <block type="py_list_get">
-                                                            <field name="LIST" id="g19s2_b">b</field>
-                                                            <value name="INDEX"><block type="val_number"><field name="NUM">0</field></block></value>
-                                                          </block>
-                                                        </value>
-                                                        <value name="Y">
-                                                          <block type="py_list_get">
-                                                            <field name="LIST" id="g19s2_b">b</field>
-                                                            <value name="INDEX"><block type="val_number"><field name="NUM">1</field></block></value>
-                                                          </block>
-                                                        </value>
-                                                        <value name="W"><block type="val_number"><field name="NUM">16</field></block></value>
-                                                        <value name="H"><block type="val_number"><field name="NUM">24</field></block></value>
-                                                      </block>
-                                                    </statement>
-                                                    <next>
-                                                      <block type="game_flip">
-                                                        <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
-                                                      </block>
-                                                    </next>
-                                                  </block>
-                                                </next>
-                                              </block>
-                                            </next>
-                                          </block>
-                                        </next>
-                                      </block>
-                                    </next>
+                                  <block type="game_flip">
+                                    <value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value>
                                   </block>
                                 </next>
                               </block>
@@ -129,11 +179,11 @@
                           </block>
                         </next>
                       </block>
-                    </statement>
-                    <next>
-                      <block type="game_quit" />
                     </next>
                   </block>
+                </statement>
+                <next>
+                  <block type="game_quit"/>
                 </next>
               </block>
             </next>
@@ -142,4 +192,4 @@
       </block>
     </next>
   </block>
-</xml>
+</xml></file></project>
