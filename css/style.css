@@ -1807,6 +1807,13 @@ h1 {
   border-bottom-color: var(--accent-green);
   background: rgba(0,255,65,0.06);
 }
+.file-tab-name.editing {
+  background: rgba(0,255,65,0.12);
+  outline: 1px solid var(--accent-green);
+  padding: 0 2px;
+  cursor: text;
+  user-select: text;
+}
 .file-tab-close {
   cursor: pointer;
   opacity: 0.35;

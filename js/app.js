@@ -144,6 +144,56 @@ document.addEventListener('DOMContentLoaded', function() {
       const name = document.createElement('span');
       name.className = 'file-tab-name';
       name.textContent = f.name;
+      // ダブルクリックでインライン編集（main.py は除く）
+      if (i !== 0) {
+        name.title = 'ダブルクリックで名前を変更';
+        name.addEventListener('dblclick', function(e) {
+          e.stopPropagation();
+          const oldName = f.name;
+          name.contentEditable = 'true';
+          name.classList.add('editing');
+          // テキスト全選択
+          const range = document.createRange();
+          range.selectNodeContents(name);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          name.focus();
+
+          let committed = false;
+          function commit() {
+            if (committed) return;
+            committed = true;
+            name.contentEditable = 'false';
+            name.classList.remove('editing');
+            let newName = (name.textContent || '').trim();
+            if (!newName) { name.textContent = oldName; return; }
+            if (!/\.py$/i.test(newName) && !/\.[a-z0-9]+$/i.test(newName)) newName += '.py';
+            if (newName === oldName) { name.textContent = oldName; return; }
+            if (pyFiles.some(function(g, j) { return j !== i && g.name === newName; })) {
+              alert('同じ名前のファイルが既にあります: ' + newName);
+              name.textContent = oldName;
+              return;
+            }
+            saveCurrentFile();
+            pyFiles[i].name = newName;
+            f.name = newName;
+            renderFileTabs();
+          }
+          function cancel() {
+            if (committed) return;
+            committed = true;
+            name.contentEditable = 'false';
+            name.classList.remove('editing');
+            name.textContent = oldName;
+          }
+          name.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Enter') { ev.preventDefault(); commit(); name.blur(); }
+            else if (ev.key === 'Escape') { ev.preventDefault(); cancel(); name.blur(); }
+          });
+          name.addEventListener('blur', commit, { once: true });
+        });
+      }
       tab.appendChild(name);
       if (i !== 0) {
         const close = document.createElement('span');
@@ -185,7 +235,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         tab.appendChild(close);
       }
-      tab.addEventListener('click', function() { switchFile(i); });
+      tab.addEventListener('click', function() {
+        if (name.contentEditable === 'true') return;
+        switchFile(i);
+      });
       bar.appendChild(tab);
     });
     const addBtn = document.createElement('button');
@@ -596,6 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_import_module': return `モジュール「${block.getFieldValue('MODULE')}」を読み込む（import）`;
       case 'py_import_as':     return `モジュール「${block.getFieldValue('MODULE')}」を別名「${block.getFieldValue('ALIAS')}」で読み込む（import as）`;
       case 'py_from_import':   return `モジュール「${block.getFieldValue('MODULE')}」から「${block.getFieldValue('NAMES')}」を読み込む（from import）`;
+      case 'py_from_import_multi': return `モジュール「${block.getFieldValue('MODULE')}」から「${block.getFieldValue('NAMES')}」を読み込む（from import 複数）`;
       case 'py_bisect_left':   return `整列済みリスト「${getVarName(block, 'LIST')}」で値が入る左端の位置（bisect_left）`;
       case 'py_bisect_right':  return `整列済みリスト「${getVarName(block, 'LIST')}」で値が入る右端の位置（bisect_right）`;
       case 'py_str_isdigit':   return '文字列が数字だけか（isdigit）';
@@ -1979,6 +2033,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const fiMod   = block.getFieldValue('MODULE') || '';
         const fiNames = block.getFieldValue('NAMES')  || '';
         code = appendLocal(code, indent + `from ${fiMod} import ${fiNames}\n`);
+        break;
+      }
+      case 'py_from_import_multi': {
+        const fimMod   = block.getFieldValue('MODULE') || '';
+        const fimNames = (block.getFieldValue('NAMES') || '')
+          .split(',').map(s => s.trim()).filter(Boolean).join(', ');
+        code = appendLocal(code, indent + `from ${fimMod} import ${fimNames}\n`);
         break;
       }
       case 'py_deque_append': {

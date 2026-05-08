@@ -2120,6 +2120,24 @@ Blockly.Blocks['py_from_import'] = {
   }
 };
 
+// from モジュール import 名前1, 名前2, ...（複数名・自由入力）
+Blockly.Blocks['py_from_import_multi'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('モジュール')
+      .appendField(new Blockly.FieldDropdown(_moduleOptions), 'MODULE')
+      .appendField('から')
+      .appendField(new Blockly.FieldTextInput('screen, clock, state'), 'NAMES')
+      .appendField('を読み込む（from import）');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.modules);
+    this.setTooltip('モジュールから複数の名前を読み込みます。NAMESはカンマ区切りで複数指定できます（例: screen, clock, state）');
+    this.setHelpUrl('');
+  }
+};
+
 // bisect.bisect_left
 Blockly.Blocks['py_bisect_left'] = {
   init: function() {
