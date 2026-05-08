@@ -686,16 +686,11 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_set_empty':     return '空のセット set()';
       case 'py_import_module': return `モジュール「${block.getFieldValue('MODULE')}」を読み込む（import）`;
       case 'py_import_as':     return `モジュール「${block.getFieldValue('MODULE')}」を別名「${block.getFieldValue('ALIAS')}」で読み込む（import as）`;
-      case 'py_from_import':   return `モジュール「${block.getFieldValue('MODULE')}」から「${block.getFieldValue('NAMES')}」を読み込む（from import）`;
       case 'py_from_import_multi': {
         const _fimNames = [];
         for (let k = 0; block.getField && block.getField('NAME' + k); k++) {
           const v = block.getFieldValue('NAME' + k);
           if (v && v !== '__none__') _fimNames.push(v);
-        }
-        if (_fimNames.length === 0) {
-          const legacy = block.getFieldValue('NAMES') || '';
-          legacy.split(',').map(s => s.trim()).filter(Boolean).forEach(s => _fimNames.push(s));
         }
         return `モジュール「${block.getFieldValue('MODULE')}」から「${_fimNames.join(', ')}」を読み込む（from import 複数）`;
       }
@@ -2078,23 +2073,12 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `import ${iaMod} as ${iaAlias}\n`);
         break;
       }
-      case 'py_from_import': {
-        const fiMod   = block.getFieldValue('MODULE') || '';
-        const fiNames = block.getFieldValue('NAMES')  || '';
-        code = appendLocal(code, indent + `from ${fiMod} import ${fiNames}\n`);
-        break;
-      }
       case 'py_from_import_multi': {
         const fimMod = block.getFieldValue('MODULE') || '';
         const fimList = [];
         for (let k = 0; block.getField && block.getField('NAME' + k); k++) {
           const v = block.getFieldValue('NAME' + k);
           if (v && v !== '__none__') fimList.push(v);
-        }
-        // 旧形式（単一の NAMES フィールド）も読み取れるようフォールバック
-        if (fimList.length === 0) {
-          const legacy = block.getFieldValue('NAMES') || '';
-          legacy.split(',').map(s => s.trim()).filter(Boolean).forEach(s => fimList.push(s));
         }
         const fimNames = fimList.join(', ');
         code = appendLocal(code, indent + `from ${fimMod} import ${fimNames}\n`);

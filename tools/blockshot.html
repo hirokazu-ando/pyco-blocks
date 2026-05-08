@@ -82,16 +82,19 @@
             if (mod) { modSet[mod] = true; if (!funcMap[mod]) funcMap[mod] = {}; }
             if (mod && func) funcMap[mod][func] = true;
           });
-          // import系ブロック（py_import_module / py_import_as / py_from_import）からも収集
-          xmlDoc.querySelectorAll('block[type="py_import_module"],block[type="py_import_as"],block[type="py_from_import"]').forEach(function(b) {
+          // import系ブロック（py_import_module / py_import_as / py_from_import_multi）からも収集
+          xmlDoc.querySelectorAll('block[type="py_import_module"],block[type="py_import_as"],block[type="py_from_import_multi"]').forEach(function(b) {
             var mf = b.querySelector(':scope > field[name="MODULE"]');
-            var nf = b.querySelector(':scope > field[name="NAMES"]');
             var mod = mf ? mf.textContent.trim() : '';
-            var names = nf ? nf.textContent.trim() : '';
             if (mod) { modSet[mod] = true; if (!funcMap[mod]) funcMap[mod] = {}; }
-            if (mod && names) {
-              names.split(/\s*,\s*/).forEach(function(n) { if (n) funcMap[mod][n] = true; });
-            }
+            // py_from_import_multi: NAME0, NAME1, ...
+            b.querySelectorAll(':scope > field').forEach(function(f) {
+              var nm = f.getAttribute('name') || '';
+              if (/^NAME\d+$/.test(nm)) {
+                var v = f.textContent.trim();
+                if (mod && v) funcMap[mod][v] = true;
+              }
+            });
           });
           var modNames = Object.keys(modSet);
           if (modNames.length > 0) {

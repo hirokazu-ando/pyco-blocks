@@ -7,22 +7,46 @@
     <field name="MODULE">game_funcs</field>
     <field name="ALIAS">gf</field>
     <next>
-      <block type="py_from_import">
+      <block type="py_from_import_multi">
+        
+        
+        <mutation items="1"/>
+        
+        
         <field name="MODULE">update_play</field>
-        <field name="NAMES">update_play</field>
-        <next>
-          <block type="py_from_import">
+        
+        
+        <field name="NAME0">update_play</field><next>
+          <block type="py_from_import_multi">
+            
+            
+            <mutation items="1"/>
+            
+            
             <field name="MODULE">draw_play</field>
-            <field name="NAMES">draw_play</field>
-            <next>
-              <block type="py_from_import">
+            
+            
+            <field name="NAME0">draw_play</field><next>
+              <block type="py_from_import_multi">
+                
+                
+                <mutation items="1"/>
+                
+                
                 <field name="MODULE">update_over</field>
-                <field name="NAMES">update_over</field>
-                <next>
-                  <block type="py_from_import">
+                
+                
+                <field name="NAME0">update_over</field><next>
+                  <block type="py_from_import_multi">
+                    
+                    
+                    <mutation items="1"/>
+                    
+                    
                     <field name="MODULE">draw_over</field>
-                    <field name="NAMES">draw_over</field>
-                    <next>
+                    
+                    
+                    <field name="NAME0">draw_over</field><next>
                       <block type="game_loop">
                         <statement name="DO">
                           <block type="game_events">

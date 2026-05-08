@@ -8,10 +8,16 @@
     <variable id="vne">neighbors</variable>
     <variable id="vnx">nx</variable>
   </variables>
-  <block type="py_from_import" x="30" y="30">
+  <block type="py_from_import_multi" x="30" y="30">
+    
+    
+    <mutation items="1"/>
+    
+    
     <field name="MODULE">collections</field>
-    <field name="NAMES">deque</field>
-    <next>
+    
+    
+    <field name="NAME0">deque</field><next>
       <block type="var_set">
         <field name="VAR" id="vr">routes</field>
         <value name="VALUE">

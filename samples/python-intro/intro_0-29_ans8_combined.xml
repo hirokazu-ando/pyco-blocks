@@ -11,10 +11,16 @@
     <variable id="vl">left</variable>
     <variable id="vr">right</variable>
   </variables>
-  <block type="py_from_import" x="30" y="30">
+  <block type="py_from_import_multi" x="30" y="30">
+    
+    
+    <mutation items="1"/>
+    
+    
     <field name="MODULE">collections</field>
-    <field name="NAMES">deque</field>
-    <next>
+    
+    
+    <field name="NAME0">deque</field><next>
       <block type="py_import_module">
         <field name="MODULE">bisect</field>
         <next>
