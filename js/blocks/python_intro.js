@@ -2049,18 +2049,18 @@ Blockly.Blocks['py_set_empty'] = {
   }
 };
 
-// import 文
+// import 文（自作モジュールをファイルタブからプルダウン選択）
 Blockly.Blocks['py_import_module'] = {
   init: function() {
     this.appendDummyInput()
       .appendField('モジュール')
-      .appendField(new Blockly.FieldTextInput('bisect'), 'MODULE')
+      .appendField(new Blockly.FieldDropdown(_moduleOptions), 'MODULE')
       .appendField('を読み込む（import）');
     this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.modules);
-    this.setTooltip('標準ライブラリなどのモジュールを読み込みます（import モジュール名）');
+    this.setTooltip('自作モジュール（ファイルタブで作成済み）を読み込みます。py_module_call_stmt と同じプルダウン候補を共有します');
     this.setHelpUrl('');
   }
 };
