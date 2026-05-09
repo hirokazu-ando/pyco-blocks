@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+  </variables>
+  <block type="py_def_args2"><field name="NAME" variabletype="function">update_over</field><field name="PARAM1">screen</field><field name="PARAM2">state</field><statement name="BODY"><block type="py_custom_stmt"><field name="CODE">pass</field></block></statement></block>
+</xml>
