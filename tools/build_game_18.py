@@ -34,7 +34,7 @@ from build_helpers import wp_get, wp_update  # noqa: E402
 
 EYECATCH_URL = (
     "https://sakigake-robo.com/wp-content/uploads/2026/05/"
-    "eyecatch_game-5-19_shoot-bullets.png"
+    "eyecatch_game-5-19_shoot.png"
 )
 
 
@@ -882,8 +882,8 @@ SPEC = Spec(
          '<code>if K_SPACE: bxs.append(...)</code>'),
         ("クールダウン",
          "「次の発射までに必ず待つフレーム数」を持たせて連射を制限する仕組み。"
-         "<code>state[\"cooldown\"]</code> を毎フレーム 1 減らし、0 のときだけ発射 + 6 にリセット",
-         '<code>if state["cooldown"] == 0:</code>'),
+         "<code>state[\"cooldown\"]</code> を毎フレーム 1 減らし、0 以下のときだけ発射 + 6 にリセット",
+         '<code>if state["cooldown"] &lt;= 0:</code>'),
     ],
     file_roles_h2="ファイル構成のおさらい（前回まで作った 6 ファイル）",
     file_roles=[
@@ -1107,8 +1107,8 @@ SPEC = Spec(
                         '<code>state["cooldown"] = 0</code> を 1 行追加します。'
                         '<code>update_play.py</code> では弾の発射処理を：'
                         '<br>① <code>state["cooldown"] = state["cooldown"] - 1</code>（毎フレーム 1 減らす）'
-                        '<br>② <code>if state["cooldown"] == 0:</code> の中に'
-                        '<code>if K_SPACE:</code> をネスト（cooldown が 0 のときだけ発射可能）'
+                        '<br>② <code>if state["cooldown"] &lt;= 0:</code> の中に'
+                        '<code>if K_SPACE:</code> をネスト（cooldown が 0 以下のときだけ発射可能）'
                         '<br>③ 発射時に <code>bxs.append(...)</code>, <code>bys.append(...)</code> に加えて'
                         '<code>state["cooldown"] = 6</code> も実行（6 フレーム間は撃てなくする）'
                         '<br>に書き換えます。'
@@ -1119,7 +1119,7 @@ SPEC = Spec(
                 'game_funcs.py': 'state 初期化に <code>state["cooldown"] = 0</code> を 1 行追加します。',
                 'update_play.py': '発射処理を 2 重 if に書き換えます。'
                                   '<code>state["cooldown"] = state["cooldown"] - 1</code>（毎フレーム）→'
-                                  '<code>if state["cooldown"] == 0:</code> →'
+                                  '<code>if state["cooldown"] &lt;= 0:</code> →'
                                   '<code>if K_SPACE:</code> →'
                                   '<code>bxs.append(...)</code> + <code>bys.append(...)</code> + '
                                   '<code>state["cooldown"] = 6</code> の流れで書きます。',
@@ -1152,7 +1152,7 @@ SPEC = Spec(
     ],
     next_article_id=5002,
     next_article_title='【Pygameでゲーム⑳】◯◯◯',
-    cache_buster="20260509a",
+    cache_buster="20260509c",
 )
 
 
