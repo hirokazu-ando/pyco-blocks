@@ -542,7 +542,7 @@ SPEC = Spec(
         '次の㉕からはついに Part 6 — <strong>ジャンプと重力</strong> の世界へ進みます。',
     ],
     eyecatch_basename="eyecatch_game_23_complete",
-    iframe_xml="game_23_step2_final.xml",
+    iframe_xml="game_23_step1_final.xml",
     learn_bullets=[
         '<code>state["mode"]</code> に <strong>"play" / "over" / "clear"</strong> の'
         '3 値を持たせ、<code>main.py</code> 1 か所の if/else で<strong>処理を分岐</strong>させる',
@@ -821,7 +821,7 @@ SPEC = Spec(
     ],
     next_article_id=5154,
     next_article_title='【Pygameでゲーム㉕】ジャンプと重力',
-    cache_buster="20260509a",
+    cache_buster="20260509e",
 )
 
 
