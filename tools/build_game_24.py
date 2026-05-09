@@ -38,7 +38,7 @@ from build_helpers import wp_get, wp_update  # noqa: E402
 
 EYECATCH_URL = (
     "https://sakigake-robo.com/wp-content/uploads/2026/05/"
-    "eyecatch_game-5-25_jump.png"
+    "eyecatch_game-5-25_title.png"
 )
 
 
@@ -603,7 +603,7 @@ SPEC = Spec(
     ],
     next_article_id=5157,
     next_article_title='【Pygameでゲーム㉖】障害物を置いて当たり判定しよう',
-    cache_buster="20260509e",
+    cache_buster="20260509i",
 )
 
 
