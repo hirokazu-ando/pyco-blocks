@@ -996,7 +996,9 @@ Blockly.Blocks['py_dict_literal'] = {
 
   init: function() {
     const countField = new Blockly.FieldDropdown([
-      ['1件', '1'], ['2件', '2'], ['3件', '3'], ['4件', '4']
+      ['1件', '1'], ['2件', '2'], ['3件', '3'], ['4件', '4'],
+      ['5件', '5'], ['6件', '6'], ['7件', '7'], ['8件', '8'],
+      ['9件', '9'], ['10件', '10']
     ]);
     this.appendDummyInput('TOP')
       .appendField('辞書 {')
@@ -1004,7 +1006,7 @@ Blockly.Blocks['py_dict_literal'] = {
     this.rebuildShape_();
     this.setOutput(true, null);
     this.setColour(P.dict);
-    this.setTooltip('辞書リテラルを作ります（例: {"name": "Taro", "age": 16}）。キーと値のペアを1〜4個設定できます。');
+    this.setTooltip('辞書リテラルを作ります（例: {"name": "Taro", "age": 16}）。キーと値のペアを1〜10個設定できます。');
     this.setHelpUrl('');
     // init 完了後にバリデーターを設定（init 中の早期発火を防ぐ）
     countField.setValidator(this.onCountChanged_.bind(this));
