@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+  </variables>
+  <block type="py_def_args2"><field name="NAME" variabletype="function">draw_over</field><field name="PARAM1">screen</field><field name="PARAM2">state</field><statement name="BODY"><block type="py_custom_stmt"><field name="CODE">screen.fill("#222244")
+_f1 = pygame.font.SysFont(None, 64)
+_f2 = pygame.font.SysFont(None, 32)
+screen.blit(_f1.render("CLEAR!", True, "#ffeb3b"), (220, 140))
+screen.blit(_f2.render("Solved in " + str(state["moves"]) + " moves", True, "#ffffff"), (200, 220))</field></block></statement></block>
+</xml>
