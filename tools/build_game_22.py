@@ -751,7 +751,7 @@ SPEC = Spec(
         '次の記事㉔「シューティング完成版」へつなげます。',
     ],
     eyecatch_basename="eyecatch_game_22_boss",
-    iframe_xml="game_22_step1_final.xml",
+    iframe_xml="game_23_step1_final.xml",
     learn_bullets=[
         '<code>state["frame"] &gt;= 600</code> + <code>state["boss_active"] == 0</code> '
         'の組み合わせで、<strong>1 回だけボスを起動</strong>させる出現パターン',
@@ -1047,7 +1047,7 @@ SPEC = Spec(
     ],
     next_article_id=5152,
     next_article_title='【Pygameでゲーム㉔】シューティング完成版',
-    cache_buster="20260509e",
+    cache_buster="20260509f",
 )
 
 
