@@ -3380,7 +3380,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const blob = new Blob([activeFile.content], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = currentMode === 'python' ? activeFile.name : 'main.py';
+    a.download = activeFile.name || 'main.py';
     a.click();
   });
 
