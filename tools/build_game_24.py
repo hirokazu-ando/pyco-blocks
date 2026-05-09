@@ -359,7 +359,7 @@ SPEC = Spec(
         '本格的な横スクロールアクションへ進化していきます。',
     ],
     eyecatch_basename="eyecatch_game_24_jump",
-    iframe_xml="game_24_step1_final.xml",
+    iframe_xml="game_24_step2_final.xml",
     learn_bullets=[
         '<code>state["vy"]</code>（縦速度）に <strong>重力 1</strong> を毎フレーム足し続ける'
         '<strong>「速度 ＋ 加速度」</strong>のレシピ',
@@ -602,8 +602,8 @@ SPEC = Spec(
         'ジャンプの上に重ねて、本格的な <strong>横スクロールアクション</strong> を作ります',
     ],
     next_article_id=5157,
-    next_article_title='【Pygameでゲーム㉖】障害物を置いて当たり判定しよう',
-    cache_buster="20260509i",
+    next_article_title='【Pygameでゲーム㉖】カメラの導入：ワールド座標と画面座標',
+    cache_buster="20260509k",
 )
 
 
