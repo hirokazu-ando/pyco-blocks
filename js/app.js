@@ -3779,11 +3779,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const demoBadge = document.getElementById('demo-badge');
     if (demoBadge) demoBadge.style.display = (mode === 'micropython' && !hasSerial) ? '' : 'none';
 
-    // Wokwi配線図ボタン（MicroPythonモードのみ表示）
-    const showWokwi = mode === 'micropython';
-    ['wokwi-sep', 'btn-wokwi'].forEach(id => {
+    // 配線図ボタン（MicroPythonモードのみ表示）
+    const showCircuit = mode === 'micropython';
+    ['circuit-sep', 'btn-circuit'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.style.display = showWokwi ? '' : 'none';
+      if (el) el.style.display = showCircuit ? '' : 'none';
     });
 
     // Python/ゲーム 実行UI と ゲームCanvas の切り替え
@@ -4974,52 +4974,76 @@ document.addEventListener('DOMContentLoaded', function() {
     );
   })();
 
-  // ===== Wokwi 配線図ボタン =====
+  // ===== 実態配線図ボタン =====
   (function() {
-    const modal   = document.getElementById('wokwi-modal');
-    const btnOpen = document.getElementById('btn-wokwi');
-    const btnClose= document.getElementById('wokwi-modal-close');
-    const btnCopy = document.getElementById('wokwi-btn-copy');
-    const btnDl   = document.getElementById('wokwi-btn-download');
-    const btnWokwi= document.getElementById('wokwi-btn-open');
-    const output  = document.getElementById('wokwi-json-output');
-    const summary = document.getElementById('wokwi-modal-summary');
+    const modal   = document.getElementById('circuit-modal');
+    const btnOpen = document.getElementById('btn-circuit');
+    const btnClose= document.getElementById('circuit-close');
+    const wrap    = document.getElementById('circuit-svg-wrap');
+    const summary = document.getElementById('circuit-summary');
+    const btnDlSvg= document.getElementById('circuit-dl-svg');
+    const btnDlPng= document.getElementById('circuit-dl-png');
+    const btnZoomIn = document.getElementById('circuit-zoom-in');
+    const btnZoomOut= document.getElementById('circuit-zoom-out');
+    const btnZoomFit= document.getElementById('circuit-zoom-fit');
     if (!modal || !btnOpen) return;
 
+    let currentScale = 1;
+    let currentSvgStr = '';
+
+    function applyZoom(scale) {
+      currentScale = Math.max(0.3, Math.min(3, scale));
+      const svgEl = wrap.querySelector('svg');
+      if (svgEl) {
+        svgEl.style.transform = `scale(${currentScale})`;
+        svgEl.style.transformOrigin = 'top left';
+      }
+    }
+
     btnOpen.addEventListener('click', function() {
-      if (typeof generateWokwiDiagram !== 'function') return;
-      const diagram = generateWokwiDiagram(workspace);
-      const json = JSON.stringify(diagram, null, 2);
-      output.value = json;
-      const partCount = diagram.parts.length - 1; // Pico除く
-      const connCount = diagram.connections.length;
-      const notes = diagram._notes || [];
-      const noteStr = notes.length ? '  ⚠ ' + notes.join(' / ') : '';
-      summary.textContent = `部品 ${partCount} 個 / 配線 ${connCount} 本  —  下のJSONをWokwiのdiagram.jsonに貼り付けてください${noteStr}`;
+      if (typeof generateCircuitSVG !== 'function') return;
+      const result = generateCircuitSVG(workspace);
+      currentSvgStr = result.svg;
+      wrap.innerHTML = result.svg;
+      summary.textContent = `部品 ${result.compCount} 個 / 接続 ${result.wireCount} 本`;
+      currentScale = 1;
+      applyZoom(1);
       modal.style.display = 'flex';
     });
 
     btnClose.addEventListener('click', () => { modal.style.display = 'none'; });
     modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
 
-    btnCopy.addEventListener('click', function() {
-      navigator.clipboard.writeText(output.value).then(() => {
-        btnCopy.textContent = '✅ コピーしました';
-        setTimeout(() => { btnCopy.textContent = '📋 JSONをコピー'; }, 2000);
-      });
-    });
+    btnZoomIn.addEventListener('click',  () => applyZoom(currentScale * 1.25));
+    btnZoomOut.addEventListener('click', () => applyZoom(currentScale * 0.8));
+    btnZoomFit.addEventListener('click', () => applyZoom(1));
 
-    if (btnDl) btnDl.addEventListener('click', function() {
-      const blob = new Blob([output.value], { type: 'application/json' });
+    if (btnDlSvg) btnDlSvg.addEventListener('click', function() {
+      const blob = new Blob([currentSvgStr], { type: 'image/svg+xml' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'diagram.json';
+      a.download = 'circuit.svg';
       a.click();
       URL.revokeObjectURL(a.href);
     });
 
-    btnWokwi.addEventListener('click', function() {
-      window.open('https://wokwi.com/projects/new/micropython-pi-pico', '_blank');
+    if (btnDlPng) btnDlPng.addEventListener('click', function() {
+      const svgEl = wrap.querySelector('svg');
+      if (!svgEl) return;
+      const w = svgEl.viewBox.baseVal.width  || svgEl.width.baseVal.value;
+      const h = svgEl.viewBox.baseVal.height || svgEl.height.baseVal.value;
+      const canvas = document.createElement('canvas');
+      canvas.width = w * 2; canvas.height = h * 2;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'circuit.png';
+        a.click();
+      };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(currentSvgStr);
     });
   })();
 

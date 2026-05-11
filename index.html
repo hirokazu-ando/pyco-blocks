@@ -56,8 +56,8 @@
       <button id="btn-run" disabled>▶ 実行</button>
       <button id="btn-stop" disabled>⏹ 停止</button>
       <button id="btn-write" disabled>書き込み</button>
-      <div class="toolbar-sep" id="wokwi-sep" style="display:none"></div>
-      <button id="btn-wokwi" style="display:none" title="Wokwi配線図を生成">🔌 配線図</button>
+      <div class="toolbar-sep" id="circuit-sep" style="display:none"></div>
+      <button id="btn-circuit" style="display:none" title="実態配線図を表示">📐 配線図</button>
       <div class="toolbar-sep" id="run-py-sep" style="display:none"></div>
       <button id="btn-run-python" style="display:none">▶ 実行</button>
       <button id="btn-stop-python" style="display:none">⏹ 停止</button>
@@ -1670,7 +1670,7 @@
   <script src="js/tutorials.js"></script>
   <script src="js/serial.js"></script>
   <script src="js/blocks/gpio.js?v=20260511a"></script>
-  <script src="js/wokwi_gen.js?v=20260511b"></script>
+  <script src="js/circuit_viewer.js?v=20260511c"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260427c"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
@@ -1692,21 +1692,21 @@
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/app.js?v=20260509a"></script>
 
-  <!-- Wokwi配線図モーダル -->
-  <div id="wokwi-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:9000; align-items:center; justify-content:center;">
-    <div style="background:#1a2a1a; border:1px solid #3a6a3a; border-radius:8px; padding:20px; width:min(680px,94vw); max-height:88vh; display:flex; flex-direction:column; gap:12px; font-family:monospace;">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <span style="color:#00ff41; font-weight:bold; font-size:1.05em;">🔌 Wokwi 配線図 (diagram.json)</span>
-        <button id="wokwi-modal-close" style="background:none; border:none; color:#888; font-size:1.3em; cursor:pointer; line-height:1;">✕</button>
+  <!-- 実態配線図モーダル -->
+  <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
+    <div style="background:#111827; border:1px solid #2d3748; border-radius:10px; padding:16px; width:min(960px,96vw); max-height:92vh; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+        <span style="color:#68d391; font-weight:bold; font-size:1.05em;">📐 実態配線図</span>
+        <span id="circuit-summary" style="color:#718096; font-size:.85em;"></span>
+        <button id="circuit-close" style="background:none; border:none; color:#718096; font-size:1.4em; cursor:pointer; line-height:1; margin-left:12px;">✕</button>
       </div>
-      <p id="wokwi-modal-summary" style="margin:0; color:#a0c8a0; font-size:.88em;"></p>
-      <textarea id="wokwi-json-output" readonly
-        style="flex:1; min-height:320px; background:#0b150b; color:#c8e6c8; border:1px solid #2a4a2a; border-radius:4px; padding:10px; font-size:.82em; resize:vertical; white-space:pre; font-family:'Share Tech Mono',monospace;"></textarea>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button id="wokwi-btn-copy" style="background:#00897B; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">📋 JSONをコピー</button>
-        <button id="wokwi-btn-download" style="background:#558B2F; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">⬇ ダウンロード</button>
-        <button id="wokwi-btn-open" style="background:#1565C0; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">🌐 wokwi.com で開く</button>
-        <span style="color:#777; font-size:.8em; align-self:center;">※ Wokwiで「diagram.json」タブに貼り付けてください</span>
+      <div id="circuit-svg-wrap" style="overflow:auto; flex:1; min-height:0; background:#0d1117; border-radius:6px; padding:8px; cursor:grab;"></div>
+      <div style="display:flex; gap:8px; flex-shrink:0;">
+        <button id="circuit-dl-svg" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">⬇ SVG保存</button>
+        <button id="circuit-dl-png" style="background:#1a4a7a; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">⬇ PNG保存</button>
+        <button id="circuit-zoom-in"  style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">＋</button>
+        <button id="circuit-zoom-out" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">－</button>
+        <button id="circuit-zoom-fit" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">全体</button>
       </div>
     </div>
   </div>
