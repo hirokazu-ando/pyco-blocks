@@ -5017,7 +5017,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     btnWokwi.addEventListener('click', function() {
-      window.open('https://wokwi.com/new/pi-pico', '_blank');
+      window.open('https://wokwi.com/projects/new/micropython-pi-pico', '_blank');
     });
   })();
 
