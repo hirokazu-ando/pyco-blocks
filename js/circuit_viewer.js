@@ -576,7 +576,7 @@
             { GND:{gnd:true}, VCC:{v3v3:true}, SDA:{gp:sda}, SCL:{gp:scl} });
 
         } else if (t === 'pico_7seg_show') {
-          const ps = gf('PINS').split(',').map(s=>s.trim());
+          const ps = (gf('PINS') || '').split(',').map(s=>s.trim()).filter(Boolean);
           const pins = { COM:{gnd:true} };
           ['A','B','C','D','E','F','G'].forEach((s,i) => { if(ps[i]) pins[s]={gp:ps[i]}; });
           add('seg7', 'SEG7', pins);
@@ -587,7 +587,7 @@
             { IN1:{gp:in1}, IN2:{gp:in2}, EN:en?{gp:en}:null, GND:{gnd:true} });
 
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
-          const ps = gf('PINS').split(',').map(s=>s.trim());
+          const ps = (gf('PINS') || '').split(',').map(s=>s.trim()).filter(Boolean);
           add('step_'+ps.join('_'), 'STEPPER',
             { IN1:{gp:ps[0]}, IN2:{gp:ps[1]}, IN3:{gp:ps[2]}, IN4:{gp:ps[3]} });
         }
