@@ -85,24 +85,46 @@
   // ===== コンポーネントシンボル =====
   const SYM = {
 
-    // ── LED (横向き・左ドーム=アノード・右フラット=カソード) ───
+    // ── LED (縦向き・上ドーム=アノード・下2本リード+直列抵抗) ──
     LED: {
-      pins: { A: { dx: -46, dy: 0 }, C: { dx: 46, dy: 0 } },
+      pins: { A: { dx: -10, dy: 52 }, C: { dx: 10, dy: 52 } },
       draw(cx, cy) {
-        const bh = 14;          // ボディ半高
-        const bx1 = cx - 16;   // 左端(アノード側)
-        const bx2 = cx + 16;   // 右端(カソード側)
-        // D字パス: bx1上端 → 左ドーム半円(CCW,large) → bx1下端 → 右端下 → 右端上 → close
-        const path = `M${bx1},${cy-bh} A${bh},${bh} 0 1,0 ${bx1},${cy+bh} L${bx2},${cy+bh} L${bx2},${cy-bh} Z`;
+        const bTop = cy - 32; // ドーム下端 = ボディ上端
+        const bBot = cy - 4;  // ボディ下端
+        const ax   = cx - 10; // アノードリード X
+        const kx   = cx + 10; // カソードリード X
+        const resT = bBot + 6;  // 抵抗上端
+        const resB = resT + 22; // 抵抗下端
+        const pinY = cy + 52;   // ピン(リード下端) Y
         return `<g filter="url(#fDrop)">
-  <line x1="${cx-46}" y1="${cy}" x2="${bx1}" y2="${cy}" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="${path}" fill="url(#gLedRed)" stroke="#c62828" stroke-width="1.5"/>
-  <ellipse cx="${cx-8}" cy="${cy-5}" rx="9" ry="5" fill="#fff" opacity="0.2"/>
-  <line x1="${bx2}" y1="${cy-bh}" x2="${bx2}" y2="${cy+bh}" stroke="#7f0000" stroke-width="3"/>
-  <line x1="${bx2}" y1="${cy}" x2="${cx+46}" y2="${cy}" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="${cx+18}" y1="${cy-8}"  x2="${cx+30}" y2="${cy-20}" stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="${cx+22}" y1="${cy-4}"  x2="${cx+34}" y2="${cy-16}" stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
-  <text x="${cx}" y="${cy+bh+14}" text-anchor="middle" class="cv-lbl">LED</text>
+  <!-- ドーム (上向き半円) -->
+  <path d="M${cx-18},${bTop} A18,18 0 0,1 ${cx+18},${bTop} Z"
+        fill="url(#gLedRed)" stroke="#c62828" stroke-width="1.5"/>
+  <!-- ボディ (矩形) -->
+  <rect x="${cx-18}" y="${bTop}" width="36" height="${bBot-bTop}"
+        fill="url(#gLedRed)" stroke="#c62828" stroke-width="1.5"/>
+  <!-- 光沢 -->
+  <ellipse cx="${cx-4}" cy="${bTop+9}" rx="7" ry="5" fill="#fff" opacity="0.22"/>
+  <!-- カソード識別マーク -->
+  <line x1="${kx-4}" y1="${bBot-5}" x2="${kx+7}" y2="${bBot-5}" stroke="#7f0000" stroke-width="1.8"/>
+  <!-- 発光矢印 -->
+  <line x1="${cx+20}" y1="${bTop+2}"  x2="${cx+32}" y2="${bTop-10}" stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="${cx+24}" y1="${bTop+8}"  x2="${cx+36}" y2="${bTop-4}"  stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- アノードリード (ボディ→抵抗上) -->
+  <line x1="${ax}" y1="${bBot}" x2="${ax}" y2="${resT}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+  <!-- 抵抗器 (カラーバンド付き) -->
+  <rect x="${ax-7}" y="${resT}" width="14" height="22" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="3"/>
+  <line x1="${ax-5}" y1="${resT+5}"  x2="${ax+5}" y2="${resT+5}"  stroke="#8a6030" stroke-width="1"/>
+  <line x1="${ax-5}" y1="${resT+11}" x2="${ax+5}" y2="${resT+11}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${ax-5}" y1="${resT+17}" x2="${ax+5}" y2="${resT+17}" stroke="#8a6030" stroke-width="1"/>
+  <!-- アノードリード (抵抗下→ピン) -->
+  <line x1="${ax}" y1="${resB}" x2="${ax}" y2="${pinY}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+  <!-- カソードリード (ボディ→ピン) -->
+  <line x1="${kx}" y1="${bBot}" x2="${kx}" y2="${pinY}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+  <!-- ピンラベル -->
+  <text x="${ax}" y="${pinY+12}" text-anchor="middle" font-size="7" fill="#90a4ae" font-family="sans-serif">A</text>
+  <text x="${kx}" y="${pinY+12}" text-anchor="middle" font-size="7" fill="#90a4ae" font-family="sans-serif">C</text>
+  <text x="${cx}" y="${bTop-8}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
     },
