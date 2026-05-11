@@ -153,7 +153,7 @@
       pico_buzzer_tone: b => mkBuzzer(b.getFieldValue('PIN')),
       pico_buzzer_stop: b => mkBuzzer(b.getFieldValue('PIN')),
 
-      pico_7seg_show: b => mkSeg7(b.getFieldValue('PINS')),
+      pico_7seg_show: b => mkSeg7(['A','B','C','D','E','F','G'].map(s => b.getFieldValue('PIN_' + s)).join(',')),
 
       pico_lcd_init: b => mkLcd(b.getFieldValue('SDA'), b.getFieldValue('SCL')),
       // pico_lcd_print / pico_lcd_clear はピン情報を持たないためスキップ
@@ -163,8 +163,8 @@
       pico_dcmotor_run:  b => mkL298n(b.getFieldValue('IN1'), b.getFieldValue('IN2'), b.getFieldValue('EN')),
       pico_dcmotor_stop: b => mkL298n(b.getFieldValue('IN1'), b.getFieldValue('IN2'), null),
 
-      pico_stepper_step:  b => mkStepper(b.getFieldValue('PINS')),
-      pico_stepper_angle: b => mkStepper(b.getFieldValue('PINS')),
+      pico_stepper_step:  b => mkStepper(['IN1','IN2','IN3','IN4'].map(n => b.getFieldValue(n)).join(',')),
+      pico_stepper_angle: b => mkStepper(['IN1','IN2','IN3','IN4'].map(n => b.getFieldValue(n)).join(',')),
 
       pico_ultrasonic_cm:     b => mkUltrasonic(b.getFieldValue('TRIG'), b.getFieldValue('ECHO')),
       pico_ultrasonic_cm_val: b => mkUltrasonic(b.getFieldValue('TRIG'), b.getFieldValue('ECHO')),
