@@ -128,11 +128,20 @@
   // ===== コンポーネントシンボル =====
   const SYM = {
 
-    // ── LED (Wokwi wokwi-led, MIT © 2020 Uri Shaked) ────────
+    // ── LED (Wokwi wokwi-led, MIT © 2020 Uri Shaked) + 直列抵抗 ─
     LED: {
-      pins: { A: { dx: -30, dy: -8 }, C: { dx: -30, dy: 8 } },
+      pins: { A: { dx: -58, dy: -8 }, C: { dx: -30, dy: 8 } },
       draw(cx, cy, side = 'right') {
         const sx = cx - 22, sy = cy - 25;
+        // sdir はピンが伸びる向き (right側部品は左へ、left側部品は右へ)
+        const sdir = side === 'right' ? -1 : 1;
+        const bodyEdge = cx + sdir * 22;
+        const resNear  = cx + sdir * 30;
+        const resFar   = cx + sdir * 50;
+        const aPinX    = cx + sdir * 58;
+        const resX     = Math.min(resNear, resFar);
+        const resW     = Math.abs(resFar - resNear);
+        const labelAnchor = side === 'right' ? 'end' : 'start';
         return `<g>
   <svg x="${sx}" y="${sy}" width="44" height="50" viewBox="-10 -5 35.456 39.618" xmlns="http://www.w3.org/2000/svg">
     <rect x="2.5099" y="20.382" width="2.1514" height="9.8273" fill="#8c8c8c"/>
@@ -146,7 +155,17 @@
     <path d="m10.388 3.7541 1.4364-0.2736c-0.84168-1.1318-2.0822-1.9577-3.5417-2.2385l0.25416 1.0807c0.76388 0.27072 1.4068 0.78048 1.8511 1.4314z" fill="#fff" opacity=".5"/>
     <path d="m0.76824 19.926v1.5199c0.64872 0.5292 1.4335 0.97632 2.3076 1.3169v-1.525c-0.8784-0.33624-1.6567-0.78194-2.3076-1.3118z" fill="#fff" opacity=".5"/>
   </svg>
-  ${sideStubs(cx, cy, side, 22, [-8, 8], ['A', 'C'])}
+  <!-- アノード (A): 直列抵抗 (ボディ→リード→抵抗→リード→ピン) -->
+  <line x1="${bodyEdge}" y1="${cy-8}" x2="${resNear}" y2="${cy-8}" stroke="#888" stroke-width="1.5"/>
+  <rect x="${resX}" y="${cy-12}" width="${resW}" height="8" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="2"/>
+  <line x1="${resX + resW * 0.25}" y1="${cy-12}" x2="${resX + resW * 0.25}" y2="${cy-4}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${resX + resW * 0.5}"  y1="${cy-12}" x2="${resX + resW * 0.5}"  y2="${cy-4}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${resX + resW * 0.75}" y1="${cy-12}" x2="${resX + resW * 0.75}" y2="${cy-4}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${resFar}" y1="${cy-8}" x2="${aPinX}" y2="${cy-8}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${aPinX}" cy="${cy-8}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${aPinX + sdir * 4}" y="${cy-4}" text-anchor="${labelAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">A</text>
+  <!-- カソード (C): 通常スタブ -->
+  ${sideStubs(cx, cy, side, 22, [8], ['C'])}
   <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
@@ -956,7 +975,7 @@
       const ex = PX + PW / 2, ey = PY + 50 + idx * 44;
       els.push(`<g>
   <rect x="${ex-70}" y="${ey-30}" width="140" height="36" fill="#7f0000" opacity="0.88" rx="5" stroke="#f44336" stroke-width="1.5"/>
-  <text x="${ex}" y="${ey-14}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">⚠ GP${e.gp}: 接続不可</text>
+  <text x="${ex}" y="${ey-14}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">GP${e.gp}: 接続不可</text>
   <text x="${ex}" y="${ey+2}"  text-anchor="middle" font-size="11" fill="#ef9a9a" font-family="sans-serif">${e.reason}</text>
 </g>`);
     });
@@ -964,7 +983,7 @@
     unknownGPins.forEach(e => {
       els.push(`<g>
   <rect x="${e.cx-68}" y="${e.cy-78}" width="136" height="34" fill="#7f0000" opacity="0.88" rx="5" stroke="#f44336" stroke-width="1.5"/>
-  <text x="${e.cx}" y="${e.cy-62}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">⚠ GP${e.gp}: 接続できません</text>
+  <text x="${e.cx}" y="${e.cy-62}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">GP${e.gp}: 接続できません</text>
   <text x="${e.cx}" y="${e.cy-48}" text-anchor="middle" font-size="11" fill="#ef9a9a" font-family="sans-serif">ピン番号を確認してください</text>
 </g>`);
     });

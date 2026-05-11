@@ -148,7 +148,7 @@
     <div class="tutorial-panel" id="tutorial-panel">
       <div class="tut-hdr">
         <span class="tut-mode-label" id="tut-mode-label">Python入門</span>
-        <button class="tut-close" id="tut-close" title="閉じる">✕</button>
+        <button class="tut-close" id="tut-close" title="閉じる">閉じる</button>
       </div>
       <div class="tut-pbar-wrap">
         <div class="tut-pbar-fill" id="tut-pbar-fill"></div>
@@ -1748,7 +1748,7 @@
   <script src="js/tutorials.js"></script>
   <script src="js/serial.js"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
-  <script src="js/circuit_viewer.js?v=20260512c"></script>
+  <script src="js/circuit_viewer.js?v=20260512d"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260427c"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
@@ -1768,7 +1768,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260512c"></script>
+  <script src="js/app.js?v=20260512d"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -1776,24 +1776,24 @@
       <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
         <span style="color:#68d391; font-weight:bold; font-size:1.05em;">実態配線図</span>
         <span id="circuit-summary" style="color:#718096; font-size:.85em;"></span>
-        <button id="circuit-close" style="background:none; border:none; color:#718096; font-size:1.4em; cursor:pointer; line-height:1; margin-left:12px;">✕</button>
+        <button id="circuit-close" style="background:none; border:none; color:#718096; font-size:.9em; cursor:pointer; line-height:1; margin-left:12px;">閉じる</button>
       </div>
       <div id="circuit-svg-wrap" style="overflow:auto; flex:1; min-height:0; background:#0d1117; border-radius:6px; padding:8px; cursor:grab;"></div>
       <div style="display:flex; gap:8px; flex-shrink:0;">
-        <button id="circuit-dl-svg" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">⬇ SVG保存</button>
-        <button id="circuit-dl-png" style="background:#1a4a7a; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">⬇ PNG保存</button>
+        <button id="circuit-dl-svg" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">SVG保存</button>
+        <button id="circuit-dl-png" style="background:#1a4a7a; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">PNG保存</button>
         <button id="circuit-zoom-in"  style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">＋</button>
         <button id="circuit-zoom-out" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">－</button>
         <button id="circuit-zoom-fit" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">全体</button>
-        <button id="circuit-reset-pos" style="background:#5a3a2a; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;" title="部品・配線の手動調整を全て自動配置に戻す">↺ 自動配置</button>
-        <span style="color:#718096; font-size:.78em; align-self:center; margin-left:8px;">💡 部品ドラッグで位置・線ドラッグで縦線位置</span>
+        <button id="circuit-reset-pos" style="background:#5a3a2a; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;" title="部品・配線の手動調整を全て自動配置に戻す">自動配置に戻す</button>
+        <span style="color:#718096; font-size:.78em; align-self:center; margin-left:8px;">部品ドラッグで位置・線ドラッグで縦線位置</span>
       </div>
     </div>
   </div>
 
   <!-- エラー解説パネル（body末尾・fixed配置） -->
   <div id="error-hint">
-    <span class="error-hint-close" id="error-hint-close">✕</span>
+    <span class="error-hint-close" id="error-hint-close">閉じる</span>
     <div class="error-hint-title" id="error-hint-title"></div>
     <div id="error-hint-body"></div>
   </div>

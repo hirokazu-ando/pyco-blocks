@@ -3131,7 +3131,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     } catch (err) {
       console.error('[circuit-preview]', err);
-      previewSvg.innerHTML = `<p style="color:#f44336;padding:8px;font-size:.8em;font-family:sans-serif;">⚠ ${err.message}</p>`;
+      previewSvg.innerHTML = `<p style="color:#f44336;padding:8px;font-size:.8em;font-family:sans-serif;">エラー: ${err.message}</p>`;
     }
   }
 
@@ -3711,7 +3711,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btnConnect.disabled = true;
     try {
       await PicoSerial.writeMainPy(code, msg => setSerialStatus(msg, 'progress'));
-      setSerialStatus('✓ 書き込み完了', 'ok');
+      setSerialStatus('書き込み完了', 'ok');
     } catch (e) {
       setSerialStatus('書き込みエラー: ' + e.message, 'err');
     } finally {
@@ -4378,7 +4378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn  = document.getElementById('tut-hint-toggle');
         const shown = hint.style.display !== 'none';
         hint.style.display = shown ? 'none' : 'block';
-        btn.textContent    = shown ? '💡 ヒントを見る' : '💡 ヒントを隠す';
+        btn.textContent    = shown ? 'ヒントを見る' : 'ヒントを隠す';
       });
       document.getElementById('tut-prev').addEventListener('click', () => this.prev());
       document.getElementById('tut-next').addEventListener('click', () => this.next());
@@ -4420,14 +4420,14 @@ document.addEventListener('DOMContentLoaded', function() {
       setSafeRichText(document.getElementById('tut-body'), step.body);
       setSafeRichText(document.getElementById('tut-hint'), step.hint);
       document.getElementById('tut-hint').style.display  = 'none';
-      document.getElementById('tut-hint-toggle').textContent = '💡 ヒントを見る';
+      document.getElementById('tut-hint-toggle').textContent = 'ヒントを見る';
       document.getElementById('tut-progress').textContent = `${idx + 1} / ${total}`;
       document.getElementById('tut-pbar-fill').style.width = `${(idx + 1) / total * 100}%`;
 
       document.getElementById('tut-prev').disabled = (idx === 0);
       const nextBtn = document.getElementById('tut-next');
       nextBtn.disabled    = true;
-      nextBtn.textContent = (idx === total - 1) ? '完了 ✓' : '次へ ▶';
+      nextBtn.textContent = (idx === total - 1) ? '完了' : '次へ';
 
       const checkEl = document.getElementById('tut-check');
       checkEl.textContent = '○ 待機中';
@@ -4450,7 +4450,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const checkEl = document.getElementById('tut-check');
       const nextBtn = document.getElementById('tut-next');
       if (passed) {
-        checkEl.textContent = '✓ クリア！';
+        checkEl.textContent = 'クリア！';
         checkEl.className   = 'tut-check tut-check--done';
         nextBtn.disabled    = false;
       } else {
@@ -5230,7 +5230,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch(err) {
         console.error('[circuit]', err);
         wrap.innerHTML = `<p style="color:#f44336;padding:16px;font-family:sans-serif;">
-          ⚠ 配線図の生成でエラーが発生しました。<br>
+          配線図の生成でエラーが発生しました。<br>
           <code style="font-size:.85em;">${err.message}</code>
         </p>`;
         modal.style.display = 'flex';
