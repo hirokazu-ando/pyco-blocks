@@ -2044,10 +2044,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // ===== 7セグメント =====
       case 'pico_7seg_show': {
-        const segNum  = block.getFieldValue('NUM');
-        const segPins = block.getFieldValue('PINS');
+        const segNum = block.getFieldValue('NUM');
+        const pa = block.getFieldValue('PIN_A');
+        const pb = block.getFieldValue('PIN_B');
+        const pc = block.getFieldValue('PIN_C');
+        const pd = block.getFieldValue('PIN_D');
+        const pe = block.getFieldValue('PIN_E');
+        const pf = block.getFieldValue('PIN_F');
+        const pg = block.getFieldValue('PIN_G');
         code = appendLocal(code, indent + `_SEG_PAT = [[1,1,1,1,1,1,0],[0,1,1,0,0,0,0],[1,1,0,1,1,0,1],[1,1,1,1,0,0,1],[0,1,1,0,0,1,1],[1,0,1,1,0,1,1],[1,0,1,1,1,1,1],[1,1,1,0,0,0,0],[1,1,1,1,1,1,1],[1,1,1,1,0,1,1]]\n`);
-        code = appendLocal(code, indent + `_seg_pins = [Pin(p, Pin.OUT) for p in [${segPins}]]\n`);
+        code = appendLocal(code, indent + `_seg_pins = [Pin(p, Pin.OUT) for p in [${pa},${pb},${pc},${pd},${pe},${pf},${pg}]]\n`);
         code = appendLocal(code, indent + `for _i, _v in enumerate(_SEG_PAT[${segNum}]): _seg_pins[_i].value(_v)\n`);
         break;
       }
@@ -2056,13 +2062,13 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'pico_lcd_init': {
         const lcdSda = block.getFieldValue('SDA');
         const lcdScl = block.getFieldValue('SCL');
-        const lcdVar = block.getFieldValue('VAR');
+        const lcdVar = getVarName(block, 'VAR');
         code = appendLocal(code, indent + `_i2c = I2C(0, sda=Pin(${lcdSda}), scl=Pin(${lcdScl}), freq=400000)\n`);
         code = appendLocal(code, indent + `${lcdVar} = LCD1602(_i2c, 0x27)\n`);
         break;
       }
       case 'pico_lcd_print': {
-        const lcdPVar = block.getFieldValue('VAR');
+        const lcdPVar = getVarName(block, 'VAR');
         const lcdRow  = block.getFieldValue('ROW');
         const lcdText = valueToCode(block, 'TEXT', '""');
         code = appendLocal(code, indent + `${lcdPVar}.move_to(0, ${lcdRow})\n`);
@@ -2070,7 +2076,7 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
       case 'pico_lcd_clear': {
-        const lcdCVar = block.getFieldValue('VAR');
+        const lcdCVar = getVarName(block, 'VAR');
         code = appendLocal(code, indent + `${lcdCVar}.clear()\n`);
         break;
       }
@@ -2109,10 +2115,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // ===== ステッピングモーター (28BYJ-48 + ULN2003) =====
       case 'pico_stepper_step': {
-        const stPins  = block.getFieldValue('PINS');
+        const stIn1   = block.getFieldValue('IN1');
+        const stIn2   = block.getFieldValue('IN2');
+        const stIn3   = block.getFieldValue('IN3');
+        const stIn4   = block.getFieldValue('IN4');
         const stSteps = block.getFieldValue('STEPS');
         const stDelay = block.getFieldValue('DELAY');
-        code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${stPins}]]\n`);
+        code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${stIn1},${stIn2},${stIn3},${stIn4}]]\n`);
         code = appendLocal(code, indent + `_st_seq = [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,1,1],[0,0,0,1],[1,0,0,1]]\n`);
         code = appendLocal(code, indent + `_st_n = abs(${stSteps}); _st_dir = 1 if (${stSteps}) >= 0 else -1\n`);
         code = appendLocal(code, indent + `for _s in range(_st_n):\n`);
@@ -2122,10 +2131,13 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
       case 'pico_stepper_angle': {
-        const staPins  = block.getFieldValue('PINS');
+        const staIn1   = block.getFieldValue('IN1');
+        const staIn2   = block.getFieldValue('IN2');
+        const staIn3   = block.getFieldValue('IN3');
+        const staIn4   = block.getFieldValue('IN4');
         const staAngle = block.getFieldValue('ANGLE');
         const staDelay = block.getFieldValue('DELAY');
-        code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${staPins}]]\n`);
+        code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${staIn1},${staIn2},${staIn3},${staIn4}]]\n`);
         code = appendLocal(code, indent + `_st_seq = [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,1,1],[0,0,0,1],[1,0,0,1]]\n`);
         code = appendLocal(code, indent + `_st_n = int(abs(${staAngle}) * 512 / 360); _st_dir = 1 if (${staAngle}) >= 0 else -1\n`);
         code = appendLocal(code, indent + `for _s in range(_st_n):\n`);
@@ -2139,7 +2151,7 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'pico_ultrasonic_cm': {
         const usTrig = block.getFieldValue('TRIG');
         const usEcho = block.getFieldValue('ECHO');
-        const usVar  = block.getFieldValue('VAR');
+        const usVar  = getVarName(block, 'VAR');
         code = appendLocal(code, indent + `def _us_dist(tr, ec):\n`);
         code = appendLocal(code, indent + `    t=Pin(tr,Pin.OUT); e=Pin(ec,Pin.IN)\n`);
         code = appendLocal(code, indent + `    t.value(0); utime.sleep_us(2); t.value(1); utime.sleep_us(10); t.value(0)\n`);
@@ -2154,8 +2166,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // ===== DHT11 温湿度センサー =====
       case 'pico_dht_read': {
         const dhtPin  = block.getFieldValue('PIN');
-        const dhtTVar = block.getFieldValue('TVAR');
-        const dhtHVar = block.getFieldValue('HVAR');
+        const dhtTVar = getVarName(block, 'TVAR');
+        const dhtHVar = getVarName(block, 'HVAR');
         code = appendLocal(code, indent + `_dht = DHT11(Pin(${dhtPin}))\n`);
         code = appendLocal(code, indent + `_dht.measure()\n`);
         code = appendLocal(code, indent + `${dhtTVar} = _dht.temperature()\n`);
@@ -3020,9 +3032,12 @@ document.addEventListener('DOMContentLoaded', function() {
       const hasMotor   = motorTypes.some(t => blockTypes.has(t));
       const hasSonarVal = blockTypes.has('pvb_sonar_val');
 
+      const needsRandom = blockTypes.has('py_random_int');
       const baseHeader =
         (showComments ? '# Picoのピン・PWM・ADC制御用\n' : '') + `${cm}from machine import Pin, PWM, ADC\n` +
-        (showComments ? '# 時間待機用（MicroPython版 time モジュール）\n' : '') + `${cm}import utime\n\n`;
+        (showComments ? '# 時間待機用（MicroPython版 time モジュール）\n' : '') + `${cm}import utime\n` +
+        (needsRandom ? ((showComments ? '# 乱数生成用\n' : '') + `${cm}import random\n`) : '') +
+        '\n';
       const motorInit =
         '_lp = PWM(Pin(0)); _lp.freq(1000)\n' +
         '_lm = PWM(Pin(1)); _lm.freq(1000)\n' +
@@ -5001,14 +5016,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnOpen.addEventListener('click', function() {
-      if (typeof generateCircuitSVG !== 'function') return;
-      const result = generateCircuitSVG(workspace);
-      currentSvgStr = result.svg;
-      wrap.innerHTML = result.svg;
-      summary.textContent = `部品 ${result.compCount} 個 / 接続 ${result.wireCount} 本`;
-      currentScale = 1;
-      applyZoom(1);
-      modal.style.display = 'flex';
+      if (typeof generateCircuitSVG !== 'function') {
+        alert('配線図エンジンが読み込まれていません。Ctrl+Shift+R で強制リロードしてください。');
+        return;
+      }
+      try {
+        const result = generateCircuitSVG(workspace);
+        currentSvgStr = result.svg;
+        wrap.innerHTML = result.svg;
+        summary.textContent = `部品 ${result.compCount} 個 / 接続 ${result.wireCount} 本`;
+        currentScale = 1;
+        applyZoom(1);
+        modal.style.display = 'flex';
+      } catch(err) {
+        console.error('[circuit]', err);
+        wrap.innerHTML = `<p style="color:#f44336;padding:16px;font-family:sans-serif;">
+          ⚠ 配線図の生成でエラーが発生しました。<br>
+          <code style="font-size:.85em;">${err.message}</code>
+        </p>`;
+        modal.style.display = 'flex';
+      }
     });
 
     btnClose.addEventListener('click', () => { modal.style.display = 'none'; });
