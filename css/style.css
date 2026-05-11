@@ -1466,14 +1466,28 @@ h1 {
   /* タイトルブロックを左端に固定 */
   .title-block { flex-shrink: 0; }
 
-  /* ===== メインエリアを縦積みに ===== */
-  .main { flex-direction: column; }
+  /* 狭い画面ではページ全体を縦スクロール可能にする */
+  body {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 
-  /* Blocklyワークスペース：幅100%・高さ固定 */
+  /* ===== メインエリアを縦積みに ===== */
+  .main {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - var(--header-h));
+    overflow: visible;
+  }
+
+  /* Blocklyワークスペース：幅100%・高さ拡大 */
   #blockly-div {
     flex: none;
     width: 100%;
-    height: 52vh;
+    height: 75vh;
+    min-height: 480px;
   }
 
   /* 区切り線：縦→横（上下12pxの当たり判定を擬似要素で確保） */
@@ -1494,10 +1508,11 @@ h1 {
     top: -12px; bottom: -12px;
   }
 
-  /* コードパネル：残りの高さを埋める */
+  /* コードパネル：固定高で十分な編集領域を確保 */
   .code-panel {
-    flex: 1;
+    flex: none;
     width: 100%;
+    min-height: 55vh;
   }
 
   /* チュートリアルパネル：下からスライドアップするドロワーに変更 */
@@ -1520,13 +1535,14 @@ h1 {
     height: 58vh;                 /* width: 280px の代わり */
   }
 
-  /* ゲームモード：細い画面では縦積みに切り替え */
+  /* ゲームモード：細い画面では縦積みに切り替え + スクロール可能 */
   .main.game-layout {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    height: 100%;
-    min-height: 0;
+    height: auto;
+    min-height: calc(100vh - var(--header-h));
+    overflow: visible;
   }
 
   .main.game-layout #game-grid-v-handle {
@@ -1536,8 +1552,10 @@ h1 {
   .main.game-layout #game-left-column,
   .main.game-layout #game-right-column {
     width: 100%;
-    flex: 1 1 0;
-    min-height: 0;
+    flex: none;
+    height: 75vh;
+    min-height: 480px;
+    overflow: hidden;
   }
 }
 
@@ -1569,12 +1587,13 @@ h1 {
   }
 
   /* Blocklyを少し大きく、コードは小さめ */
-  #blockly-div { height: 58vh; }
-  .main.game-layout #blockly-div {
-    height: var(--left-top, 56%);
-    flex: 0 0 var(--left-top, 56%);
-    min-height: 0;
+  #blockly-div { height: 80vh; min-height: 460px; }
+  .main.game-layout #game-left-column,
+  .main.game-layout #game-right-column {
+    height: 80vh;
+    min-height: 500px;
   }
+  .code-panel { min-height: 60vh; }
 
   /* CodeMirror フォント縮小 */
   .CodeMirror,
