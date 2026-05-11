@@ -4,7 +4,7 @@
   'use strict';
 
   // ===== Pico レイアウト定数 =====
-  const PX = 110, PY = 30, PW = 88, PP = 19, PC = 20;
+  let PX = 110; const PY = 30, PW = 88, PP = 19, PC = 20;
   const PH = (PC - 1) * PP + 24;
 
   const L_PINS = [
@@ -26,38 +26,47 @@
     if (ri >= 0) return { x: PX + PW, y: PY + 12 + ri * PP, side: 'right' };
     return null;
   }
-  const V3V3_C = { x: PX + PW, y: PY + 12 + 4 * PP, side: 'right' };
+  function getV3v3() { return { x: PX + PW, y: PY + 12 + 4 * PP, side: 'right' }; }
 
-  // 全GNDピン位置 (L[2,6,11,16], R[2,7,14,17])
-  const ALL_GND_PINS = [
-    { x: PX,      y: PY + 12 + 2  * PP, side: 'left'  },
-    { x: PX,      y: PY + 12 + 6  * PP, side: 'left'  },
-    { x: PX,      y: PY + 12 + 11 * PP, side: 'left'  },
-    { x: PX,      y: PY + 12 + 16 * PP, side: 'left'  },
-    { x: PX + PW, y: PY + 12 + 2  * PP, side: 'right' },
-    { x: PX + PW, y: PY + 12 + 7  * PP, side: 'right' },
-    { x: PX + PW, y: PY + 12 + 14 * PP, side: 'right' },
-    { x: PX + PW, y: PY + 12 + 17 * PP, side: 'right' },
-  ];
+  // 全GNDピン位置を動的生成 (PXが変わるたびに呼ぶ)
+  function getGndPins() {
+    return [
+      { x: PX,      y: PY + 12 + 2  * PP, side: 'left'  },
+      { x: PX,      y: PY + 12 + 6  * PP, side: 'left'  },
+      { x: PX,      y: PY + 12 + 11 * PP, side: 'left'  },
+      { x: PX,      y: PY + 12 + 16 * PP, side: 'left'  },
+      { x: PX + PW, y: PY + 12 + 2  * PP, side: 'right' },
+      { x: PX + PW, y: PY + 12 + 7  * PP, side: 'right' },
+      { x: PX + PW, y: PY + 12 + 14 * PP, side: 'right' },
+      { x: PX + PW, y: PY + 12 + 17 * PP, side: 'right' },
+    ];
+  }
 
-  function picoCoordOf(s, cx2, cy2) {
+  function picoCoordOf(s, cx2, cy2, preferSide) {
     if (!s) return null;
     if (s.gp  != null) return gpCoord(s.gp);
     if (s.gnd) {
-      let best = ALL_GND_PINS[0], bestDist = Infinity;
-      ALL_GND_PINS.forEach(g => {
+      const all  = getGndPins();
+      const pool = preferSide ? (all.filter(g => g.side === preferSide) || all) : all;
+      const src  = pool.length > 0 ? pool : all;
+      let best = src[0], bestDist = Infinity;
+      src.forEach(g => {
         const d = Math.hypot(g.x - (cx2 || 0), g.y - (cy2 || 0));
         if (d < bestDist) { bestDist = d; best = g; }
       });
       return best;
     }
-    if (s.v3v3) return V3V3_C;
+    if (s.v3v3) return getV3v3();
     return null;
   }
 
-  // ===== コンポーネント配置 =====
-  const CX0 = PX + PW + 120, CY0 = PY + 10;
-  const C_COLS = 3, C_CW = 195, C_CH = 160;
+  // ===== コンポーネント配置定数 =====
+  const C_MAX_COLS = 2;    // 片側最大列数
+  const C_CW = 190;        // 部品セル幅
+  const C_CH = 175;        // 部品セル高さ
+  const ROUTING_W = 210;   // Pico両側のルーティング領域幅 (10px×21ch)
+  const CH_STEP = 10;      // チャンネル間隔 (10px グリッド)
+  const C_L_MARGIN = 30;   // SVG左端マージン
 
   // ===== SVG Defs (グラデーション・フィルター) =====
   const DEFS = `<defs>
@@ -587,27 +596,67 @@
     return { comps, onboardLedOn, badPins };
   }
 
-  // ===== レイアウト =====
-  function layoutComps(comps) {
-    comps.forEach((c, i) => {
-      c.cx = CX0 + (i % C_COLS) * C_CW + 78;
-      c.cy = CY0 + Math.floor(i / C_COLS) * C_CH + 62;
-    });
+  // ===== 部品配置サイド判定 =====
+  function compSide(comp) {
+    let hasLeftGP = false, hasRightGP = false, hasVcc = false;
+    for (const spec of Object.values(comp.pins)) {
+      if (!spec) continue;
+      if (spec.gp != null) {
+        const gp = parseInt(spec.gp);
+        if (L_PINS.includes('GP' + gp)) hasLeftGP = true;
+        else hasRightGP = true;
+      }
+      if (spec.v3v3) hasVcc = true;
+    }
+    // VCC(3V3)はPico右側のみ → VCC使用部品・右GP部品は右へ
+    if (hasVcc || hasRightGP) return 'right';
+    if (hasLeftGP) return 'left';
+    return 'right';
   }
 
-  // ===== ワイヤー描画 (直角・ピンごとに独立チャンネル) =====
+  // ===== レイアウト =====
+  function layoutComps(comps) {
+    comps.forEach(c => { c.compSide = compSide(c); });
+    const leftComps  = comps.filter(c => c.compSide === 'left');
+    const rightComps = comps.filter(c => c.compSide === 'right');
+
+    const lCols = leftComps.length  > 0 ? Math.min(C_MAX_COLS, Math.ceil(leftComps.length  / 3)) : 0;
+    const rCols = rightComps.length > 0 ? Math.min(C_MAX_COLS, Math.ceil(rightComps.length / 3)) : 1;
+
+    // 左部品数に合わせてPicoのX位置を動的決定
+    PX = lCols > 0 ? C_L_MARGIN + lCols * C_CW + ROUTING_W : 80;
+
+    // 左側部品: 右端列(=Picoに近い列)から配置
+    leftComps.forEach((c, i) => {
+      const col = i % lCols;
+      const row = Math.floor(i / lCols);
+      c.cx = PX - ROUTING_W - (lCols - 1 - col) * C_CW - C_CW / 2;
+      c.cy = PY + 80 + row * C_CH;
+    });
+
+    // 右側部品: 左端列(=Picoに近い列)から配置
+    rightComps.forEach((c, i) => {
+      const col = i % rCols;
+      const row = Math.floor(i / rCols);
+      c.cx = PX + PW + ROUTING_W + col * C_CW + C_CW / 2;
+      c.cy = PY + 80 + row * C_CH;
+    });
+
+    return { lCols, rCols, leftCount: leftComps.length, rightCount: rightComps.length };
+  }
+
+  // ===== ワイヤー描画 (直角・ピンごとに10pxグリッド整列チャンネル) =====
   function wirePath(x1, y1, side, x2, y2) {
-    // y1からピン行インデックス(0-19)を算出 → 行ごとに専用経路
+    // Picoピン行インデックス(0-19) → 専用チャンネルX位置
     const pinIdx = Math.max(0, Math.min(19, Math.round((y1 - (PY + 12)) / PP)));
-    if (side === 'right') {
-      // HVH: ピンごとに異なるmidXで縦セグメントを左右に分散
-      const midX = x1 + 30 + pinIdx * 5;   // 228..323px (Pico右端〜部品左端の間)
-      return `M${x1},${y1} H${midX} V${y2} H${x2}`;
+    if (x2 >= x1) {
+      // 部品がPico右側 → Pico右端から右方向チャンネル
+      const ch = x1 + CH_STEP * (1 + pinIdx);
+      return `M${x1},${y1} H${ch} V${y2} H${x2}`;
     } else {
-      // HVHV: ピンごとに異なるexitX(左)+botY(下)で完全分離
-      const exitX = PX - 14 - pinIdx * 4;  // 96..20px (左マージン)
-      const botY  = PY + PH + 18 + pinIdx * 5; // 433..528px (Pico下ルーティングエリア)
-      return `M${x1},${y1} H${exitX} V${botY} H${x2} V${y2}`;
+      // 部品がPico左側 → Pico左端から左方向チャンネル
+      const ch = x1 - CH_STEP * (1 + pinIdx);
+      return `M${x1},${y1} H${ch} V${y2} H${x2}`;
     }
   }
 
@@ -698,23 +747,25 @@
   // ===== メイン =====
   window.generateCircuitSVG = function(workspace) {
     const { comps, onboardLedOn, badPins } = parseBlocks(workspace);
-    layoutComps(comps);
+    const { lCols, rCols, leftCount, rightCount } = layoutComps(comps);
+    // layoutComps内でPXが更新されるため、以降はPXの最新値を使用
 
-    const numRows = Math.max(1, Math.ceil(comps.length / C_COLS));
-    const svgW = CX0 + C_COLS * C_CW + 30;
-    // 左側ルーティングエリア(最大botY=528)を収容できる最低高さを確保
-    const svgH = Math.max(PY + PH + 160, CY0 + numRows * C_CH + 30);
+    const numLeftRows  = lCols > 0 ? Math.ceil(leftCount  / lCols) : 0;
+    const numRightRows = rCols > 0 ? Math.ceil(rightCount / rCols) : 0;
+    const numRows = Math.max(numLeftRows, numRightRows, 1);
+
+    const svgW = PX + PW + ROUTING_W + Math.max(rCols, 1) * C_CW + 30;
+    const svgH = Math.max(PY + PH + 60, PY + 80 + numRows * C_CH + 60);
 
     let wireCount = 0;
     const els = [];
 
     // 背景
     els.push(`<rect width="${svgW}" height="${svgH}" fill="#0d1117"/>`);
-    // グリッド
+    // グリッド (40px)
     for (let gx = 0; gx < svgW; gx += 40) els.push(`<line x1="${gx}" y1="0" x2="${gx}" y2="${svgH}" stroke="#161b22" stroke-width="1"/>`);
     for (let gy = 0; gy < svgH; gy += 40) els.push(`<line x1="0" y1="${gy}" x2="${svgW}" y2="${gy}" stroke="#161b22" stroke-width="1"/>`);
 
-    // 接続不可ピンのエラー情報を収集
     const unknownGPins = [];
 
     // ワイヤー
@@ -726,7 +777,7 @@
         const sp = sym.pins[pname];
         if (!sp) return;
         const cpX = comp.cx + sp.dx, cpY = comp.cy + sp.dy;
-        const pc = picoCoordOf(spec, cpX, cpY);
+        const pc = picoCoordOf(spec, cpX, cpY, comp.compSide);
         if (!pc) {
           if (spec.gp != null) unknownGPins.push({ gp: spec.gp, cx: comp.cx, cy: comp.cy });
           return;
@@ -747,9 +798,8 @@
     });
 
     // ───── エラーオーバーレイ ─────
-    // ① parseBlocks で検出した接続不可ピン (GP23,24,29 など)
-    badPins.forEach(e => {
-      const ex = CX0 + 78, ey = CY0 + 62;
+    badPins.forEach((e, idx) => {
+      const ex = PX + PW / 2, ey = PY + 50 + idx * 44;
       els.push(`<g>
   <rect x="${ex-70}" y="${ey-30}" width="140" height="36" fill="#7f0000" opacity="0.88" rx="5" stroke="#f44336" stroke-width="1.5"/>
   <text x="${ex}" y="${ey-14}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">⚠ GP${e.gp}: 接続不可</text>
@@ -757,7 +807,6 @@
 </g>`);
     });
 
-    // ② ワイヤー解決失敗ピン (回路図に部品が出ているのに配線先がない)
     unknownGPins.forEach(e => {
       els.push(`<g>
   <rect x="${e.cx-68}" y="${e.cy-78}" width="136" height="34" fill="#7f0000" opacity="0.88" rx="5" stroke="#f44336" stroke-width="1.5"/>
@@ -766,7 +815,6 @@
 </g>`);
     });
 
-    // ③ GP25オンボードLED使用通知 (Pico付近)
     if (onboardLedOn) {
       const nx = PX + PW / 2, ny = PY - 28;
       els.push(`<g>
@@ -775,7 +823,6 @@
 </g>`);
     }
 
-    // 空の場合のメッセージ
     if (comps.length === 0 && !onboardLedOn && badPins.length === 0) {
       const mx = svgW / 2, my = svgH / 2;
       els.push(`<text x="${mx}" y="${my-10}" text-anchor="middle" fill="#30363d" font-size="26">MicroPython ブロックを追加すると</text>`);
