@@ -26,14 +26,32 @@
     if (ri >= 0) return { x: PX + PW, y: PY + 12 + ri * PP, side: 'right' };
     return null;
   }
-  const GND_C  = { x: PX,      y: PY + 12 + 2 * PP, side: 'left'  };
   const V3V3_C = { x: PX + PW, y: PY + 12 + 4 * PP, side: 'right' };
 
-  function picoCoordOf(s) {
+  // 全GNDピン位置 (L[2,6,11,16], R[2,7,14,17])
+  const ALL_GND_PINS = [
+    { x: PX,      y: PY + 12 + 2  * PP, side: 'left'  },
+    { x: PX,      y: PY + 12 + 6  * PP, side: 'left'  },
+    { x: PX,      y: PY + 12 + 11 * PP, side: 'left'  },
+    { x: PX,      y: PY + 12 + 16 * PP, side: 'left'  },
+    { x: PX + PW, y: PY + 12 + 2  * PP, side: 'right' },
+    { x: PX + PW, y: PY + 12 + 7  * PP, side: 'right' },
+    { x: PX + PW, y: PY + 12 + 14 * PP, side: 'right' },
+    { x: PX + PW, y: PY + 12 + 17 * PP, side: 'right' },
+  ];
+
+  function picoCoordOf(s, cx2, cy2) {
     if (!s) return null;
     if (s.gp  != null) return gpCoord(s.gp);
-    if (s.gnd)         return GND_C;
-    if (s.v3v3)        return V3V3_C;
+    if (s.gnd) {
+      let best = ALL_GND_PINS[0], bestDist = Infinity;
+      ALL_GND_PINS.forEach(g => {
+        const d = Math.hypot(g.x - (cx2 || 0), g.y - (cy2 || 0));
+        if (d < bestDist) { bestDist = d; best = g; }
+      });
+      return best;
+    }
+    if (s.v3v3) return V3V3_C;
     return null;
   }
 
@@ -569,19 +587,17 @@
     });
   }
 
-  // ===== ワイヤー描画 =====
+  // ===== ワイヤー描画 (直角ルーティング) =====
   function wirePath(x1, y1, side, x2, y2) {
     if (side === 'right') {
-      const dx = Math.abs(x2 - x1);
-      const cx1 = x1 + Math.max(65, dx * 0.45);
-      const cx2 = x2 - 45;
-      return `M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`;
+      // 右ピン: HVH (右に出て → 垂直 → 水平)
+      const midX = x1 + 48;
+      return `M${x1},${y1} H${midX} V${y2} H${x2}`;
     } else {
-      // 左ピン: 下方を回り込むルート
-      const bot = PY + PH + 35;
-      const cx1 = x1 - 55;
-      const cx2 = x2 - 65;
-      return `M${x1},${y1} C${cx1},${y1} ${cx2},${bot} ${x2},${y2}`;
+      // 左ピン: HVHV (左に出て → Pico下を通る水平バス → 垂直)
+      const exitX = PX - 28;
+      const botY  = PY + PH + 24;
+      return `M${x1},${y1} H${exitX} V${botY} H${x2} V${y2}`;
     }
   }
 
@@ -591,26 +607,48 @@
     return '#43a047';
   }
 
-  // ===== Pico SVG =====
+  // ===== Pico SVG (Wokwi Pi Pico ボード, MIT © wokwi-boards) =====
   function buildPicoSVG() {
     const p = [];
-    // ピン穴 (基板端)
+    // ピンパッド (基板外, 銅色)
     for (let i = 0; i < PC; i++) {
       const py = PY + 12 + i * PP;
-      p.push(`<rect x="${PX-8}" y="${py-3}" width="6" height="6" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5" rx="1"/>`);
-      p.push(`<rect x="${PX+PW+2}" y="${py-3}" width="6" height="6" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5" rx="1"/>`);
+      p.push(`<rect x="${PX-9}" y="${py-3.5}" width="9" height="7" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5" rx="1"/>`);
+      p.push(`<rect x="${PX+PW}"  y="${py-3.5}" width="9" height="7" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5" rx="1"/>`);
     }
-    // 基板本体
-    p.push(`<rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" fill="#2e7d32" stroke="#1b5e20" stroke-width="2.5" rx="5"/>`);
-    p.push(`<rect x="${PX+4}" y="${PY+4}" width="${PW-8}" height="${PH-8}" fill="none" stroke="#1b5e20" stroke-width="0.6" rx="3"/>`);
-    // RP2040 チップ
-    const chipX = PX + PW/2 - 18, chipY = PY + PH/2 - 18;
-    p.push(`<rect x="${chipX}" y="${chipY}" width="36" height="36" fill="#111" stroke="#333" stroke-width="0.5" rx="2"/>`);
-    p.push(`<text x="${PX+PW/2}" y="${chipY+14}" text-anchor="middle" font-size="9" fill="#555">RP2040</text>`);
-    // LED チップ
-    p.push(`<circle cx="${PX+PW/2-22}" cy="${PY+20}" r="3" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>`);
-    // Pico ラベル
-    p.push(`<text x="${PX+PW/2}" y="${PY+PH-10}" text-anchor="middle" font-size="14" fill="#a5d6a7" font-weight="bold">Pico</text>`);
+    // 基板本体 (Wokwi Pi Pico #006837)
+    p.push(`<rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" fill="#006837" stroke="#004e29" stroke-width="2.5" rx="3"/>`);
+    p.push(`<rect x="${PX+3}" y="${PY+3}" width="${PW-6}" height="${PH-6}" fill="none" stroke="#00522e" stroke-width="0.6" rx="2"/>`);
+    // マウントホール (4隅)
+    [[PX+10, PY+10],[PX+PW-10, PY+10],[PX+10, PY+PH-10],[PX+PW-10, PY+PH-10]].forEach(([hx,hy]) => {
+      p.push(`<circle cx="${hx}" cy="${hy}" r="5.5" fill="#004e29"/>`);
+      p.push(`<circle cx="${hx}" cy="${hy}" r="3.5" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5"/>`);
+    });
+    // USB Micro-B コネクタ (上端中央)
+    const uC = PX + PW/2;
+    p.push(`<rect x="${uC-11}" y="${PY-15}" width="22" height="17" fill="#c6c6c6" stroke="#aaa" stroke-width="0.5" rx="2"/>`);
+    p.push(`<rect x="${uC-8}"  y="${PY-13}" width="16" height="14" fill="#363a44" rx="1.5"/>`);
+    p.push(`<text x="${uC}" y="${PY+4}" text-anchor="middle" font-size="6.5" fill="#a5d6a7" font-family="sans-serif">USB</text>`);
+    // BOOTSEL ボタン (上部左側)
+    const bX = PX + 15, bY = PY + 44;
+    p.push(`<rect x="${bX-9}" y="${bY-7}" width="18" height="13" fill="#b0bec5" stroke="#78909c" stroke-width="0.5" rx="2"/>`);
+    p.push(`<ellipse cx="${bX}" cy="${bY}" rx="5.5" ry="4" fill="#e8e8e8" stroke="#bbb" stroke-width="0.5"/>`);
+    p.push(`<text x="${bX}" y="${bY+14}" text-anchor="middle" font-size="5.5" fill="#4caf50" font-family="sans-serif">BOOT</text>`);
+    // GP25 LED インジケーター
+    p.push(`<circle cx="${PX+PW-12}" cy="${PY+22}" r="3.5" fill="#90ff00" stroke="#55cc00" stroke-width="0.5"/>`);
+    p.push(`<text x="${PX+PW-12}" y="${PY+33}" text-anchor="middle" font-size="5.5" fill="#4caf50" font-family="sans-serif">LED</text>`);
+    // RP2040 チップ (中央)
+    const chipX = PX + 8, chipY = PY + PH/2 - 30, chipW = PW - 16, chipH = 60;
+    p.push(`<rect x="${chipX}" y="${chipY}" width="${chipW}" height="${chipH}" fill="#30312e" stroke="#3a3a38" stroke-width="0.5" rx="2"/>`);
+    for (let i = 0; i < 4; i++) {
+      p.push(`<rect x="${chipX-5}" y="${chipY+10+i*12}" width="5" height="5.5" fill="#4a4a4a" rx="0.5"/>`);
+      p.push(`<rect x="${chipX+chipW}" y="${chipY+10+i*12}" width="5" height="5.5" fill="#4a4a4a" rx="0.5"/>`);
+    }
+    p.push(`<text x="${PX+PW/2}" y="${chipY+30}" text-anchor="middle" font-size="9" fill="#666" font-family="sans-serif">RP2040</text>`);
+    p.push(`<text x="${PX+PW/2}" y="${chipY+43}" text-anchor="middle" font-size="6.5" fill="#444" font-family="sans-serif">Raspberry Pi</text>`);
+    // Pico ラベル (下端)
+    p.push(`<text x="${PX+PW/2}" y="${PY+PH-14}" text-anchor="middle" font-size="13" fill="#4caf50" font-weight="bold" font-family="sans-serif">Pico</text>`);
+    p.push(`<text x="${PX+PW/2}" y="${PY+PH-3}"  text-anchor="middle" font-size="7"  fill="#33865f" font-family="sans-serif">RP2040</text>`);
 
     // 左ピンラベル・接続点
     L_PINS.forEach((name, i) => {
@@ -660,10 +698,11 @@
         if (!spec) return;
         const sp = sym.pins[pname];
         if (!sp) return;
-        const pc = picoCoordOf(spec);
+        const cpX = comp.cx + sp.dx, cpY = comp.cy + sp.dy;
+        const pc = picoCoordOf(spec, cpX, cpY);
         if (!pc) return;
         const color = wireColor(spec);
-        els.push(`<path d="${wirePath(pc.x, pc.y, pc.side, comp.cx + sp.dx, comp.cy + sp.dy)}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>`);
+        els.push(`<path d="${wirePath(pc.x, pc.y, pc.side, cpX, cpY)}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="square" opacity="0.9"/>`);
         wireCount++;
       });
     });
