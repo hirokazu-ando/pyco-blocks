@@ -226,9 +226,19 @@
           <shadow type="val_number"><field name="NUM">1</field></shadow>
         </value>
       </block>
+      <block type="py_while" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="py_break" gap="8"></block>
+      <block type="py_continue" gap="8"></block>
     </category>
     <category name="分岐" colour="#5E35B1">
       <block type="pico_if" gap="8"></block>
+      <block type="pico_if" gap="8">
+        <mutation elseif="0" else="1"></mutation>
+      </block>
+      <block type="pico_if" gap="8">
+        <mutation elseif="1" else="1"></mutation>
+      </block>
       <sep gap="20"></sep>
       <block type="cond_compare" gap="8">
         <value name="LEFT">
@@ -312,11 +322,70 @@
         </value>
       </block>
     </category>
+    <category name="計算" colour="#FB8C00">
+      <block type="py_math_op" gap="8">
+        <value name="LEFT">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+        <value name="RIGHT">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <sep gap="20"></sep>
+      <block type="py_abs" gap="8">
+        <value name="VALUE">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="py_round" gap="8">
+        <value name="VALUE">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+        <value name="DIGITS">
+          <shadow type="val_number"><field name="NUM">2</field></shadow>
+        </value>
+      </block>
+      <block type="py_int" gap="8">
+        <value name="VALUE">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="py_min2" gap="8">
+        <value name="A">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+        <value name="B">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="py_max2" gap="8">
+        <value name="A">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+        <value name="B">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <sep gap="20"></sep>
+      <block type="py_random_int" gap="8">
+        <value name="FROM">
+          <shadow type="val_number"><field name="NUM">1</field></shadow>
+        </value>
+        <value name="TO">
+          <shadow type="val_number"><field name="NUM">10</field></shadow>
+        </value>
+      </block>
+    </category>
     <category name="値" colour="#8E24AA">
       <block type="val_var" gap="8"></block>
       <block type="val_number" gap="8"></block>
+      <block type="val_str" gap="8"></block>
+      <block type="val_bool" gap="8"></block>
     </category>
     <category name="表示" colour="#00ACC1">
+      <block type="py_print" gap="8"></block>
+      <block type="py_print2" gap="8"></block>
+      <block type="py_print_multi" gap="8"><mutation items="2"/></block>
       <block type="print_text" gap="8"></block>
       <block type="print_var_label" gap="8"></block>
       <block type="print_separator" gap="8"></block>
@@ -1669,8 +1738,8 @@
   <script src="js/block_palette.js?v=20260511a"></script>
   <script src="js/tutorials.js"></script>
   <script src="js/serial.js"></script>
-  <script src="js/blocks/gpio.js?v=20260511a"></script>
-  <script src="js/circuit_viewer.js?v=20260511c"></script>
+  <script src="js/blocks/gpio.js?v=20260511c"></script>
+  <script src="js/circuit_viewer.js?v=20260511f"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260427c"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
