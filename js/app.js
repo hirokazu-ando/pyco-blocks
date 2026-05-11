@@ -3779,6 +3779,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const demoBadge = document.getElementById('demo-badge');
     if (demoBadge) demoBadge.style.display = (mode === 'micropython' && !hasSerial) ? '' : 'none';
 
+    // Wokwi配線図ボタン（MicroPythonモードのみ表示）
+    const showWokwi = mode === 'micropython';
+    ['wokwi-sep', 'btn-wokwi'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = showWokwi ? '' : 'none';
+    });
+
     // Python/ゲーム 実行UI と ゲームCanvas の切り替え
     const btnRunPy  = document.getElementById('btn-run-python');
     const runPySep  = document.getElementById('run-py-sep');
@@ -4965,6 +4972,43 @@ document.addEventListener('DOMContentLoaded', function() {
     Blockly.ContextMenuRegistry.registry.register(
       Object.assign({ id: 'pcb_screenshot_workspace', scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE }, menuDef)
     );
+  })();
+
+  // ===== Wokwi 配線図ボタン =====
+  (function() {
+    const modal   = document.getElementById('wokwi-modal');
+    const btnOpen = document.getElementById('btn-wokwi');
+    const btnClose= document.getElementById('wokwi-modal-close');
+    const btnCopy = document.getElementById('wokwi-btn-copy');
+    const btnWokwi= document.getElementById('wokwi-btn-open');
+    const output  = document.getElementById('wokwi-json-output');
+    const summary = document.getElementById('wokwi-modal-summary');
+    if (!modal || !btnOpen) return;
+
+    btnOpen.addEventListener('click', function() {
+      if (typeof generateWokwiDiagram !== 'function') return;
+      const diagram = generateWokwiDiagram(workspace);
+      const json = JSON.stringify(diagram, null, 2);
+      output.value = json;
+      const partCount = diagram.parts.length - 1; // Pico除く
+      const connCount = diagram.connections.length;
+      summary.textContent = `部品 ${partCount} 個 / 配線 ${connCount} 本  —  下のJSONをコピーしてWokwiのdiagram.jsonに貼り付けてください`;
+      modal.style.display = 'flex';
+    });
+
+    btnClose.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+    btnCopy.addEventListener('click', function() {
+      navigator.clipboard.writeText(output.value).then(() => {
+        btnCopy.textContent = '✅ コピーしました';
+        setTimeout(() => { btnCopy.textContent = '📋 JSONをコピー'; }, 2000);
+      });
+    });
+
+    btnWokwi.addEventListener('click', function() {
+      window.open('https://wokwi.com/new/pi-pico', '_blank');
+    });
   })();
 
   window.addEventListener('resize', syncMainViewportHeight);
