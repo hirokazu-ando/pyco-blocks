@@ -230,44 +230,39 @@
       }
     },
 
-    // ── SG90 サーボ (斜め上から) ──────────────────────────
+    // ── SG90 サーボ (Wokwi wokwi-servo, MIT © 2020 Uri Shaked) ──
     SERVO: {
-      pins: { GND: { dx: -22, dy: 44 }, VCC: { dx: 0, dy: 44 }, PWM: { dx: 22, dy: 44 } },
+      pins: { GND: { dx: -61, dy: -6 }, VCC: { dx: -61, dy: 0 }, PWM: { dx: -61, dy: 6 } },
       draw(cx, cy) {
-        return `<g filter="url(#fDrop)">
-  <!-- 本体 -->
-  <rect x="${cx-34}" y="${cy-30}" width="68" height="56" fill="url(#gServoBody)" stroke="#9e9e9e" stroke-width="1.5" rx="6"/>
-  <!-- 側面マウントタブ (左) -->
-  <rect x="${cx-44}" y="${cy-20}" width="12" height="28" fill="#e0e0e0" stroke="#aaa" stroke-width="1" rx="4"/>
-  <circle cx="${cx-38}" cy="${cy-14}" r="3" fill="#bbb" stroke="#999" stroke-width="0.5"/>
-  <circle cx="${cx-38}" cy="${cy+14}" r="3" fill="#bbb" stroke="#999" stroke-width="0.5"/>
-  <!-- 側面マウントタブ (右) -->
-  <rect x="${cx+32}" y="${cy-20}" width="12" height="28" fill="#e0e0e0" stroke="#aaa" stroke-width="1" rx="4"/>
-  <circle cx="${cx+38}" cy="${cy-14}" r="3" fill="#bbb" stroke="#999" stroke-width="0.5"/>
-  <circle cx="${cx+38}" cy="${cy+14}" r="3" fill="#bbb" stroke="#999" stroke-width="0.5"/>
-  <!-- ギアカバー円 -->
-  <circle cx="${cx+16}" cy="${cy-10}" r="18" fill="#d8d8d8" stroke="#aaa" stroke-width="1.2"/>
-  <circle cx="${cx+16}" cy="${cy-10}" r="10" fill="#c0c0c0" stroke="#999" stroke-width="1"/>
-  <circle cx="${cx+16}" cy="${cy-10}" r="4"  fill="#909090"/>
-  <!-- 出力シャフト + ホーン -->
-  <rect x="${cx+10}" y="${cy-30}" width="24" height="8" fill="#e8e8e8" stroke="#999" stroke-width="1" rx="4"/>
-  <circle cx="${cx+16}" cy="${cy-26}" r="3.5" fill="#bbb" stroke="#888" stroke-width="0.5"/>
-  <!-- ラベル -->
-  <text x="${cx-8}" y="${cy+12}" text-anchor="middle" font-size="14" fill="#666" font-style="italic">SG90</text>
-  <!-- 3本ワイヤーコネクタ -->
-  <rect x="${cx-34}" y="${cy+20}" width="68" height="10" fill="#424242" stroke="#333" stroke-width="1" rx="2"/>
-  <rect x="${cx-30}" y="${cy+22}" width="12" height="6" fill="#3e2723" stroke="#222" stroke-width="0.5" rx="1"/>
-  <rect x="${cx-14}" y="${cy+22}" width="12" height="6" fill="#b71c1c" stroke="#222" stroke-width="0.5" rx="1"/>
-  <rect x="${cx+2}"  y="${cy+22}" width="12" height="6" fill="#e65100" stroke="#222" stroke-width="0.5" rx="1"/>
-  <!-- リード -->
-  <line x1="${cx-22}" y1="${cy+30}" x2="${cx-22}" y2="${cy+44}" stroke="#3e2723" stroke-width="2.5"/>
-  <line x1="${cx}"    y1="${cy+30}" x2="${cx}"    y2="${cy+44}" stroke="#b71c1c" stroke-width="2.5"/>
-  <line x1="${cx+22}" y1="${cy+30}" x2="${cx+22}" y2="${cy+44}" stroke="#e65100" stroke-width="2.5"/>
+        // Wokwi viewBox="0 0 170.08 119.55" → 130×72px
+        const sx = cx - 65, sy = cy - 36;
+        const pin = (x, y) =>
+          `<g transform="translate(${x},${y})">
+            <rect x="0" y="-1.91" width="3.72" height="3.71" fill="#111"/>
+            <rect fill="#ccc" x="0.33" y="-1.23" width="3.04" height="2.46" rx=".15"/>
+          </g>`;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="130" height="72" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
+    <path fill="none" stroke="#b44200" stroke-width="2.7" d="m83.32,56.6c0,0-32.99,0.96-43.32,0-6.20,-0.58-10.60,-6.20-14.87,-6.31"/>
+    <path fill="none" stroke="#ff2300" stroke-width="2.7" d="m83.326 59.6h-62.971"/>
+    <path fill="none" stroke="#f47b00" stroke-width="2.7" d="m83.32,62.6c0,0-32.60,-0.61-43.33,-0.15-6.87,0.29-12.01,6.82-14.77,6.73"/>
+    <rect fill="#666" y="45.5" width="25.71" height="28" rx="1.14"/>
+    ${pin(4.7, 50.06)}${pin(4.7, 59.66)}${pin(4.7, 69.26)}
+    <path fill="#4d4d4d" d="m55.068 66.75a7.09 7.09 0 1 0-5.8261-11.136 0.18 0.18 0 0 1-0.33-0.10234v-14.346h17.676v36.98h-17.676v-14.346a0.18 0.18 0 0 1 0.333-0.107 7.08 7.08 0 0 0 5.83 3.06z"/>
+    <path fill="#4d4d4d" d="m163.92 66.867a7.09 7.09 0 1 1 5.8145-11.136 0.18 0.18 0 0 0 0.33-0.10234v-14.346h-17.664v36.98h17.676v-14.346a0.18 0.18 0 0 0-0.333-0.107 7.08 7.08 0 0 1-5.83 3.06z"/>
+    <rect fill="#666" x="64.255" y="37.911" width="90.241" height="43.725" rx="5.3331"/>
+    <path fill="gray" d="m110.07 50.005h-14.42v19.537h14.42a9.7684 9.7684 0 0 0 0-19.537z"/>
+    <circle fill="#999" cx="91.467" cy="59.773" r="18.606"/>
+    <rect fill="#e0e0e0" x="88.5" y="40" width="6" height="20" rx="3"/>
+    <rect fill="#e0e0e0" x="79" y="57" width="25" height="6" rx="3"/>
+    <circle fill="gray" cx="91.467" cy="59.773" r="8.3729"/>
+    <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
+  </svg>
   <!-- ピンラベル -->
-  <text x="${cx-22}" y="${cy+58}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}"    y="${cy+58}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+22}" y="${cy+58}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">PWM</text>
-  <text x="${cx}" y="${cy+74}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
+  <text x="${cx-61}" y="${cy-20}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-61}" y="${cy+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx-61}" y="${cy+24}" text-anchor="middle" font-size="11" fill="#f57c00" font-family="sans-serif">PWM</text>
+  <text x="${cx+12}" y="${cy+46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
     },
@@ -359,67 +354,75 @@
       }
     },
 
-    // ── LCD1602 I2C ──────────────────────────────────────
+    // ── LCD1602 I2C (Wokwi wokwi-lcd1602, MIT © 2020 Uri Shaked) ──
     LCD: {
-      pins: { GND: { dx: -46, dy: 34 }, VCC: { dx: -15, dy: 34 }, SDA: { dx: 15, dy: 34 }, SCL: { dx: 46, dy: 34 } },
+      pins: { GND: { dx: -46, dy: 40 }, VCC: { dx: -15, dy: 40 }, SDA: { dx: 15, dy: 40 }, SCL: { dx: 46, dy: 40 } },
       draw(cx, cy) {
+        // viewBox="0 0 80 36" → 160×72px (scale=2), Wokwi exact green #087f45
+        const sx = cx - 80, sy = cy - 36;
+        const pinY = cy + 40;
+        // Character cells: 16×2 grid in SVG mm units (panelX=12.45, panelY=12.55, spacing 3.55×5.95)
         const cells = [];
         for (let r = 0; r < 2; r++) for (let c = 0; c < 16; c++) {
-          cells.push(`<rect x="${cx-51+c*6.8}" y="${cy-20+r*14}" width="5.8" height="10" fill="#4dd0e1" rx="1" opacity="0.5"/>`);
+          const cx2 = 12.45 + c * 3.55, cy2 = 12.55 + r * 5.95;
+          cells.push(`<rect x="${cx2}" y="${cy2}" width="2.95" height="5.55" fill="#4dd0e1" opacity="0.12" rx="0.3"/>`);
         }
-        return `<g filter="url(#fDrop)">
-  <!-- PCB -->
-  <rect x="${cx-62}" y="${cy-32}" width="124" height="62" fill="url(#gPcbGreen)" stroke="#1b5e20" stroke-width="1.5" rx="4"/>
-  <!-- ディスプレイベゼル -->
-  <rect x="${cx-58}" y="${cy-28}" width="116" height="54" fill="#0a1f0a" stroke="#1b5e20" stroke-width="0.8" rx="2"/>
-  <!-- バックライト領域 -->
-  <rect x="${cx-54}" y="${cy-24}" width="108" height="46" fill="#002020" rx="2"/>
-  <!-- ピクセルセル -->
-  ${cells.join('')}
-  <!-- I2C チップ (小) -->
-  <rect x="${cx+38}" y="${cy-24}" width="18" height="14" fill="#1a1a1a" stroke="#333" stroke-width="0.5" rx="1"/>
-  <!-- コントラストトリマー -->
-  <rect x="${cx-58}" y="${cy-8}" width="8" height="8" fill="#1565C0" stroke="#0d47a1" stroke-width="0.5" rx="1"/>
-  <!-- ピンラベル -->
-  <text x="${cx-46}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx-15}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+15}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SDA</text>
-  <text x="${cx+46}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SCL</text>
-  <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="160" height="72" viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg">
+    <rect width="80" height="36" fill="#087f45"/>
+    <circle cx="3.5"  cy="3.5"  r="1.5" fill="#056035"/>
+    <circle cx="76.5" cy="3.5"  r="1.5" fill="#056035"/>
+    <circle cx="3.5"  cy="32.5" r="1.5" fill="#056035"/>
+    <circle cx="76.5" cy="32.5" r="1.5" fill="#056035"/>
+    <rect x="4.95" y="5.7"  width="71"   height="24.7" fill="#111" rx="0.7"/>
+    <rect x="7.55" y="10.3" width="65.8" height="15.5" rx="1.5" fill="#003050"/>
+    ${cells.join('')}
+    <rect x="5"  y="27"   width="22" height="7"   fill="#056035" stroke="#034025" stroke-width="0.3" rx="0.5"/>
+    <rect x="6"  y="27.5" width="10" height="6"   fill="#1a1a1a" stroke="#333"    stroke-width="0.2" rx="0.3"/>
+    ${[0,1,2].map(i=>`<rect x="5.3"  y="${28+i*1.5}" width="0.7" height="0.8" fill="#555" rx="0.1"/>`).join('')}
+    ${[0,1,2].map(i=>`<rect x="16.0" y="${28+i*1.5}" width="0.7" height="0.8" fill="#555" rx="0.1"/>`).join('')}
+    <circle cx="23" cy="30.5" r="2.3" fill="#1565C0" stroke="#0d47a1" stroke-width="0.3"/>
+    <circle cx="23" cy="30.5" r="0.8" fill="#1a1a1a"/>
+  </svg>
+  <line x1="${cx-46}" y1="${cy+36}" x2="${cx-46}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx-15}" y1="${cy+36}" x2="${cx-15}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx+15}" y1="${cy+36}" x2="${cx+15}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx+46}" y1="${cy+36}" x2="${cx+46}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <text x="${cx-46}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-15}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+15}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SDA</text>
+  <text x="${cx+46}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SCL</text>
+  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
 </g>`;
       }
     },
 
-    // ── 7セグメント LED ───────────────────────────────────
+    // ── 7セグメント LED (Wokwi wokwi-7segment, MIT © 2020 Uri Shaked) ──
     SEG7: {
-      pins: { COM: { dx: 0, dy: 46 } },
+      pins: { COM: { dx: 0, dy: 62 } },
       draw(cx, cy) {
-        return `<g filter="url(#fDrop)">
-  <!-- ハウジング -->
-  <rect x="${cx-34}" y="${cy-42}" width="68" height="82" fill="#1c1c1c" stroke="#2a2a2a" stroke-width="1.5" rx="4"/>
-  <!-- ウィンドウ -->
-  <rect x="${cx-30}" y="${cy-38}" width="60" height="74" fill="#0a0a0a" rx="2"/>
-  <!-- セグメント A (上横) -->
-  <rect x="${cx-20}" y="${cy-34}" width="40" height="8" fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- セグメント B (右上縦) -->
-  <rect x="${cx+12}" y="${cy-28}" width="8" height="27" fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- セグメント C (右下縦) -->
-  <rect x="${cx+12}" y="${cy+2}"  width="8" height="27" fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- セグメント D (下横) -->
-  <rect x="${cx-20}" y="${cy+27}" width="40" height="8"  fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- セグメント E (左下縦) -->
-  <rect x="${cx-20}" y="${cy+2}"  width="8" height="27" fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- セグメント F (左上縦) -->
-  <rect x="${cx-20}" y="${cy-28}" width="8" height="27" fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- セグメント G (中横) -->
-  <rect x="${cx-20}" y="${cy-4}"  width="40" height="8"  fill="#ff5722" rx="4" opacity="0.9"/>
-  <!-- DP -->
-  <circle cx="${cx+25}" cy="${cy+32}" r="4" fill="#ff5722" opacity="0.9"/>
-  <!-- グロー効果 -->
-  <rect x="${cx-20}" y="${cy-34}" width="40" height="8"  fill="#ff5722" rx="4" opacity="0.2" filter="url(#fDrop)"/>
-  <!-- ピンラベル -->
-  <text x="${cx}" y="${cy+60}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">COM</text>
-  <text x="${cx}" y="${cy+76}" text-anchor="middle" class="cv-lbl">7-Segment</text>
+        // Wokwi viewBox="0 0 12.55 22" → 63×110px (scale≈5)
+        // segments: hexagonal polygon shapes with skewX(-8) italic styling
+        const sx = cx - 31, sy = cy - 55;
+        const pinY = cy + 62;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="63" height="110" viewBox="0 0 12.55 22" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="12.55" height="20.5" fill="#1a1a1a"/>
+    <g transform="skewX(-8) translate(3.5,2.4) scale(0.81)" fill="#ff8c00">
+      <polygon points="2 0 8 0 9 1 8 2 2 2 1 1"/>
+      <polygon points="10 2 10 8 9 9 8 8 8 2 9 1"/>
+      <polygon points="10 10 10 16 9 17 8 16 8 10 9 9"/>
+      <polygon points="8 18 2 18 1 17 2 16 8 16 9 17"/>
+      <polygon points="0 16 0 10 1 9 2 10 2 16 1 17"/>
+      <polygon points="0 8 0 2 1 1 2 2 2 8 1 9"/>
+      <polygon points="2 8 8 8 9 9 8 10 2 10 1 9"/>
+    </g>
+    <circle cx="11.4" cy="17.5" r="0.89" fill="#ff8c00"/>
+    <rect x="3.18" y="20.5" width="7.62" height="1.5" fill="#c8a86e" stroke="#8a7040" stroke-width="0.15" rx="0.2"/>
+  </svg>
+  <line x1="${cx}" y1="${sy+110}" x2="${cx}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <text x="${cx}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">COM</text>
+  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">7-Segment</text>
 </g>`;
       }
     },
