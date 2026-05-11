@@ -85,135 +85,147 @@
   // ===== コンポーネントシンボル =====
   const SYM = {
 
-    // ── LED (縦向き・上ドーム=アノード・下2本リード+直列抵抗) ──
+    // ── LED (Wokwi wokwi-led, MIT © 2020 Uri Shaked) ────────
     LED: {
-      pins: { A: { dx: -10, dy: 52 }, C: { dx: 10, dy: 52 } },
+      pins: { A: { dx: -5, dy: 62 }, C: { dx: 8, dy: 62 } },
       draw(cx, cy) {
-        const bTop = cy - 32; // ドーム下端 = ボディ上端
-        const bBot = cy - 4;  // ボディ下端
-        const ax   = cx - 10; // アノードリード X
-        const kx   = cx + 10; // カソードリード X
-        const resT = bBot + 6;  // 抵抗上端
-        const resB = resT + 22; // 抵抗下端
-        const pinY = cy + 52;   // ピン(リード下端) Y
-        return `<g filter="url(#fDrop)">
-  <!-- ドーム (上向き半円) -->
-  <path d="M${cx-18},${bTop} A18,18 0 0,1 ${cx+18},${bTop} Z"
-        fill="url(#gLedRed)" stroke="#c62828" stroke-width="1.5"/>
-  <!-- ボディ (矩形) -->
-  <rect x="${cx-18}" y="${bTop}" width="36" height="${bBot-bTop}"
-        fill="url(#gLedRed)" stroke="#c62828" stroke-width="1.5"/>
-  <!-- 光沢 -->
-  <ellipse cx="${cx-4}" cy="${bTop+9}" rx="7" ry="5" fill="#fff" opacity="0.22"/>
-  <!-- カソード識別マーク -->
-  <line x1="${kx-4}" y1="${bBot-5}" x2="${kx+7}" y2="${bBot-5}" stroke="#7f0000" stroke-width="1.8"/>
-  <!-- 発光矢印 -->
-  <line x1="${cx+20}" y1="${bTop+2}"  x2="${cx+32}" y2="${bTop-10}" stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="${cx+24}" y1="${bTop+8}"  x2="${cx+36}" y2="${bTop-4}"  stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
-  <!-- アノードリード (ボディ→抵抗上) -->
-  <line x1="${ax}" y1="${bBot}" x2="${ax}" y2="${resT}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
-  <!-- 抵抗器 (カラーバンド付き) -->
-  <rect x="${ax-7}" y="${resT}" width="14" height="22" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="3"/>
-  <line x1="${ax-5}" y1="${resT+5}"  x2="${ax+5}" y2="${resT+5}"  stroke="#8a6030" stroke-width="1"/>
-  <line x1="${ax-5}" y1="${resT+11}" x2="${ax+5}" y2="${resT+11}" stroke="#8a6030" stroke-width="1"/>
-  <line x1="${ax-5}" y1="${resT+17}" x2="${ax+5}" y2="${resT+17}" stroke="#8a6030" stroke-width="1"/>
-  <!-- アノードリード (抵抗下→ピン) -->
-  <line x1="${ax}" y1="${resB}" x2="${ax}" y2="${pinY}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
-  <!-- カソードリード (ボディ→ピン) -->
-  <line x1="${kx}" y1="${bBot}" x2="${kx}" y2="${pinY}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+        // Wokwi SVG: viewBox="-10 -5 35.456 39.618" → 44×50px
+        const sx = cx - 22, sy = cy - 25;
+        // リード出口 (display座標): 左(A)≈(cx-5,cy+19), 右(C)≈(cx+8,cy+20)
+        const aX = cx - 5,  aLeadY = cy + 19;
+        const cX = cx + 8,  cLeadY = cy + 20;
+        const resT = aLeadY + 4, resB = resT + 22;
+        const pinY = cy + 62;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="44" height="50" viewBox="-10 -5 35.456 39.618" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2.5099" y="20.382" width="2.1514" height="9.8273" fill="#8c8c8c"/>
+    <path d="m12.977 30.269c0-1.1736-0.86844-2.5132-1.8916-3.4024-0.41616-0.3672-1.1995-1.0015-1.1995-1.4249v-5.4706h-2.1614v5.7802c0 1.0584 0.94752 1.8785 1.9462 2.7482 0.44424 0.37584 1.3486 1.2496 1.3486 1.7694" fill="#8c8c8c"/>
+    <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" opacity=".3"/>
+    <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" fill="#e6e6e6" opacity=".5"/>
+    <path d="m14.173 13.001v3.1054c0 2.7389-3.1658 4.9651-7.0855 4.9651-3.9125 2e-5 -7.0877-2.219-7.0877-4.9651v4.6296c1.4738 1.6517 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8586l-4e-5 -1.5235c-7e-4 -1.1419-0.4744-2.2032-1.283-3.1054z" fill="#d1d1d1" opacity=".9"/>
+    <polygon points="2.2032 16.107 3.1961 16.107 3.1961 13.095 6.0156 13.095 10.012 8.8049 3.407 8.8049 2.2032 9.648" fill="#666"/>
+    <polygon points="11.215 9.0338 7.4117 13.095 11.06 13.095 11.06 16.107 11.974 16.107 11.974 8.5241 10.778 8.5241" fill="#666"/>
+    <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" fill="#e53935" opacity=".65"/>
+    <path d="m10.388 3.7541 1.4364-0.2736c-0.84168-1.1318-2.0822-1.9577-3.5417-2.2385l0.25416 1.0807c0.76388 0.27072 1.4068 0.78048 1.8511 1.4314z" fill="#fff" opacity=".5"/>
+    <path d="m0.76824 19.926v1.5199c0.64872 0.5292 1.4335 0.97632 2.3076 1.3169v-1.525c-0.8784-0.33624-1.6567-0.78194-2.3076-1.3118z" fill="#fff" opacity=".5"/>
+  </svg>
+  <!-- アノードリード → 抵抗 → ピン -->
+  <line x1="${aX}" y1="${aLeadY}" x2="${aX}" y2="${resT}" stroke="#888" stroke-width="1.5"/>
+  <rect x="${aX-7}" y="${resT}" width="14" height="22" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="3"/>
+  <line x1="${aX-5}" y1="${resT+5}"  x2="${aX+5}" y2="${resT+5}"  stroke="#6b4c20" stroke-width="1"/>
+  <line x1="${aX-5}" y1="${resT+11}" x2="${aX+5}" y2="${resT+11}" stroke="#6b4c20" stroke-width="1"/>
+  <line x1="${aX-5}" y1="${resT+17}" x2="${aX+5}" y2="${resT+17}" stroke="#6b4c20" stroke-width="1"/>
+  <line x1="${aX}" y1="${resB}" x2="${aX}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <!-- カソードリード → ピン -->
+  <line x1="${cX}" y1="${cLeadY}" x2="${cX}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
   <!-- ピンラベル -->
-  <text x="${ax}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">A</text>
-  <text x="${kx}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">C</text>
-  <text x="${cx}" y="${bTop-14}" text-anchor="middle" class="cv-lbl">LED</text>
+  <text x="${aX}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">A</text>
+  <text x="${cX}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">C</text>
+  <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
     },
 
-    // ── タクタイルスイッチ (上面) ──────────────────────────
+    // ── タクタイルスイッチ (Wokwi wokwi-pushbutton, MIT © 2020 Uri Shaked) ──
     BTN: {
-      pins: { VCC: { dx: -30, dy: 0 }, SIG: { dx: 30, dy: 0 } },
+      pins: { VCC: { dx: -38, dy: 0 }, SIG: { dx: 38, dy: 0 } },
       draw(cx, cy) {
-        return `<g filter="url(#fDrop)">
-  <!-- PCB面 -->
-  <rect x="${cx-24}" y="${cy-24}" width="48" height="48" fill="#1a3a1a" stroke="#2a5a2a" stroke-width="1" rx="4"/>
-  <!-- スイッチ本体 -->
-  <rect x="${cx-20}" y="${cy-20}" width="40" height="40" fill="#252525" stroke="#3a3a3a" stroke-width="1" rx="3"/>
-  <!-- ボタンキャップ -->
-  <rect x="${cx-12}" y="${cy-12}" width="24" height="24" fill="url(#gBtn)" stroke="#888" stroke-width="1" rx="3"/>
-  <rect x="${cx-10}" y="${cy-10}" width="10" height="5" fill="#fff" opacity="0.25" rx="1"/>
-  <!-- 4コーナー ハンダパッド -->
-  <circle cx="${cx-21}" cy="${cy-21}" r="3.5" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5"/>
-  <circle cx="${cx+21}" cy="${cy-21}" r="3.5" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5"/>
-  <circle cx="${cx-21}" cy="${cy+21}" r="3.5" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5"/>
-  <circle cx="${cx+21}" cy="${cy+21}" r="3.5" fill="#ffd54f" stroke="#b8860b" stroke-width="0.5"/>
-  <!-- リード -->
-  <line x1="${cx-30}" y1="${cy}" x2="${cx-22}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
-  <line x1="${cx+22}" y1="${cy}" x2="${cx+30}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
+        // viewBox="-3 0 18 12" → 90×60px (scale=5)
+        const sx = cx - 45, sy = cy - 30;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="90" height="60" viewBox="-3 0 18 12" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="12" height="12" rx=".44" ry=".44" fill="#464646"/>
+    <rect x=".75" y=".75" width="10.5" height="10.5" rx=".211" ry=".211" fill="#eaeaea"/>
+    <g fill="#1b1b1b">
+      <circle cx="1.767" cy="1.7916" r=".37"/>
+      <circle cx="10.161" cy="1.7916" r=".37"/>
+      <circle cx="10.161" cy="10.197" r=".37"/>
+      <circle cx="1.767" cy="10.197" r=".37"/>
+    </g>
+    <g fill="#999" stroke-width="1.0154">
+      <path d="m12.365 2.426c0.06012 0 0.10849 0.0469 0.1085 0.10522v0.38698h2.2173c0.12023 0 0.217 0.0938 0.217 0.21045v0.50721c0 0.1166-0.09677 0.21045-0.217 0.21045h-2.2173v0.40101c0 0.0583-0.0484 0.10528-0.1085 0.10528h-0.36835v-1.9266z"/>
+      <path d="m12.365 7.5c0.06012 0 0.10849 0.0469 0.1085 0.10522v0.38698h2.2173c0.12023 0 0.217 0.0938 0.217 0.21045v0.50721c0 0.1166-0.09677 0.21045-0.217 0.21045h-2.2173v0.40101c0 0.0583-0.0484 0.10528-0.1085 0.10528h-0.36835v-1.9266z"/>
+      <path d="m-0.35085 4.3526c-0.06012 0-0.10849-0.0469-0.1085-0.10522v-0.38698h-2.2173c-0.12023 0-0.217-0.0938-0.217-0.21045v-0.50721c0-0.1166 0.09677-0.21045 0.217-0.21045h2.2173v-0.40101c0-0.0583 0.0484-0.10528 0.1085-0.10528h0.36835v1.9266z"/>
+      <path d="m-0.35085 9.4266c-0.06012 0-0.10849-0.0469-0.1085-0.10522v-0.38698h-2.2173c-0.12023 0-0.217-0.0938-0.217-0.21045v-0.50721c0-0.1166 0.09677-0.21045 0.217-0.21045h2.2173v-0.40101c0-0.0583 0.0484-0.10528 0.1085-0.10528h0.36835v1.9266z"/>
+    </g>
+    <circle cx="6" cy="6" r="3.822" fill="#cc2222"/>
+    <circle cx="6" cy="6" r="2.9" fill="#cc2222" stroke="#2f2f2f" stroke-opacity=".47" stroke-width=".08"/>
+  </svg>
   <!-- ピンラベル -->
-  <text x="${cx-30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx-38}" y="${cy-34}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+38}" y="${cy-34}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
   <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">Button</text>
 </g>`;
       }
     },
 
-    // ── トリマーポテンショ (上面) ──────────────────────────
+    // ── ポテンショメーター (Wokwi wokwi-potentiometer, MIT © 2020 Uri Shaked) ──
     POT: {
-      pins: { VCC: { dx: -30, dy: 0 }, SIG: { dx: 0, dy: 34 }, GND: { dx: 30, dy: 0 } },
+      pins: { VCC: { dx: 38, dy: 42 }, SIG: { dx: 12, dy: 42 }, GND: { dx: -14, dy: 42 } },
       draw(cx, cy) {
-        return `<g filter="url(#fDrop)">
-  <!-- PCB -->
-  <rect x="${cx-28}" y="${cy-22}" width="56" height="40" fill="#1a3a1a" stroke="#2a5a2a" stroke-width="1" rx="3"/>
-  <!-- 本体 (青) -->
-  <rect x="${cx-24}" y="${cy-18}" width="48" height="32" fill="url(#gPcbBlue)" stroke="#0d47a1" stroke-width="1" rx="3"/>
-  <!-- ノブ円 -->
-  <circle cx="${cx}" cy="${cy}" r="13" fill="#e8e8e8" stroke="#9e9e9e" stroke-width="1.5"/>
-  <circle cx="${cx}" cy="${cy}" r="9"  fill="#d0d0d0" stroke="#888" stroke-width="1"/>
-  <!-- ノブ溝 (スロット) -->
-  <line x1="${cx}" y1="${cy-9}" x2="${cx}" y2="${cy-2}" stroke="#555" stroke-width="3" stroke-linecap="round"/>
-  <!-- ハンダパッド -->
-  <rect x="${cx-23}" y="${cy+8}" width="8" height="6" fill="#ffd54f" rx="1"/>
-  <rect x="${cx-4}"  y="${cy+8}" width="8" height="6" fill="#ffd54f" rx="1"/>
-  <rect x="${cx+15}" y="${cy+8}" width="8" height="6" fill="#ffd54f" rx="1"/>
-  <!-- リード -->
-  <line x1="${cx-30}" y1="${cy}" x2="${cx-22}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
-  <line x1="${cx+22}" y1="${cy}" x2="${cx+30}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
-  <line x1="${cx}"    y1="${cy+14}" x2="${cx}"  y2="${cy+34}" stroke="#d0d0d0" stroke-width="2"/>
+        // viewBox="0 0 20 20" → 80×80px (scale=4), pins at bottom
+        const sx = cx - 40, sy = cy - 40;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="80" height="80" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+    <rect x=".15" y=".15" width="19.5" height="19.5" ry="1.23" fill="#045881" stroke="#045881" stroke-width=".30"/>
+    <rect x="5.4" y=".70" width="9.1" height="1.9" fill="#ccdae3" stroke-width=".15"/>
+    <ellipse cx="9.95" cy="8.06" rx="7.27" ry="7.43" fill="#e4e8eb" stroke-width=".15"/>
+    <ellipse cx="9.95" cy="8.06" rx="6.60" ry="6.58" fill="#c3c2c3" stroke-width=".15"/>
+    <rect x="9.79" y="2" width=".42" height="3.1" stroke-width=".15" fill="#333"/>
+    <g fill="#b3b1b0" stroke-width=".15">
+      <ellipse cx="7.68" cy="18" rx=".61" ry=".63"/>
+      <ellipse cx="10.22" cy="18" rx=".61" ry=".63"/>
+      <ellipse cx="12.76" cy="18" rx=".61" ry=".63"/>
+    </g>
+    <rect x="6" y="17" width="8" height="2" fill-opacity="0" stroke="#fff" stroke-width=".30"/>
+    <g stroke-width=".15" fill="#ccdae3" font-size="1.3" font-family="sans-serif">
+      <text x="6.1" y="16.6">GND</text>
+      <text x="9.0" y="16.63">SIG</text>
+      <text x="11.4" y="16.59">VCC</text>
+    </g>
+    <g fill="#fff" stroke-width=".15">
+      <ellipse cx="1.68" cy="1.81" rx=".99" ry=".96"/>
+      <ellipse cx="1.48" cy="18.37" rx=".99" ry=".96"/>
+      <ellipse cx="17.97" cy="18.47" rx=".99" ry=".96"/>
+      <ellipse cx="18.07" cy="1.91" rx=".99" ry=".96"/>
+    </g>
+  </svg>
+  <!-- ピンリード (底面から下へ) -->
+  <line x1="${cx+38}" y1="${cy+40}" x2="${cx+38}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx+12}" y1="${cy+40}" x2="${cx+12}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx-14}" y1="${cy+40}" x2="${cx-14}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
   <!-- ピンラベル -->
-  <text x="${cx-30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx+16}" y="${cy+34}" text-anchor="start"  font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx}" y="${cy+62}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
+  <text x="${cx+38}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+12}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx-14}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${cy+70}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
 </g>`;
       }
     },
 
-    // ── パッシブブザー ─────────────────────────────────────
+    // ── パッシブブザー (Wokwi wokwi-buzzer, MIT © 2020 Uri Shaked) ──
     BUZZ: {
-      pins: { SIG: { dx: -30, dy: 0 }, GND: { dx: 30, dy: 0 } },
+      pins: { SIG: { dx: -9, dy: 50 }, GND: { dx: 9, dy: 50 } },
       draw(cx, cy) {
-        return `<g filter="url(#fDrop)">
-  <!-- 外形 (黒円) -->
-  <circle cx="${cx}" cy="${cy}" r="22" fill="#1a1a1a" stroke="#333" stroke-width="1.5"/>
-  <!-- 上面ディスク -->
-  <ellipse cx="${cx}" cy="${cy-3}" rx="22" ry="8" fill="#212121" stroke="#2a2a2a" stroke-width="1"/>
-  <!-- 中央穴パターン -->
-  <circle cx="${cx}"    cy="${cy-3}" r="5"   fill="#0a0a0a" stroke="#333" stroke-width="0.5"/>
-  <circle cx="${cx-10}" cy="${cy-3}" r="2"   fill="#111" stroke="#333" stroke-width="0.5"/>
-  <circle cx="${cx+10}" cy="${cy-3}" r="2"   fill="#111" stroke="#333" stroke-width="0.5"/>
-  <circle cx="${cx}"    cy="${cy-12}" r="2"  fill="#111" stroke="#333" stroke-width="0.5"/>
-  <circle cx="${cx}"    cy="${cy+6}"  r="2"  fill="#111" stroke="#333" stroke-width="0.5"/>
-  <!-- ＋ マーク -->
-  <text x="${cx-18}" y="${cy-8}" font-size="18" fill="#e53935" font-weight="bold">+</text>
-  <!-- PCB底面リング -->
-  <ellipse cx="${cx}" cy="${cy+18}" rx="22" ry="5" fill="#1a3a1a" stroke="#2a5a2a" stroke-width="1"/>
-  <!-- リード -->
-  <line x1="${cx-30}" y1="${cy}" x2="${cx-22}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
-  <line x1="${cx+22}" y1="${cy}" x2="${cx+30}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
+        // viewBox="0 0 17 20" → 68×80px (scale=4)
+        const sx = cx - 34, sy = cy - 40;
+        const pinY = cy + 50;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="68" height="80" viewBox="0 0 17 20" xmlns="http://www.w3.org/2000/svg">
+    <path d="m7.23 16.5v3.5" fill="none" stroke="#8c8c8c" stroke-width=".5"/>
+    <path d="m9.77 16.5v3.5" fill="#f00" stroke="#f00" stroke-width=".5"/>
+    <g stroke="#444">
+      <ellipse cx="8.5" cy="8.5" rx="8.15" ry="8.15" fill="#1a1a1a" stroke-width=".7"/>
+      <circle cx="8.5" cy="8.5" r="6.35" fill="none" stroke-width=".3" style="paint-order:normal"/>
+      <circle cx="8.5" cy="8.5" r="4.35" fill="none" stroke-width=".3" style="paint-order:normal"/>
+    </g>
+    <circle cx="8.5" cy="8.5" r="1.37" fill="#ccc" stroke="#444" stroke-width=".25"/>
+    <text x="3.5" y="10" font-size="2.8" fill="#e53935" font-weight="bold" font-family="sans-serif">+</text>
+  </svg>
   <!-- ピンラベル -->
-  <text x="${cx-30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx+30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">Buzzer</text>
+  <text x="${cx-9}" y="${pinY+16}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx+9}" y="${pinY+16}" text-anchor="middle" font-size="12" fill="#e53935" font-family="sans-serif">+</text>
+  <text x="${cx}" y="${pinY+32}" text-anchor="middle" class="cv-lbl">Buzzer</text>
 </g>`;
       }
     },
@@ -260,66 +272,89 @@
       }
     },
 
-    // ── HC-SR04 超音波センサー ────────────────────────────
+    // ── HC-SR04 (Wokwi wokwi-hc-sr04, MIT © 2020 Uri Shaked) ──
     HCSR04: {
-      pins: { VCC: { dx: -38, dy: 34 }, TRIG: { dx: -13, dy: 34 }, ECHO: { dx: 13, dy: 34 }, GND: { dx: 38, dy: 34 } },
+      pins: { VCC: { dx: -37, dy: 38 }, TRIG: { dx: -12, dy: 38 }, ECHO: { dx: 13, dy: 38 }, GND: { dx: 38, dy: 38 } },
       draw(cx, cy) {
-        return `<g filter="url(#fDrop)">
-  <!-- PCB (緑) -->
-  <rect x="${cx-50}" y="${cy-28}" width="100" height="58" fill="url(#gPcbGreen)" stroke="#1b5e20" stroke-width="1.5" rx="4"/>
-  <!-- PCB パターン (デコ) -->
-  <line x1="${cx-38}" y1="${cy+14}" x2="${cx-24}" y2="${cy+14}" stroke="#ffd54f" stroke-width="0.7" opacity="0.5"/>
-  <line x1="${cx+24}" y1="${cy+14}" x2="${cx+38}" y2="${cy+14}" stroke="#ffd54f" stroke-width="0.7" opacity="0.5"/>
-  <!-- ラベル -->
-  <text x="${cx}" y="${cy-14}" text-anchor="middle" font-size="15" fill="#c8e6c9" font-weight="bold">HC-SR04</text>
-  <!-- トランスデューサー左 (TRIG) -->
-  <circle cx="${cx-22}" cy="${cy+2}" r="17" fill="url(#gTransducer)" stroke="#757575" stroke-width="1.5"/>
-  <circle cx="${cx-22}" cy="${cy+2}" r="12" fill="#c8c8c8" stroke="#888" stroke-width="1"/>
-  <circle cx="${cx-22}" cy="${cy+2}" r="8"  fill="#aaaaaa" stroke="#777" stroke-width="0.8"/>
-  <circle cx="${cx-22}" cy="${cy+2}" r="4"  fill="#888"/>
-  <!-- トランスデューサー右 (ECHO) -->
-  <circle cx="${cx+22}" cy="${cy+2}" r="17" fill="url(#gTransducer)" stroke="#757575" stroke-width="1.5"/>
-  <circle cx="${cx+22}" cy="${cy+2}" r="12" fill="#c8c8c8" stroke="#888" stroke-width="1"/>
-  <circle cx="${cx+22}" cy="${cy+2}" r="8"  fill="#aaaaaa" stroke="#777" stroke-width="0.8"/>
-  <circle cx="${cx+22}" cy="${cy+2}" r="4"  fill="#888"/>
-  <!-- ピンヘッダ -->
-  <rect x="${cx-40}" y="${cy+26}" width="80" height="6" fill="#222" rx="1"/>
-  <!-- ピンラベル -->
-  <text x="${cx-38}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx-13}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">TRIG</text>
-  <text x="${cx+13}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">ECHO</text>
-  <text x="${cx+38}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
+        // viewBox="0 0 45 25" → 90×50px (scale=2)
+        const sx = cx - 45, sy = cy - 25;
+        const pinY = cy + 38;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="90" height="50" viewBox="0 0 45 25" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <pattern patternUnits="userSpaceOnUse" width="2" height="2" id="hcsr04cb">
+        <path d="M0 0h1v1H0zM1 1h1v1H1z"/>
+      </pattern>
+      <radialGradient id="hcsr04g" cx="8.96" cy="10.04" r="3.58" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#777" offset="0"/>
+        <stop stop-color="#b9b9b9" offset="1"/>
+      </radialGradient>
+      <g id="hcsr04su">
+        <circle cx="8.98" cy="10" r="8.61" fill="#dcdcdc"/>
+        <circle cx="8.98" cy="10" r="7.17" fill="#222"/>
+        <circle cx="8.98" cy="10" r="5.53" fill="#777"/>
+        <circle cx="8.98" cy="10" r="3.59" fill="url(#hcsr04g)"/>
+        <circle cx="8.99" cy="10" r=".277" fill="#777" opacity=".818"/>
+        <circle cx="8.98" cy="10" r="5.53" fill="url(#hcsr04cb)" opacity=".397"/>
+      </g>
+    </defs>
+    <path d="M0 0v20.948h45V0zm1.422.464a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zm41.956 0a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zM1.422 18.484a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zm41.956 0a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1z" fill="#456f93"/>
+    <use href="#hcsr04su"/>
+    <use href="#hcsr04su" x="27.12"/>
+    <rect ry="2.07" y=".626" x="17.111" height="4.139" width="10.272" fill="#878787" stroke="#424242" stroke-width=".368"/>
+    <g fill="black">
+      <rect x="17.87" y="18" ry=".568" width="2.25" height="2.271"/>
+      <rect x="20.41" y="18" ry=".568" width="2.25" height="2.271"/>
+      <rect x="22.95" y="18" ry=".568" width="2.25" height="2.271"/>
+      <rect x="25.49" y="18" ry=".568" width="2.25" height="2.271"/>
+    </g>
+    <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
+      <rect x="18.61" y="19" width=".75" height="6" rx=".2"/>
+      <rect x="21.15" y="19" width=".75" height="6" rx=".2"/>
+      <rect x="23.69" y="19" width=".75" height="6" rx=".2"/>
+      <rect x="26.23" y="19" width=".75" height="6" rx=".2"/>
+    </g>
+    <text font-size="2.2" fill="#e6e6e6" stroke-width=".055" x="17.6" y="8">HC-SR04</text>
+    <g transform="rotate(-90)" font-size="1.55" fill="#e6e6e6" stroke-width=".039" font-family="sans-serif">
+      <text x="-17.6" y="19.6">VCC</text>
+      <text x="-17.6" y="22.1">TRIG</text>
+      <text x="-17.6" y="24.6">ECHO</text>
+      <text x="-17.6" y="27.2">GND</text>
+    </g>
+  </svg>
+  <!-- ピンラベル (外部) -->
+  <text x="${cx-37}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx-12}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">TRIG</text>
+  <text x="${cx+13}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">ECHO</text>
+  <text x="${cx+38}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
 </g>`;
       }
     },
 
-    // ── DHT22 温湿度センサー ──────────────────────────────
+    // ── DHT22 (Wokwi wokwi-dht22, MIT © 2020 Uri Shaked) ──
     DHT22: {
-      pins: { VCC: { dx: -18, dy: 38 }, SIG: { dx: 0, dy: 38 }, GND: { dx: 18, dy: 38 } },
+      pins: { VCC: { dx: -10, dy: 52 }, SIG: { dx: 4, dy: 52 }, GND: { dx: 18, dy: 52 } },
       draw(cx, cy) {
-        const slits = Array.from({ length: 6 }, (_, i) =>
-          `<rect x="${cx-17}" y="${cy-22+i*5}" width="34" height="2.5" fill="#90caf9" rx="1" opacity="0.55"/>`
-        ).join('');
-        return `<g filter="url(#fDrop)">
-  <!-- 本体 (青) -->
-  <rect x="${cx-26}" y="${cy-34}" width="52" height="66" fill="url(#gPcbBlue)" stroke="#0d47a1" stroke-width="1.5" rx="6"/>
-  <!-- 窓 (白) -->
-  <rect x="${cx-20}" y="${cy-28}" width="40" height="34" fill="#fff" rx="3"/>
-  <!-- スリット -->
-  ${slits}
-  <!-- ラベル -->
-  <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="16"  fill="#fff" font-weight="bold">DHT22</text>
-  <text x="${cx}" y="${cy+28}" text-anchor="middle" font-size="13" fill="#90caf9">Temp / Humi</text>
-  <!-- ピン (3本) -->
-  <line x1="${cx-18}" y1="${cy+32}" x2="${cx-18}" y2="${cy+38}" stroke="#d0d0d0" stroke-width="2"/>
-  <line x1="${cx}"    y1="${cy+32}" x2="${cx}"    y2="${cy+38}" stroke="#d0d0d0" stroke-width="2"/>
-  <line x1="${cx+18}" y1="${cy+32}" x2="${cx+18}" y2="${cy+38}" stroke="#d0d0d0" stroke-width="2"/>
+        // viewBox="0 0 15.1 30.885" → 50×102px (scale≈3.3)
+        const sx = cx - 25, sy = cy - 50;
+        const pinY = cy + 52;
+        return `<g>
+  <svg x="${sx}" y="${sy}" width="50" height="102" viewBox="0 0 15.1 30.885" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
+      <rect x="3.57" y="23.885" width=".75" height="7" rx=".2"/>
+      <rect x="6.11" y="23.885" width=".75" height="7" rx=".2"/>
+      <rect x="8.65" y="23.885" width=".75" height="7" rx=".2"/>
+      <rect x="11.19" y="23.885" width=".75" height="7" rx=".2"/>
+    </g>
+    <path d="M15.05 23.995V5.033c0-.107-1.069-4.962-2.662-4.96L2.803.09C1.193.09.05 4.926.05 5.033v18.962c0 .107.086.192.192.192h14.616a.192.192 0 00.192-.192M7.615.948h.004c1.08 0 1.956.847 1.956 1.892s-.876 1.892-1.956 1.892-1.956-.847-1.956-1.892c0-1.044.873-1.89 1.952-1.892z" fill="#f2f2f2" stroke="#000" stroke-linecap="round" stroke-width=".1"/>
+    <text x="3.7" y="22.86" fill="#000" font-family="sans-serif" font-size="2.2" stroke-width=".05">DHT22</text>
+  </svg>
   <!-- ピンラベル -->
-  <text x="${cx-18}" y="${cy+52}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx}"    y="${cy+52}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx+18}" y="${cy+52}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${cy+66}" text-anchor="middle" class="cv-lbl">DHT22</text>
+  <text x="${cx-10}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+4}"  y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx+18}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">DHT22</text>
 </g>`;
       }
     },
