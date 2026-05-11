@@ -122,9 +122,9 @@
   <!-- カソードリード (ボディ→ピン) -->
   <line x1="${kx}" y1="${bBot}" x2="${kx}" y2="${pinY}" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
   <!-- ピンラベル -->
-  <text x="${ax}" y="${pinY+12}" text-anchor="middle" font-size="7" fill="#90a4ae" font-family="sans-serif">A</text>
-  <text x="${kx}" y="${pinY+12}" text-anchor="middle" font-size="7" fill="#90a4ae" font-family="sans-serif">C</text>
-  <text x="${cx}" y="${bTop-8}" text-anchor="middle" class="cv-lbl">LED</text>
+  <text x="${ax}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">A</text>
+  <text x="${kx}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">C</text>
+  <text x="${cx}" y="${bTop-14}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
     },
@@ -149,7 +149,10 @@
   <!-- リード -->
   <line x1="${cx-30}" y1="${cy}" x2="${cx-22}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
   <line x1="${cx+22}" y1="${cy}" x2="${cx+30}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
-  <text x="${cx}" y="${cy+34}" text-anchor="middle" class="cv-lbl">Button</text>
+  <!-- ピンラベル -->
+  <text x="${cx-30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">Button</text>
 </g>`;
       }
     },
@@ -176,7 +179,11 @@
   <line x1="${cx-30}" y1="${cy}" x2="${cx-22}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
   <line x1="${cx+22}" y1="${cy}" x2="${cx+30}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
   <line x1="${cx}"    y1="${cy+14}" x2="${cx}"  y2="${cy+34}" stroke="#d0d0d0" stroke-width="2"/>
-  <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
+  <!-- ピンラベル -->
+  <text x="${cx-30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx+16}" y="${cy+34}" text-anchor="start"  font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx}" y="${cy+62}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
 </g>`;
       }
     },
@@ -197,13 +204,16 @@
   <circle cx="${cx}"    cy="${cy-12}" r="2"  fill="#111" stroke="#333" stroke-width="0.5"/>
   <circle cx="${cx}"    cy="${cy+6}"  r="2"  fill="#111" stroke="#333" stroke-width="0.5"/>
   <!-- ＋ マーク -->
-  <text x="${cx-18}" y="${cy-8}" font-size="9" fill="#e53935" font-weight="bold">+</text>
+  <text x="${cx-18}" y="${cy-8}" font-size="18" fill="#e53935" font-weight="bold">+</text>
   <!-- PCB底面リング -->
   <ellipse cx="${cx}" cy="${cy+18}" rx="22" ry="5" fill="#1a3a1a" stroke="#2a5a2a" stroke-width="1"/>
   <!-- リード -->
   <line x1="${cx-30}" y1="${cy}" x2="${cx-22}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
   <line x1="${cx+22}" y1="${cy}" x2="${cx+30}" y2="${cy}" stroke="#d0d0d0" stroke-width="2"/>
-  <text x="${cx}" y="${cy+36}" text-anchor="middle" class="cv-lbl">Buzzer</text>
+  <!-- ピンラベル -->
+  <text x="${cx-30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx+30}" y="${cy-12}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">Buzzer</text>
 </g>`;
       }
     },
@@ -231,7 +241,7 @@
   <rect x="${cx+10}" y="${cy-30}" width="24" height="8" fill="#e8e8e8" stroke="#999" stroke-width="1" rx="4"/>
   <circle cx="${cx+16}" cy="${cy-26}" r="3.5" fill="#bbb" stroke="#888" stroke-width="0.5"/>
   <!-- ラベル -->
-  <text x="${cx-8}" y="${cy+12}" text-anchor="middle" font-size="7" fill="#666" font-style="italic">SG90</text>
+  <text x="${cx-8}" y="${cy+12}" text-anchor="middle" font-size="14" fill="#666" font-style="italic">SG90</text>
   <!-- 3本ワイヤーコネクタ -->
   <rect x="${cx-34}" y="${cy+20}" width="68" height="10" fill="#424242" stroke="#333" stroke-width="1" rx="2"/>
   <rect x="${cx-30}" y="${cy+22}" width="12" height="6" fill="#3e2723" stroke="#222" stroke-width="0.5" rx="1"/>
@@ -241,7 +251,11 @@
   <line x1="${cx-22}" y1="${cy+30}" x2="${cx-22}" y2="${cy+44}" stroke="#3e2723" stroke-width="2.5"/>
   <line x1="${cx}"    y1="${cy+30}" x2="${cx}"    y2="${cy+44}" stroke="#b71c1c" stroke-width="2.5"/>
   <line x1="${cx+22}" y1="${cy+30}" x2="${cx+22}" y2="${cy+44}" stroke="#e65100" stroke-width="2.5"/>
-  <text x="${cx}" y="${cy+58}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
+  <!-- ピンラベル -->
+  <text x="${cx-22}" y="${cy+58}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}"    y="${cy+58}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+22}" y="${cy+58}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">PWM</text>
+  <text x="${cx}" y="${cy+74}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
     },
@@ -257,7 +271,7 @@
   <line x1="${cx-38}" y1="${cy+14}" x2="${cx-24}" y2="${cy+14}" stroke="#ffd54f" stroke-width="0.7" opacity="0.5"/>
   <line x1="${cx+24}" y1="${cy+14}" x2="${cx+38}" y2="${cy+14}" stroke="#ffd54f" stroke-width="0.7" opacity="0.5"/>
   <!-- ラベル -->
-  <text x="${cx}" y="${cy-14}" text-anchor="middle" font-size="7.5" fill="#c8e6c9" font-weight="bold">HC-SR04</text>
+  <text x="${cx}" y="${cy-14}" text-anchor="middle" font-size="15" fill="#c8e6c9" font-weight="bold">HC-SR04</text>
   <!-- トランスデューサー左 (TRIG) -->
   <circle cx="${cx-22}" cy="${cy+2}" r="17" fill="url(#gTransducer)" stroke="#757575" stroke-width="1.5"/>
   <circle cx="${cx-22}" cy="${cy+2}" r="12" fill="#c8c8c8" stroke="#888" stroke-width="1"/>
@@ -269,8 +283,13 @@
   <circle cx="${cx+22}" cy="${cy+2}" r="8"  fill="#aaaaaa" stroke="#777" stroke-width="0.8"/>
   <circle cx="${cx+22}" cy="${cy+2}" r="4"  fill="#888"/>
   <!-- ピンヘッダ -->
-  <rect x="${cx-40}" y="${cx+8}" width="80" height="6" fill="#222" rx="1"/>
-  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
+  <rect x="${cx-40}" y="${cy+26}" width="80" height="6" fill="#222" rx="1"/>
+  <!-- ピンラベル -->
+  <text x="${cx-38}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx-13}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">TRIG</text>
+  <text x="${cx+13}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">ECHO</text>
+  <text x="${cx+38}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
 </g>`;
       }
     },
@@ -290,13 +309,17 @@
   <!-- スリット -->
   ${slits}
   <!-- ラベル -->
-  <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="8"   fill="#fff" font-weight="bold">DHT22</text>
-  <text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="7.5" fill="#90caf9">Temp / Humi</text>
+  <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="16"  fill="#fff" font-weight="bold">DHT22</text>
+  <text x="${cx}" y="${cy+28}" text-anchor="middle" font-size="13" fill="#90caf9">Temp / Humi</text>
   <!-- ピン (3本) -->
   <line x1="${cx-18}" y1="${cy+32}" x2="${cx-18}" y2="${cy+38}" stroke="#d0d0d0" stroke-width="2"/>
   <line x1="${cx}"    y1="${cy+32}" x2="${cx}"    y2="${cy+38}" stroke="#d0d0d0" stroke-width="2"/>
   <line x1="${cx+18}" y1="${cy+32}" x2="${cx+18}" y2="${cy+38}" stroke="#d0d0d0" stroke-width="2"/>
-  <text x="${cx}" y="${cy+52}" text-anchor="middle" class="cv-lbl">DHT22</text>
+  <!-- ピンラベル -->
+  <text x="${cx-18}" y="${cy+52}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx}"    y="${cy+52}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx+18}" y="${cy+52}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${cy+66}" text-anchor="middle" class="cv-lbl">DHT22</text>
 </g>`;
       }
     },
@@ -322,8 +345,12 @@
   <rect x="${cx+38}" y="${cy-24}" width="18" height="14" fill="#1a1a1a" stroke="#333" stroke-width="0.5" rx="1"/>
   <!-- コントラストトリマー -->
   <rect x="${cx-58}" y="${cy-8}" width="8" height="8" fill="#1565C0" stroke="#0d47a1" stroke-width="0.5" rx="1"/>
-  <!-- リード -->
-  <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
+  <!-- ピンラベル -->
+  <text x="${cx-46}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-15}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+15}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SDA</text>
+  <text x="${cx+46}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SCL</text>
+  <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
 </g>`;
       }
     },
@@ -355,7 +382,9 @@
   <circle cx="${cx+25}" cy="${cy+32}" r="4" fill="#ff5722" opacity="0.9"/>
   <!-- グロー効果 -->
   <rect x="${cx-20}" y="${cy-34}" width="40" height="8"  fill="#ff5722" rx="4" opacity="0.2" filter="url(#fDrop)"/>
-  <text x="${cx}" y="${cy+60}" text-anchor="middle" class="cv-lbl">7-Segment</text>
+  <!-- ピンラベル -->
+  <text x="${cx}" y="${cy+60}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">COM</text>
+  <text x="${cx}" y="${cy+76}" text-anchor="middle" class="cv-lbl">7-Segment</text>
 </g>`;
       }
     },
@@ -367,7 +396,7 @@
         return `<g filter="url(#fDrop)">
   <!-- ULN2003 基板 -->
   <rect x="${cx-48}" y="${cy+6}"  width="96" height="28" fill="url(#gPcbBlue)" stroke="#0d47a1" stroke-width="1.5" rx="3"/>
-  <text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="7" fill="#fff" font-weight="bold">ULN2003A</text>
+  <text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">ULN2003A</text>
   <!-- モーター本体 (円形) -->
   <circle cx="${cx}" cy="${cy-14}" r="34" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="2"/>
   <!-- ギア外輪 -->
@@ -379,7 +408,12 @@
   <rect x="${cx-3.5}" y="${cy-50}" width="7" height="14" fill="#b0bec5" stroke="#78909c" stroke-width="0.8" rx="2"/>
   <!-- コネクタケーブル -->
   <rect x="${cx-26}" y="${cy+2}" width="52" height="6" fill="#212121" stroke="#333" stroke-width="0.5" rx="1"/>
-  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">28BYJ-48 + ULN2003</text>
+  <!-- ピンラベル -->
+  <text x="${cx-40}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
+  <text x="${cx-13}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
+  <text x="${cx+13}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN3</text>
+  <text x="${cx+40}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN4</text>
+  <text x="${cx}" y="${cy+66}" text-anchor="middle" class="cv-lbl">28BYJ-48 + ULN2003</text>
 </g>`;
       }
     },
@@ -402,13 +436,18 @@
   <!-- ICピン (側面) -->
   ${Array.from({length:4}, (_,i) => `<rect x="${cx-26}" y="${cy-10+i*6}" width="6" height="3" fill="#555" rx="1"/>`).join('')}
   ${Array.from({length:4}, (_,i) => `<rect x="${cx+20}" y="${cy-10+i*6}" width="6" height="3" fill="#555" rx="1"/>`).join('')}
-  <text x="${cx}" y="${cy+3}"  text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">L298N</text>
+  <text x="${cx}" y="${cy+3}"  text-anchor="middle" font-size="18" fill="#fff" font-weight="bold">L298N</text>
   <!-- ターミナルブロック (モーター出力) -->
   <rect x="${cx-46}" y="${cy-4}" width="14" height="12" fill="#1565C0" stroke="#0d47a1" stroke-width="0.8" rx="1"/>
   <rect x="${cx+32}" y="${cy-4}" width="14" height="12" fill="#1565C0" stroke="#0d47a1" stroke-width="0.8" rx="1"/>
   <!-- LED -->
-  <circle cx="${cx-32}" cy="${cx+16}" r="3.5" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>
-  <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">DC Motor (L298N)</text>
+  <circle cx="${cx-32}" cy="${cy+16}" r="3.5" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>
+  <!-- ピンラベル -->
+  <text x="${cx-30}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
+  <text x="${cx-10}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
+  <text x="${cx+10}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">EN</text>
+  <text x="${cx+30}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">DC Motor (L298N)</text>
 </g>`;
       }
     },
@@ -529,11 +568,11 @@
     // RP2040 チップ
     const chipX = PX + PW/2 - 18, chipY = PY + PH/2 - 18;
     p.push(`<rect x="${chipX}" y="${chipY}" width="36" height="36" fill="#111" stroke="#333" stroke-width="0.5" rx="2"/>`);
-    p.push(`<text x="${PX+PW/2}" y="${chipY+14}" text-anchor="middle" font-size="5.5" fill="#555">RP2040</text>`);
+    p.push(`<text x="${PX+PW/2}" y="${chipY+14}" text-anchor="middle" font-size="9" fill="#555">RP2040</text>`);
     // LED チップ
     p.push(`<circle cx="${PX+PW/2-22}" cy="${PY+20}" r="3" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>`);
     // Pico ラベル
-    p.push(`<text x="${PX+PW/2}" y="${PY+PH-10}" text-anchor="middle" font-size="7" fill="#a5d6a7" font-weight="bold">Pico</text>`);
+    p.push(`<text x="${PX+PW/2}" y="${PY+PH-10}" text-anchor="middle" font-size="14" fill="#a5d6a7" font-weight="bold">Pico</text>`);
 
     // 左ピンラベル・接続点
     L_PINS.forEach((name, i) => {
@@ -541,7 +580,7 @@
       const isGnd = name === 'GND';
       const col = isGnd ? '#78909c' : '#FFD54F';
       p.push(`<circle cx="${PX}" cy="${py}" r="3" fill="${col}" stroke="#222" stroke-width="0.5"/>`);
-      p.push(`<text x="${PX-12}" y="${py+3.5}" text-anchor="end" font-size="6.5" fill="#90a4ae">${name}</text>`);
+      p.push(`<text x="${PX-14}" y="${py+4.5}" text-anchor="end" font-size="13" fill="#90a4ae">${name}</text>`);
     });
     // 右ピンラベル・接続点
     R_PINS.forEach((name, i) => {
@@ -551,7 +590,7 @@
       const isPwr = ['3V3','VSYS','VBUS'].includes(name);
       const col = isGnd ? '#78909c' : isPwr ? '#e57373' : '#FFD54F';
       p.push(`<circle cx="${rx}" cy="${py}" r="3" fill="${col}" stroke="#222" stroke-width="0.5"/>`);
-      p.push(`<text x="${rx+12}" y="${py+3.5}" text-anchor="start" font-size="6.5" fill="#90a4ae">${name}</text>`);
+      p.push(`<text x="${rx+14}" y="${py+4.5}" text-anchor="start" font-size="13" fill="#90a4ae">${name}</text>`);
     });
 
     return p.join('\n');
@@ -603,12 +642,12 @@
     // 空の場合のメッセージ
     if (comps.length === 0) {
       const mx = svgW / 2, my = svgH / 2;
-      els.push(`<text x="${mx}" y="${my-10}" text-anchor="middle" fill="#30363d" font-size="13">MicroPython ブロックを追加すると</text>`);
-      els.push(`<text x="${mx}" y="${my+10}" text-anchor="middle" fill="#30363d" font-size="13">配線図が表示されます</text>`);
+      els.push(`<text x="${mx}" y="${my-10}" text-anchor="middle" fill="#30363d" font-size="26">MicroPython ブロックを追加すると</text>`);
+      els.push(`<text x="${mx}" y="${my+20}" text-anchor="middle" fill="#30363d" font-size="26">配線図が表示されます</text>`);
     }
 
     const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
-<style>.cv-lbl{font-size:8.5px;fill:#90a4ae;font-family:sans-serif}</style>
+<style>.cv-lbl{font-size:17px;fill:#90a4ae;font-family:sans-serif}</style>
 ${DEFS}
 ${els.join('\n')}
 </svg>`;
