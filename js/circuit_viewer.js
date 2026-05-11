@@ -105,13 +105,13 @@
 
     // ── LED (Wokwi wokwi-led, MIT © 2020 Uri Shaked) ────────
     LED: {
-      pins: { A: { dx: -5, dy: 62 }, C: { dx: 8, dy: 62 } },
+      pins: { A: { dx: -9, dy: 62 }, C: { dx: 10, dy: 62 } },
       draw(cx, cy) {
         // Wokwi SVG: viewBox="-10 -5 35.456 39.618" → 44×50px
         const sx = cx - 22, sy = cy - 25;
         // リード出口 (display座標): 左(A)≈(cx-5,cy+19), 右(C)≈(cx+8,cy+20)
-        const aX = cx - 5,  aLeadY = cy + 19;
-        const cX = cx + 8,  cLeadY = cy + 20;
+        const aX = cx - 9,  aLeadY = cy + 19;
+        const cX = cx + 10, cLeadY = cy + 20;
         const resT = aLeadY + 4, resB = resT + 22;
         const pinY = cy + 62;
         return `<g>
@@ -137,8 +137,8 @@
   <!-- カソードリード → ピン -->
   <line x1="${cX}" y1="${cLeadY}" x2="${cX}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
   <!-- ピンラベル -->
-  <text x="${aX}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">A</text>
-  <text x="${cX}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">C</text>
+  <text x="${cx-9}"  y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">A</text>
+  <text x="${cx+10}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">C</text>
   <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
@@ -160,12 +160,8 @@
       <circle cx="10.161" cy="10.197" r=".37"/>
       <circle cx="1.767" cy="10.197" r=".37"/>
     </g>
-    <g fill="#999" stroke-width="1.0154">
-      <path d="m12.365 2.426c0.06012 0 0.10849 0.0469 0.1085 0.10522v0.38698h2.2173c0.12023 0 0.217 0.0938 0.217 0.21045v0.50721c0 0.1166-0.09677 0.21045-0.217 0.21045h-2.2173v0.40101c0 0.0583-0.0484 0.10528-0.1085 0.10528h-0.36835v-1.9266z"/>
-      <path d="m12.365 7.5c0.06012 0 0.10849 0.0469 0.1085 0.10522v0.38698h2.2173c0.12023 0 0.217 0.0938 0.217 0.21045v0.50721c0 0.1166-0.09677 0.21045-0.217 0.21045h-2.2173v0.40101c0 0.0583-0.0484 0.10528-0.1085 0.10528h-0.36835v-1.9266z"/>
-      <path d="m-0.35085 4.3526c-0.06012 0-0.10849-0.0469-0.1085-0.10522v-0.38698h-2.2173c-0.12023 0-0.217-0.0938-0.217-0.21045v-0.50721c0-0.1166 0.09677-0.21045 0.217-0.21045h2.2173v-0.40101c0-0.0583 0.0484-0.10528 0.1085-0.10528h0.36835v1.9266z"/>
-      <path d="m-0.35085 9.4266c-0.06012 0-0.10849-0.0469-0.1085-0.10522v-0.38698h-2.2173c-0.12023 0-0.217-0.0938-0.217-0.21045v-0.50721c0-0.1166 0.09677-0.21045 0.217-0.21045h2.2173v-0.40101c0-0.0583 0.0484-0.10528 0.1085-0.10528h0.36835v1.9266z"/>
-    </g>
+    <rect x="12.0" y="5.1" width="3.4" height="1.8" fill="#aaa" rx=".2"/>
+    <rect x="-3.4" y="5.1" width="3.4" height="1.8" fill="#aaa" rx=".2"/>
     <circle cx="6" cy="6" r="3.822" fill="#cc2222"/>
     <circle cx="6" cy="6" r="2.9" fill="#cc2222" stroke="#2f2f2f" stroke-opacity=".47" stroke-width=".08"/>
   </svg>
@@ -179,7 +175,7 @@
 
     // ── ポテンショメーター (Wokwi wokwi-potentiometer, MIT © 2020 Uri Shaked) ──
     POT: {
-      pins: { VCC: { dx: 38, dy: 42 }, SIG: { dx: 12, dy: 42 }, GND: { dx: -14, dy: 42 } },
+      pins: { VCC: { dx: 19, dy: 42 }, SIG: { dx: 0, dy: 42 }, GND: { dx: -19, dy: 42 } },
       draw(cx, cy) {
         // viewBox="0 0 20 20" → 80×80px (scale=4), pins at bottom
         const sx = cx - 40, sy = cy - 40;
@@ -209,13 +205,13 @@
     </g>
   </svg>
   <!-- ピンリード (底面から下へ) -->
-  <line x1="${cx+38}" y1="${cy+40}" x2="${cx+38}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx+12}" y1="${cy+40}" x2="${cx+12}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx-14}" y1="${cy+40}" x2="${cx-14}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx+19}" y1="${cy+40}" x2="${cx+19}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx}"    y1="${cy+40}" x2="${cx}"    y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx-19}" y1="${cy+40}" x2="${cx-19}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
   <!-- ピンラベル -->
-  <text x="${cx+38}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+12}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx-14}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx+19}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx}"    y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx-19}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
   <text x="${cx}" y="${cy+70}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
 </g>`;
       }
@@ -223,7 +219,7 @@
 
     // ── パッシブブザー (Wokwi wokwi-buzzer, MIT © 2020 Uri Shaked) ──
     BUZZ: {
-      pins: { SIG: { dx: -9, dy: 50 }, GND: { dx: 9, dy: 50 } },
+      pins: { SIG: { dx: -9, dy: 50 }, GND: { dx: 10, dy: 50 } },
       draw(cx, cy) {
         // viewBox="0 0 17 20" → 68×80px (scale=4)
         const sx = cx - 34, sy = cy - 40;
@@ -241,8 +237,8 @@
     <text x="3.5" y="10" font-size="2.8" fill="#e53935" font-weight="bold" font-family="sans-serif">+</text>
   </svg>
   <!-- ピンラベル -->
-  <text x="${cx-9}" y="${pinY+16}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx+9}" y="${pinY+16}" text-anchor="middle" font-size="12" fill="#e53935" font-family="sans-serif">+</text>
+  <text x="${cx-9}"  y="${pinY+16}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx+10}" y="${pinY+16}" text-anchor="middle" font-size="12" fill="#e53935" font-family="sans-serif">+</text>
   <text x="${cx}" y="${pinY+32}" text-anchor="middle" class="cv-lbl">Buzzer</text>
 </g>`;
       }
@@ -250,7 +246,7 @@
 
     // ── SG90 サーボ (Wokwi wokwi-servo, MIT © 2020 Uri Shaked) ──
     SERVO: {
-      pins: { GND: { dx: -61, dy: -6 }, VCC: { dx: -61, dy: 0 }, PWM: { dx: -61, dy: 6 } },
+      pins: { GND: { dx: -61, dy: -19 }, VCC: { dx: -61, dy: 0 }, PWM: { dx: -61, dy: 19 } },
       draw(cx, cy) {
         // Wokwi viewBox="0 0 170.08 119.55" → 130×72px
         const sx = cx - 65, sy = cy - 36;
@@ -277,9 +273,9 @@
     <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
   </svg>
   <!-- ピンラベル -->
-  <text x="${cx-61}" y="${cy-20}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-61}" y="${cy-33}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
   <text x="${cx-61}" y="${cy+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx-61}" y="${cy+24}" text-anchor="middle" font-size="11" fill="#f57c00" font-family="sans-serif">PWM</text>
+  <text x="${cx-61}" y="${cy+33}" text-anchor="middle" font-size="11" fill="#f57c00" font-family="sans-serif">PWM</text>
   <text x="${cx+12}" y="${cy+46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
@@ -287,7 +283,7 @@
 
     // ── HC-SR04 (Wokwi wokwi-hc-sr04, MIT © 2020 Uri Shaked) ──
     HCSR04: {
-      pins: { VCC: { dx: -37, dy: 38 }, TRIG: { dx: -12, dy: 38 }, ECHO: { dx: 13, dy: 38 }, GND: { dx: 38, dy: 38 } },
+      pins: { VCC: { dx: -28, dy: 38 }, TRIG: { dx: -9, dy: 38 }, ECHO: { dx: 10, dy: 38 }, GND: { dx: 29, dy: 38 } },
       draw(cx, cy) {
         // viewBox="0 0 45 25" → 90×50px (scale=2)
         const sx = cx - 45, sy = cy - 25;
@@ -336,10 +332,10 @@
     </g>
   </svg>
   <!-- ピンラベル (外部) -->
-  <text x="${cx-37}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx-12}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">TRIG</text>
-  <text x="${cx+13}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">ECHO</text>
-  <text x="${cx+38}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-28}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx-9}"  y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">TRIG</text>
+  <text x="${cx+10}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">ECHO</text>
+  <text x="${cx+29}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
   <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
 </g>`;
       }
@@ -347,7 +343,7 @@
 
     // ── DHT22 (Wokwi wokwi-dht22, MIT © 2020 Uri Shaked) ──
     DHT22: {
-      pins: { VCC: { dx: -10, dy: 52 }, SIG: { dx: 4, dy: 52 }, GND: { dx: 18, dy: 52 } },
+      pins: { VCC: { dx: -19, dy: 52 }, SIG: { dx: 0, dy: 52 }, GND: { dx: 19, dy: 52 } },
       draw(cx, cy) {
         // viewBox="0 0 15.1 30.885" → 50×102px (scale≈3.3)
         const sx = cx - 25, sy = cy - 50;
@@ -364,9 +360,9 @@
     <text x="3.7" y="22.86" fill="#000" font-family="sans-serif" font-size="2.2" stroke-width=".05">DHT22</text>
   </svg>
   <!-- ピンラベル -->
-  <text x="${cx-10}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+4}"  y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx+18}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-19}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx}"    y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx+19}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
   <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">DHT22</text>
 </g>`;
       }
@@ -374,7 +370,7 @@
 
     // ── LCD1602 I2C (Wokwi wokwi-lcd1602, MIT © 2020 Uri Shaked) ──
     LCD: {
-      pins: { GND: { dx: -46, dy: 40 }, VCC: { dx: -15, dy: 40 }, SDA: { dx: 15, dy: 40 }, SCL: { dx: 46, dy: 40 } },
+      pins: { GND: { dx: -28, dy: 40 }, VCC: { dx: -9, dy: 40 }, SDA: { dx: 10, dy: 40 }, SCL: { dx: 29, dy: 40 } },
       draw(cx, cy) {
         // viewBox="0 0 80 36" → 160×72px (scale=2), Wokwi exact green #087f45
         const sx = cx - 80, sy = cy - 36;
@@ -402,14 +398,14 @@
     <circle cx="23" cy="30.5" r="2.3" fill="#1565C0" stroke="#0d47a1" stroke-width="0.3"/>
     <circle cx="23" cy="30.5" r="0.8" fill="#1a1a1a"/>
   </svg>
-  <line x1="${cx-46}" y1="${cy+36}" x2="${cx-46}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx-15}" y1="${cy+36}" x2="${cx-15}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx+15}" y1="${cy+36}" x2="${cx+15}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx+46}" y1="${cy+36}" x2="${cx+46}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <text x="${cx-46}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx-15}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+15}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SDA</text>
-  <text x="${cx+46}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SCL</text>
+  <line x1="${cx-28}" y1="${cy+36}" x2="${cx-28}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx-9}"  y1="${cy+36}" x2="${cx-9}"  y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx+10}" y1="${cy+36}" x2="${cx+10}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <line x1="${cx+29}" y1="${cy+36}" x2="${cx+29}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
+  <text x="${cx-28}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx-9}"  y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx+10}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SDA</text>
+  <text x="${cx+29}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SCL</text>
   <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
 </g>`;
       }
@@ -447,7 +443,7 @@
 
     // ── 28BYJ-48 + ULN2003 ─────────────────────────────
     STEPPER: {
-      pins: { IN1: { dx: -40, dy: 36 }, IN2: { dx: -13, dy: 36 }, IN3: { dx: 13, dy: 36 }, IN4: { dx: 40, dy: 36 } },
+      pins: { IN1: { dx: -28, dy: 36 }, IN2: { dx: -9, dy: 36 }, IN3: { dx: 10, dy: 36 }, IN4: { dx: 29, dy: 36 } },
       draw(cx, cy) {
         return `<g filter="url(#fDrop)">
   <!-- ULN2003 基板 -->
@@ -465,10 +461,10 @@
   <!-- コネクタケーブル -->
   <rect x="${cx-26}" y="${cy+2}" width="52" height="6" fill="#212121" stroke="#333" stroke-width="0.5" rx="1"/>
   <!-- ピンラベル -->
-  <text x="${cx-40}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
-  <text x="${cx-13}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
-  <text x="${cx+13}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN3</text>
-  <text x="${cx+40}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN4</text>
+  <text x="${cx-28}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
+  <text x="${cx-9}"  y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
+  <text x="${cx+10}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN3</text>
+  <text x="${cx+29}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN4</text>
   <text x="${cx}" y="${cy+66}" text-anchor="middle" class="cv-lbl">28BYJ-48 + ULN2003</text>
 </g>`;
       }
@@ -476,7 +472,7 @@
 
     // ── L298N DCモータードライバー ────────────────────────
     L298N: {
-      pins: { IN1: { dx: -30, dy: 34 }, IN2: { dx: -10, dy: 34 }, EN: { dx: 10, dy: 34 }, GND: { dx: 30, dy: 34 } },
+      pins: { IN1: { dx: -28, dy: 34 }, IN2: { dx: -9, dy: 34 }, EN: { dx: 10, dy: 34 }, GND: { dx: 29, dy: 34 } },
       draw(cx, cy) {
         const fins = Array.from({ length: 9 }, (_, i) =>
           `<line x1="${cx-20+i*5}" y1="${cy-36}" x2="${cx-20+i*5}" y2="${cy-16}" stroke="#1a1a1a" stroke-width="1.2"/>`
@@ -499,10 +495,10 @@
   <!-- LED -->
   <circle cx="${cx-32}" cy="${cy+16}" r="3.5" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>
   <!-- ピンラベル -->
-  <text x="${cx-30}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
-  <text x="${cx-10}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
+  <text x="${cx-28}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
+  <text x="${cx-9}"  y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
   <text x="${cx+10}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">EN</text>
-  <text x="${cx+30}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
+  <text x="${cx+29}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
   <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">DC Motor (L298N)</text>
 </g>`;
       }
@@ -615,10 +611,15 @@
     }
   }
 
+  const SIGNAL_COLORS = [
+    '#43a047','#1e88e5','#f9a825','#ab47bc',
+    '#00acc1','#fb8c00','#26a69a','#ec407a',
+    '#7cb342','#8d6e63'
+  ];
   function wireColor(s) {
     if (s.gnd)  return '#546e7a';
     if (s.v3v3) return '#e53935';
-    return '#43a047';
+    return SIGNAL_COLORS[parseInt(s.gp || 0) % SIGNAL_COLORS.length];
   }
 
   // ===== Pico SVG (Wokwi Pi Pico ボード, MIT © wokwi-boards) =====
