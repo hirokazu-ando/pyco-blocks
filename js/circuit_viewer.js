@@ -509,9 +509,14 @@
     },
   };
 
+  // GP25など接続先のないピン番号セット
+  const INTERNAL_PINS = new Set([23, 24, 25, 29]);
+
   // ===== ブロック解析 =====
   function parseBlocks(workspace) {
     const comps = [], seen = new Set();
+    let onboardLedOn = false;   // GP25 オンボードLED点灯フラグ
+    const badPins = [];          // 接続不可ピン情報
 
     function add(key, type, pins) {
       if (seen.has(key)) return;
@@ -526,7 +531,14 @@
 
         if (['pico_led_on','pico_led_off','pico_digital_write','pico_pwm_write'].includes(t)) {
           const p = gf('PIN');
-          add('led'+p, 'LED', { A:{gp:p}, C:{gnd:true} });
+          if (parseInt(p) === 25) {
+            // GP25はオンボードLED — 外部配線なし、Pico上のLEDを光らせる
+            onboardLedOn = true;
+          } else if (INTERNAL_PINS.has(parseInt(p))) {
+            badPins.push({ gp: p, reason: 'GP'+p+'は内部専用ピンです' });
+          } else {
+            add('led'+p, 'LED', { A:{gp:p}, C:{gnd:true} });
+          }
 
         } else if (['pico_digital_read','pico_digital_read_val'].includes(t)) {
           const p = gf('PIN');
@@ -576,7 +588,7 @@
         }
       });
 
-    return comps;
+    return { comps, onboardLedOn, badPins };
   }
 
   // ===== レイアウト =====
@@ -587,16 +599,18 @@
     });
   }
 
-  // ===== ワイヤー描画 (直角ルーティング) =====
+  // ===== ワイヤー描画 (直角・ピンごとに独立チャンネル) =====
   function wirePath(x1, y1, side, x2, y2) {
+    // y1からピン行インデックス(0-19)を算出 → 行ごとに専用経路
+    const pinIdx = Math.max(0, Math.min(19, Math.round((y1 - (PY + 12)) / PP)));
     if (side === 'right') {
-      // 右ピン: HVH (右に出て → 垂直 → 水平)
-      const midX = x1 + 48;
+      // HVH: ピンごとに異なるmidXで縦セグメントを左右に分散
+      const midX = x1 + 30 + pinIdx * 5;   // 228..323px (Pico右端〜部品左端の間)
       return `M${x1},${y1} H${midX} V${y2} H${x2}`;
     } else {
-      // 左ピン: HVHV (左に出て → Pico下を通る水平バス → 垂直)
-      const exitX = PX - 28;
-      const botY  = PY + PH + 24;
+      // HVHV: ピンごとに異なるexitX(左)+botY(下)で完全分離
+      const exitX = PX - 14 - pinIdx * 4;  // 96..20px (左マージン)
+      const botY  = PY + PH + 18 + pinIdx * 5; // 433..528px (Pico下ルーティングエリア)
       return `M${x1},${y1} H${exitX} V${botY} H${x2} V${y2}`;
     }
   }
@@ -608,7 +622,7 @@
   }
 
   // ===== Pico SVG (Wokwi Pi Pico ボード, MIT © wokwi-boards) =====
-  function buildPicoSVG() {
+  function buildPicoSVG(onboardLedOn) {
     const p = [];
     // ピンパッド (基板外, 銅色)
     for (let i = 0; i < PC; i++) {
@@ -634,9 +648,17 @@
     p.push(`<rect x="${bX-9}" y="${bY-7}" width="18" height="13" fill="#b0bec5" stroke="#78909c" stroke-width="0.5" rx="2"/>`);
     p.push(`<ellipse cx="${bX}" cy="${bY}" rx="5.5" ry="4" fill="#e8e8e8" stroke="#bbb" stroke-width="0.5"/>`);
     p.push(`<text x="${bX}" y="${bY+14}" text-anchor="middle" font-size="5.5" fill="#4caf50" font-family="sans-serif">BOOT</text>`);
-    // GP25 LED インジケーター
-    p.push(`<circle cx="${PX+PW-12}" cy="${PY+22}" r="3.5" fill="#90ff00" stroke="#55cc00" stroke-width="0.5"/>`);
-    p.push(`<text x="${PX+PW-12}" y="${PY+33}" text-anchor="middle" font-size="5.5" fill="#4caf50" font-family="sans-serif">LED</text>`);
+    // GP25 オンボードLED (点灯時はグロー効果 + GP25:ON ラベル)
+    const ledX = PX + PW - 12, ledY = PY + 22;
+    if (onboardLedOn) {
+      p.push(`<circle cx="${ledX}" cy="${ledY}" r="8"  fill="#90ff00" opacity="0.25"/>`);
+      p.push(`<circle cx="${ledX}" cy="${ledY}" r="5.5" fill="#c8ff50" opacity="0.55"/>`);
+      p.push(`<circle cx="${ledX}" cy="${ledY}" r="3.5" fill="#f0ff80" stroke="#90ff00" stroke-width="1"/>`);
+      p.push(`<text x="${ledX}" y="${ledY-10}" text-anchor="middle" font-size="5.5" fill="#c8ff50" font-family="sans-serif" font-weight="bold">GP25:ON</text>`);
+    } else {
+      p.push(`<circle cx="${ledX}" cy="${ledY}" r="3.5" fill="#90ff00" stroke="#55cc00" stroke-width="0.5" opacity="0.5"/>`);
+    }
+    p.push(`<text x="${ledX}" y="${ledY+12}" text-anchor="middle" font-size="5.5" fill="#4caf50" font-family="sans-serif">LED</text>`);
     // RP2040 チップ (中央)
     const chipX = PX + 8, chipY = PY + PH/2 - 30, chipW = PW - 16, chipH = 60;
     p.push(`<rect x="${chipX}" y="${chipY}" width="${chipW}" height="${chipH}" fill="#30312e" stroke="#3a3a38" stroke-width="0.5" rx="2"/>`);
@@ -674,12 +696,13 @@
 
   // ===== メイン =====
   window.generateCircuitSVG = function(workspace) {
-    const comps = parseBlocks(workspace);
+    const { comps, onboardLedOn, badPins } = parseBlocks(workspace);
     layoutComps(comps);
 
     const numRows = Math.max(1, Math.ceil(comps.length / C_COLS));
     const svgW = CX0 + C_COLS * C_CW + 30;
-    const svgH = Math.max(PY + PH + 50, CY0 + numRows * C_CH + 30);
+    // 左側ルーティングエリア(最大botY=528)を収容できる最低高さを確保
+    const svgH = Math.max(PY + PH + 160, CY0 + numRows * C_CH + 30);
 
     let wireCount = 0;
     const els = [];
@@ -689,6 +712,9 @@
     // グリッド
     for (let gx = 0; gx < svgW; gx += 40) els.push(`<line x1="${gx}" y1="0" x2="${gx}" y2="${svgH}" stroke="#161b22" stroke-width="1"/>`);
     for (let gy = 0; gy < svgH; gy += 40) els.push(`<line x1="0" y1="${gy}" x2="${svgW}" y2="${gy}" stroke="#161b22" stroke-width="1"/>`);
+
+    // 接続不可ピンのエラー情報を収集
+    const unknownGPins = [];
 
     // ワイヤー
     comps.forEach(comp => {
@@ -700,7 +726,10 @@
         if (!sp) return;
         const cpX = comp.cx + sp.dx, cpY = comp.cy + sp.dy;
         const pc = picoCoordOf(spec, cpX, cpY);
-        if (!pc) return;
+        if (!pc) {
+          if (spec.gp != null) unknownGPins.push({ gp: spec.gp, cx: comp.cx, cy: comp.cy });
+          return;
+        }
         const color = wireColor(spec);
         els.push(`<path d="${wirePath(pc.x, pc.y, pc.side, cpX, cpY)}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="square" opacity="0.9"/>`);
         wireCount++;
@@ -708,7 +737,7 @@
     });
 
     // Pico
-    els.push(buildPicoSVG());
+    els.push(buildPicoSVG(onboardLedOn));
 
     // コンポーネント
     comps.forEach(comp => {
@@ -716,8 +745,37 @@
       if (sym) els.push(sym.draw(comp.cx, comp.cy));
     });
 
+    // ───── エラーオーバーレイ ─────
+    // ① parseBlocks で検出した接続不可ピン (GP23,24,29 など)
+    badPins.forEach(e => {
+      const ex = CX0 + 78, ey = CY0 + 62;
+      els.push(`<g>
+  <rect x="${ex-70}" y="${ey-30}" width="140" height="36" fill="#7f0000" opacity="0.88" rx="5" stroke="#f44336" stroke-width="1.5"/>
+  <text x="${ex}" y="${ey-14}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">⚠ GP${e.gp}: 接続不可</text>
+  <text x="${ex}" y="${ey+2}"  text-anchor="middle" font-size="11" fill="#ef9a9a" font-family="sans-serif">${e.reason}</text>
+</g>`);
+    });
+
+    // ② ワイヤー解決失敗ピン (回路図に部品が出ているのに配線先がない)
+    unknownGPins.forEach(e => {
+      els.push(`<g>
+  <rect x="${e.cx-68}" y="${e.cy-78}" width="136" height="34" fill="#7f0000" opacity="0.88" rx="5" stroke="#f44336" stroke-width="1.5"/>
+  <text x="${e.cx}" y="${e.cy-62}" text-anchor="middle" font-size="14" fill="#ff8a80" font-family="sans-serif">⚠ GP${e.gp}: 接続できません</text>
+  <text x="${e.cx}" y="${e.cy-48}" text-anchor="middle" font-size="11" fill="#ef9a9a" font-family="sans-serif">ピン番号を確認してください</text>
+</g>`);
+    });
+
+    // ③ GP25オンボードLED使用通知 (Pico付近)
+    if (onboardLedOn) {
+      const nx = PX + PW / 2, ny = PY - 28;
+      els.push(`<g>
+  <rect x="${nx-68}" y="${ny-18}" width="136" height="24" fill="#1a3a1a" opacity="0.9" rx="4" stroke="#4caf50" stroke-width="1"/>
+  <text x="${nx}" y="${ny-2}" text-anchor="middle" font-size="12" fill="#a5d6a7" font-family="sans-serif">GP25 = オンボードLED</text>
+</g>`);
+    }
+
     // 空の場合のメッセージ
-    if (comps.length === 0) {
+    if (comps.length === 0 && !onboardLedOn && badPins.length === 0) {
       const mx = svgW / 2, my = svgH / 2;
       els.push(`<text x="${mx}" y="${my-10}" text-anchor="middle" fill="#30363d" font-size="26">MicroPython ブロックを追加すると</text>`);
       els.push(`<text x="${mx}" y="${my+20}" text-anchor="middle" fill="#30363d" font-size="26">配線図が表示されます</text>`);
