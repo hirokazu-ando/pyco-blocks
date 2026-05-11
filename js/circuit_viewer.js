@@ -85,31 +85,24 @@
   // ===== コンポーネントシンボル =====
   const SYM = {
 
-    // ── LED (横向き・ドーム側がアノード) ──────────────────
+    // ── LED (横向き・左ドーム=アノード・右フラット=カソード) ───
     LED: {
       pins: { A: { dx: -46, dy: 0 }, C: { dx: 46, dy: 0 } },
       draw(cx, cy) {
+        const bh = 14;          // ボディ半高
+        const bx1 = cx - 16;   // 左端(アノード側)
+        const bx2 = cx + 16;   // 右端(カソード側)
+        // D字パス: bx1上端 → 左ドーム半円(CCW,large) → bx1下端 → 右端下 → 右端上 → close
+        const path = `M${bx1},${cy-bh} A${bh},${bh} 0 1,0 ${bx1},${cy+bh} L${bx2},${cy+bh} L${bx2},${cy-bh} Z`;
         return `<g filter="url(#fDrop)">
-  <!-- アノードリード -->
-  <line x1="${cx-46}" y1="${cy}" x2="${cx-28}" y2="${cy}" stroke="#d0d0d0" stroke-width="2" stroke-linecap="round"/>
-  <!-- 内部抵抗 (小矩形) -->
-  <rect x="${cx-42}" y="${cy-5}" width="14" height="10" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="2"/>
-  <!-- LED ボディ -->
-  <path d="M${cx-26},${cy+16} A18,18 0 1,1 ${cx+14},${cy+16} L${cx+14},${cy-16} A18,18 0 1,1 ${cx-26},${cy-16} Z"
-        fill="url(#gLedRed)" stroke="#b71c1c" stroke-width="1.2"/>
-  <!-- ドーム (左側半円) -->
-  <ellipse cx="${cx-26}" cy="${cy}" rx="16" ry="16" fill="#ff5252" stroke="#b71c1c" stroke-width="1.2"/>
-  <ellipse cx="${cx-26}" cy="${cy}" rx="10" ry="10" fill="#ff8a80" opacity="0.6"/>
-  <!-- 内部レンズ -->
-  <ellipse cx="${cx-4}" cy="${cy}" rx="10" ry="10" fill="#ff1744" opacity="0.3"/>
-  <!-- カソード平面 (右端) -->
-  <line x1="${cx+14}" y1="${cy-16}" x2="${cx+14}" y2="${cy+16}" stroke="#7f0000" stroke-width="2.5"/>
-  <!-- カソードリード -->
-  <line x1="${cx+14}" y1="${cy}" x2="${cx+46}" y2="${cy}" stroke="#d0d0d0" stroke-width="2" stroke-linecap="round"/>
-  <!-- 発光表現 -->
-  <line x1="${cx+16}" y1="${cy-8}"  x2="${cx+28}" y2="${cy-20}" stroke="#ffd740" stroke-width="1.2" stroke-linecap="round"/>
-  <line x1="${cx+20}" y1="${cy-4}"  x2="${cx+32}" y2="${cy-16}" stroke="#ffd740" stroke-width="1.2" stroke-linecap="round"/>
-  <text x="${cx}" y="${cy+30}" text-anchor="middle" class="cv-lbl">LED</text>
+  <line x1="${cx-46}" y1="${cy}" x2="${bx1}" y2="${cy}" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="${path}" fill="url(#gLedRed)" stroke="#c62828" stroke-width="1.5"/>
+  <ellipse cx="${cx-8}" cy="${cy-5}" rx="9" ry="5" fill="#fff" opacity="0.2"/>
+  <line x1="${bx2}" y1="${cy-bh}" x2="${bx2}" y2="${cy+bh}" stroke="#7f0000" stroke-width="3"/>
+  <line x1="${bx2}" y1="${cy}" x2="${cx+46}" y2="${cy}" stroke="#ccc" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="${cx+18}" y1="${cy-8}"  x2="${cx+30}" y2="${cy-20}" stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="${cx+22}" y1="${cy-4}"  x2="${cx+34}" y2="${cy-16}" stroke="#ffd740" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="${cx}" y="${cy+bh+14}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
     },
