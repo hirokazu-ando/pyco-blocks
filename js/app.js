@@ -4980,6 +4980,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnOpen = document.getElementById('btn-wokwi');
     const btnClose= document.getElementById('wokwi-modal-close');
     const btnCopy = document.getElementById('wokwi-btn-copy');
+    const btnDl   = document.getElementById('wokwi-btn-download');
     const btnWokwi= document.getElementById('wokwi-btn-open');
     const output  = document.getElementById('wokwi-json-output');
     const summary = document.getElementById('wokwi-modal-summary');
@@ -5004,6 +5005,15 @@ document.addEventListener('DOMContentLoaded', function() {
         btnCopy.textContent = '✅ コピーしました';
         setTimeout(() => { btnCopy.textContent = '📋 JSONをコピー'; }, 2000);
       });
+    });
+
+    if (btnDl) btnDl.addEventListener('click', function() {
+      const blob = new Blob([output.value], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'diagram.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
     });
 
     btnWokwi.addEventListener('click', function() {
