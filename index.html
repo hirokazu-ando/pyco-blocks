@@ -251,6 +251,11 @@
       <block type="pico_led_on" gap="8"></block>
       <block type="pico_led_off" gap="8"></block>
       <block type="pico_digital_write" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pico_pwm_write" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pico_buzzer_tone" gap="8"></block>
+      <block type="pico_buzzer_stop" gap="8"></block>
     </category>
     <category name="入力" colour="#00897B">
       <block type="pico_digital_read" gap="8"></block>
@@ -258,6 +263,32 @@
       <sep gap="20"></sep>
       <block type="pico_digital_read_val" gap="8"></block>
       <block type="pico_analog_read_val" gap="8"></block>
+    </category>
+    <category name="表示デバイス" colour="#1565C0">
+      <block type="pico_7seg_show" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pico_lcd_init" gap="8"></block>
+      <block type="pico_lcd_print" gap="8">
+        <value name="TEXT">
+          <shadow type="val_str"><field name="STR">Hello</field></shadow>
+        </value>
+      </block>
+      <block type="pico_lcd_clear" gap="8"></block>
+    </category>
+    <category name="モーター" colour="#F57C00">
+      <block type="pico_servo_angle" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pico_dcmotor_run" gap="8"></block>
+      <block type="pico_dcmotor_stop" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pico_stepper_step" gap="8"></block>
+      <block type="pico_stepper_angle" gap="8"></block>
+    </category>
+    <category name="センサー" colour="#00897B">
+      <block type="pico_ultrasonic_cm" gap="8"></block>
+      <block type="pico_ultrasonic_cm_val" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pico_dht_read" gap="8"></block>
     </category>
     <category name="変数" colour="#558B2F">
       <block type="var_set" gap="8">
@@ -1633,10 +1664,10 @@
     </category>
   </xml>
 
-  <script src="js/block_palette.js?v=20260507e"></script>
+  <script src="js/block_palette.js?v=20260511a"></script>
   <script src="js/tutorials.js"></script>
   <script src="js/serial.js"></script>
-  <script src="js/blocks/gpio.js"></script>
+  <script src="js/blocks/gpio.js?v=20260511a"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260427c"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>

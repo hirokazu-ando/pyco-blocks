@@ -981,6 +981,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const pin = block.getFieldValue('PIN');
         return `ADC(${pin}).read_u16()`;
       }
+      case 'pico_ultrasonic_cm_val': {
+        const trig = block.getFieldValue('TRIG');
+        const echo = block.getFieldValue('ECHO');
+        return `_us_dist(${trig}, ${echo})`;
+      }
       case 'pvb_switch_val': {
         const sw = block.getFieldValue('SW');
         return `(Pin(${sw}, Pin.IN, Pin.PULL_UP).value() == 0)`;
@@ -2009,6 +2014,155 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `${varName} = ADC(${pin}).read_u16()\n`);
         break;
       }
+
+      // ===== PWM出力 =====
+      case 'pico_pwm_write': {
+        const pin = block.getFieldValue('PIN');
+        const duty = parseInt(block.getFieldValue('DUTY'));
+        const dutyU16 = Math.round(duty * 65535 / 100);
+        code = appendLocal(code, indent + `PWM(Pin(${pin})).duty_u16(${dutyU16})\n`);
+        break;
+      }
+
+      // ===== ブザー =====
+      case 'pico_buzzer_tone': {
+        const bzPin = block.getFieldValue('PIN');
+        const bzFreq = block.getFieldValue('FREQ');
+        const bzDur  = block.getFieldValue('DUR');
+        code = appendLocal(code, indent + `_bz = PWM(Pin(${bzPin}))\n`);
+        code = appendLocal(code, indent + `_bz.freq(${bzFreq})\n`);
+        code = appendLocal(code, indent + `_bz.duty_u16(32768)\n`);
+        code = appendLocal(code, indent + `utime.sleep(${bzDur})\n`);
+        code = appendLocal(code, indent + `_bz.deinit()\n`);
+        break;
+      }
+      case 'pico_buzzer_stop': {
+        const bzStopPin = block.getFieldValue('PIN');
+        code = appendLocal(code, indent + `PWM(Pin(${bzStopPin})).deinit()\n`);
+        break;
+      }
+
+      // ===== 7セグメント =====
+      case 'pico_7seg_show': {
+        const segNum  = block.getFieldValue('NUM');
+        const segPins = block.getFieldValue('PINS');
+        code = appendLocal(code, indent + `_SEG_PAT = [[1,1,1,1,1,1,0],[0,1,1,0,0,0,0],[1,1,0,1,1,0,1],[1,1,1,1,0,0,1],[0,1,1,0,0,1,1],[1,0,1,1,0,1,1],[1,0,1,1,1,1,1],[1,1,1,0,0,0,0],[1,1,1,1,1,1,1],[1,1,1,1,0,1,1]]\n`);
+        code = appendLocal(code, indent + `_seg_pins = [Pin(p, Pin.OUT) for p in [${segPins}]]\n`);
+        code = appendLocal(code, indent + `for _i, _v in enumerate(_SEG_PAT[${segNum}]): _seg_pins[_i].value(_v)\n`);
+        break;
+      }
+
+      // ===== LCD1602 (I2C) =====
+      case 'pico_lcd_init': {
+        const lcdSda = block.getFieldValue('SDA');
+        const lcdScl = block.getFieldValue('SCL');
+        const lcdVar = block.getFieldValue('VAR');
+        code = appendLocal(code, indent + `_i2c = I2C(0, sda=Pin(${lcdSda}), scl=Pin(${lcdScl}), freq=400000)\n`);
+        code = appendLocal(code, indent + `${lcdVar} = LCD1602(_i2c, 0x27)\n`);
+        break;
+      }
+      case 'pico_lcd_print': {
+        const lcdPVar = block.getFieldValue('VAR');
+        const lcdRow  = block.getFieldValue('ROW');
+        const lcdText = valueToCode(block, 'TEXT', '""');
+        code = appendLocal(code, indent + `${lcdPVar}.move_to(0, ${lcdRow})\n`);
+        code = appendLocal(code, indent + `${lcdPVar}.putstr(str(${lcdText}).ljust(16)[:16])\n`);
+        break;
+      }
+      case 'pico_lcd_clear': {
+        const lcdCVar = block.getFieldValue('VAR');
+        code = appendLocal(code, indent + `${lcdCVar}.clear()\n`);
+        break;
+      }
+
+      // ===== サーボモーター =====
+      case 'pico_servo_angle': {
+        const svPin   = block.getFieldValue('PIN');
+        const svAngle = block.getFieldValue('ANGLE');
+        code = appendLocal(code, indent + `_sv = PWM(Pin(${svPin}), freq=50)\n`);
+        code = appendLocal(code, indent + `_sv.duty_u16(int(1638 + ${svAngle} * 8192 // 180))\n`);
+        break;
+      }
+
+      // ===== DCモーター (L298N) =====
+      case 'pico_dcmotor_run': {
+        const dcIn1  = block.getFieldValue('IN1');
+        const dcIn2  = block.getFieldValue('IN2');
+        const dcEn   = block.getFieldValue('EN');
+        const dcSpd  = parseInt(block.getFieldValue('SPEED'));
+        const dcDir  = block.getFieldValue('DIR');
+        const dcDuty = Math.round(dcSpd * 65535 / 100);
+        if (dcDir === 'fwd') {
+          code = appendLocal(code, indent + `Pin(${dcIn1}, Pin.OUT).value(1); Pin(${dcIn2}, Pin.OUT).value(0)\n`);
+        } else {
+          code = appendLocal(code, indent + `Pin(${dcIn1}, Pin.OUT).value(0); Pin(${dcIn2}, Pin.OUT).value(1)\n`);
+        }
+        code = appendLocal(code, indent + `PWM(Pin(${dcEn})).duty_u16(${dcDuty})\n`);
+        break;
+      }
+      case 'pico_dcmotor_stop': {
+        const dcStIn1 = block.getFieldValue('IN1');
+        const dcStIn2 = block.getFieldValue('IN2');
+        code = appendLocal(code, indent + `Pin(${dcStIn1}, Pin.OUT).value(0); Pin(${dcStIn2}, Pin.OUT).value(0)\n`);
+        break;
+      }
+
+      // ===== ステッピングモーター (28BYJ-48 + ULN2003) =====
+      case 'pico_stepper_step': {
+        const stPins  = block.getFieldValue('PINS');
+        const stSteps = block.getFieldValue('STEPS');
+        const stDelay = block.getFieldValue('DELAY');
+        code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${stPins}]]\n`);
+        code = appendLocal(code, indent + `_st_seq = [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,1,1],[0,0,0,1],[1,0,0,1]]\n`);
+        code = appendLocal(code, indent + `_st_n = abs(${stSteps}); _st_dir = 1 if (${stSteps}) >= 0 else -1\n`);
+        code = appendLocal(code, indent + `for _s in range(_st_n):\n`);
+        code = appendLocal(code, indent + `    _st_i = (_s * _st_dir) % 8\n`);
+        code = appendLocal(code, indent + `    for _j in range(4): _st_pins[_j].value(_st_seq[_st_i][_j])\n`);
+        code = appendLocal(code, indent + `    utime.sleep_ms(${stDelay})\n`);
+        break;
+      }
+      case 'pico_stepper_angle': {
+        const staPins  = block.getFieldValue('PINS');
+        const staAngle = block.getFieldValue('ANGLE');
+        const staDelay = block.getFieldValue('DELAY');
+        code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${staPins}]]\n`);
+        code = appendLocal(code, indent + `_st_seq = [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,1,1],[0,0,0,1],[1,0,0,1]]\n`);
+        code = appendLocal(code, indent + `_st_n = int(abs(${staAngle}) * 512 / 360); _st_dir = 1 if (${staAngle}) >= 0 else -1\n`);
+        code = appendLocal(code, indent + `for _s in range(_st_n):\n`);
+        code = appendLocal(code, indent + `    _st_i = (_s * _st_dir) % 8\n`);
+        code = appendLocal(code, indent + `    for _j in range(4): _st_pins[_j].value(_st_seq[_st_i][_j])\n`);
+        code = appendLocal(code, indent + `    utime.sleep_ms(${staDelay})\n`);
+        break;
+      }
+
+      // ===== 超音波センサー (HC-SR04) =====
+      case 'pico_ultrasonic_cm': {
+        const usTrig = block.getFieldValue('TRIG');
+        const usEcho = block.getFieldValue('ECHO');
+        const usVar  = block.getFieldValue('VAR');
+        code = appendLocal(code, indent + `def _us_dist(tr, ec):\n`);
+        code = appendLocal(code, indent + `    t=Pin(tr,Pin.OUT); e=Pin(ec,Pin.IN)\n`);
+        code = appendLocal(code, indent + `    t.value(0); utime.sleep_us(2); t.value(1); utime.sleep_us(10); t.value(0)\n`);
+        code = appendLocal(code, indent + `    while e.value()==0: pass\n`);
+        code = appendLocal(code, indent + `    t0=utime.ticks_us()\n`);
+        code = appendLocal(code, indent + `    while e.value()==1: pass\n`);
+        code = appendLocal(code, indent + `    return utime.ticks_diff(utime.ticks_us(),t0)/58\n`);
+        code = appendLocal(code, indent + `${usVar} = _us_dist(${usTrig}, ${usEcho})\n`);
+        break;
+      }
+
+      // ===== DHT11 温湿度センサー =====
+      case 'pico_dht_read': {
+        const dhtPin  = block.getFieldValue('PIN');
+        const dhtTVar = block.getFieldValue('TVAR');
+        const dhtHVar = block.getFieldValue('HVAR');
+        code = appendLocal(code, indent + `_dht = DHT11(Pin(${dhtPin}))\n`);
+        code = appendLocal(code, indent + `_dht.measure()\n`);
+        code = appendLocal(code, indent + `${dhtTVar} = _dht.temperature()\n`);
+        code = appendLocal(code, indent + `${dhtHVar} = _dht.humidity()\n`);
+        break;
+      }
+
       case 'val_var':
       case 'val_number':
       case 'val_str':
@@ -2023,6 +2177,7 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'pico_if_else':
       case 'pico_digital_read_val':
       case 'pico_analog_read_val':
+      case 'pico_ultrasonic_cm_val':
       case 'pvb_switch_val':
       case 'pvb_line_val':
       case 'pvb_sonar_val':

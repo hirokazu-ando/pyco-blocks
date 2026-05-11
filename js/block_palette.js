@@ -13,8 +13,11 @@ window.PycoPalette = {
   math: '#FB8C00',
   literals: '#8E24AA',
   ioKeyboard: '#26A69A',
-  gpioOutput: '#EF5350',
-  gpioInput: '#00897B',
+  gpioOutput:  '#EF5350',
+  gpioInput:   '#00897B',
+  gpioMotor:   '#F57C00',  // Part 3: サーボ・DCモーター・ステッピングモーター
+  gpioDisplay: '#1565C0',  // Part 3: 7セグメント・LCD1602
+  gpioSensor:  '#00897B',  // Part 3: 超音波・DHT11（gpioInput と同色）
   logic: '#5E35B1',
   loops: '#F9A825',
   lists: '#689F38',
