@@ -47,7 +47,7 @@
       const lid = getOrCreate(`led_p${pin}`, 'wokwi-led', { color: 'red' });
       wire(gp(pin), `${rid}:1`, 'green');
       wire(`${rid}:2`, `${lid}:A`, 'green');
-      wire(`${lid}:K`, PICO_GND, 'black');
+      wire(`${lid}:C`, PICO_GND, 'black');
     }
 
     function mkButton(pin) {
@@ -97,11 +97,12 @@
     }
 
     function mkL298n(in1, in2, en) {
-      const id = getOrCreate(`l298n_${in1}_${in2}`, 'wokwi-motor-driver-l298n', {});
+      // chip-l298n は Wokwi カスタムチップ (wokwi.toml に依存追加が必要)
+      const id = getOrCreate(`l298n_${in1}_${in2}`, 'chip-l298n', {});
       wire(gp(in1), `${id}:IN1`, 'green');
       wire(gp(in2), `${id}:IN2`, 'green');
       wire(`${id}:GND`, PICO_GND, 'black');
-      wire('pico:VSYS', `${id}:12V`, 'red');
+      wire('pico:VSYS', `${id}:VCC`, 'red');
       if (en !== null) wire(gp(en), `${id}:ENA`, 'orange');
     }
 
@@ -112,10 +113,11 @@
       ['IN1','IN2','IN3','IN4'].forEach((name, i) => {
         if (pins[i]) wire(gp(pins[i]), `${drvId}:${name}`, 'green');
       });
-      wire(`${drvId}:COM`, PICO_3V3, 'red');
+      wire(`${drvId}:VCC`, PICO_3V3, 'red');
       wire(`${drvId}:GND`, PICO_GND, 'black');
-      ['OUT1','OUT2','OUT3','OUT4'].forEach((out, i) => {
-        wire(`${drvId}:${out}`, `${motId}:${'ABCD'[i]}`, 'orange');
+      // OUT1→A+, OUT2→A-, OUT3→B+, OUT4→B-
+      [['OUT1','A+'],['OUT2','A-'],['OUT3','B+'],['OUT4','B-']].forEach(([out, mpin]) => {
+        wire(`${drvId}:${out}`, `${motId}:${mpin}`, 'orange');
       });
     }
 
@@ -188,13 +190,20 @@
       p.left = LEFT0 + (i % COLS) * COL_W;
     });
 
+    // L298N カスタムチップが含まれる場合は dependencies に追記
+    const hasL298n = parts.some(p => p.type === 'chip-l298n');
+    const deps = hasL298n
+      ? { 'chip-l298n': 'github:drf5n/Wokwi-Chip-L298N@1.0.5' }
+      : {};
+
     return {
       version: 1,
       author: 'PycoBlocks',
       editor: 'wokwi',
       parts: parts.map(({ type, id, top, left, attrs }) => ({ type, id, top, left, attrs })),
       connections,
-      dependencies: {}
+      dependencies: deps,
+      _notes: hasL298n ? ['L298N: wokwi.toml に "[parts] l298n = { path = \\"drf5n/Wokwi-Chip-L298N\\" }" を追加してください'] : undefined
     };
   };
 

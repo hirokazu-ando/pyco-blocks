@@ -4993,7 +4993,9 @@ document.addEventListener('DOMContentLoaded', function() {
       output.value = json;
       const partCount = diagram.parts.length - 1; // Pico除く
       const connCount = diagram.connections.length;
-      summary.textContent = `部品 ${partCount} 個 / 配線 ${connCount} 本  —  下のJSONをコピーしてWokwiのdiagram.jsonに貼り付けてください`;
+      const notes = diagram._notes || [];
+      const noteStr = notes.length ? '  ⚠ ' + notes.join(' / ') : '';
+      summary.textContent = `部品 ${partCount} 個 / 配線 ${connCount} 本  —  下のJSONをWokwiのdiagram.jsonに貼り付けてください${noteStr}`;
       modal.style.display = 'flex';
     });
 
