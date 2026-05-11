@@ -3951,6 +3951,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (gameArea) gameArea.style.display = (mode === 'game') ? '' : 'none';
     if (circuitPreview) circuitPreview.style.display = (mode === 'micropython') ? '' : 'none';
+    // モード判別用クラス（CSS 側の !important 上書きを mode 別にするため）
+    if (mainEl) mainEl.classList.toggle('mode-micropython', mode === 'micropython');
+    // MicroPython 以外に切り替えたら配線図モーダルを閉じる
+    if (mode !== 'micropython') {
+      const cmodal = document.getElementById('circuit-modal');
+      if (cmodal) cmodal.style.display = 'none';
+    }
     if (gameHandle) gameHandle.style.display = 'none';
     if (monHdr)   monHdr.style.display   = '';
     if (monOut)   monOut.style.display   = '';
@@ -5218,6 +5225,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function openModal() {
+      if (currentMode !== 'micropython') return;
       if (typeof generateCircuitSVG !== 'function') {
         alert('配線図エンジンが読み込まれていません。Ctrl+Shift+R で強制リロードしてください。');
         return;
