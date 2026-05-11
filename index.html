@@ -100,6 +100,15 @@
         <div id="game-title-bar"></div>
         <!-- pygame.display.set_mode() がここに canvas を生成 -->
       </div>
+      <!-- 配線図プレビューエリア（micropython モード時のみ左下に表示） -->
+      <div id="circuit-preview-area" style="display:none; background:#0d1117; border-radius:6px; overflow:hidden; position:relative;">
+        <div class="game-area-resize-handle" id="circuit-preview-resize-handle"></div>
+        <div id="circuit-preview-header" style="background:#1a202c; color:#68d391; font-weight:bold; font-size:0.88em; padding:4px 8px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2d3748;">
+          <span>実態配線図プレビュー</span>
+          <span id="circuit-preview-summary" style="color:#718096; font-weight:normal; font-size:0.85em;"></span>
+        </div>
+        <div id="circuit-preview-svg" style="flex:1; overflow:hidden; background:#0d1117; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="クリックで拡大表示"></div>
+      </div>
       <div id="monitor-panel-anchor"></div>
       <div id="monitor-panel">
         <div class="monitor-resize-handle" id="monitor-resize-handle"></div>
@@ -1739,7 +1748,7 @@
   <script src="js/tutorials.js"></script>
   <script src="js/serial.js"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
-  <script src="js/circuit_viewer.js?v=20260511h"></script>
+  <script src="js/circuit_viewer.js?v=20260512c"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260427c"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
@@ -1759,7 +1768,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260511g"></script>
+  <script src="js/app.js?v=20260512c"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -1776,6 +1785,8 @@
         <button id="circuit-zoom-in"  style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">＋</button>
         <button id="circuit-zoom-out" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">－</button>
         <button id="circuit-zoom-fit" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">全体</button>
+        <button id="circuit-reset-pos" style="background:#5a3a2a; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;" title="部品・配線の手動調整を全て自動配置に戻す">↺ 自動配置</button>
+        <span style="color:#718096; font-size:.78em; align-self:center; margin-left:8px;">💡 部品ドラッグで位置・線ドラッグで縦線位置</span>
       </div>
     </div>
   </div>

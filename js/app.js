@@ -3100,6 +3100,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // チュートリアル自動チェック（Tutorial代入済みの場合のみ）
     if (Tutorial) Tutorial.check(blockTypes);
+
+    // MicroPython モード: 配線図プレビューを更新
+    if (currentMode === 'micropython') updateCircuitPreview();
+  }
+
+  // ===== 配線図プレビュー更新 =====
+  function updateCircuitPreview() {
+    const previewSvg = document.getElementById('circuit-preview-svg');
+    const previewSummary = document.getElementById('circuit-preview-summary');
+    if (!previewSvg || typeof generateCircuitSVG !== 'function') return;
+    try {
+      const overrides = window.__pycoCircuitOverrides || {};
+      const wireOverrides = window.__pycoCircuitWireOverrides || {};
+      const result = generateCircuitSVG(workspace, { overrides, wireOverrides });
+      previewSvg.innerHTML = result.svg;
+      // 固定 width/height を外して CSS でコンテナにフィットさせる
+      const svgEl = previewSvg.querySelector('svg');
+      if (svgEl) {
+        svgEl.removeAttribute('width');
+        svgEl.removeAttribute('height');
+        svgEl.style.width = '100%';
+        svgEl.style.height = '100%';
+        svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      }
+      if (previewSummary) {
+        previewSummary.textContent = result.compCount > 0
+          ? `部品 ${result.compCount} / 接続 ${result.wireCount} (クリックで拡大)`
+          : 'ブロックを追加すると配線図が表示されます';
+      }
+    } catch (err) {
+      console.error('[circuit-preview]', err);
+      previewSvg.innerHTML = `<p style="color:#f44336;padding:8px;font-size:.8em;font-family:sans-serif;">⚠ ${err.message}</p>`;
+    }
   }
 
   // ===== ツールボックスエリアへのドラッグで削除 =====
@@ -3832,6 +3865,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const leftBottomAnchor = document.getElementById('game-left-bottom-anchor');
     const rightTopAnchor = document.getElementById('game-right-top-anchor');
     const rightBottomAnchor = document.getElementById('game-right-bottom-anchor');
+    const circuitPreview = document.getElementById('circuit-preview-area');
 
     // モード跨ぎで残るインラインサイズを都度リセット
     if (blocklyDiv) {
@@ -3864,8 +3898,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (monOut)   { monOut.innerHTML = ''; monOut.classList.remove('python-shell'); }
     }
 
-    // ゲームモードは 2x2 レイアウトに切替
-    if (mode === 'game') {
+    // ゲームモード / MicroPython モードは 2x2 レイアウトに切替
+    // (game: 左下=ゲーム画面 / micropython: 左下=配線図プレビュー)
+    const use2x2 = (mode === 'game' || mode === 'micropython');
+    if (use2x2) {
       if (mainEl) mainEl.classList.add('game-layout');
       if (divider) divider.style.display = 'none';
       if (leftCol) leftCol.style.display = '';
@@ -3876,8 +3912,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (syntaxPanel && leftTopAnchor && syntaxPanel.parentElement !== leftCol) {
         leftTopAnchor.insertAdjacentElement('afterend', syntaxPanel);
       }
-      if (gameArea && leftBottomAnchor && gameArea.parentElement !== leftCol) {
+      // 左下: モードに応じて配線図プレビュー or ゲーム画面
+      if (mode === 'game' && gameArea && leftBottomAnchor && gameArea.parentElement !== leftCol) {
         leftBottomAnchor.insertAdjacentElement('afterend', gameArea);
+      }
+      if (mode === 'micropython' && circuitPreview && leftBottomAnchor && circuitPreview.parentElement !== leftCol) {
+        leftBottomAnchor.insertAdjacentElement('afterend', circuitPreview);
       }
       if (codePanel && rightTopAnchor && codePanel.parentElement !== rightCol) {
         rightTopAnchor.insertAdjacentElement('afterend', codePanel);
@@ -3910,6 +3950,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (gameArea) gameArea.style.display = (mode === 'game') ? '' : 'none';
+    if (circuitPreview) circuitPreview.style.display = (mode === 'micropython') ? '' : 'none';
     if (gameHandle) gameHandle.style.display = 'none';
     if (monHdr)   monHdr.style.display   = '';
     if (monOut)   monOut.style.display   = '';
@@ -4517,10 +4558,11 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     let dragging = false, startY = 0, startH = 0;
 
+    const is2x2 = () => mainEl && mainEl.classList.contains('game-layout');
     function startDrag(clientY) {
       dragging = true;
       startY = clientY;
-      startH = (currentMode === 'game' && monitorPanel)
+      startH = (is2x2() && monitorPanel)
         ? parsePct(mainEl.style.getPropertyValue('--right-top') || window.getComputedStyle(mainEl).getPropertyValue('--right-top'), 56)
         : codeOutput.getBoundingClientRect().height;
       handle.classList.add('dragging');
@@ -4528,7 +4570,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function onMove(clientY) {
       if (!dragging) return;
-      if (currentMode === 'game') {
+      if (is2x2()) {
         if (!mainEl) return;
         const rect = mainEl.getBoundingClientRect();
         if (!rect.height) return;
@@ -4549,7 +4591,7 @@ document.addEventListener('DOMContentLoaded', function() {
       dragging = false;
       handle.classList.remove('dragging');
       document.body.style.userSelect = '';
-      if (currentMode === 'game') {
+      if (is2x2()) {
         requestAnimationFrame(() => Blockly.svgResize(workspace));
       }
     }
@@ -4693,13 +4735,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('touchend', endDrag);
   })();
 
-  // ゲーム表示エリアの個別上下リサイズ（ゲームパネルのみ）
+  // 左列の上下リサイズ (ゲーム画面 or 配線図プレビュー 共通)
   (function() {
-    const handle = document.getElementById('game-area-resize-handle');
+    const gameHandle = document.getElementById('game-area-resize-handle');
+    const circuitHandle = document.getElementById('circuit-preview-resize-handle');
     const mainEl = document.querySelector('.main');
-    if (!handle || !mainEl) return;
+    if (!mainEl || (!gameHandle && !circuitHandle)) return;
 
     let dragging = false;
+    let activeHandle = null;
     let startY = 0;
     let startTopPct = 56;
 
@@ -4708,9 +4752,10 @@ document.addEventListener('DOMContentLoaded', function() {
       return Number.isFinite(n) ? n : fallback;
     }
 
-    function startDrag(clientY) {
-      if (currentMode !== 'game') return;
+    function startDrag(clientY, handle) {
+      if (!mainEl.classList.contains('game-layout')) return;
       dragging = true;
+      activeHandle = handle;
       startY = clientY;
       startTopPct = parsePct(mainEl.style.getPropertyValue('--left-top') || window.getComputedStyle(mainEl).getPropertyValue('--left-top'), 56);
       handle.classList.add('dragging');
@@ -4719,7 +4764,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function onMove(clientY) {
-      if (!dragging || currentMode !== 'game') return;
+      if (!dragging || !mainEl.classList.contains('game-layout')) return;
       const rect = mainEl.getBoundingClientRect();
       if (!rect.height) return;
       const minTop = (90 / rect.height) * 100;
@@ -4733,14 +4778,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function endDrag() {
       if (!dragging) return;
       dragging = false;
-      handle.classList.remove('dragging');
+      if (activeHandle) activeHandle.classList.remove('dragging');
+      activeHandle = null;
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
       requestAnimationFrame(() => Blockly.svgResize(workspace));
     }
 
-    handle.addEventListener('mousedown', e => startDrag(e.clientY));
-    handle.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientY); }, { passive: false });
+    [gameHandle, circuitHandle].forEach(h => {
+      if (!h) return;
+      h.addEventListener('mousedown', e => startDrag(e.clientY, h));
+      h.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientY, h); }, { passive: false });
+    });
     document.addEventListener('mousemove', e => onMove(e.clientY));
     document.addEventListener('touchmove', e => { if (dragging) { e.preventDefault(); onMove(e.touches[0].clientY); } }, { passive: false });
     document.addEventListener('mouseup', endDrag);
@@ -4818,7 +4867,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function startDrag() {
-      if (currentMode !== 'game' || !mainEl.classList.contains('game-layout')) return;
+      if (!mainEl.classList.contains('game-layout')) return;
       dragging = true;
       vHandle.classList.add('dragging');
       document.body.style.userSelect = 'none';
@@ -4826,7 +4875,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function moveDrag(clientX) {
-      if (!dragging || currentMode !== 'game') return;
+      if (!dragging || !mainEl.classList.contains('game-layout')) return;
       const rect = mainEl.getBoundingClientRect();
       if (!rect.width) return;
       const bounds = calcBounds(rect);
@@ -5001,10 +5050,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnZoomIn = document.getElementById('circuit-zoom-in');
     const btnZoomOut= document.getElementById('circuit-zoom-out');
     const btnZoomFit= document.getElementById('circuit-zoom-fit');
+    const btnResetPos = document.getElementById('circuit-reset-pos');
     if (!modal || !btnOpen) return;
 
     let currentScale = 1;
     let currentSvgStr = '';
+    // セッション内で部品の手動位置 (自動配置からのオフセット) を保持
+    const circuitOverrides = {};
+    // セッション内で配線縦セグメントの左右ずらし (chDx) を保持
+    const circuitWireOverrides = {};
 
     function applyZoom(scale) {
       currentScale = Math.max(0.3, Math.min(3, scale));
@@ -5015,16 +5069,161 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    btnOpen.addEventListener('click', function() {
+    function renderInto(target) {
+      const result = generateCircuitSVG(workspace, {
+        overrides: circuitOverrides,
+        wireOverrides: circuitWireOverrides,
+      });
+      currentSvgStr = result.svg;
+      target.innerHTML = result.svg;
+      if (summary) summary.textContent = `部品 ${result.compCount} 個 / 接続 ${result.wireCount} 本`;
+      setupCompDrag();
+      setupWireDrag();
+    }
+
+    // ── 部品ドラッグ処理 ──
+    let dragState = null;
+    function setupCompDrag() {
+      const svg = wrap.querySelector('svg');
+      if (!svg) return;
+      svg.querySelectorAll('.cv-comp').forEach(g => {
+        g.style.cursor = 'move';
+        g.addEventListener('mousedown', onCompMouseDown);
+        g.addEventListener('touchstart', onCompTouchStart, { passive: false });
+      });
+    }
+    function onCompMouseDown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      startDrag(this, e.clientX, e.clientY);
+    }
+    function onCompTouchStart(e) {
+      if (!e.touches[0]) return;
+      e.preventDefault();
+      e.stopPropagation();
+      startDrag(this, e.touches[0].clientX, e.touches[0].clientY);
+    }
+    function startDrag(g, clientX, clientY) {
+      const id = g.getAttribute('data-comp-id');
+      const ov = circuitOverrides[id] || { dx: 0, dy: 0 };
+      dragState = { g, id, startX: clientX, startY: clientY, baseDx: ov.dx, baseDy: ov.dy };
+      g.style.opacity = '0.7';
+    }
+    function onDocMove(clientX, clientY) {
+      if (!dragState) return;
+      const dx = (clientX - dragState.startX) / currentScale;
+      const dy = (clientY - dragState.startY) / currentScale;
+      dragState.g.setAttribute('transform', `translate(${dragState.baseDx + dx},${dragState.baseDy + dy})`);
+    }
+    function endDrag(clientX, clientY) {
+      if (!dragState) return;
+      const dx = (clientX - dragState.startX) / currentScale;
+      const dy = (clientY - dragState.startY) / currentScale;
+      circuitOverrides[dragState.id] = { dx: dragState.baseDx + dx, dy: dragState.baseDy + dy };
+      dragState.g.style.opacity = '';
+      dragState = null;
+      // 新しい位置で配線を再ルーティング
+      renderInto(wrap);
+      applyZoom(currentScale);
+      // 左下プレビューにも反映
+      if (typeof updateCircuitPreview === 'function') updateCircuitPreview();
+    }
+    document.addEventListener('mousemove', e => onDocMove(e.clientX, e.clientY));
+    document.addEventListener('mouseup', e => endDrag(e.clientX, e.clientY));
+    document.addEventListener('touchmove', e => {
+      if (!dragState || !e.touches[0]) return;
+      e.preventDefault();
+      onDocMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+    document.addEventListener('touchend', e => {
+      if (!dragState) return;
+      const t = e.changedTouches[0];
+      endDrag(t ? t.clientX : dragState.startX, t ? t.clientY : dragState.startY);
+    });
+
+    // ── 配線縦セグメントのドラッグ処理 ──
+    let wireDragState = null;
+    function setupWireDrag() {
+      const svg = wrap.querySelector('svg');
+      if (!svg) return;
+      svg.querySelectorAll('.cv-wire').forEach(g => {
+        g.addEventListener('mousedown', onWireMouseDown);
+        g.addEventListener('touchstart', onWireTouchStart, { passive: false });
+      });
+    }
+    function onWireMouseDown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      startWireDrag(this, e.clientX);
+    }
+    function onWireTouchStart(e) {
+      if (!e.touches[0]) return;
+      e.preventDefault();
+      e.stopPropagation();
+      startWireDrag(this, e.touches[0].clientX);
+    }
+    function startWireDrag(g, clientX) {
+      const id = g.getAttribute('data-wire-id');
+      const ov = circuitWireOverrides[id] || { chDx: 0 };
+      wireDragState = {
+        g, id,
+        startX: clientX,
+        baseChDx: ov.chDx,
+        baseCh: parseFloat(g.getAttribute('data-ch')),
+        x1: parseFloat(g.getAttribute('data-x1')),
+        y1: parseFloat(g.getAttribute('data-y1')),
+        x2: parseFloat(g.getAttribute('data-x2')),
+        y2: parseFloat(g.getAttribute('data-y2')),
+        wrap: g.getAttribute('data-wrap') === '1',
+        trackY: parseFloat(g.getAttribute('data-track-y')),
+      };
+      g.style.opacity = '0.6';
+    }
+    function onWireDocMove(clientX) {
+      if (!wireDragState) return;
+      const dx = (clientX - wireDragState.startX) / currentScale;
+      const newCh = wireDragState.baseCh + dx;
+      const s = wireDragState;
+      let d;
+      if (s.wrap) {
+        d = `M${s.x1},${s.y1} V${s.trackY} H${newCh} V${s.y2} H${s.x2}`;
+      } else if (Math.abs(s.x1 - newCh) <= 1) {
+        d = `M${s.x1},${s.y1} V${s.y2} H${s.x2}`;
+      } else {
+        d = `M${s.x1},${s.y1} H${newCh} V${s.y2} H${s.x2}`;
+      }
+      s.g.querySelectorAll('path').forEach(p => p.setAttribute('d', d));
+    }
+    function endWireDrag(clientX) {
+      if (!wireDragState) return;
+      const dx = (clientX - wireDragState.startX) / currentScale;
+      circuitWireOverrides[wireDragState.id] = { chDx: wireDragState.baseChDx + dx };
+      wireDragState.g.style.opacity = '';
+      wireDragState = null;
+      renderInto(wrap);
+      applyZoom(currentScale);
+      if (typeof updateCircuitPreview === 'function') updateCircuitPreview();
+    }
+    document.addEventListener('mousemove', e => onWireDocMove(e.clientX));
+    document.addEventListener('mouseup', e => endWireDrag(e.clientX));
+    document.addEventListener('touchmove', e => {
+      if (!wireDragState || !e.touches[0]) return;
+      e.preventDefault();
+      onWireDocMove(e.touches[0].clientX);
+    }, { passive: false });
+    document.addEventListener('touchend', e => {
+      if (!wireDragState) return;
+      const t = e.changedTouches[0];
+      endWireDrag(t ? t.clientX : wireDragState.startX);
+    });
+
+    function openModal() {
       if (typeof generateCircuitSVG !== 'function') {
         alert('配線図エンジンが読み込まれていません。Ctrl+Shift+R で強制リロードしてください。');
         return;
       }
       try {
-        const result = generateCircuitSVG(workspace);
-        currentSvgStr = result.svg;
-        wrap.innerHTML = result.svg;
-        summary.textContent = `部品 ${result.compCount} 個 / 接続 ${result.wireCount} 本`;
+        renderInto(wrap);
         currentScale = 1;
         applyZoom(1);
         modal.style.display = 'flex';
@@ -5036,7 +5235,24 @@ document.addEventListener('DOMContentLoaded', function() {
         </p>`;
         modal.style.display = 'flex';
       }
+    }
+    btnOpen.addEventListener('click', openModal);
+    // 左下プレビューをクリックしても拡大モーダルを開く
+    const previewSvg = document.getElementById('circuit-preview-svg');
+    if (previewSvg) previewSvg.addEventListener('click', openModal);
+
+    // 自動配置に戻すボタン (部品位置 + 配線位置 両方リセット)
+    if (btnResetPos) btnResetPos.addEventListener('click', () => {
+      Object.keys(circuitOverrides).forEach(k => delete circuitOverrides[k]);
+      Object.keys(circuitWireOverrides).forEach(k => delete circuitWireOverrides[k]);
+      renderInto(wrap);
+      applyZoom(currentScale);
+      if (typeof updateCircuitPreview === 'function') updateCircuitPreview();
     });
+
+    // overrides を他から参照できるよう公開 (プレビュー側で同じ位置を反映するため)
+    window.__pycoCircuitOverrides = circuitOverrides;
+    window.__pycoCircuitWireOverrides = circuitWireOverrides;
 
     btnClose.addEventListener('click', () => { modal.style.display = 'none'; });
     modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });

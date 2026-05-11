@@ -5,6 +5,7 @@
 
   // ===== Pico レイアウト定数 =====
   let PX = 110; const PY = 30, PW = 88, PP = 19, PC = 20;
+  const CH_STEP = 18; // チャンネル間隔（広めにとり交差視認性を確保）
   const PH = (PC - 1) * PP + 24;
 
   const L_PINS = [
@@ -61,12 +62,11 @@
   }
 
   // ===== コンポーネント配置定数 =====
-  const C_MAX_COLS = 2;    // 片側最大列数
-  const C_CW = 190;        // 部品セル幅
+  const C_CW = 200;        // 部品セル幅 (ラベル・本体の横余裕を確保)
   const C_CH = 175;        // 部品セル高さ
-  const ROUTING_W = 210;   // Pico両側のルーティング領域幅 (10px×21ch)
-  const CH_STEP = 10;      // チャンネル間隔 (10px グリッド)
   const C_L_MARGIN = 30;   // SVG左端マージン
+  const COMP_MIN_GAP = 135;// 同列上下隣接部品の中心間最小距離 (7Seg/STEPPER の実効高さに合わせて広め)
+  const COMP_MAX_PUSH = 110;// 同列に押し込める時の理想cyからの最大ずれ (超えたら新列)
 
   // ===== SVG Defs (グラデーション・フィルター) =====
   const DEFS = `<defs>
@@ -109,20 +109,30 @@
   </filter>
 </defs>`;
 
+  // 部品端に横スタブ＋ラベルを描く汎用ヘルパー
+  // side='right' → 左端 (右側Picoに向かう配線)  side='left' → 右端
+  function sideStubs(cx, cy, side, bodyW, dys, labels) {
+    const edgeX  = side === 'right' ? cx - bodyW : cx + bodyW;
+    const sdir   = side === 'right' ? -1 : 1;
+    const stubX  = edgeX + sdir * 8;
+    const lblX   = edgeX + sdir * 12;
+    const anchor = side === 'right' ? 'end' : 'start';
+    return dys.map((dy, i) => {
+      const py = cy + dy;
+      return `<circle cx="${edgeX}" cy="${py}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <line x1="${edgeX}" y1="${py}" x2="${stubX}" y2="${py}" stroke="#888" stroke-width="1.5"/>
+  <text x="${lblX}" y="${py+4}" text-anchor="${anchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">${labels[i]}</text>`;
+    }).join('\n  ');
+  }
+
   // ===== コンポーネントシンボル =====
   const SYM = {
 
     // ── LED (Wokwi wokwi-led, MIT © 2020 Uri Shaked) ────────
     LED: {
-      pins: { A: { dx: -9, dy: 62 }, C: { dx: 10, dy: 62 } },
-      draw(cx, cy) {
-        // Wokwi SVG: viewBox="-10 -5 35.456 39.618" → 44×50px
+      pins: { A: { dx: -30, dy: -8 }, C: { dx: -30, dy: 8 } },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 22, sy = cy - 25;
-        // リード出口 (display座標): 左(A)≈(cx-5,cy+19), 右(C)≈(cx+8,cy+20)
-        const aX = cx - 9,  aLeadY = cy + 19;
-        const cX = cx + 10, cLeadY = cy + 20;
-        const resT = aLeadY + 4, resB = resT + 22;
-        const pinY = cy + 62;
         return `<g>
   <svg x="${sx}" y="${sy}" width="44" height="50" viewBox="-10 -5 35.456 39.618" xmlns="http://www.w3.org/2000/svg">
     <rect x="2.5099" y="20.382" width="2.1514" height="9.8273" fill="#8c8c8c"/>
@@ -136,18 +146,7 @@
     <path d="m10.388 3.7541 1.4364-0.2736c-0.84168-1.1318-2.0822-1.9577-3.5417-2.2385l0.25416 1.0807c0.76388 0.27072 1.4068 0.78048 1.8511 1.4314z" fill="#fff" opacity=".5"/>
     <path d="m0.76824 19.926v1.5199c0.64872 0.5292 1.4335 0.97632 2.3076 1.3169v-1.525c-0.8784-0.33624-1.6567-0.78194-2.3076-1.3118z" fill="#fff" opacity=".5"/>
   </svg>
-  <!-- アノードリード → 抵抗 → ピン -->
-  <line x1="${aX}" y1="${aLeadY}" x2="${aX}" y2="${resT}" stroke="#888" stroke-width="1.5"/>
-  <rect x="${aX-7}" y="${resT}" width="14" height="22" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="3"/>
-  <line x1="${aX-5}" y1="${resT+5}"  x2="${aX+5}" y2="${resT+5}"  stroke="#6b4c20" stroke-width="1"/>
-  <line x1="${aX-5}" y1="${resT+11}" x2="${aX+5}" y2="${resT+11}" stroke="#6b4c20" stroke-width="1"/>
-  <line x1="${aX-5}" y1="${resT+17}" x2="${aX+5}" y2="${resT+17}" stroke="#6b4c20" stroke-width="1"/>
-  <line x1="${aX}" y1="${resB}" x2="${aX}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <!-- カソードリード → ピン -->
-  <line x1="${cX}" y1="${cLeadY}" x2="${cX}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <!-- ピンラベル -->
-  <text x="${cx-9}"  y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">A</text>
-  <text x="${cx+10}" y="${pinY+16}" text-anchor="middle" font-size="14" fill="#90a4ae" font-family="sans-serif">C</text>
+  ${sideStubs(cx, cy, side, 22, [-8, 8], ['A', 'C'])}
   <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
@@ -175,8 +174,8 @@
     <circle cx="6" cy="6" r="2.9" fill="#cc2222" stroke="#2f2f2f" stroke-opacity=".47" stroke-width=".08"/>
   </svg>
   <!-- ピンラベル -->
-  <text x="${cx-38}" y="${cy-34}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+38}" y="${cy-34}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
+  <text x="${cx-38}" y="${cy-34}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">VCC</text>
+  <text x="${cx+38}" y="${cy-34}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">SIG</text>
   <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">Button</text>
 </g>`;
       }
@@ -184,9 +183,8 @@
 
     // ── ポテンショメーター (Wokwi wokwi-potentiometer, MIT © 2020 Uri Shaked) ──
     POT: {
-      pins: { VCC: { dx: 19, dy: 42 }, SIG: { dx: 0, dy: 42 }, GND: { dx: -19, dy: 42 } },
-      draw(cx, cy) {
-        // viewBox="0 0 20 20" → 80×80px (scale=4), pins at bottom
+      pins: { VCC: { dx: -48, dy: -16 }, SIG: { dx: -48, dy: 0 }, GND: { dx: -48, dy: 16 } },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 40, sy = cy - 40;
         return `<g>
   <svg x="${sx}" y="${sy}" width="80" height="80" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -213,26 +211,17 @@
       <ellipse cx="18.07" cy="1.91" rx=".99" ry=".96"/>
     </g>
   </svg>
-  <!-- ピンリード (底面から下へ) -->
-  <line x1="${cx+19}" y1="${cy+40}" x2="${cx+19}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx}"    y1="${cy+40}" x2="${cx}"    y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx-19}" y1="${cy+40}" x2="${cx-19}" y2="${cy+42}" stroke="#888" stroke-width="1.5"/>
-  <!-- ピンラベル -->
-  <text x="${cx+19}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx}"    y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx-19}" y="${cy+56}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${cy+70}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
+  ${sideStubs(cx, cy, side, 40, [-16, 0, 16], ['VCC', 'SIG', 'GND'])}
+  <text x="${cx}" y="${cy-44}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
 </g>`;
       }
     },
 
     // ── パッシブブザー (Wokwi wokwi-buzzer, MIT © 2020 Uri Shaked) ──
     BUZZ: {
-      pins: { SIG: { dx: -9, dy: 50 }, GND: { dx: 10, dy: 50 } },
-      draw(cx, cy) {
-        // viewBox="0 0 17 20" → 68×80px (scale=4)
+      pins: { SIG: { dx: -42, dy: -8 }, GND: { dx: -42, dy: 8 } },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 34, sy = cy - 40;
-        const pinY = cy + 50;
         return `<g>
   <svg x="${sx}" y="${sy}" width="68" height="80" viewBox="0 0 17 20" xmlns="http://www.w3.org/2000/svg">
     <path d="m7.23 16.5v3.5" fill="none" stroke="#8c8c8c" stroke-width=".5"/>
@@ -245,10 +234,8 @@
     <circle cx="8.5" cy="8.5" r="1.37" fill="#ccc" stroke="#444" stroke-width=".25"/>
     <text x="3.5" y="10" font-size="2.8" fill="#e53935" font-weight="bold" font-family="sans-serif">+</text>
   </svg>
-  <!-- ピンラベル -->
-  <text x="${cx-9}"  y="${pinY+16}" text-anchor="middle" font-size="12" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx+10}" y="${pinY+16}" text-anchor="middle" font-size="12" fill="#e53935" font-family="sans-serif">+</text>
-  <text x="${cx}" y="${pinY+32}" text-anchor="middle" class="cv-lbl">Buzzer</text>
+  ${sideStubs(cx, cy, side, 34, [-8, 8], ['SIG', 'GND'])}
+  <text x="${cx}" y="${cy-44}" text-anchor="middle" class="cv-lbl">Buzzer</text>
 </g>`;
       }
     },
@@ -282,21 +269,19 @@
     <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
   </svg>
   <!-- ピンラベル -->
-  <text x="${cx-61}" y="${cy-33}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx-61}" y="${cy+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
+  <text x="${cx-61}" y="${cy-33}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">GND</text>
+  <text x="${cx-61}" y="${cy+14}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">VCC</text>
   <text x="${cx-61}" y="${cy+33}" text-anchor="middle" font-size="11" fill="#f57c00" font-family="sans-serif">PWM</text>
-  <text x="${cx+12}" y="${cy+46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
+  <text x="${cx}" y="${cy+46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
     },
 
     // ── HC-SR04 (Wokwi wokwi-hc-sr04, MIT © 2020 Uri Shaked) ──
     HCSR04: {
-      pins: { VCC: { dx: -28, dy: 38 }, TRIG: { dx: -9, dy: 38 }, ECHO: { dx: 10, dy: 38 }, GND: { dx: 29, dy: 38 } },
-      draw(cx, cy) {
-        // viewBox="0 0 45 25" → 90×50px (scale=2)
+      pins: { VCC: { dx: -53, dy: -24 }, TRIG: { dx: -53, dy: -8 }, ECHO: { dx: -53, dy: 8 }, GND: { dx: -53, dy: 24 } },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 45, sy = cy - 25;
-        const pinY = cy + 38;
         return `<g>
   <svg x="${sx}" y="${sy}" width="90" height="50" viewBox="0 0 45 25" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
@@ -340,23 +325,17 @@
       <text x="-17.6" y="27.2">GND</text>
     </g>
   </svg>
-  <!-- ピンラベル (外部) -->
-  <text x="${cx-28}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx-9}"  y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">TRIG</text>
-  <text x="${cx+10}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">ECHO</text>
-  <text x="${cx+29}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
+  ${sideStubs(cx, cy, side, 45, [-24, -8, 8, 24], ['VCC', 'TRIG', 'ECHO', 'GND'])}
+  <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
 </g>`;
       }
     },
 
     // ── DHT22 (Wokwi wokwi-dht22, MIT © 2020 Uri Shaked) ──
     DHT22: {
-      pins: { VCC: { dx: -19, dy: 52 }, SIG: { dx: 0, dy: 52 }, GND: { dx: 19, dy: 52 } },
-      draw(cx, cy) {
-        // viewBox="0 0 15.1 30.885" → 50×102px (scale≈3.3)
+      pins: { VCC: { dx: -33, dy: -16 }, SIG: { dx: -33, dy: 0 }, GND: { dx: -33, dy: 16 } },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 25, sy = cy - 50;
-        const pinY = cy + 52;
         return `<g>
   <svg x="${sx}" y="${sy}" width="50" height="102" viewBox="0 0 15.1 30.885" xmlns="http://www.w3.org/2000/svg">
     <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
@@ -368,22 +347,17 @@
     <path d="M15.05 23.995V5.033c0-.107-1.069-4.962-2.662-4.96L2.803.09C1.193.09.05 4.926.05 5.033v18.962c0 .107.086.192.192.192h14.616a.192.192 0 00.192-.192M7.615.948h.004c1.08 0 1.956.847 1.956 1.892s-.876 1.892-1.956 1.892-1.956-.847-1.956-1.892c0-1.044.873-1.89 1.952-1.892z" fill="#f2f2f2" stroke="#000" stroke-linecap="round" stroke-width=".1"/>
     <text x="3.7" y="22.86" fill="#000" font-family="sans-serif" font-size="2.2" stroke-width=".05">DHT22</text>
   </svg>
-  <!-- ピンラベル -->
-  <text x="${cx-19}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx}"    y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SIG</text>
-  <text x="${cx+19}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">DHT22</text>
+  ${sideStubs(cx, cy, side, 25, [-16, 0, 16], ['VCC', 'SIG', 'GND'])}
+  <text x="${cx}" y="${cy-54}" text-anchor="middle" class="cv-lbl">DHT22</text>
 </g>`;
       }
     },
 
     // ── LCD1602 I2C (Wokwi wokwi-lcd1602, MIT © 2020 Uri Shaked) ──
     LCD: {
-      pins: { GND: { dx: -28, dy: 40 }, VCC: { dx: -9, dy: 40 }, SDA: { dx: 10, dy: 40 }, SCL: { dx: 29, dy: 40 } },
-      draw(cx, cy) {
-        // viewBox="0 0 80 36" → 160×72px (scale=2), Wokwi exact green #087f45
+      pins: { GND: { dx: -88, dy: -24 }, VCC: { dx: -88, dy: -8 }, SDA: { dx: -88, dy: 8 }, SCL: { dx: -88, dy: 24 } },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 80, sy = cy - 36;
-        const pinY = cy + 40;
         // Character cells: 16×2 grid in SVG mm units (panelX=12.45, panelY=12.55, spacing 3.55×5.95)
         const cells = [];
         for (let r = 0; r < 2; r++) for (let c = 0; c < 16; c++) {
@@ -407,27 +381,22 @@
     <circle cx="23" cy="30.5" r="2.3" fill="#1565C0" stroke="#0d47a1" stroke-width="0.3"/>
     <circle cx="23" cy="30.5" r="0.8" fill="#1a1a1a"/>
   </svg>
-  <line x1="${cx-28}" y1="${cy+36}" x2="${cx-28}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx-9}"  y1="${cy+36}" x2="${cx-9}"  y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx+10}" y1="${cy+36}" x2="${cx+10}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <line x1="${cx+29}" y1="${cy+36}" x2="${cx+29}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <text x="${cx-28}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx-9}"  y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">VCC</text>
-  <text x="${cx+10}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SDA</text>
-  <text x="${cx+29}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">SCL</text>
-  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
+  ${sideStubs(cx, cy, side, 80, [-24, -8, 8, 24], ['GND', 'VCC', 'SDA', 'SCL'])}
+  <text x="${cx}" y="${cy-40}" text-anchor="middle" class="cv-lbl">LCD1602 (I2C)</text>
 </g>`;
       }
     },
 
     // ── 7セグメント LED (Wokwi wokwi-7segment, MIT © 2020 Uri Shaked) ──
     SEG7: {
-      pins: { COM: { dx: 0, dy: 62 } },
-      draw(cx, cy) {
-        // Wokwi viewBox="0 0 12.55 22" → 63×110px (scale≈5)
-        // segments: hexagonal polygon shapes with skewX(-8) italic styling
+      // A-G+COM: 左側縦並び(14px間隔)。bodyW=31(svg63px幅の半分)、stub8px → dx=-39
+      pins: {
+        A:   { dx: -39, dy: -49 }, B: { dx: -39, dy: -35 }, C: { dx: -39, dy: -21 },
+        D:   { dx: -39, dy:  -7 }, E: { dx: -39, dy:   7 }, F: { dx: -39, dy:  21 },
+        G:   { dx: -39, dy:  35 }, COM: { dx: -39, dy:  49 },
+      },
+      draw(cx, cy, side = 'right') {
         const sx = cx - 31, sy = cy - 55;
-        const pinY = cy + 62;
         return `<g>
   <svg x="${sx}" y="${sy}" width="63" height="110" viewBox="0 0 12.55 22" xmlns="http://www.w3.org/2000/svg">
     <rect x="0" y="0" width="12.55" height="20.5" fill="#1a1a1a"/>
@@ -443,17 +412,16 @@
     <circle cx="11.4" cy="17.5" r="0.89" fill="#ff8c00"/>
     <rect x="3.18" y="20.5" width="7.62" height="1.5" fill="#c8a86e" stroke="#8a7040" stroke-width="0.15" rx="0.2"/>
   </svg>
-  <line x1="${cx}" y1="${sy+110}" x2="${cx}" y2="${pinY}" stroke="#888" stroke-width="1.5"/>
-  <text x="${cx}" y="${pinY+14}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">COM</text>
-  <text x="${cx}" y="${pinY+28}" text-anchor="middle" class="cv-lbl">7-Segment</text>
+  ${sideStubs(cx, cy, side, 31, [-49,-35,-21,-7,7,21,35,49], ['A','B','C','D','E','F','G','COM'])}
+  <text x="${cx}" y="${cy-60}" text-anchor="middle" class="cv-lbl">7-Segment</text>
 </g>`;
       }
     },
 
     // ── 28BYJ-48 + ULN2003 ─────────────────────────────
     STEPPER: {
-      pins: { IN1: { dx: -28, dy: 36 }, IN2: { dx: -9, dy: 36 }, IN3: { dx: 10, dy: 36 }, IN4: { dx: 29, dy: 36 } },
-      draw(cx, cy) {
+      pins: { IN1: { dx: -56, dy: -24 }, IN2: { dx: -56, dy: -8 }, IN3: { dx: -56, dy: 8 }, IN4: { dx: -56, dy: 24 } },
+      draw(cx, cy, side = 'right') {
         return `<g filter="url(#fDrop)">
   <!-- ULN2003 基板 -->
   <rect x="${cx-48}" y="${cy+6}"  width="96" height="28" fill="url(#gPcbBlue)" stroke="#0d47a1" stroke-width="1.5" rx="3"/>
@@ -469,20 +437,16 @@
   <rect x="${cx-3.5}" y="${cy-50}" width="7" height="14" fill="#b0bec5" stroke="#78909c" stroke-width="0.8" rx="2"/>
   <!-- コネクタケーブル -->
   <rect x="${cx-26}" y="${cy+2}" width="52" height="6" fill="#212121" stroke="#333" stroke-width="0.5" rx="1"/>
-  <!-- ピンラベル -->
-  <text x="${cx-28}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
-  <text x="${cx-9}"  y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
-  <text x="${cx+10}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN3</text>
-  <text x="${cx+29}" y="${cy+50}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN4</text>
-  <text x="${cx}" y="${cy+66}" text-anchor="middle" class="cv-lbl">28BYJ-48 + ULN2003</text>
+  ${sideStubs(cx, cy, side, 48, [-24, -8, 8, 24], ['IN1', 'IN2', 'IN3', 'IN4'])}
+  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">Stepper (28BYJ-48)</text>
 </g>`;
       }
     },
 
     // ── L298N DCモータードライバー ────────────────────────
     L298N: {
-      pins: { IN1: { dx: -28, dy: 34 }, IN2: { dx: -9, dy: 34 }, EN: { dx: 10, dy: 34 }, GND: { dx: 29, dy: 34 } },
-      draw(cx, cy) {
+      pins: { IN1: { dx: -56, dy: -24 }, IN2: { dx: -56, dy: -8 }, EN: { dx: -56, dy: 8 }, GND: { dx: -56, dy: 24 } },
+      draw(cx, cy, side = 'right') {
         const fins = Array.from({ length: 9 }, (_, i) =>
           `<line x1="${cx-20+i*5}" y1="${cy-36}" x2="${cx-20+i*5}" y2="${cy-16}" stroke="#1a1a1a" stroke-width="1.2"/>`
         ).join('');
@@ -503,12 +467,8 @@
   <rect x="${cx+32}" y="${cy-4}" width="14" height="12" fill="#1565C0" stroke="#0d47a1" stroke-width="0.8" rx="1"/>
   <!-- LED -->
   <circle cx="${cx-32}" cy="${cy+16}" r="3.5" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>
-  <!-- ピンラベル -->
-  <text x="${cx-28}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN1</text>
-  <text x="${cx-9}"  y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">IN2</text>
-  <text x="${cx+10}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">EN</text>
-  <text x="${cx+29}" y="${cy+48}" text-anchor="middle" font-size="11" fill="#90a4ae" font-family="sans-serif">GND</text>
-  <text x="${cx}" y="${cy+64}" text-anchor="middle" class="cv-lbl">DC Motor (L298N)</text>
+  ${sideStubs(cx, cy, side, 48, [-24, -8, 8, 24], ['IN1', 'IN2', 'EN', 'GND'])}
+  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">DC Motor (L298N)</text>
 </g>`;
       }
     },
@@ -526,7 +486,7 @@
     function add(key, type, pins) {
       if (seen.has(key)) return;
       seen.add(key);
-      comps.push({ type, pins });
+      comps.push({ compId: key, type, pins });
     }
 
     workspace.getAllBlocks(false)
@@ -576,9 +536,11 @@
             { GND:{gnd:true}, VCC:{v3v3:true}, SDA:{gp:sda}, SCL:{gp:scl} });
 
         } else if (t === 'pico_7seg_show') {
-          const ps = (gf('PINS') || '').split(',').map(s=>s.trim()).filter(Boolean);
           const pins = { COM:{gnd:true} };
-          ['A','B','C','D','E','F','G'].forEach((s,i) => { if(ps[i]) pins[s]={gp:ps[i]}; });
+          ['A','B','C','D','E','F','G'].forEach(s => {
+            const p = gf('PIN_' + s);
+            if (p) pins[s] = { gp: p };
+          });
           add('seg7', 'SEG7', pins);
 
         } else if (['pico_dcmotor_run','pico_dcmotor_stop'].includes(t)) {
@@ -587,9 +549,9 @@
             { IN1:{gp:in1}, IN2:{gp:in2}, EN:en?{gp:en}:null, GND:{gnd:true} });
 
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
-          const ps = (gf('PINS') || '').split(',').map(s=>s.trim()).filter(Boolean);
-          add('step_'+ps.join('_'), 'STEPPER',
-            { IN1:{gp:ps[0]}, IN2:{gp:ps[1]}, IN3:{gp:ps[2]}, IN4:{gp:ps[3]} });
+          const in1=gf('IN1'), in2=gf('IN2'), in3=gf('IN3'), in4=gf('IN4');
+          add('step_'+[in1,in2,in3,in4].join('_'), 'STEPPER',
+            { IN1:{gp:in1}, IN2:{gp:in2}, IN3:{gp:in3}, IN4:{gp:in4} });
         }
       });
 
@@ -597,67 +559,147 @@
   }
 
   // ===== 部品配置サイド判定 =====
+  // 「ラップ配線(Picoの反対側のピンへ到達するために上/下を回る線)」の本数で比較し、
+  // 少ない側に配置する。タイなら VCC があれば right(3V3 は右側のみ)、なければ left。
   function compSide(comp) {
-    let hasLeftGP = false, hasRightGP = false, hasVcc = false;
+    let leftGp = 0, rightGp = 0, hasVcc = false;
     for (const spec of Object.values(comp.pins)) {
       if (!spec) continue;
       if (spec.gp != null) {
         const gp = parseInt(spec.gp);
-        if (L_PINS.includes('GP' + gp)) hasLeftGP = true;
-        else hasRightGP = true;
+        if (L_PINS.includes('GP' + gp)) leftGp++;
+        else rightGp++;
       }
       if (spec.v3v3) hasVcc = true;
     }
-    // VCC(3V3)はPico右側のみ → VCC使用部品・右GP部品は右へ
-    if (hasVcc || hasRightGP) return 'right';
-    if (hasLeftGP) return 'left';
-    return 'right';
+    const wrapsIfLeft  = rightGp + (hasVcc ? 1 : 0);  // 右Picoピン→左部品の数
+    const wrapsIfRight = leftGp;                       // 左Picoピン→右部品の数
+    if (wrapsIfLeft < wrapsIfRight) return 'left';
+    if (wrapsIfRight < wrapsIfLeft) return 'right';
+    return hasVcc ? 'right' : (leftGp > 0 ? 'left' : 'right');
   }
 
   // ===== レイアウト =====
+  // 主要GPピンの理想cyを返す: 対応Picoピンのyにそのピンのdyをオフセットしたもの。
+  // Picoに「近い側」のGPピンを優先 (左サイド部品=最大dx, 右サイド部品=最小dx)。
+  function idealCyOf(comp) {
+    const sym = SYM[comp.type];
+    if (!sym) return PY + 100;
+    let best = null;
+    for (const [pname, spec] of Object.entries(comp.pins)) {
+      if (!spec || spec.gp == null || !sym.pins[pname]) continue;
+      const pc = gpCoord(spec.gp);
+      if (!pc) continue;
+      const sp = sym.pins[pname];
+      const score = comp.compSide === 'left' ? (sp.dx || 0) : -(sp.dx || 0);
+      if (!best || score > best.score) {
+        best = { score, ideal: pc.y - (sp.dy || 0) };
+      }
+    }
+    if (!best) return PY + 100;
+    return Math.max(PY + 30, best.ideal);
+  }
+
   function layoutComps(comps) {
     comps.forEach(c => { c.compSide = compSide(c); });
     const leftComps  = comps.filter(c => c.compSide === 'left');
     const rightComps = comps.filter(c => c.compSide === 'right');
 
-    const lCols = leftComps.length  > 0 ? Math.min(C_MAX_COLS, Math.ceil(leftComps.length  / 3)) : 0;
-    const rCols = rightComps.length > 0 ? Math.min(C_MAX_COLS, Math.ceil(rightComps.length / 3)) : 1;
+    // 各サイドのワイヤー数 → ルーティング幅を動的決定
+    const countWires = list => list.reduce((sum, c) =>
+      sum + Object.values(c.pins).filter(Boolean).length, 0);
+    const lWires = countWires(leftComps);
+    const rWires = countWires(rightComps);
+    const routingL = Math.max(110, CH_STEP * (lWires + 1) + 20);
+    const routingR = Math.max(110, CH_STEP * (rWires + 1) + 20);
 
-    // 左部品数に合わせてPicoのX位置を動的決定
-    PX = lCols > 0 ? C_L_MARGIN + lCols * C_CW + ROUTING_W : 80;
+    // 各部品を主要GPピンのy揃え → 既存列に最小プッシュで収まればそこに、
+    // どの列でもCOMP_MAX_PUSH以上ずれる場合のみ新列を作る ベストフィット型パッキング
+    function packCols(list) {
+      if (list.length === 0) return 0;
+      list.forEach(c => { c.idealCy = idealCyOf(c); });
+      list.sort((a, b) => a.idealCy - b.idealCy);
+      const lastInCol = [];
+      list.forEach(c => {
+        let bestCol = -1, bestPush = Infinity, bestCy = 0;
+        for (let i = 0; i < lastInCol.length; i++) {
+          const minCy = Math.max(c.idealCy, lastInCol[i] + COMP_MIN_GAP);
+          const push = minCy - c.idealCy;
+          if (push < bestPush) { bestPush = push; bestCol = i; bestCy = minCy; }
+        }
+        if (bestCol < 0 || bestPush > COMP_MAX_PUSH) {
+          bestCol = lastInCol.length;
+          bestCy = c.idealCy;
+          lastInCol.push(0);
+        }
+        c.col = bestCol;
+        c.cy  = bestCy;
+        lastInCol[bestCol] = bestCy;
+      });
+      return lastInCol.length;
+    }
 
-    // 左側部品: 右端列(=Picoに近い列)から配置
-    leftComps.forEach((c, i) => {
-      const col = i % lCols;
-      const row = Math.floor(i / lCols);
-      c.cx = PX - ROUTING_W - (lCols - 1 - col) * C_CW - C_CW / 2;
-      c.cy = PY + 80 + row * C_CH;
+    const lCols = packCols(leftComps);
+    const rCols = packCols(rightComps);
+
+    PX = lCols > 0 ? C_L_MARGIN + lCols * C_CW + routingL : 80;
+
+    leftComps.forEach(c => {
+      c.cx = PX - routingL - (lCols - 1 - c.col) * C_CW - C_CW / 2;
+    });
+    rightComps.forEach(c => {
+      c.cx = PX + PW + routingR + c.col * C_CW + C_CW / 2;
     });
 
-    // 右側部品: 左端列(=Picoに近い列)から配置
-    rightComps.forEach((c, i) => {
-      const col = i % rCols;
-      const row = Math.floor(i / rCols);
-      c.cx = PX + PW + ROUTING_W + col * C_CW + C_CW / 2;
-      c.cy = PY + 80 + row * C_CH;
-    });
-
-    return { lCols, rCols, leftCount: leftComps.length, rightCount: rightComps.length };
+    return { lCols, rCols, leftCount: leftComps.length, rightCount: rightComps.length, routingL, routingR };
   }
 
-  // ===== ワイヤー描画 (直角・ピンごとに10pxグリッド整列チャンネル) =====
-  function wirePath(x1, y1, side, x2, y2) {
-    // Picoピン行インデックス(0-19) → 専用チャンネルX位置
-    const pinIdx = Math.max(0, Math.min(19, Math.round((y1 - (PY + 12)) / PP)));
-    if (x2 >= x1) {
-      // 部品がPico右側 → Pico右端から右方向チャンネル
-      const ch = x1 + CH_STEP * (1 + pinIdx);
-      return `M${x1},${y1} H${ch} V${y2} H${x2}`;
-    } else {
-      // 部品がPico左側 → Pico左端から左方向チャンネル
-      const ch = x1 - CH_STEP * (1 + pinIdx);
-      return `M${x1},${y1} H${ch} V${y2} H${x2}`;
-    }
+  // ===== ワイヤー描画ヘルパー (HVH 直角ルート) =====
+  // 同高さは直線、Picoピンと部品ピンが垂直に重なるならL字、それ以外はHVH。
+  function wirePath(x1, y1, ch, x2, y2) {
+    if (Math.abs(y1 - y2) <= 1) return `M${x1},${y1} H${x2}`;
+    if (Math.abs(x1 - ch) <= 1) return `M${x1},${y1} V${y2} H${x2}`;
+    return `M${x1},${y1} H${ch} V${y2} H${x2}`;
+  }
+
+  // 区間グラフの貪欲彩色でチャンネルを割り当てる。
+  // 同一 Pico ピン (x1,y1) から出るワイヤーはトランクとして同じチャンネルを共有し、
+  // y範囲が重ならない別グループは同じチャンネルを再利用して縦の密集を解消する。
+  function assignChannels(list) {
+    if (list.length === 0) return;
+    const GAP = 6;
+    // ── ピン単位にグループ化 ──
+    const groupMap = new Map();
+    list.forEach(w => {
+      const key = `${w.x1}:${w.y1}`;
+      if (!groupMap.has(key)) groupMap.set(key, []);
+      groupMap.get(key).push(w);
+    });
+    const groups = [];
+    groupMap.forEach(wires => {
+      let lo = Infinity, hi = -Infinity;
+      wires.forEach(w => {
+        lo = Math.min(lo, w.y1, w.y2);
+        hi = Math.max(hi, w.y1, w.y2);
+      });
+      // トランク内で部品側に最も近い x2 を chBaseX として保存
+      // (channel をPicoから遠い側、部品手前に置くため)
+      const side = wires[0].side;
+      const chBaseX = side === 'right'
+        ? Math.min(...wires.map(w => w.x2))
+        : Math.max(...wires.map(w => w.x2));
+      wires.forEach(w => { w.chBaseX = chBaseX; });
+      groups.push({ wires, lo, hi });
+    });
+    // ── グループ単位で貪欲彩色 ──
+    groups.sort((a, b) => a.lo - b.lo);
+    const channelEnds = [];
+    groups.forEach(g => {
+      let c = channelEnds.findIndex(end => end + GAP <= g.lo);
+      if (c === -1) c = channelEnds.length;
+      channelEnds[c] = g.hi;
+      g.wires.forEach(w => { w.channelIdx = c + 1; });
+    });
   }
 
   const SIGNAL_COLORS = [
@@ -722,13 +764,15 @@
     p.push(`<text x="${PX+PW/2}" y="${PY+PH-14}" text-anchor="middle" font-size="13" fill="#4caf50" font-weight="bold" font-family="sans-serif">Pico</text>`);
     p.push(`<text x="${PX+PW/2}" y="${PY+PH-3}"  text-anchor="middle" font-size="7"  fill="#33865f" font-family="sans-serif">RP2040</text>`);
 
-    // 左ピンラベル・接続点
+    // 左ピンラベル・接続点 (基板外側・配線越しに読めるよう背景ノックアウト付き)
     L_PINS.forEach((name, i) => {
       const py = PY + 12 + i * PP;
       const isGnd = name === 'GND';
       const col = isGnd ? '#78909c' : '#FFD54F';
       p.push(`<circle cx="${PX}" cy="${py}" r="3" fill="${col}" stroke="#222" stroke-width="0.5"/>`);
-      p.push(`<text x="${PX-14}" y="${py+4.5}" text-anchor="end" font-size="13" fill="#90a4ae">${name}</text>`);
+      const lblW = name.length * 7 + 4;
+      p.push(`<rect x="${PX-14-lblW}" y="${py-7}" width="${lblW}" height="14" fill="#0d1117" opacity="0.85" rx="2"/>`);
+      p.push(`<text x="${PX-14}" y="${py+4}" text-anchor="end" font-size="11" fill="#cfd8dc" font-family="sans-serif" font-weight="bold">${name}</text>`);
     });
     // 右ピンラベル・接続点
     R_PINS.forEach((name, i) => {
@@ -738,24 +782,38 @@
       const isPwr = ['3V3','VSYS','VBUS'].includes(name);
       const col = isGnd ? '#78909c' : isPwr ? '#e57373' : '#FFD54F';
       p.push(`<circle cx="${rx}" cy="${py}" r="3" fill="${col}" stroke="#222" stroke-width="0.5"/>`);
-      p.push(`<text x="${rx+14}" y="${py+4.5}" text-anchor="start" font-size="13" fill="#90a4ae">${name}</text>`);
+      const lblW = name.length * 7 + 4;
+      p.push(`<rect x="${rx+14}" y="${py-7}" width="${lblW}" height="14" fill="#0d1117" opacity="0.85" rx="2"/>`);
+      p.push(`<text x="${rx+14+4}" y="${py+4}" text-anchor="start" font-size="11" fill="#cfd8dc" font-family="sans-serif" font-weight="bold">${name}</text>`);
     });
 
     return p.join('\n');
   }
 
   // ===== メイン =====
-  window.generateCircuitSVG = function(workspace) {
+  // options.overrides: { [compId]: { dx, dy } } 自動配置からの差分でユーザ手動配置を反映
+  // options.wireOverrides: { [wireId]: { chDx } } 配線の縦セグメントを左右にずらす差分 (chDx 単位はSVG座標)
+  window.generateCircuitSVG = function(workspace, options) {
+    const overrides = (options && options.overrides) || {};
+    const wireOverrides = (options && options.wireOverrides) || {};
     const { comps, onboardLedOn, badPins } = parseBlocks(workspace);
-    const { lCols, rCols, leftCount, rightCount } = layoutComps(comps);
+    const { rCols, routingR } = layoutComps(comps);
     // layoutComps内でPXが更新されるため、以降はPXの最新値を使用
 
-    const numLeftRows  = lCols > 0 ? Math.ceil(leftCount  / lCols) : 0;
-    const numRightRows = rCols > 0 ? Math.ceil(rightCount / rCols) : 0;
-    const numRows = Math.max(numLeftRows, numRightRows, 1);
+    // ユーザ手動位置を自動配置に重ねる (配線も新しい位置で再ルーティング)
+    comps.forEach(c => {
+      const ov = overrides[c.compId];
+      if (ov) {
+        c.cx += ov.dx || 0;
+        c.cy += ov.dy || 0;
+      }
+    });
 
-    const svgW = PX + PW + ROUTING_W + Math.max(rCols, 1) * C_CW + 30;
-    const svgH = Math.max(PY + PH + 60, PY + 80 + numRows * C_CH + 60);
+    let maxBottom = PY + PH;
+    comps.forEach(c => { const b = c.cy + 90; if (b > maxBottom) maxBottom = b; });
+
+    const svgW = PX + PW + routingR + Math.max(rCols, 1) * C_CW + 30;
+    const svgH = Math.max(PY + PH + 60, maxBottom + 60);
 
     let wireCount = 0;
     const els = [];
@@ -768,7 +826,8 @@
 
     const unknownGPins = [];
 
-    // ワイヤー
+    // ── Pass 1: ワイヤー収集 (Picoピン側 → 部品ピン側) ──
+    const wires = [];
     comps.forEach(comp => {
       const sym = SYM[comp.type];
       if (!sym) return;
@@ -776,25 +835,120 @@
         if (!spec) return;
         const sp = sym.pins[pname];
         if (!sp) return;
-        const cpX = comp.cx + sp.dx, cpY = comp.cy + sp.dy;
+        // 左側配置部品はdxを反転して右側出しにする
+        const sideFlip = comp.compSide === 'left' ? -1 : 1;
+        const cpX = comp.cx + sp.dx * sideFlip, cpY = comp.cy + sp.dy;
         const pc = picoCoordOf(spec, cpX, cpY, comp.compSide);
         if (!pc) {
           if (spec.gp != null) unknownGPins.push({ gp: spec.gp, cx: comp.cx, cy: comp.cy });
           return;
         }
-        const color = wireColor(spec);
-        els.push(`<path d="${wirePath(pc.x, pc.y, pc.side, cpX, cpY)}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="square" opacity="0.9"/>`);
-        wireCount++;
+        wires.push({
+          x1: pc.x, y1: pc.y, side: pc.side,
+          x2: cpX, y2: cpY,
+          color: wireColor(spec),
+          compSide: comp.compSide,
+          wrap: pc.side !== comp.compSide,  // Picoのピン側と部品側が異なる→ラップ要
+          compId: comp.compId,
+          pname,
+          wireId: `${comp.compId}:${pname}`,
+        });
       });
+    });
+
+    // ── Pass 2: チャンネル割当 ──
+    // 通常ワイヤー (Pico同側) はサイドごとに channelIdx を一意化。
+    // ラップワイヤーは「destCh (部品側でPicoを通り過ぎたあとの縦線位置)」を別プールで採番。
+    const normalWires = wires.filter(w => !w.wrap);
+    const wrapWires   = wires.filter(w =>  w.wrap);
+    assignChannels(normalWires.filter(w => w.side === 'right'));
+    assignChannels(normalWires.filter(w => w.side === 'left'));
+
+    // 通常ワイヤーが使うチャンネル数 (各サイド) → ラップワイヤーは外側に詰める
+    const maxCh = arr => arr.reduce((m, w) => Math.max(m, w.channelIdx || 0), 0);
+    const normalRightCount = maxCh(normalWires.filter(w => w.side === 'right'));
+    const normalLeftCount  = maxCh(normalWires.filter(w => w.side === 'left'));
+
+    // ラップワイヤーを「上回り」「下回り」に分類してトラックyを割当
+    const picoMidY = PY + PH / 2;
+    const topWraps = [], botWraps = [];
+    wrapWires.forEach(w => {
+      const mid = (w.y1 + w.y2) / 2;
+      (mid < picoMidY ? topWraps : botWraps).push(w);
+    });
+    // トラック割当: 上回りは y が小さい順、下回りは y が大きい順 (Picoから順に外へ離す)
+    topWraps.sort((a, b) => Math.min(a.y1, a.y2) - Math.min(b.y1, b.y2));
+    botWraps.sort((a, b) => Math.max(b.y1, b.y2) - Math.max(a.y1, a.y2));
+    topWraps.forEach((w, i) => { w.trackY = PY - 12 - i * 12; });
+    botWraps.forEach((w, i) => { w.trackY = PY + PH + 12 + i * 12; });
+
+    // ラップワイヤー: 部品側の縦線位置 (destCh) を採番。通常チャンネルの外側を使う。
+    // 同一 Pico ピンから出るラップワイヤーは同じ destCh を共有 (トランク化)。
+    const wrapGroup = new Map();
+    wrapWires.forEach(w => {
+      const key = `${w.x1}:${w.y1}:${w.compSide}`;
+      if (!wrapGroup.has(key)) wrapGroup.set(key, []);
+      wrapGroup.get(key).push(w);
+    });
+    const wrapGroupsLeft  = [];
+    const wrapGroupsRight = [];
+    wrapGroup.forEach(wires => {
+      const minY = Math.min(...wires.map(w => w.y2));
+      (wires[0].compSide === 'left' ? wrapGroupsLeft : wrapGroupsRight)
+        .push({ wires, minY });
+    });
+    wrapGroupsLeft.sort((a, b) => a.minY - b.minY);
+    wrapGroupsRight.sort((a, b) => a.minY - b.minY);
+    wrapGroupsLeft.forEach((g, i) => {
+      const dest = PX - CH_STEP * (normalLeftCount + i + 1);
+      g.wires.forEach(w => { w.destCh = dest; });
+    });
+    wrapGroupsRight.forEach((g, i) => {
+      const dest = PX + PW + CH_STEP * (normalRightCount + i + 1);
+      g.wires.forEach(w => { w.destCh = dest; });
+    });
+
+    // ── Pass 3: 描画 ──
+    wires.forEach(w => {
+      let pathD;
+      const wov = wireOverrides[w.wireId];
+      const chDx = (wov && typeof wov.chDx === 'number') ? wov.chDx : 0;
+      let chForData;
+      if (!w.wrap) {
+        // channel は部品手前 (chBaseX 起点) に置く。
+        // これで Pico → 部品手前まで水平に長く伸び、最後だけ縦に曲がる L 字風になる。
+        const base = w.chBaseX != null ? w.chBaseX : w.x1;
+        const ch = (w.side === 'right'
+          ? base - CH_STEP * w.channelIdx
+          : base + CH_STEP * w.channelIdx) + chDx;
+        chForData = ch;
+        pathD = wirePath(w.x1, w.y1, ch, w.x2, w.y2);
+      } else {
+        // M(x1,y1) V(trackY) H(destCh) V(y2) H(x2)
+        const destCh = w.destCh + chDx;
+        chForData = destCh;
+        pathD = `M${w.x1},${w.y1} V${w.trackY} H${destCh} V${w.y2} H${w.x2}`;
+      }
+      // cv-wire でラップして data-* に再計算用パラメータを埋め込む。
+      // hit-path は不可視で太いストロークを持ち、クリック判定を広く取る。
+      const trackYAttr = w.wrap ? ` data-track-y="${w.trackY}"` : '';
+      els.push(
+        `<g class="cv-wire" data-wire-id="${w.wireId}" data-x1="${w.x1}" data-y1="${w.y1}" data-x2="${w.x2}" data-y2="${w.y2}" data-wrap="${w.wrap ? 1 : 0}" data-ch="${chForData}"${trackYAttr}>` +
+        `<path class="cv-wire-hit" d="${pathD}" fill="none" stroke="transparent" stroke-width="14" pointer-events="stroke"/>` +
+        `<path class="cv-wire-line" d="${pathD}" fill="none" stroke="${w.color}" stroke-width="2.2" stroke-linecap="square" opacity="0.92" pointer-events="none"/>` +
+        `</g>`
+      );
+      wireCount++;
     });
 
     // Pico
     els.push(buildPicoSVG(onboardLedOn));
 
-    // コンポーネント
+    // コンポーネント (cv-comp クラスでラップしてドラッグ識別子を持たせる)
     comps.forEach(comp => {
       const sym = SYM[comp.type];
-      if (sym) els.push(sym.draw(comp.cx, comp.cy));
+      if (!sym) return;
+      els.push(`<g class="cv-comp" data-comp-id="${comp.compId}">${sym.draw(comp.cx, comp.cy, comp.compSide)}</g>`);
     });
 
     // ───── エラーオーバーレイ ─────

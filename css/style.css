@@ -474,6 +474,34 @@ h1 {
   grid-row: 1;
 }
 
+/* 配線図プレビュー (MicroPython モード時の左下) */
+.main.game-layout #circuit-preview-area {
+  display: flex !important;
+  flex-direction: column;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.main.game-layout #circuit-preview-area #circuit-preview-svg {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.main.game-layout #circuit-preview-area #circuit-preview-svg svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+}
+#circuit-preview-svg:hover {
+  outline: 1px solid rgba(104, 211, 145, 0.4);
+}
+/* 配線図モーダル内: 配線ヒットエリアの操作性 */
+#circuit-svg-wrap .cv-wire { cursor: ew-resize; }
+#circuit-svg-wrap .cv-wire:hover .cv-wire-line { stroke-width: 3.2; opacity: 1; }
+
 /* ===== Blockly ツールボックス上書き ===== */
 .blocklyToolboxDiv {
   background: #080e08 !important;
