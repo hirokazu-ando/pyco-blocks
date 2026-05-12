@@ -5301,12 +5301,34 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', syncMainViewportHeight);
   syncMainViewportHeight();
 
+  // ===== Blockly 初期表示ズームをビューポート幅に合わせる =====
+  // ツールボックスが横幅で隠れる問題を回避。初回のみ実行し、以降の手動ズームは尊重する
+  function autoFitInitialZoom() {
+    if (!workspace) return;
+    const blocklyDiv = document.getElementById('blockly-div');
+    if (!blocklyDiv) return;
+    const w = blocklyDiv.getBoundingClientRect().width;
+    if (w <= 0) return;
+    let scale;
+    if (w >= 1400)      scale = 1.0;
+    else if (w >= 1100) scale = 0.9;
+    else if (w >= 900)  scale = 0.8;
+    else if (w >= 700)  scale = 0.7;
+    else if (w >= 500)  scale = 0.6;
+    else                scale = 0.5;
+    workspace.setScale(scale);
+    Blockly.svgResize(workspace);
+  }
+
   // ===== 初期化 =====
   Tutorial.init();
   // URLパラメータ ?mode=micropython でモードを指定できる（省略時は python）
   const _urlParams = new URLSearchParams(window.location.search);
   const _urlMode = _urlParams.get('mode');
   applyMode(_urlMode === 'micropython' ? 'micropython' : (_urlMode === 'game' ? 'game' : 'python'), false);
+
+  // モード適用後にレイアウトが落ち着いてからオートフィット
+  requestAnimationFrame(() => requestAnimationFrame(autoFitInitialZoom));
 
   // URLパラメータ ?src=path/to/file.xml でワークスペースにXMLを自動読み込み
   // ルートが <project> ならマルチファイルとして展開、 <xml> なら従来通り単一ロード
