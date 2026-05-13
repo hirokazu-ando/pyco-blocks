@@ -105,7 +105,10 @@
         <div class="game-area-resize-handle" id="circuit-preview-resize-handle"></div>
         <div id="circuit-preview-header" style="background:#1a202c; color:#68d391; font-weight:bold; font-size:0.88em; padding:4px 8px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2d3748;">
           <span>実態配線図プレビュー</span>
-          <span id="circuit-preview-summary" style="color:#718096; font-weight:normal; font-size:0.85em;"></span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="circuit-preview-summary" style="color:#718096; font-weight:normal; font-size:0.85em;"></span>
+            <button id="btn-circuit-collapse" title="プレビューを折りたたむ" style="background:#2d3748; border:1px solid #4a5568; color:#a0aec0; cursor:pointer; font-size:0.78em; padding:2px 8px; border-radius:3px; line-height:1.5; white-space:nowrap;">非表示 ▼</button>
+          </div>
         </div>
         <div id="circuit-preview-svg" style="flex:1; overflow:hidden; background:#0d1117; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="クリックで拡大表示"></div>
       </div>
@@ -1748,7 +1751,7 @@
   <script src="js/tutorials.js"></script>
   <script src="js/serial.js"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
-  <script src="js/circuit_viewer.js?v=20260512d"></script>
+  <script src="js/circuit_viewer.js?v=20260513h"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260427c"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
@@ -1768,7 +1771,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260512g"></script>
+  <script src="js/app.js?v=20260513i"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">

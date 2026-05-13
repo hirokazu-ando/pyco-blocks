@@ -4,7 +4,10 @@
   'use strict';
 
   // ===== Pico レイアウト定数 =====
-  let PX = 110; const PY = 30, PW = 88, PP = 19, PC = 20;
+  // PX/PY は自動配置 + ユーザドラッグオフセット で動的に変動する
+  // PW は実際の Pi Pico の縦横比 (21:51 ≈ 1:2.4) に近づけるため広めに
+  let PX = 110, PY = 30;
+  const PW = 130, PP = 19, PC = 20;
   const CH_STEP = 18; // チャンネル間隔（広めにとり交差視認性を確保）
   const PH = (PC - 1) * PP + 24;
 
@@ -114,13 +117,13 @@
   function sideStubs(cx, cy, side, bodyW, dys, labels) {
     const edgeX  = side === 'right' ? cx - bodyW : cx + bodyW;
     const sdir   = side === 'right' ? -1 : 1;
-    const stubX  = edgeX + sdir * 8;
+    const padX   = edgeX + sdir * 8;   // 配線接続点(円)はボード端より外側
     const lblX   = edgeX + sdir * 12;
     const anchor = side === 'right' ? 'end' : 'start';
     return dys.map((dy, i) => {
       const py = cy + dy;
-      return `<circle cx="${edgeX}" cy="${py}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
-  <line x1="${edgeX}" y1="${py}" x2="${stubX}" y2="${py}" stroke="#888" stroke-width="1.5"/>
+      return `<line x1="${edgeX}" y1="${py}" x2="${padX}" y2="${py}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${padX}" cy="${py}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
   <text x="${lblX}" y="${py+4}" text-anchor="${anchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">${labels[i]}</text>`;
     }).join('\n  ');
   }
@@ -129,56 +132,87 @@
   const SYM = {
 
     // ── LED (Wokwi wokwi-led, MIT © 2020 Uri Shaked) + 直列抵抗 ─
+    // バルブを 90° 回転して脚を水平に向け、リード/抵抗/ピンを脚先端に直結
     LED: {
-      pins: { A: { dx: -58, dy: -8 }, C: { dx: -30, dy: 8 } },
+      pins: { A: { dx: -58, dy: -5 }, C: { dx: -30, dy: 5 } },
       draw(cx, cy, side = 'right') {
-        const sx = cx - 22, sy = cy - 25;
         // sdir はピンが伸びる向き (right側部品は左へ、left側部品は右へ)
         const sdir = side === 'right' ? -1 : 1;
-        const bodyEdge = cx + sdir * 22;
-        const resNear  = cx + sdir * 30;
-        const resFar   = cx + sdir * 50;
-        const aPinX    = cx + sdir * 58;
-        const resX     = Math.min(resNear, resFar);
-        const resW     = Math.abs(resFar - resNear);
+        // バルブ SVG を rotate(90) で横倒し → 脚先端は (cx-19.4, cy∓5.2) 付近
+        // left 側はさらに x=cx でミラーすることで脚を右向きに反転
+        const sx = cx - 22, sy = cy - 25;
+        const rotateXform = `rotate(90 ${cx} ${cy})`;
+        const bulbXform = side === 'left'
+          ? `translate(${cx * 2} 0) scale(-1 1) ${rotateXform}`
+          : rotateXform;
+        // 回転後の脚先端 (アノード=上側, カソード=下側)
+        const legTipX = cx + sdir * 19;
+        const aTipY = cy - 5;
+        const cTipY = cy + 5;
+        // 直列抵抗 & ピン位置
+        const resNear = cx + sdir * 30;
+        const resFar  = cx + sdir * 50;
+        const aPinX   = cx + sdir * 58;
+        const cPinX   = cx + sdir * 30;
+        const resX    = Math.min(resNear, resFar);
+        const resW    = Math.abs(resFar - resNear);
         const labelAnchor = side === 'right' ? 'end' : 'start';
         return `<g>
-  <svg x="${sx}" y="${sy}" width="44" height="50" viewBox="-10 -5 35.456 39.618" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2.5099" y="20.382" width="2.1514" height="9.8273" fill="#8c8c8c"/>
-    <path d="m12.977 30.269c0-1.1736-0.86844-2.5132-1.8916-3.4024-0.41616-0.3672-1.1995-1.0015-1.1995-1.4249v-5.4706h-2.1614v5.7802c0 1.0584 0.94752 1.8785 1.9462 2.7482 0.44424 0.37584 1.3486 1.2496 1.3486 1.7694" fill="#8c8c8c"/>
-    <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" opacity=".3"/>
-    <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" fill="#e6e6e6" opacity=".5"/>
-    <path d="m14.173 13.001v3.1054c0 2.7389-3.1658 4.9651-7.0855 4.9651-3.9125 2e-5 -7.0877-2.219-7.0877-4.9651v4.6296c1.4738 1.6517 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8586l-4e-5 -1.5235c-7e-4 -1.1419-0.4744-2.2032-1.283-3.1054z" fill="#d1d1d1" opacity=".9"/>
-    <polygon points="2.2032 16.107 3.1961 16.107 3.1961 13.095 6.0156 13.095 10.012 8.8049 3.407 8.8049 2.2032 9.648" fill="#666"/>
-    <polygon points="11.215 9.0338 7.4117 13.095 11.06 13.095 11.06 16.107 11.974 16.107 11.974 8.5241 10.778 8.5241" fill="#666"/>
-    <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" fill="#e53935" opacity=".65"/>
-    <path d="m10.388 3.7541 1.4364-0.2736c-0.84168-1.1318-2.0822-1.9577-3.5417-2.2385l0.25416 1.0807c0.76388 0.27072 1.4068 0.78048 1.8511 1.4314z" fill="#fff" opacity=".5"/>
-    <path d="m0.76824 19.926v1.5199c0.64872 0.5292 1.4335 0.97632 2.3076 1.3169v-1.525c-0.8784-0.33624-1.6567-0.78194-2.3076-1.3118z" fill="#fff" opacity=".5"/>
-  </svg>
-  <!-- アノード (A): 直列抵抗 (ボディ→リード→抵抗→リード→ピン) -->
-  <line x1="${bodyEdge}" y1="${cy-8}" x2="${resNear}" y2="${cy-8}" stroke="#888" stroke-width="1.5"/>
-  <rect x="${resX}" y="${cy-12}" width="${resW}" height="8" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="2"/>
-  <line x1="${resX + resW * 0.25}" y1="${cy-12}" x2="${resX + resW * 0.25}" y2="${cy-4}" stroke="#8a6030" stroke-width="1"/>
-  <line x1="${resX + resW * 0.5}"  y1="${cy-12}" x2="${resX + resW * 0.5}"  y2="${cy-4}" stroke="#8a6030" stroke-width="1"/>
-  <line x1="${resX + resW * 0.75}" y1="${cy-12}" x2="${resX + resW * 0.75}" y2="${cy-4}" stroke="#8a6030" stroke-width="1"/>
-  <line x1="${resFar}" y1="${cy-8}" x2="${aPinX}" y2="${cy-8}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${aPinX}" cy="${cy-8}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
-  <text x="${aPinX + sdir * 4}" y="${cy-4}" text-anchor="${labelAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">A</text>
-  <!-- カソード (C): 通常スタブ -->
-  ${sideStubs(cx, cy, side, 22, [8], ['C'])}
-  <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">LED</text>
+  <g transform="${bulbXform}">
+    <svg x="${sx}" y="${sy}" width="44" height="50" viewBox="-10 -5 35.456 39.618" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2.5099" y="20.382" width="2.1514" height="9.8273" fill="#8c8c8c"/>
+      <path d="m12.977 30.269c0-1.1736-0.86844-2.5132-1.8916-3.4024-0.41616-0.3672-1.1995-1.0015-1.1995-1.4249v-5.4706h-2.1614v5.7802c0 1.0584 0.94752 1.8785 1.9462 2.7482 0.44424 0.37584 1.3486 1.2496 1.3486 1.7694" fill="#8c8c8c"/>
+      <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" opacity=".3"/>
+      <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" fill="#e6e6e6" opacity=".5"/>
+      <path d="m14.173 13.001v3.1054c0 2.7389-3.1658 4.9651-7.0855 4.9651-3.9125 2e-5 -7.0877-2.219-7.0877-4.9651v4.6296c1.4738 1.6517 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8586l-4e-5 -1.5235c-7e-4 -1.1419-0.4744-2.2032-1.283-3.1054z" fill="#d1d1d1" opacity=".9"/>
+      <polygon points="2.2032 16.107 3.1961 16.107 3.1961 13.095 6.0156 13.095 10.012 8.8049 3.407 8.8049 2.2032 9.648" fill="#666"/>
+      <polygon points="11.215 9.0338 7.4117 13.095 11.06 13.095 11.06 16.107 11.974 16.107 11.974 8.5241 10.778 8.5241" fill="#666"/>
+      <path d="m14.173 13.001v-5.9126c0-3.9132-3.168-7.0884-7.0855-7.0884-3.9125 0-7.0877 3.1694-7.0877 7.0884v13.649c1.4738 1.651 4.0968 2.7526 7.0877 2.7526 4.6195 0 8.3686-2.6179 8.3686-5.8594v-1.5235c-7.4e-4 -1.1426-0.47444-2.2039-1.283-3.1061z" fill="#e53935" opacity=".65"/>
+      <path d="m10.388 3.7541 1.4364-0.2736c-0.84168-1.1318-2.0822-1.9577-3.5417-2.2385l0.25416 1.0807c0.76388 0.27072 1.4068 0.78048 1.8511 1.4314z" fill="#fff" opacity=".5"/>
+      <path d="m0.76824 19.926v1.5199c0.64872 0.5292 1.4335 0.97632 2.3076 1.3169v-1.525c-0.8784-0.33624-1.6567-0.78194-2.3076-1.3118z" fill="#fff" opacity=".5"/>
+    </svg>
+  </g>
+  <!-- アノード (A): 脚先端→リード→直列抵抗→リード→ピン -->
+  <line x1="${legTipX}" y1="${aTipY}" x2="${resNear}" y2="${aTipY}" stroke="#888" stroke-width="1.5"/>
+  <rect x="${resX}" y="${aTipY - 4}" width="${resW}" height="8" fill="#c8a86e" stroke="#8a7040" stroke-width="1" rx="2"/>
+  <line x1="${resX + resW * 0.25}" y1="${aTipY - 4}" x2="${resX + resW * 0.25}" y2="${aTipY + 4}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${resX + resW * 0.5}"  y1="${aTipY - 4}" x2="${resX + resW * 0.5}"  y2="${aTipY + 4}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${resX + resW * 0.75}" y1="${aTipY - 4}" x2="${resX + resW * 0.75}" y2="${aTipY + 4}" stroke="#8a6030" stroke-width="1"/>
+  <line x1="${resFar}" y1="${aTipY}" x2="${aPinX}" y2="${aTipY}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${aPinX}" cy="${aTipY}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${aPinX + sdir * 4}" y="${aTipY + 4}" text-anchor="${labelAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">A</text>
+  <!-- カソード (C): 脚先端→スタブ→ピン -->
+  <line x1="${legTipX}" y1="${cTipY}" x2="${cPinX}" y2="${cTipY}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${cPinX}" cy="${cTipY}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${cPinX + sdir * 4}" y="${cTipY + 4}" text-anchor="${labelAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">C</text>
+  <text x="${cx}" y="${cy + 26}" text-anchor="middle" class="cv-lbl">LED</text>
 </g>`;
       }
     },
 
     // ── タクタイルスイッチ (Wokwi wokwi-pushbutton, MIT © 2020 Uri Shaked) ──
+    // 小型化(36×36)+両ピンPico側に集約
     BTN: {
-      pins: { VCC: { dx: -38, dy: 0 }, SIG: { dx: 38, dy: 0 } },
-      draw(cx, cy) {
-        // viewBox="-3 0 18 12" → 90×60px (scale=5)
-        const sx = cx - 45, sy = cy - 30;
+      pins: { VCC: { dx: -34, dy: -8 }, SIG: { dx: -34, dy: 8 } },
+      draw(cx, cy, side = 'right') {
+        const sdir = side === 'right' ? -1 : 1;
+        const sx = cx - 18, sy = cy - 18;
+        // 本体SVGの向きは固定(正方形なので回転不要)
+        const pinSpec = [
+          { lbl: 'VCC', dy: -8 },
+          { lbl: 'SIG', dy:  8 },
+        ];
+        const tipX = cx + sdir * 18;
+        const padX = cx + sdir * 34;
+        const labelAnchor = side === 'right' ? 'end' : 'start';
+        const stubs = pinSpec.map(({lbl, dy}) => {
+          const y = cy + dy;
+          return `<line x1="${tipX}" y1="${y}" x2="${padX}" y2="${y}" stroke="#c8a86e" stroke-width="2.5"/>
+  <circle cx="${tipX}" cy="${y}" r="2" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${tipX - sdir * 4}" y="${y - 3}" text-anchor="${labelAnchor}" font-size="9" fill="#b0bec5" font-family="sans-serif">${lbl}</text>`;
+        }).join('\n  ');
         return `<g>
-  <svg x="${sx}" y="${sy}" width="90" height="60" viewBox="-3 0 18 12" xmlns="http://www.w3.org/2000/svg">
+  <svg x="${sx}" y="${sy}" width="36" height="36" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
     <rect x="0" y="0" width="12" height="12" rx=".44" ry=".44" fill="#464646"/>
     <rect x=".75" y=".75" width="10.5" height="10.5" rx=".211" ry=".211" fill="#eaeaea"/>
     <g fill="#1b1b1b">
@@ -187,89 +221,116 @@
       <circle cx="10.161" cy="10.197" r=".37"/>
       <circle cx="1.767" cy="10.197" r=".37"/>
     </g>
-    <rect x="12.0" y="5.1" width="3.4" height="1.8" fill="#aaa" rx=".2"/>
-    <rect x="-3.4" y="5.1" width="3.4" height="1.8" fill="#aaa" rx=".2"/>
     <circle cx="6" cy="6" r="3.822" fill="#cc2222"/>
     <circle cx="6" cy="6" r="2.9" fill="#cc2222" stroke="#2f2f2f" stroke-opacity=".47" stroke-width=".08"/>
   </svg>
-  <!-- ピンラベル -->
-  <text x="${cx-38}" y="${cy-34}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">VCC</text>
-  <text x="${cx+38}" y="${cy-34}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">SIG</text>
-  <text x="${cx}" y="${cy+48}" text-anchor="middle" class="cv-lbl">Button</text>
+  ${stubs}
+  <text x="${cx}" y="${cy+30}" text-anchor="middle" class="cv-lbl">Button</text>
 </g>`;
       }
     },
 
     // ── ポテンショメーター (Wokwi wokwi-potentiometer, MIT © 2020 Uri Shaked) ──
+    // 90°回転でピンを横向きに（元SVGのピンは底部横並び → rotate(90)で左側縦並びに）
+    // 回転後ピン位置計算: rotate(90 cx cy) → GND(cx-32,cy-9) SIG(cx-32,cy+1) VCC(cx-32,cy+11)
     POT: {
-      pins: { VCC: { dx: -48, dy: -16 }, SIG: { dx: -48, dy: 0 }, GND: { dx: -48, dy: 16 } },
+      pins: { GND: { dx: -32, dy: -9 }, SIG: { dx: -32, dy: 1 }, VCC: { dx: -32, dy: 11 } },
       draw(cx, cy, side = 'right') {
         const sx = cx - 40, sy = cy - 40;
+        const rotAngle = side === 'right' ? 90 : -90;
+        const dys = side === 'right' ? [-9, 1, 11] : [9, -1, -11];
         return `<g>
-  <svg x="${sx}" y="${sy}" width="80" height="80" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-    <rect x=".15" y=".15" width="19.5" height="19.5" ry="1.23" fill="#045881" stroke="#045881" stroke-width=".30"/>
-    <rect x="5.4" y=".70" width="9.1" height="1.9" fill="#ccdae3" stroke-width=".15"/>
-    <ellipse cx="9.95" cy="8.06" rx="7.27" ry="7.43" fill="#e4e8eb" stroke-width=".15"/>
-    <ellipse cx="9.95" cy="8.06" rx="6.60" ry="6.58" fill="#c3c2c3" stroke-width=".15"/>
-    <rect x="9.79" y="2" width=".42" height="3.1" stroke-width=".15" fill="#333"/>
-    <g fill="#b3b1b0" stroke-width=".15">
-      <ellipse cx="7.68" cy="18" rx=".61" ry=".63"/>
-      <ellipse cx="10.22" cy="18" rx=".61" ry=".63"/>
-      <ellipse cx="12.76" cy="18" rx=".61" ry=".63"/>
-    </g>
-    <rect x="6" y="17" width="8" height="2" fill-opacity="0" stroke="#fff" stroke-width=".30"/>
-    <g stroke-width=".15" fill="#ccdae3" font-size="1.3" font-family="sans-serif">
-      <text x="6.1" y="16.6">GND</text>
-      <text x="9.0" y="16.63">SIG</text>
-      <text x="11.4" y="16.59">VCC</text>
-    </g>
-    <g fill="#fff" stroke-width=".15">
-      <ellipse cx="1.68" cy="1.81" rx=".99" ry=".96"/>
-      <ellipse cx="1.48" cy="18.37" rx=".99" ry=".96"/>
-      <ellipse cx="17.97" cy="18.47" rx=".99" ry=".96"/>
-      <ellipse cx="18.07" cy="1.91" rx=".99" ry=".96"/>
-    </g>
-  </svg>
-  ${sideStubs(cx, cy, side, 40, [-16, 0, 16], ['VCC', 'SIG', 'GND'])}
-  <text x="${cx}" y="${cy-44}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
+  <g transform="rotate(${rotAngle} ${cx} ${cy})">
+    <svg x="${sx}" y="${sy}" width="80" height="80" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <rect x=".15" y=".15" width="19.5" height="19.5" ry="1.23" fill="#045881" stroke="#045881" stroke-width=".30"/>
+      <rect x="5.4" y=".70" width="9.1" height="1.9" fill="#ccdae3" stroke-width=".15"/>
+      <ellipse cx="9.95" cy="8.06" rx="7.27" ry="7.43" fill="#e4e8eb" stroke-width=".15"/>
+      <ellipse cx="9.95" cy="8.06" rx="6.60" ry="6.58" fill="#c3c2c3" stroke-width=".15"/>
+      <rect x="9.79" y="2" width=".42" height="3.1" stroke-width=".15" fill="#333"/>
+      <g fill="#b3b1b0" stroke-width=".15">
+        <ellipse cx="7.68" cy="18" rx=".61" ry=".63"/>
+        <ellipse cx="10.22" cy="18" rx=".61" ry=".63"/>
+        <ellipse cx="12.76" cy="18" rx=".61" ry=".63"/>
+      </g>
+      <rect x="6" y="17" width="8" height="2" fill-opacity="0" stroke="#fff" stroke-width=".30"/>
+      <g stroke-width=".15" fill="#ccdae3" font-size="1.3" font-family="sans-serif">
+        <text x="6.1" y="16.6">GND</text>
+        <text x="9.0" y="16.63">SIG</text>
+        <text x="11.4" y="16.59">VCC</text>
+      </g>
+      <g fill="#fff" stroke-width=".15">
+        <ellipse cx="1.68" cy="1.81" rx=".99" ry=".96"/>
+        <ellipse cx="1.48" cy="18.37" rx=".99" ry=".96"/>
+        <ellipse cx="17.97" cy="18.47" rx=".99" ry=".96"/>
+        <ellipse cx="18.07" cy="1.91" rx=".99" ry=".96"/>
+      </g>
+    </svg>
+  </g>
+  ${sideStubs(cx, cy, side, 32, dys, ['GND', 'SIG', 'VCC'])}
+  <text x="${cx}" y="${cy + 44}" text-anchor="middle" class="cv-lbl">Potentiometer</text>
 </g>`;
       }
     },
 
     // ── パッシブブザー (Wokwi wokwi-buzzer, MIT © 2020 Uri Shaked) ──
+    // 90°回転で端子を横向きに。SVGを56×66に縮小
     BUZZ: {
-      pins: { SIG: { dx: -42, dy: -8 }, GND: { dx: -42, dy: 8 } },
+      pins: { SIG: { dx: -50, dy: -4 }, GND: { dx: -50, dy: 4 } },
       draw(cx, cy, side = 'right') {
-        const sx = cx - 34, sy = cy - 40;
+        const sdir = side === 'right' ? -1 : 1;
+        const sx = cx - 28, sy = cy - 33;
+        const rotateXform = `rotate(90 ${cx} ${cy})`;
+        const bodyXform = side === 'left'
+          ? `translate(${cx * 2} 0) scale(-1 1) ${rotateXform}`
+          : rotateXform;
+        const pinSpec = [
+          { lbl: 'SIG', dy: -4 },
+          { lbl: 'GND', dy:  4 },
+        ];
+        const tipX = cx + sdir * 33;
+        const padX = cx + sdir * 50;
+        const labelAnchor = side === 'right' ? 'end' : 'start';
+        const stubs = pinSpec.map(({lbl, dy}) => {
+          const y = cy + dy;
+          return `<line x1="${tipX}" y1="${y}" x2="${padX}" y2="${y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${padX}" cy="${y}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${padX + sdir * 4}" y="${y + 3}" text-anchor="${labelAnchor}" font-size="9" fill="#b0bec5" font-family="sans-serif">${lbl}</text>`;
+        }).join('\n  ');
         return `<g>
-  <svg x="${sx}" y="${sy}" width="68" height="80" viewBox="0 0 17 20" xmlns="http://www.w3.org/2000/svg">
-    <path d="m7.23 16.5v3.5" fill="none" stroke="#8c8c8c" stroke-width=".5"/>
-    <path d="m9.77 16.5v3.5" fill="#f00" stroke="#f00" stroke-width=".5"/>
-    <g stroke="#444">
-      <ellipse cx="8.5" cy="8.5" rx="8.15" ry="8.15" fill="#1a1a1a" stroke-width=".7"/>
-      <circle cx="8.5" cy="8.5" r="6.35" fill="none" stroke-width=".3" style="paint-order:normal"/>
-      <circle cx="8.5" cy="8.5" r="4.35" fill="none" stroke-width=".3" style="paint-order:normal"/>
-    </g>
-    <circle cx="8.5" cy="8.5" r="1.37" fill="#ccc" stroke="#444" stroke-width=".25"/>
-    <text x="3.5" y="10" font-size="2.8" fill="#e53935" font-weight="bold" font-family="sans-serif">+</text>
-  </svg>
-  ${sideStubs(cx, cy, side, 34, [-8, 8], ['SIG', 'GND'])}
-  <text x="${cx}" y="${cy-44}" text-anchor="middle" class="cv-lbl">Buzzer</text>
+  <g transform="${bodyXform}">
+    <svg x="${sx}" y="${sy}" width="56" height="66" viewBox="0 0 17 20" xmlns="http://www.w3.org/2000/svg">
+      <path d="m7.23 16.5v3.5" fill="none" stroke="#8c8c8c" stroke-width=".5"/>
+      <path d="m9.77 16.5v3.5" fill="#f00" stroke="#f00" stroke-width=".5"/>
+      <g stroke="#444">
+        <ellipse cx="8.5" cy="8.5" rx="8.15" ry="8.15" fill="#1a1a1a" stroke-width=".7"/>
+        <circle cx="8.5" cy="8.5" r="6.35" fill="none" stroke-width=".3" style="paint-order:normal"/>
+        <circle cx="8.5" cy="8.5" r="4.35" fill="none" stroke-width=".3" style="paint-order:normal"/>
+      </g>
+      <circle cx="8.5" cy="8.5" r="1.37" fill="#ccc" stroke="#444" stroke-width=".25"/>
+      <text x="3.5" y="10" font-size="2.8" fill="#e53935" font-weight="bold" font-family="sans-serif">+</text>
+    </svg>
+  </g>
+  ${stubs}
+  <text x="${cx}" y="${cy + 28}" text-anchor="middle" class="cv-lbl">Buzzer</text>
 </g>`;
       }
     },
 
     // ── SG90 サーボ (Wokwi wokwi-servo, MIT © 2020 Uri Shaked) ──
+    // ピン位置: connectorface cx-61, pad cx-69; dy=-6(GND), 0(VCC外部電源), +6(PWM)
     SERVO: {
-      pins: { GND: { dx: -61, dy: -19 }, VCC: { dx: -61, dy: 0 }, PWM: { dx: -61, dy: 19 } },
-      draw(cx, cy) {
-        // Wokwi viewBox="0 0 170.08 119.55" → 130×72px
+      pins: { GND: { dx: -69, dy: -6 }, VCC: { dx: -69, dy: 0 }, PWM: { dx: -69, dy: 6 } },
+      draw(cx, cy, side = 'right') {
+        const sdir = side === 'right' ? -1 : 1;
         const sx = cx - 65, sy = cy - 36;
         const pin = (x, y) =>
           `<g transform="translate(${x},${y})">
             <rect x="0" y="-1.91" width="3.72" height="3.71" fill="#111"/>
             <rect fill="#ccc" x="0.33" y="-1.23" width="3.04" height="2.46" rx=".15"/>
           </g>`;
+        // 外部電源アイコン: VCCパッドの外側
+        const vccPadX = cx + sdir * 69;
+        const iconX = vccPadX + sdir * 16;
         return `<g>
   <svg x="${sx}" y="${sy}" width="130" height="72" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
     <path fill="none" stroke="#b44200" stroke-width="2.7" d="m83.32,56.6c0,0-32.99,0.96-43.32,0-6.20,-0.58-10.60,-6.20-14.87,-6.31"/>
@@ -287,87 +348,139 @@
     <circle fill="gray" cx="91.467" cy="59.773" r="8.3729"/>
     <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
   </svg>
-  <!-- ピンラベル -->
-  <text x="${cx-61}" y="${cy-33}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">GND</text>
-  <text x="${cx-61}" y="${cy+14}" text-anchor="middle" font-size="11" fill="#b0bec5" font-family="sans-serif">VCC</text>
-  <text x="${cx-61}" y="${cy+33}" text-anchor="middle" font-size="11" fill="#f57c00" font-family="sans-serif">PWM</text>
-  <text x="${cx}" y="${cy+46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
+  <!-- 端子スタブ (GND / VCC / PWM) -->
+  ${sideStubs(cx, cy, side, 61, [-6, 0, 6], ['GND', 'VCC', 'PWM'])}
+  <!-- 外部電源アイコン (VCC) -->
+  <circle cx="${iconX}" cy="${cy}" r="9" fill="#ff8f00" stroke="#bf360c" stroke-width="1.5"/>
+  <text x="${iconX}" y="${cy + 4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold" font-family="sans-serif">V</text>
+  <line x1="${iconX - sdir * 9}" y1="${cy}" x2="${vccPadX}" y2="${cy}" stroke="#ff8f00" stroke-width="1.5"/>
+  <text x="${cx}" y="${cy + 46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
     },
 
     // ── HC-SR04 (Wokwi wokwi-hc-sr04, MIT © 2020 Uri Shaked) ──
+    // 90°回転で端子を横向きに。
+    // Picoピッチ(PP=19px=2.54mm)に合わせて PP/2.54≈7.48倍にスケールアップ。
+    // viewBox="0 0 45 25", ピンx=18.61〜26.23(間隔2.54unit), ピンy中間≈22unit
+    // 新サイズ: width=337, height=187
+    // sx: 足水平中心(22.42unit)がcxに来るよう cx-168
+    // sy: 足中間y_real=sy+164.6、rotate後tipX=cx-75 → sy=cy-112
     HCSR04: {
-      pins: { VCC: { dx: -53, dy: -24 }, TRIG: { dx: -53, dy: -8 }, ECHO: { dx: -53, dy: 8 }, GND: { dx: -53, dy: 24 } },
+      pins: { VCC: { dx: -95, dy: -28.5 }, TRIG: { dx: -95, dy: -9.5 }, ECHO: { dx: -95, dy: 9.5 }, GND: { dx: -95, dy: 28.5 } },
       draw(cx, cy, side = 'right') {
-        const sx = cx - 45, sy = cy - 25;
+        const sdir = side === 'right' ? -1 : 1;
+        const sx = cx - 168, sy = cy - 112;
+        const rotateXform = `rotate(90 ${cx} ${cy})`;
+        const bodyXform = side === 'left'
+          ? `translate(${cx * 2} 0) scale(-1 1) ${rotateXform}`
+          : rotateXform;
+        const pinSpec = [
+          { lbl: 'VCC',  dy: -28.5 },
+          { lbl: 'TRIG', dy:  -9.5 },
+          { lbl: 'ECHO', dy:   9.5 },
+          { lbl: 'GND',  dy:  28.5 },
+        ];
+        const tipX = cx + sdir * 75;
+        const padX = cx + sdir * 95;
+        const labelAnchor = side === 'right' ? 'end' : 'start';
+        const stubs = pinSpec.map(({lbl, dy}) => {
+          const y = cy + dy;
+          return `<line x1="${tipX}" y1="${y}" x2="${padX}" y2="${y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${padX}" cy="${y}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${padX + sdir * 4}" y="${y + 3}" text-anchor="${labelAnchor}" font-size="9" fill="#b0bec5" font-family="sans-serif">${lbl}</text>`;
+        }).join('\n  ');
         return `<g>
-  <svg x="${sx}" y="${sy}" width="90" height="50" viewBox="0 0 45 25" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <defs>
-      <pattern patternUnits="userSpaceOnUse" width="2" height="2" id="hcsr04cb">
-        <path d="M0 0h1v1H0zM1 1h1v1H1z"/>
-      </pattern>
-      <radialGradient id="hcsr04g" cx="8.96" cy="10.04" r="3.58" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#777" offset="0"/>
-        <stop stop-color="#b9b9b9" offset="1"/>
-      </radialGradient>
-      <g id="hcsr04su">
-        <circle cx="8.98" cy="10" r="8.61" fill="#dcdcdc"/>
-        <circle cx="8.98" cy="10" r="7.17" fill="#222"/>
-        <circle cx="8.98" cy="10" r="5.53" fill="#777"/>
-        <circle cx="8.98" cy="10" r="3.59" fill="url(#hcsr04g)"/>
-        <circle cx="8.99" cy="10" r=".277" fill="#777" opacity=".818"/>
-        <circle cx="8.98" cy="10" r="5.53" fill="url(#hcsr04cb)" opacity=".397"/>
+  <g transform="${bodyXform}">
+    <svg x="${sx}" y="${sy}" width="337" height="187" viewBox="0 0 45 25" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <pattern patternUnits="userSpaceOnUse" width="2" height="2" id="hcsr04cb">
+          <path d="M0 0h1v1H0zM1 1h1v1H1z"/>
+        </pattern>
+        <radialGradient id="hcsr04g" cx="8.96" cy="10.04" r="3.58" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#777" offset="0"/>
+          <stop stop-color="#b9b9b9" offset="1"/>
+        </radialGradient>
+        <g id="hcsr04su">
+          <circle cx="8.98" cy="10" r="8.61" fill="#dcdcdc"/>
+          <circle cx="8.98" cy="10" r="7.17" fill="#222"/>
+          <circle cx="8.98" cy="10" r="5.53" fill="#777"/>
+          <circle cx="8.98" cy="10" r="3.59" fill="url(#hcsr04g)"/>
+          <circle cx="8.99" cy="10" r=".277" fill="#777" opacity=".818"/>
+          <circle cx="8.98" cy="10" r="5.53" fill="url(#hcsr04cb)" opacity=".397"/>
+        </g>
+      </defs>
+      <path d="M0 0v20.948h45V0zm1.422.464a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zm41.956 0a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zM1.422 18.484a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zm41.956 0a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1z" fill="#456f93"/>
+      <use href="#hcsr04su"/>
+      <use href="#hcsr04su" x="27.12"/>
+      <rect ry="2.07" y=".626" x="17.111" height="4.139" width="10.272" fill="#878787" stroke="#424242" stroke-width=".368"/>
+      <g fill="black">
+        <rect x="17.87" y="18" ry=".568" width="2.25" height="2.271"/>
+        <rect x="20.41" y="18" ry=".568" width="2.25" height="2.271"/>
+        <rect x="22.95" y="18" ry=".568" width="2.25" height="2.271"/>
+        <rect x="25.49" y="18" ry=".568" width="2.25" height="2.271"/>
       </g>
-    </defs>
-    <path d="M0 0v20.948h45V0zm1.422.464a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zm41.956 0a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zM1.422 18.484a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1zm41.956 0a1 1 0 011 1 1 1 0 01-1 1 1 1 0 01-1-1 1 1 0 01.996-1z" fill="#456f93"/>
-    <use href="#hcsr04su"/>
-    <use href="#hcsr04su" x="27.12"/>
-    <rect ry="2.07" y=".626" x="17.111" height="4.139" width="10.272" fill="#878787" stroke="#424242" stroke-width=".368"/>
-    <g fill="black">
-      <rect x="17.87" y="18" ry=".568" width="2.25" height="2.271"/>
-      <rect x="20.41" y="18" ry=".568" width="2.25" height="2.271"/>
-      <rect x="22.95" y="18" ry=".568" width="2.25" height="2.271"/>
-      <rect x="25.49" y="18" ry=".568" width="2.25" height="2.271"/>
-    </g>
-    <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
-      <rect x="18.61" y="19" width=".75" height="6" rx=".2"/>
-      <rect x="21.15" y="19" width=".75" height="6" rx=".2"/>
-      <rect x="23.69" y="19" width=".75" height="6" rx=".2"/>
-      <rect x="26.23" y="19" width=".75" height="6" rx=".2"/>
-    </g>
-    <text font-size="2.2" fill="#e6e6e6" stroke-width=".055" x="17.6" y="8">HC-SR04</text>
-    <g transform="rotate(-90)" font-size="1.55" fill="#e6e6e6" stroke-width=".039" font-family="sans-serif">
-      <text x="-17.6" y="19.6">VCC</text>
-      <text x="-17.6" y="22.1">TRIG</text>
-      <text x="-17.6" y="24.6">ECHO</text>
-      <text x="-17.6" y="27.2">GND</text>
-    </g>
-  </svg>
-  ${sideStubs(cx, cy, side, 45, [-24, -8, 8, 24], ['VCC', 'TRIG', 'ECHO', 'GND'])}
-  <text x="${cx}" y="${cy-28}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
+      <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
+        <rect x="18.61" y="19" width=".75" height="6" rx=".2"/>
+        <rect x="21.15" y="19" width=".75" height="6" rx=".2"/>
+        <rect x="23.69" y="19" width=".75" height="6" rx=".2"/>
+        <rect x="26.23" y="19" width=".75" height="6" rx=".2"/>
+      </g>
+      <text font-size="2.2" fill="#e6e6e6" stroke-width=".055" x="17.6" y="8">HC-SR04</text>
+    </svg>
+  </g>
+  ${stubs}
+  <text x="${cx}" y="${cy + 185}" text-anchor="middle" class="cv-lbl">HC-SR04</text>
 </g>`;
       }
     },
 
     // ── DHT22 (Wokwi wokwi-dht22, MIT © 2020 Uri Shaked) ──
+    // 90°回転で端子を横向きに。Picoピッチ(PP=19px)に合わせてSVGを113×231にスケールアップ。
+    // 実物は4ピン: VCC / DATA / NC / GND。NC は未接続（パッドなし・薄色表示）。
     DHT22: {
-      pins: { VCC: { dx: -33, dy: -16 }, SIG: { dx: -33, dy: 0 }, GND: { dx: -33, dy: 16 } },
+      pins: { VCC: { dx: -95, dy: -28.5 }, SIG: { dx: -95, dy: -9.5 }, GND: { dx: -95, dy: 28.5 } },
       draw(cx, cy, side = 'right') {
-        const sx = cx - 25, sy = cy - 50;
+        const sdir = side === 'right' ? -1 : 1;
+        const sx = cx - 55, sy = cy - 156;
+        const rotateXform = `rotate(90 ${cx} ${cy})`;
+        const bodyXform = side === 'left'
+          ? `translate(${cx * 2} 0) scale(-1 1) ${rotateXform}`
+          : rotateXform;
+        const pinSpec = [
+          { lbl: 'VCC',  dy: -28.5 },
+          { lbl: 'DATA', dy:  -9.5 },
+          { lbl: 'NC',   dy:   9.5, nc: true },
+          { lbl: 'GND',  dy:  28.5 },
+        ];
+        const tipX = cx + sdir * 75;
+        const padX = cx + sdir * 95;
+        const labelAnchor = side === 'right' ? 'end' : 'start';
+        const stubs = pinSpec.map(({lbl, dy, nc}) => {
+          const y = cy + dy;
+          if (nc) {
+            return `<line x1="${tipX}" y1="${y}" x2="${padX}" y2="${y}" stroke="#555" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="${padX + sdir * 4}" y="${y + 3}" text-anchor="${labelAnchor}" font-size="9" fill="#555" font-family="sans-serif">${lbl}</text>`;
+          }
+          return `<line x1="${tipX}" y1="${y}" x2="${padX}" y2="${y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${padX}" cy="${y}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${padX + sdir * 4}" y="${y + 3}" text-anchor="${labelAnchor}" font-size="9" fill="#b0bec5" font-family="sans-serif">${lbl}</text>`;
+        }).join('\n  ');
         return `<g>
-  <svg x="${sx}" y="${sy}" width="50" height="102" viewBox="0 0 15.1 30.885" xmlns="http://www.w3.org/2000/svg">
-    <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
-      <rect x="3.57" y="23.885" width=".75" height="7" rx=".2"/>
-      <rect x="6.11" y="23.885" width=".75" height="7" rx=".2"/>
-      <rect x="8.65" y="23.885" width=".75" height="7" rx=".2"/>
-      <rect x="11.19" y="23.885" width=".75" height="7" rx=".2"/>
-    </g>
-    <path d="M15.05 23.995V5.033c0-.107-1.069-4.962-2.662-4.96L2.803.09C1.193.09.05 4.926.05 5.033v18.962c0 .107.086.192.192.192h14.616a.192.192 0 00.192-.192M7.615.948h.004c1.08 0 1.956.847 1.956 1.892s-.876 1.892-1.956 1.892-1.956-.847-1.956-1.892c0-1.044.873-1.89 1.952-1.892z" fill="#f2f2f2" stroke="#000" stroke-linecap="round" stroke-width=".1"/>
-    <text x="3.7" y="22.86" fill="#000" font-family="sans-serif" font-size="2.2" stroke-width=".05">DHT22</text>
-  </svg>
-  ${sideStubs(cx, cy, side, 25, [-16, 0, 16], ['VCC', 'SIG', 'GND'])}
-  <text x="${cx}" y="${cy-54}" text-anchor="middle" class="cv-lbl">DHT22</text>
+  <g transform="${bodyXform}">
+    <svg x="${sx}" y="${sy}" width="113" height="231" viewBox="0 0 15.1 30.885" xmlns="http://www.w3.org/2000/svg">
+      <g fill="#ccc" stroke-linecap="round" stroke-width=".21">
+        <rect x="3.57" y="23.885" width=".75" height="7" rx=".2"/>
+        <rect x="6.11" y="23.885" width=".75" height="7" rx=".2"/>
+        <rect x="8.65" y="23.885" width=".75" height="7" rx=".2"/>
+        <rect x="11.19" y="23.885" width=".75" height="7" rx=".2"/>
+      </g>
+      <path d="M15.05 23.995V5.033c0-.107-1.069-4.962-2.662-4.96L2.803.09C1.193.09.05 4.926.05 5.033v18.962c0 .107.086.192.192.192h14.616a.192.192 0 00.192-.192M7.615.948h.004c1.08 0 1.956.847 1.956 1.892s-.876 1.892-1.956 1.892-1.956-.847-1.956-1.892c0-1.044.873-1.89 1.952-1.892z" fill="#f2f2f2" stroke="#000" stroke-linecap="round" stroke-width=".1"/>
+      <text x="3.7" y="22.86" fill="#000" font-family="sans-serif" font-size="2.2" stroke-width=".05">DHT22</text>
+    </svg>
+  </g>
+  ${stubs}
+  <text x="${cx}" y="${cy + 70}" text-anchor="middle" class="cv-lbl">DHT22</text>
 </g>`;
       }
     },
@@ -438,56 +551,132 @@
     },
 
     // ── 28BYJ-48 + ULN2003 ─────────────────────────────
+    // Wokwi風: モーター軸オフセット・ULN2003基板に4ピンLED表示
     STEPPER: {
-      pins: { IN1: { dx: -56, dy: -24 }, IN2: { dx: -56, dy: -8 }, IN3: { dx: -56, dy: 8 }, IN4: { dx: -56, dy: 24 } },
+      pins: { IN1: { dx: -76, dy: -27 }, IN2: { dx: -76, dy: -9 }, IN3: { dx: -76, dy: 9 }, IN4: { dx: -76, dy: 27 } },
       draw(cx, cy, side = 'right') {
+        const sdir = side === 'right' ? -1 : 1;
+        // ULN2003基板: 幅60, 左端=cx-68(sideStubs tipXに一致), 右端=cx-8
+        const bx = cx - 68, by = cy - 29;
+        // 28BYJ-48: r=26, 中心cx+52 → 左端cx+26, 基板右端(cx-8)との間34pxのケーブル領域
+        const mcx = cx + 52, mcy = cy, mR = 26;
+        // 5本ワイヤー (28BYJ-48標準色: ピンク/赤/オレンジ/黄/青)
+        const wireColors = ['#e91e63', '#f44336', '#ff9800', '#ffeb3b', '#2196f3'];
+        const wires = wireColors.map((c, i) => {
+          const wy = cy + (i - 2) * 5;
+          return `<line x1="${bx + 62}" y1="${wy}" x2="${mcx - mR}" y2="${wy}" stroke="${c}" stroke-width="1.5" opacity="0.9"/>`;
+        }).join('\n  ');
         return `<g filter="url(#fDrop)">
-  <!-- ULN2003 基板 -->
-  <rect x="${cx-48}" y="${cy+6}"  width="96" height="28" fill="url(#gPcbBlue)" stroke="#0d47a1" stroke-width="1.5" rx="3"/>
-  <text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">ULN2003A</text>
-  <!-- モーター本体 (円形) -->
-  <circle cx="${cx}" cy="${cy-14}" r="34" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="2"/>
-  <!-- ギア外輪 -->
-  <circle cx="${cx}" cy="${cy-14}" r="28" fill="#1976d2" stroke="#1565c0" stroke-width="1"/>
-  <circle cx="${cx}" cy="${cy-14}" r="20" fill="#1565c0" stroke="#0d47a1" stroke-width="1"/>
-  <circle cx="${cx}" cy="${cy-14}" r="12" fill="#0d47a1" stroke="#0a3880" stroke-width="1"/>
-  <circle cx="${cx}" cy="${cy-14}" r="5"  fill="#082a6e"/>
-  <!-- シャフト -->
-  <rect x="${cx-3.5}" y="${cy-50}" width="7" height="14" fill="#b0bec5" stroke="#78909c" stroke-width="0.8" rx="2"/>
-  <!-- コネクタケーブル -->
-  <rect x="${cx-26}" y="${cy+2}" width="52" height="6" fill="#212121" stroke="#333" stroke-width="0.5" rx="1"/>
-  ${sideStubs(cx, cy, side, 48, [-24, -8, 8, 24], ['IN1', 'IN2', 'IN3', 'IN4'])}
-  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">Stepper (28BYJ-48)</text>
+  <!-- ULN2003 基板 (60×58) -->
+  <rect x="${bx}" y="${by}" width="60" height="58" fill="#1a4484" stroke="#0d2a6e" stroke-width="1.5" rx="3"/>
+  <circle cx="${bx + 5}"  cy="${by + 5}"  r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
+  <circle cx="${bx + 55}" cy="${by + 5}"  r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
+  <circle cx="${bx + 5}"  cy="${by + 53}" r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
+  <circle cx="${bx + 55}" cy="${by + 53}" r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
+  <!-- ULN2003A IC -->
+  <rect x="${bx + 20}" y="${cy - 8}" width="28" height="16" fill="#111" stroke="#2a2a2a" stroke-width="0.5" rx="1"/>
+  <text x="${bx + 34}" y="${cy + 3}" text-anchor="middle" font-size="5" fill="#bbb" font-weight="bold">ULN2003A</text>
+  <!-- IN1〜IN4 LED (左列) -->
+  ${[-18, -6, 6, 18].map((dy, i) => `<circle cx="${bx + 10}" cy="${cy + dy}" r="3" fill="#c62828" stroke="#b71c1c" stroke-width="0.5"/>
+  <circle cx="${bx + 10}" cy="${cy + dy}" r="1.3" fill="#ff8a80" opacity="0.8"/>
+  <text x="${bx + 10}" y="${cy + dy + 8}" text-anchor="middle" font-size="4" fill="#90caf9">IN${i + 1}</text>`).join('\n  ')}
+  <!-- 電源LED (緑) -->
+  <circle cx="${bx + 10}" cy="${by + 49}" r="3" fill="#1b5e20" stroke="#00c853" stroke-width="0.5"/>
+  <circle cx="${bx + 10}" cy="${by + 49}" r="1.3" fill="#69f0ae" opacity="0.8"/>
+  <!-- 5ピンモーターコネクタ (基板右端) -->
+  <rect x="${bx + 52}" y="${cy - 12}" width="9" height="24" fill="#1565C0" stroke="#0d47a1" stroke-width="0.6" rx="1"/>
+  ${[-8, -4, 0, 4, 8].map(dy => `<rect x="${bx + 53}" y="${cy + dy - 2}" width="5" height="4" fill="#555" rx="0.5"/>`).join('')}
+
+  <!-- 5本ワイヤー (基板→モーター) -->
+  ${wires}
+
+  <!-- 28BYJ-48 モーター本体 -->
+  <circle cx="${mcx}" cy="${mcy}" r="${mR}" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="1.5"/>
+  <circle cx="${mcx}" cy="${mcy}" r="${mR - 5}" fill="none" stroke="#1565c0" stroke-width="0.7" stroke-dasharray="3 2"/>
+  <text x="${mcx}" y="${mcy - 7}" text-anchor="middle" font-size="5" fill="#e3f2fd" font-weight="bold">28BYJ-48</text>
+  <!-- D字出力シャフト (中心オフセット) -->
+  <circle cx="${mcx - 5}" cy="${mcy + 5}" r="5.5" fill="#b0bec5" stroke="#78909c" stroke-width="0.8"/>
+  <circle cx="${mcx - 5}" cy="${mcy + 5}" r="2.5" fill="#78909c"/>
+  <line x1="${mcx - 10}" y1="${mcy + 5}" x2="${mcx}" y2="${mcy + 5}" stroke="#546e7a" stroke-width="1"/>
+  <!-- 取付タブ (左右) -->
+  <rect x="${mcx + mR - 2}" y="${mcy - 5}" width="9" height="10" fill="#0a3070" stroke="#0d47a1" stroke-width="0.6" rx="2"/>
+  <circle cx="${mcx + mR + 2}" cy="${mcy}" r="2.2" fill="#122e5e"/>
+  <rect x="${mcx - mR - 7}" y="${mcy - 5}" width="9" height="10" fill="#0a3070" stroke="#0d47a1" stroke-width="0.6" rx="2"/>
+  <circle cx="${mcx - mR - 3}" cy="${mcy}" r="2.2" fill="#122e5e"/>
+
+  ${sideStubs(cx, cy, side, 68, [-27, -9, 9, 27], ['IN1', 'IN2', 'IN3', 'IN4'])}
+  <text x="${cx}" y="${cy + 44}" text-anchor="middle" class="cv-lbl">Stepper (28BYJ-48 + ULN2003)</text>
 </g>`;
       }
     },
 
-    // ── L298N DCモータードライバー ────────────────────────
-    L298N: {
-      pins: { IN1: { dx: -56, dy: -24 }, IN2: { dx: -56, dy: -8 }, EN: { dx: -56, dy: 8 }, GND: { dx: -56, dy: 24 } },
+    // ── L293D DCモータードライバー (DIP-16 IC) + DCモーター ────────────────────────
+    // 制御側(Pico向け): EN, IN1, IN2, GND   出力側: OUT1/OUT2 → DCモーター
+    L293D: {
+      pins: { EN: { dx: -30, dy: -15 }, IN1: { dx: -30, dy: -5 }, IN2: { dx: -30, dy: 5 }, GND: { dx: -30, dy: 15 } },
       draw(cx, cy, side = 'right') {
-        const fins = Array.from({ length: 9 }, (_, i) =>
-          `<line x1="${cx-20+i*5}" y1="${cy-36}" x2="${cx-20+i*5}" y2="${cy-16}" stroke="#1a1a1a" stroke-width="1.2"/>`
-        ).join('');
+        const bw = 22, bh = 40;                 // IC半幅・半高さ (44×80px)
+        const mdir = side === 'right' ? 1 : -1; // モーター方向 (Picoの反対側)
+        const mx  = cx + mdir * (bw + 62);      // DCモーター中心
+        const mR  = 22;                          // モーター半径
+        const motorEdge = mx - mdir * mR;        // モーターのIC側端
+
+        // 出力スタブ (OUT1/OUT2, Pico反対側)
+        const outEdge = cx + mdir * bw;
+        const outPad  = outEdge + mdir * 8;
+        const out1y = cy - 10, out2y = cy + 10;
+
+        // DIPピン nubs (装飾, 左右各8本, 10pxピッチ)
+        const leftNubs = Array.from({ length: 8 }, (_, i) => {
+          const py = cy - 35 + i * 10;
+          return `<rect x="${cx - bw - 5}" y="${py - 2}" width="5" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
+        }).join('\n  ');
+        const rightNubs = Array.from({ length: 8 }, (_, i) => {
+          const py = cy - 35 + i * 10;
+          return `<rect x="${cx + bw}" y="${py - 2}" width="5" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
+        }).join('\n  ');
+
+        const shaftX = mdir > 0 ? mx + mR : mx - mR - 12;
+
         return `<g filter="url(#fDrop)">
-  <!-- 赤PCB -->
-  <rect x="${cx-48}" y="${cy-32}" width="96" height="62" fill="url(#gPcbRed)" stroke="#7f0000" stroke-width="1.5" rx="4"/>
-  <!-- ヒートシンク -->
-  <rect x="${cx-24}" y="${cy-36}" width="48" height="22" fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1" rx="2"/>
-  ${fins}
-  <!-- L298N IC -->
-  <rect x="${cx-20}" y="${cy-14}" width="40" height="26" fill="#1a1a1a" stroke="#2a2a2a" stroke-width="1" rx="2"/>
-  <!-- ICピン (側面) -->
-  ${Array.from({length:4}, (_,i) => `<rect x="${cx-26}" y="${cy-10+i*6}" width="6" height="3" fill="#555" rx="1"/>`).join('')}
-  ${Array.from({length:4}, (_,i) => `<rect x="${cx+20}" y="${cy-10+i*6}" width="6" height="3" fill="#555" rx="1"/>`).join('')}
-  <text x="${cx}" y="${cy+3}"  text-anchor="middle" font-size="18" fill="#fff" font-weight="bold">L298N</text>
-  <!-- ターミナルブロック (モーター出力) -->
-  <rect x="${cx-46}" y="${cy-4}" width="14" height="12" fill="#1565C0" stroke="#0d47a1" stroke-width="0.8" rx="1"/>
-  <rect x="${cx+32}" y="${cy-4}" width="14" height="12" fill="#1565C0" stroke="#0d47a1" stroke-width="0.8" rx="1"/>
-  <!-- LED -->
-  <circle cx="${cx-32}" cy="${cy+16}" r="3.5" fill="#00e676" stroke="#00c853" stroke-width="0.5"/>
-  ${sideStubs(cx, cy, side, 48, [-24, -8, 8, 24], ['IN1', 'IN2', 'EN', 'GND'])}
-  <text x="${cx}" y="${cy+50}" text-anchor="middle" class="cv-lbl">DC Motor (L298N)</text>
+  <!-- L293D DIP-16 IC ボディ -->
+  <rect x="${cx - bw}" y="${cy - bh}" width="${bw * 2}" height="${bh * 2}" fill="#1a1a1a" stroke="#444" stroke-width="1.5" rx="2"/>
+  <!-- IC ノッチ (上端中央) -->
+  <path d="M${cx - 7},${cy - bh} a7,7 0 0,0 14,0" fill="#2a2a2a"/>
+  <!-- Pin 1 ドット -->
+  <circle cx="${cx - bw + 6}" cy="${cy - bh + 8}" r="2.5" fill="#555"/>
+  <!-- 左側 DIP ピン nub (8本) -->
+  ${leftNubs}
+  <!-- 右側 DIP ピン nub (8本) -->
+  ${rightNubs}
+  <!-- L293D ラベル -->
+  <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="8" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
+  <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="5.5" fill="#777" font-family="sans-serif">H-Bridge</text>
+
+  <!-- 制御入力スタブ (EN / IN1 / IN2 / GND → Pico) -->
+  ${sideStubs(cx, cy, side, bw, [-15, -5, 5, 15], ['EN', 'IN1', 'IN2', 'GND'])}
+
+  <!-- 出力スタブ (OUT1 / OUT2 → モーター側) -->
+  <line x1="${outEdge}" y1="${out1y}" x2="${outPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${outPad}" cy="${out1y}" r="2.5" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <line x1="${outEdge}" y1="${out2y}" x2="${outPad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${outPad}" cy="${out2y}" r="2.5" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+
+  <!-- OUT1/OUT2 → DCモーター 接続ワイヤー -->
+  <line x1="${outPad}" y1="${out1y}" x2="${motorEdge}" y2="${out1y}" stroke="#e53935" stroke-width="1.5" opacity="0.9"/>
+  <line x1="${outPad}" y1="${out2y}" x2="${motorEdge}" y2="${out2y}" stroke="#1e88e5" stroke-width="1.5" opacity="0.9"/>
+
+  <!-- DCモーター本体 -->
+  <circle cx="${mx}" cy="${cy}" r="${mR}" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="1.5"/>
+  <circle cx="${mx}" cy="${cy}" r="${mR - 6}" fill="none" stroke="#1565c0" stroke-width="0.7" stroke-dasharray="3 2"/>
+  <text x="${mx}" y="${cy + 4}" text-anchor="middle" font-size="12" fill="#e3f2fd" font-weight="bold" font-family="sans-serif">M</text>
+  <!-- モーター端子円 -->
+  <circle cx="${motorEdge}" cy="${out1y}" r="2.5" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
+  <circle cx="${motorEdge}" cy="${out2y}" r="2.5" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
+  <!-- モーター出力シャフト -->
+  <rect x="${shaftX}" y="${cy - 3}" width="12" height="6" fill="#b0bec5" stroke="#78909c" stroke-width="0.6" rx="1.5"/>
+
+  <text x="${cx}" y="${cy + bh + 14}" text-anchor="middle" class="cv-lbl">L293D + DC Motor</text>
 </g>`;
       }
     },
@@ -538,7 +727,7 @@
 
         } else if (t === 'pico_servo_angle') {
           const p = gf('PIN');
-          add('servo'+p, 'SERVO', { PWM:{gp:p}, VCC:{v3v3:true}, GND:{gnd:true} });
+          add('servo'+p, 'SERVO', { PWM:{gp:p}, VCC:{vext:true}, GND:{gnd:true} });
 
         } else if (['pico_ultrasonic_cm','pico_ultrasonic_cm_val'].includes(t)) {
           const trig = gf('TRIG'), echo = gf('ECHO');
@@ -564,7 +753,7 @@
 
         } else if (['pico_dcmotor_run','pico_dcmotor_stop'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), en=b.getFieldValue('EN');
-          add('l298n_'+in1+'_'+in2, 'L298N',
+          add('l293d_'+in1+'_'+in2, 'L293D',
             { IN1:{gp:in1}, IN2:{gp:in2}, EN:en?{gp:en}:null, GND:{gnd:true} });
 
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
@@ -770,15 +959,16 @@
       p.push(`<circle cx="${ledX}" cy="${ledY}" r="3.5" fill="#90ff00" stroke="#55cc00" stroke-width="0.5" opacity="0.5"/>`);
     }
     p.push(`<text x="${ledX}" y="${ledY+12}" text-anchor="middle" font-size="5.5" fill="#4caf50" font-family="sans-serif">LED</text>`);
-    // RP2040 チップ (中央)
-    const chipX = PX + 8, chipY = PY + PH/2 - 30, chipW = PW - 16, chipH = 60;
-    p.push(`<rect x="${chipX}" y="${chipY}" width="${chipW}" height="${chipH}" fill="#30312e" stroke="#3a3a38" stroke-width="0.5" rx="2"/>`);
+    // RP2040 チップ (中央・正方形)
+    const chipSz = 60;
+    const chipX = PX + (PW - chipSz) / 2, chipY = PY + PH/2 - chipSz/2;
+    p.push(`<rect x="${chipX}" y="${chipY}" width="${chipSz}" height="${chipSz}" fill="#30312e" stroke="#3a3a38" stroke-width="0.5" rx="2"/>`);
     for (let i = 0; i < 4; i++) {
-      p.push(`<rect x="${chipX-5}" y="${chipY+10+i*12}" width="5" height="5.5" fill="#4a4a4a" rx="0.5"/>`);
-      p.push(`<rect x="${chipX+chipW}" y="${chipY+10+i*12}" width="5" height="5.5" fill="#4a4a4a" rx="0.5"/>`);
+      p.push(`<rect x="${chipX-5}" y="${chipY+6+i*12}" width="5" height="5.5" fill="#4a4a4a" rx="0.5"/>`);
+      p.push(`<rect x="${chipX+chipSz}" y="${chipY+6+i*12}" width="5" height="5.5" fill="#4a4a4a" rx="0.5"/>`);
     }
-    p.push(`<text x="${PX+PW/2}" y="${chipY+30}" text-anchor="middle" font-size="9" fill="#666" font-family="sans-serif">RP2040</text>`);
-    p.push(`<text x="${PX+PW/2}" y="${chipY+43}" text-anchor="middle" font-size="6.5" fill="#444" font-family="sans-serif">Raspberry Pi</text>`);
+    p.push(`<text x="${PX+PW/2}" y="${chipY+26}" text-anchor="middle" font-size="9" fill="#666" font-family="sans-serif">RP2040</text>`);
+    p.push(`<text x="${PX+PW/2}" y="${chipY+39}" text-anchor="middle" font-size="6.5" fill="#444" font-family="sans-serif">Raspberry Pi</text>`);
     // Pico ラベル (下端)
     p.push(`<text x="${PX+PW/2}" y="${PY+PH-14}" text-anchor="middle" font-size="13" fill="#4caf50" font-weight="bold" font-family="sans-serif">Pico</text>`);
     p.push(`<text x="${PX+PW/2}" y="${PY+PH-3}"  text-anchor="middle" font-size="7"  fill="#33865f" font-family="sans-serif">RP2040</text>`);
@@ -811,12 +1001,15 @@
 
   // ===== メイン =====
   // options.overrides: { [compId]: { dx, dy } } 自動配置からの差分でユーザ手動配置を反映
+  // 特殊 compId '__pico__' は Pico 本体の移動オフセット (PX, PY に加算)
   // options.wireOverrides: { [wireId]: { chDx } } 配線の縦セグメントを左右にずらす差分 (chDx 単位はSVG座標)
   window.generateCircuitSVG = function(workspace, options) {
     const overrides = (options && options.overrides) || {};
     const wireOverrides = (options && options.wireOverrides) || {};
+    // PY は呼び出しごとにリセット (前回の picoOv.dy が累積しないように)
+    PY = 30;
     const { comps, onboardLedOn, badPins } = parseBlocks(workspace);
-    const { rCols, routingR } = layoutComps(comps);
+    const { rCols, routingR, lCols, routingL } = layoutComps(comps);
     // layoutComps内でPXが更新されるため、以降はPXの最新値を使用
 
     // ユーザ手動位置を自動配置に重ねる (配線も新しい位置で再ルーティング)
@@ -828,20 +1021,41 @@
       }
     });
 
-    let maxBottom = PY + PH;
-    comps.forEach(c => { const b = c.cy + 90; if (b > maxBottom) maxBottom = b; });
+    // Pico 本体のドラッグオフセット (gpCoord 等が参照する PX/PY を直接ずらす)
+    const picoOv = overrides['__pico__'] || { dx: 0, dy: 0 };
+    PX += picoOv.dx || 0;
+    PY += picoOv.dy || 0;
 
-    const svgW = PX + PW + routingR + Math.max(rCols, 1) * C_CW + 30;
-    const svgH = Math.max(PY + PH + 60, maxBottom + 60);
+    // ── 境界ボックス計算（手動ドラッグで領域が自動拡張される）──
+    // 基準: 自動配置の右端・下端。overrides後のコンポーネント位置が超えた場合はそちらを優先。
+    const BOUND_PAD = 60;
+    let bMinX = (lCols > 0 ? C_L_MARGIN : PX) - BOUND_PAD;
+    let bMinY = PY - BOUND_PAD;
+    let bMaxX = PX + PW + routingR + Math.max(rCols, 1) * C_CW + 30;
+    let bMaxY = PY + PH + BOUND_PAD;
+
+    comps.forEach(c => {
+      bMinX = Math.min(bMinX, c.cx - 210);
+      bMinY = Math.min(bMinY, c.cy - 100);
+      bMaxX = Math.max(bMaxX, c.cx + 210);
+      bMaxY = Math.max(bMaxY, c.cy + 110);
+    });
+
+    const vx = bMinX;
+    const vy = bMinY;
+    const svgW = Math.max(bMaxX - vx, 400);
+    const svgH = Math.max(bMaxY - vy, 300);
 
     let wireCount = 0;
     const els = [];
 
     // 背景
-    els.push(`<rect width="${svgW}" height="${svgH}" fill="#0d1117"/>`);
+    els.push(`<rect x="${vx}" y="${vy}" width="${svgW}" height="${svgH}" fill="#0d1117"/>`);
     // グリッド (40px)
-    for (let gx = 0; gx < svgW; gx += 40) els.push(`<line x1="${gx}" y1="0" x2="${gx}" y2="${svgH}" stroke="#161b22" stroke-width="1"/>`);
-    for (let gy = 0; gy < svgH; gy += 40) els.push(`<line x1="0" y1="${gy}" x2="${svgW}" y2="${gy}" stroke="#161b22" stroke-width="1"/>`);
+    for (let gx = Math.floor(vx / 40) * 40; gx < vx + svgW; gx += 40)
+      els.push(`<line x1="${gx}" y1="${vy}" x2="${gx}" y2="${vy + svgH}" stroke="#161b22" stroke-width="1"/>`);
+    for (let gy = Math.floor(vy / 40) * 40; gy < vy + svgH; gy += 40)
+      els.push(`<line x1="${vx}" y1="${gy}" x2="${vx + svgW}" y2="${gy}" stroke="#161b22" stroke-width="1"/>`);
 
     const unknownGPins = [];
 
@@ -960,8 +1174,8 @@
       wireCount++;
     });
 
-    // Pico
-    els.push(buildPicoSVG(onboardLedOn));
+    // Pico (cv-comp としてドラッグ可能にする。data-comp-id='__pico__')
+    els.push(`<g class="cv-comp" data-comp-id="__pico__">${buildPicoSVG(onboardLedOn)}</g>`);
 
     // コンポーネント (cv-comp クラスでラップしてドラッグ識別子を持たせる)
     comps.forEach(comp => {
@@ -997,12 +1211,12 @@
     }
 
     if (comps.length === 0 && !onboardLedOn && badPins.length === 0) {
-      const mx = svgW / 2, my = svgH / 2;
+      const mx = vx + svgW / 2, my = vy + svgH / 2;
       els.push(`<text x="${mx}" y="${my-10}" text-anchor="middle" fill="#30363d" font-size="26">MicroPython ブロックを追加すると</text>`);
       els.push(`<text x="${mx}" y="${my+20}" text-anchor="middle" fill="#30363d" font-size="26">配線図が表示されます</text>`);
     }
 
-    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
+    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="${vx} ${vy} ${svgW} ${svgH}">
 <style>.cv-lbl{font-size:17px;fill:#90a4ae;font-family:sans-serif}</style>
 ${DEFS}
 ${els.join('\n')}
