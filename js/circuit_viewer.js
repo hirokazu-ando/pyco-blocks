@@ -628,12 +628,12 @@
     // 視認性のためモーター側スタブとして表示し、IC内ピン番号で明示する
     L293D: {
       pins: {
-        EN:  { dx: -30, dy: -35 }, // pin1: 左上
+        EN:  { dx: -30, dy: -47 }, // pin1: Pico側、ICボディ上端より上に退避
+        VSS: { dx: -30, dy: -35 }, // pin16: Pico側最上部(VBUS) ← ICに正しく入る
         IN1: { dx: -30, dy: -25 }, // pin2
         GND: { dx: -30, dy:  -5 }, // pin4
         IN2: { dx: -30, dy:  25 }, // pin7
         VS:  { dx: -30, dy:  35 }, // pin8: 外部電源(vext)
-        VSS: { dx:  30, dy: -35 }, // pin16: 右上(VBUS)
       },
       draw(cx, cy, side = 'right') {
         const bw = 22, bh = 40;
@@ -647,8 +647,6 @@
         const out1y = cy - 15, out2y = cy + 15;
         const outLblAnchor = mdir > 0 ? 'start' : 'end';
         const outLblX = outPad + mdir * 4;
-        // VSS stub (motor side, pin16 top)
-        const vssY = cy - 35;
         // DIP nubs
         const leftNubs = Array.from({ length: 8 }, (_, i) => {
           const py = cy - 35 + i * 10;
@@ -680,13 +678,9 @@
   <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="8" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
   <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="5.5" fill="#777" font-family="sans-serif">H-Bridge</text>
 
-  <!-- Pico側スタブ: EN1(1)/IN1(2)/GND(4)/IN2(7)/VS(8) -->
-  ${sideStubs(cx, cy, side, bw, [-35, -25, -5, 25, 35], ['EN1', 'IN1', 'GND', 'IN2', 'VS'])}
-
-  <!-- VSS stub (pin16, モーター側上端 → VBUS wrap wire) -->
-  <line x1="${outEdge}" y1="${vssY}" x2="${outPad}" y2="${vssY}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${outPad}" cy="${vssY}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
-  <text x="${outLblX}" y="${vssY + 4}" text-anchor="${outLblAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">VSS</text>
+  <!-- Pico側スタブ: EN1(1)/VSS(16)/IN1(2)/GND(4)/IN2(7)/VS(8) -->
+  <!-- VSS(pin16)はPico側からICに入力 → VBUS配線がICに正しく接続される -->
+  ${sideStubs(cx, cy, side, bw, [-47, -35, -25, -5, 25, 35], ['EN1', 'VSS', 'IN1', 'GND', 'IN2', 'VS'])}
 
   <!-- OUT1 stub (pin3=dy-15, モーター側) -->
   <line x1="${outEdge}" y1="${out1y}" x2="${outPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
