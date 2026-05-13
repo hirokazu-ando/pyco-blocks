@@ -330,9 +330,6 @@
             <rect x="0" y="-1.91" width="3.72" height="3.71" fill="#111"/>
             <rect fill="#ccc" x="0.33" y="-1.23" width="3.04" height="2.46" rx=".15"/>
           </g>`;
-        // 外部電源アイコン: VCCパッドの外側
-        const vccPadX = cx + sdir * 69;
-        const iconX = vccPadX + sdir * 16;
         return `<g>
   <svg x="${sx}" y="${sy}" width="130" height="72" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
     <path fill="none" stroke="#b44200" stroke-width="2.7" d="m83.32,56.6c0,0-32.99,0.96-43.32,0-6.20,-0.58-10.60,-6.20-14.87,-6.31"/>
@@ -350,12 +347,8 @@
     <circle fill="gray" cx="91.467" cy="59.773" r="8.3729"/>
     <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
   </svg>
-  <!-- 端子スタブ (GND / VCC / PWM) -->
-  ${sideStubs(cx, cy, side, 61, [-6, 0, 6], ['GND', 'VCC', 'PWM'])}
-  <!-- 外部電源アイコン (VCC) -->
-  <circle cx="${iconX}" cy="${cy}" r="9" fill="#ff8f00" stroke="#bf360c" stroke-width="1.5"/>
-  <text x="${iconX}" y="${cy + 4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold" font-family="sans-serif">V</text>
-  <line x1="${iconX - sdir * 9}" y1="${cy}" x2="${vccPadX}" y2="${cy}" stroke="#ff8f00" stroke-width="1.5"/>
+  <!-- 端子スタブ (GND / Vext / PWM) -->
+  ${sideStubs(cx, cy, side, 61, [-6, 0, 6], ['GND', 'Vext', 'PWM'])}
   <text x="${cx}" y="${cy + 46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
@@ -563,16 +556,27 @@
         GND: { dx: -76, dy:  30 },
       },
       draw(cx, cy, side = 'right') {
-        const sdir = side === 'right' ? -1 : 1;
-        // ULN2003基板: 幅60, 左端=cx-68, 右端=cx-8, 高さ68px (VCC/GND追加のため拡大)
-        const bx = cx - 68, by = cy - 34;
-        const mcx = cx + 52, mcy = cy, mR = 26;
-        // 5本ワイヤー (28BYJ-48標準色: ピンク/赤/オレンジ/黄/青)
+        const mdir = side === 'right' ? 1 : -1;
+        // 基板(ULN2003)は常にPico側、モーター(28BYJ-48)は常に外側
+        // bx: 基板左端 (side=right→cx-68, side=left→cx+8)
+        const bx = cx - mdir * 38 - 30, by = cy - 34;
+        const mcx = cx + mdir * 52, mcy = cy, mR = 26;
+        // ワイヤー始点: 基板のモーター側端コネクタ
+        const wireStartX = mdir > 0 ? bx + 62 : bx;
+        const wireEndX   = mcx - mdir * mR;
+        // 5本ワイヤー (28BYJ-48標準色)
         const wireColors = ['#e91e63', '#f44336', '#ff9800', '#ffeb3b', '#2196f3'];
         const wires = wireColors.map((c, i) => {
           const wy = cy + (i - 2) * 5;
-          return `<line x1="${bx + 62}" y1="${wy}" x2="${mcx - mR}" y2="${wy}" stroke="${c}" stroke-width="1.5" opacity="0.9"/>`;
+          return `<line x1="${wireStartX}" y1="${wy}" x2="${wireEndX}" y2="${wy}" stroke="${c}" stroke-width="1.5" opacity="0.9"/>`;
         }).join('\n  ');
+        // モーターコネクタ: 基板のモーター側端
+        const connX = mdir > 0 ? bx + 52 : bx;
+        const slotX = mdir > 0 ? bx + 53 : bx + 1;
+        // シャフトはPico側にオフセット
+        const shaftOffX = mcx - mdir * 5;
+        // IN LED / 電源LEDはPico側端に配置
+        const ledX = mdir > 0 ? bx + 10 : bx + 50;
         return `<g filter="url(#fDrop)">
   <!-- ULN2003 基板 (60×68) -->
   <rect x="${bx}" y="${by}" width="60" height="68" fill="#1a4484" stroke="#0d2a6e" stroke-width="1.5" rx="3"/>
@@ -583,16 +587,16 @@
   <!-- ULN2003A IC -->
   <rect x="${bx + 20}" y="${cy - 8}" width="28" height="16" fill="#111" stroke="#2a2a2a" stroke-width="0.5" rx="1"/>
   <text x="${bx + 34}" y="${cy + 3}" text-anchor="middle" font-size="5" fill="#bbb" font-weight="bold">ULN2003A</text>
-  <!-- IN1〜IN4 LED (左列, dy=-18/-6/+6/+18でstubと一致) -->
-  ${[-18, -6, 6, 18].map((dy, i) => `<circle cx="${bx + 10}" cy="${cy + dy}" r="3" fill="#c62828" stroke="#b71c1c" stroke-width="0.5"/>
-  <circle cx="${bx + 10}" cy="${cy + dy}" r="1.3" fill="#ff8a80" opacity="0.8"/>
-  <text x="${bx + 10}" y="${cy + dy + 8}" text-anchor="middle" font-size="4" fill="#90caf9">IN${i + 1}</text>`).join('\n  ')}
-  <!-- 電源LED (緑, GNDスタブ近傍) -->
-  <circle cx="${bx + 10}" cy="${by + 60}" r="3" fill="#1b5e20" stroke="#00c853" stroke-width="0.5"/>
-  <circle cx="${bx + 10}" cy="${by + 60}" r="1.3" fill="#69f0ae" opacity="0.8"/>
-  <!-- 5ピンモーターコネクタ (基板右端) -->
-  <rect x="${bx + 52}" y="${cy - 12}" width="9" height="24" fill="#1565C0" stroke="#0d47a1" stroke-width="0.6" rx="1"/>
-  ${[-8, -4, 0, 4, 8].map(dy => `<rect x="${bx + 53}" y="${cy + dy - 2}" width="5" height="4" fill="#555" rx="0.5"/>`).join('')}
+  <!-- IN1〜IN4 LED (Pico側端) -->
+  ${[-18, -6, 6, 18].map((dy, i) => `<circle cx="${ledX}" cy="${cy + dy}" r="3" fill="#c62828" stroke="#b71c1c" stroke-width="0.5"/>
+  <circle cx="${ledX}" cy="${cy + dy}" r="1.3" fill="#ff8a80" opacity="0.8"/>
+  <text x="${ledX}" y="${cy + dy + 8}" text-anchor="middle" font-size="4" fill="#90caf9">IN${i + 1}</text>`).join('\n  ')}
+  <!-- 電源LED (緑, Pico側端) -->
+  <circle cx="${ledX}" cy="${by + 60}" r="3" fill="#1b5e20" stroke="#00c853" stroke-width="0.5"/>
+  <circle cx="${ledX}" cy="${by + 60}" r="1.3" fill="#69f0ae" opacity="0.8"/>
+  <!-- 5ピンモーターコネクタ -->
+  <rect x="${connX}" y="${cy - 12}" width="9" height="24" fill="#1565C0" stroke="#0d47a1" stroke-width="0.6" rx="1"/>
+  ${[-8, -4, 0, 4, 8].map(dy => `<rect x="${slotX}" y="${cy + dy - 2}" width="5" height="4" fill="#555" rx="0.5"/>`).join('')}
 
   <!-- 5本ワイヤー (基板→モーター) -->
   ${wires}
@@ -601,10 +605,10 @@
   <circle cx="${mcx}" cy="${mcy}" r="${mR}" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="1.5"/>
   <circle cx="${mcx}" cy="${mcy}" r="${mR - 5}" fill="none" stroke="#1565c0" stroke-width="0.7" stroke-dasharray="3 2"/>
   <text x="${mcx}" y="${mcy - 7}" text-anchor="middle" font-size="5" fill="#e3f2fd" font-weight="bold">28BYJ-48</text>
-  <!-- D字出力シャフト (中心オフセット) -->
-  <circle cx="${mcx - 5}" cy="${mcy + 5}" r="5.5" fill="#b0bec5" stroke="#78909c" stroke-width="0.8"/>
-  <circle cx="${mcx - 5}" cy="${mcy + 5}" r="2.5" fill="#78909c"/>
-  <line x1="${mcx - 10}" y1="${mcy + 5}" x2="${mcx}" y2="${mcy + 5}" stroke="#546e7a" stroke-width="1"/>
+  <!-- D字出力シャフト (Pico側オフセット) -->
+  <circle cx="${shaftOffX}" cy="${mcy + 5}" r="5.5" fill="#b0bec5" stroke="#78909c" stroke-width="0.8"/>
+  <circle cx="${shaftOffX}" cy="${mcy + 5}" r="2.5" fill="#78909c"/>
+  <line x1="${shaftOffX - 5}" y1="${mcy + 5}" x2="${shaftOffX + 5}" y2="${mcy + 5}" stroke="#546e7a" stroke-width="1"/>
   <!-- 取付タブ (左右) -->
   <rect x="${mcx + mR - 2}" y="${mcy - 5}" width="9" height="10" fill="#0a3070" stroke="#0d47a1" stroke-width="0.6" rx="2"/>
   <circle cx="${mcx + mR + 2}" cy="${mcy}" r="2.2" fill="#122e5e"/>
@@ -618,22 +622,34 @@
     },
 
     // ── L293D DCモータードライバー (DIP-16 IC) + DCモーター ────────────────────────
-    // 制御側(Pico向け): EN, IN1, IN2, GND   出力側: OUT1/OUT2 → DCモーター
+    // 正確なピンアサイン: 左側(pin1-8): EN1,IN1,OUT1,GND,GND,OUT2,IN2,VS
+    //                     右側(pin16): VSS (ロジック電源=VBUS)
+    // OUT1(pin3)/OUT2(pin6)はIN1/IN2と同じ左側(Pico面)にあるが、
+    // 視認性のためモーター側スタブとして表示し、IC内ピン番号で明示する
     L293D: {
-      pins: { VSS: { dx: -30, dy: -25 }, EN: { dx: -30, dy: -15 }, IN1: { dx: -30, dy: -5 }, IN2: { dx: -30, dy: 5 }, GND: { dx: -30, dy: 15 } },
+      pins: {
+        EN:  { dx: -30, dy: -35 }, // pin1: 左上
+        IN1: { dx: -30, dy: -25 }, // pin2
+        GND: { dx: -30, dy:  -5 }, // pin4
+        IN2: { dx: -30, dy:  25 }, // pin7
+        VS:  { dx: -30, dy:  35 }, // pin8: 外部電源(vext)
+        VSS: { dx:  30, dy: -35 }, // pin16: 右上(VBUS)
+      },
       draw(cx, cy, side = 'right') {
-        const bw = 22, bh = 40;                 // IC半幅・半高さ (44×80px)
-        const mdir = side === 'right' ? 1 : -1; // モーター方向 (Picoの反対側)
-        const mx  = cx + mdir * (bw + 62);      // DCモーター中心
-        const mR  = 22;                          // モーター半径
-        const motorEdge = mx - mdir * mR;        // モーターのIC側端
-
-        // 出力スタブ (OUT1/OUT2, Pico反対側)
+        const bw = 22, bh = 40;
+        const mdir = side === 'right' ? 1 : -1;
+        const mx  = cx + mdir * (bw + 62);
+        const mR  = 22;
+        const motorEdge = mx - mdir * mR;
+        // OUT1/OUT2: モーター側スタブ (pin3=dy-15, pin6=dy+15)
         const outEdge = cx + mdir * bw;
         const outPad  = outEdge + mdir * 8;
-        const out1y = cy - 10, out2y = cy + 10;
-
-        // DIPピン nubs (装飾, 左右各8本, 10pxピッチ)
+        const out1y = cy - 15, out2y = cy + 15;
+        const outLblAnchor = mdir > 0 ? 'start' : 'end';
+        const outLblX = outPad + mdir * 4;
+        // VSS stub (motor side, pin16 top)
+        const vssY = cy - 35;
+        // DIP nubs
         const leftNubs = Array.from({ length: 8 }, (_, i) => {
           const py = cy - 35 + i * 10;
           return `<rect x="${cx - bw - 5}" y="${py - 2}" width="5" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
@@ -642,34 +658,47 @@
           const py = cy - 35 + i * 10;
           return `<rect x="${cx + bw}" y="${py - 2}" width="5" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
         }).join('\n  ');
-
         const shaftX = mdir > 0 ? mx + mR : mx - mR - 12;
 
         return `<g filter="url(#fDrop)">
   <!-- L293D DIP-16 IC ボディ -->
   <rect x="${cx - bw}" y="${cy - bh}" width="${bw * 2}" height="${bh * 2}" fill="#1a1a1a" stroke="#444" stroke-width="1.5" rx="2"/>
-  <!-- IC ノッチ (上端中央) -->
   <path d="M${cx - 7},${cy - bh} a7,7 0 0,0 14,0" fill="#2a2a2a"/>
-  <!-- Pin 1 ドット -->
   <circle cx="${cx - bw + 6}" cy="${cy - bh + 8}" r="2.5" fill="#555"/>
-  <!-- 左側 DIP ピン nub (8本) -->
   ${leftNubs}
-  <!-- 右側 DIP ピン nub (8本) -->
   ${rightNubs}
-  <!-- L293D ラベル -->
+  <!-- ICピン番号 (左側: 実物理ピン位置) -->
+  <text x="${cx - bw + 3}" y="${cy - 31}" font-size="4" fill="#666" font-family="sans-serif">1:EN1</text>
+  <text x="${cx - bw + 3}" y="${cy - 21}" font-size="4" fill="#666" font-family="sans-serif">2:IN1</text>
+  <text x="${cx - bw + 3}" y="${cy - 11}" font-size="4" fill="#e57373" font-family="sans-serif">3:OUT1</text>
+  <text x="${cx - bw + 3}" y="${cy - 1}"  font-size="4" fill="#666" font-family="sans-serif">4:GND</text>
+  <text x="${cx - bw + 3}" y="${cy + 9}"  font-size="4" fill="#666" font-family="sans-serif">5:GND</text>
+  <text x="${cx - bw + 3}" y="${cy + 19}" font-size="4" fill="#64b5f6" font-family="sans-serif">6:OUT2</text>
+  <text x="${cx - bw + 3}" y="${cy + 29}" font-size="4" fill="#666" font-family="sans-serif">7:IN2</text>
+  <text x="${cx - bw + 3}" y="${cy + 39}" font-size="4" fill="#ffb74d" font-family="sans-serif">8:VS</text>
+  <!-- ICラベル -->
   <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="8" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
   <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="5.5" fill="#777" font-family="sans-serif">H-Bridge</text>
 
-  <!-- 制御入力スタブ (EN / IN1 / IN2 / GND → Pico) -->
-  ${sideStubs(cx, cy, side, bw, [-25, -15, -5, 5, 15], ['VSS', 'EN', 'IN1', 'IN2', 'GND'])}
+  <!-- Pico側スタブ: EN1(1)/IN1(2)/GND(4)/IN2(7)/VS(8) -->
+  ${sideStubs(cx, cy, side, bw, [-35, -25, -5, 25, 35], ['EN1', 'IN1', 'GND', 'IN2', 'VS'])}
 
-  <!-- 出力スタブ (OUT1 / OUT2 → モーター側) -->
+  <!-- VSS stub (pin16, モーター側上端 → VBUS wrap wire) -->
+  <line x1="${outEdge}" y1="${vssY}" x2="${outPad}" y2="${vssY}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${outPad}" cy="${vssY}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${outLblX}" y="${vssY + 4}" text-anchor="${outLblAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">VSS</text>
+
+  <!-- OUT1 stub (pin3=dy-15, モーター側) -->
   <line x1="${outEdge}" y1="${out1y}" x2="${outPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${outPad}" cy="${out1y}" r="2.5" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
-  <line x1="${outEdge}" y1="${out2y}" x2="${outPad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${outPad}" cy="${out2y}" r="2.5" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <circle cx="${outPad}" cy="${out1y}" r="2.5" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
+  <text x="${outLblX}" y="${out1y + 4}" text-anchor="${outLblAnchor}" font-size="9" fill="#ef9a9a" font-family="sans-serif">OUT1</text>
 
-  <!-- OUT1/OUT2 → DCモーター 接続ワイヤー -->
+  <!-- OUT2 stub (pin6=dy+15, モーター側) -->
+  <line x1="${outEdge}" y1="${out2y}" x2="${outPad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${outPad}" cy="${out2y}" r="2.5" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
+  <text x="${outLblX}" y="${out2y + 4}" text-anchor="${outLblAnchor}" font-size="9" fill="#90caf9" font-family="sans-serif">OUT2</text>
+
+  <!-- OUT1/OUT2 → DCモーター接続ワイヤー -->
   <line x1="${outPad}" y1="${out1y}" x2="${motorEdge}" y2="${out1y}" stroke="#e53935" stroke-width="1.5" opacity="0.9"/>
   <line x1="${outPad}" y1="${out2y}" x2="${motorEdge}" y2="${out2y}" stroke="#1e88e5" stroke-width="1.5" opacity="0.9"/>
 
@@ -677,13 +706,41 @@
   <circle cx="${mx}" cy="${cy}" r="${mR}" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="1.5"/>
   <circle cx="${mx}" cy="${cy}" r="${mR - 6}" fill="none" stroke="#1565c0" stroke-width="0.7" stroke-dasharray="3 2"/>
   <text x="${mx}" y="${cy + 4}" text-anchor="middle" font-size="12" fill="#e3f2fd" font-weight="bold" font-family="sans-serif">M</text>
-  <!-- モーター端子円 -->
   <circle cx="${motorEdge}" cy="${out1y}" r="2.5" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
   <circle cx="${motorEdge}" cy="${out2y}" r="2.5" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
-  <!-- モーター出力シャフト -->
   <rect x="${shaftX}" y="${cy - 3}" width="12" height="6" fill="#b0bec5" stroke="#78909c" stroke-width="0.6" rx="1.5"/>
 
   <text x="${cx}" y="${cy + bh + 14}" text-anchor="middle" class="cv-lbl">L293D + DC Motor</text>
+</g>`;
+      }
+    },
+    // ── 外部電源 (回路図電池記号) ─────────────────────────────────────────────
+    // SERVO/L293D等の外部電源(vext)が必要な場合に自動追加される
+    // GND端子のみPico GNDと接続。V+端子は各コンポーネントの"Vext"スタブと接続する
+    EXTPWR: {
+      pins: { GND: { dx: 0, dy: 30 } },
+      draw(cx, cy) {
+        return `<g>
+  <!-- V+ 端子線 -->
+  <line x1="${cx}" y1="${cy - 30}" x2="${cx}" y2="${cy - 20}" stroke="#ff8f00" stroke-width="2"/>
+  <text x="${cx + 4}" y="${cy - 21}" font-size="10" fill="#ff8f00" font-weight="bold" font-family="sans-serif">+</text>
+  <!-- 電池セル1: 長線(正極) -->
+  <line x1="${cx - 14}" y1="${cy - 20}" x2="${cx + 14}" y2="${cy - 20}" stroke="#333" stroke-width="2.5"/>
+  <!-- 電池セル1: 短線(負極) -->
+  <line x1="${cx - 8}"  y1="${cy - 12}" x2="${cx + 8}"  y2="${cy - 12}" stroke="#333" stroke-width="4"/>
+  <!-- セル間接続 -->
+  <line x1="${cx}" y1="${cy - 12}" x2="${cx}" y2="${cy - 4}" stroke="#555" stroke-width="1.5"/>
+  <!-- 電池セル2: 長線 -->
+  <line x1="${cx - 14}" y1="${cy - 4}"  x2="${cx + 14}" y2="${cy - 4}"  stroke="#333" stroke-width="2.5"/>
+  <!-- 電池セル2: 短線 -->
+  <line x1="${cx - 8}"  y1="${cy + 4}"  x2="${cx + 8}"  y2="${cy + 4}"  stroke="#333" stroke-width="4"/>
+  <!-- GND 端子線 -->
+  <line x1="${cx}" y1="${cy + 4}" x2="${cx}" y2="${cy + 22}" stroke="#546e7a" stroke-width="2"/>
+  <text x="${cx + 4}" y="${cy + 20}" font-size="10" fill="#546e7a" font-weight="bold" font-family="sans-serif">−</text>
+  <!-- GND ピン (配線接続点 → Pico GND) -->
+  <line x1="${cx}" y1="${cy + 22}" x2="${cx}" y2="${cy + 30}" stroke="#546e7a" stroke-width="1.5"/>
+  <circle cx="${cx}" cy="${cy + 30}" r="3" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${cx}" y="${cy + 44}" text-anchor="middle" class="cv-lbl">Ext. Power</text>
 </g>`;
       }
     },
@@ -761,7 +818,7 @@
         } else if (['pico_dcmotor_run','pico_dcmotor_stop'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), en=b.getFieldValue('EN');
           add('l293d_'+in1+'_'+in2, 'L293D',
-            { VSS:{vbus:true}, IN1:{gp:in1}, IN2:{gp:in2}, EN:en?{gp:en}:null, GND:{gnd:true} });
+            { VSS:{vbus:true}, EN:en?{gp:en}:null, IN1:{gp:in1}, IN2:{gp:in2}, GND:{gnd:true}, VS:{vext:true} });
 
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), in3=gf('IN3'), in4=gf('IN4');
@@ -769,6 +826,12 @@
             { VCC:{vbus:true}, IN1:{gp:in1}, IN2:{gp:in2}, IN3:{gp:in3}, IN4:{gp:in4}, GND:{gnd:true} });
         }
       });
+
+    // vextピンを持つコンポーネントが存在する場合、外部電源コンポーネントを自動追加
+    const hasVext = comps.some(c => Object.values(c.pins).some(s => s && s.vext));
+    if (hasVext) {
+      add('extpwr', 'EXTPWR', { GND: {gnd:true} });
+    }
 
     return { comps, onboardLedOn, badPins };
   }
