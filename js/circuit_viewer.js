@@ -31,6 +31,7 @@
     return null;
   }
   function getV3v3() { return { x: PX + PW, y: PY + 12 + 4 * PP, side: 'right' }; }
+  function getVbus()  { return { x: PX + PW, y: PY + 12 + 0 * PP, side: 'right' }; }
 
   // 全GNDピン位置を動的生成 (PXが変わるたびに呼ぶ)
   function getGndPins() {
@@ -61,6 +62,7 @@
       return best;
     }
     if (s.v3v3) return getV3v3();
+    if (s.vbus) return getVbus();
     return null;
   }
 
@@ -552,13 +554,18 @@
 
     // ── 28BYJ-48 + ULN2003 ─────────────────────────────
     // Wokwi風: モーター軸オフセット・ULN2003基板に4ピンLED表示
+    // スタブ6本: VCC(dy=-30)/IN1-IN4(dy=-18〜18,12px間隔)/GND(dy=30)
     STEPPER: {
-      pins: { IN1: { dx: -76, dy: -27 }, IN2: { dx: -76, dy: -9 }, IN3: { dx: -76, dy: 9 }, IN4: { dx: -76, dy: 27 } },
+      pins: {
+        VCC: { dx: -76, dy: -30 },
+        IN1: { dx: -76, dy: -18 }, IN2: { dx: -76, dy: -6 },
+        IN3: { dx: -76, dy:   6 }, IN4: { dx: -76, dy: 18 },
+        GND: { dx: -76, dy:  30 },
+      },
       draw(cx, cy, side = 'right') {
         const sdir = side === 'right' ? -1 : 1;
-        // ULN2003基板: 幅60, 左端=cx-68(sideStubs tipXに一致), 右端=cx-8
-        const bx = cx - 68, by = cy - 29;
-        // 28BYJ-48: r=26, 中心cx+52 → 左端cx+26, 基板右端(cx-8)との間34pxのケーブル領域
+        // ULN2003基板: 幅60, 左端=cx-68, 右端=cx-8, 高さ68px (VCC/GND追加のため拡大)
+        const bx = cx - 68, by = cy - 34;
         const mcx = cx + 52, mcy = cy, mR = 26;
         // 5本ワイヤー (28BYJ-48標準色: ピンク/赤/オレンジ/黄/青)
         const wireColors = ['#e91e63', '#f44336', '#ff9800', '#ffeb3b', '#2196f3'];
@@ -567,22 +574,22 @@
           return `<line x1="${bx + 62}" y1="${wy}" x2="${mcx - mR}" y2="${wy}" stroke="${c}" stroke-width="1.5" opacity="0.9"/>`;
         }).join('\n  ');
         return `<g filter="url(#fDrop)">
-  <!-- ULN2003 基板 (60×58) -->
-  <rect x="${bx}" y="${by}" width="60" height="58" fill="#1a4484" stroke="#0d2a6e" stroke-width="1.5" rx="3"/>
+  <!-- ULN2003 基板 (60×68) -->
+  <rect x="${bx}" y="${by}" width="60" height="68" fill="#1a4484" stroke="#0d2a6e" stroke-width="1.5" rx="3"/>
   <circle cx="${bx + 5}"  cy="${by + 5}"  r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
   <circle cx="${bx + 55}" cy="${by + 5}"  r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
-  <circle cx="${bx + 5}"  cy="${by + 53}" r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
-  <circle cx="${bx + 55}" cy="${by + 53}" r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
+  <circle cx="${bx + 5}"  cy="${by + 63}" r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
+  <circle cx="${bx + 55}" cy="${by + 63}" r="2" fill="#122e5e" stroke="#0a1e40" stroke-width="0.4"/>
   <!-- ULN2003A IC -->
   <rect x="${bx + 20}" y="${cy - 8}" width="28" height="16" fill="#111" stroke="#2a2a2a" stroke-width="0.5" rx="1"/>
   <text x="${bx + 34}" y="${cy + 3}" text-anchor="middle" font-size="5" fill="#bbb" font-weight="bold">ULN2003A</text>
-  <!-- IN1〜IN4 LED (左列) -->
+  <!-- IN1〜IN4 LED (左列, dy=-18/-6/+6/+18でstubと一致) -->
   ${[-18, -6, 6, 18].map((dy, i) => `<circle cx="${bx + 10}" cy="${cy + dy}" r="3" fill="#c62828" stroke="#b71c1c" stroke-width="0.5"/>
   <circle cx="${bx + 10}" cy="${cy + dy}" r="1.3" fill="#ff8a80" opacity="0.8"/>
   <text x="${bx + 10}" y="${cy + dy + 8}" text-anchor="middle" font-size="4" fill="#90caf9">IN${i + 1}</text>`).join('\n  ')}
-  <!-- 電源LED (緑) -->
-  <circle cx="${bx + 10}" cy="${by + 49}" r="3" fill="#1b5e20" stroke="#00c853" stroke-width="0.5"/>
-  <circle cx="${bx + 10}" cy="${by + 49}" r="1.3" fill="#69f0ae" opacity="0.8"/>
+  <!-- 電源LED (緑, GNDスタブ近傍) -->
+  <circle cx="${bx + 10}" cy="${by + 60}" r="3" fill="#1b5e20" stroke="#00c853" stroke-width="0.5"/>
+  <circle cx="${bx + 10}" cy="${by + 60}" r="1.3" fill="#69f0ae" opacity="0.8"/>
   <!-- 5ピンモーターコネクタ (基板右端) -->
   <rect x="${bx + 52}" y="${cy - 12}" width="9" height="24" fill="#1565C0" stroke="#0d47a1" stroke-width="0.6" rx="1"/>
   ${[-8, -4, 0, 4, 8].map(dy => `<rect x="${bx + 53}" y="${cy + dy - 2}" width="5" height="4" fill="#555" rx="0.5"/>`).join('')}
@@ -604,8 +611,8 @@
   <rect x="${mcx - mR - 7}" y="${mcy - 5}" width="9" height="10" fill="#0a3070" stroke="#0d47a1" stroke-width="0.6" rx="2"/>
   <circle cx="${mcx - mR - 3}" cy="${mcy}" r="2.2" fill="#122e5e"/>
 
-  ${sideStubs(cx, cy, side, 68, [-27, -9, 9, 27], ['IN1', 'IN2', 'IN3', 'IN4'])}
-  <text x="${cx}" y="${cy + 44}" text-anchor="middle" class="cv-lbl">Stepper (28BYJ-48 + ULN2003)</text>
+  ${sideStubs(cx, cy, side, 68, [-30, -18, -6, 6, 18, 30], ['VCC', 'IN1', 'IN2', 'IN3', 'IN4', 'GND'])}
+  <text x="${cx}" y="${cy + 50}" text-anchor="middle" class="cv-lbl">Stepper (28BYJ-48 + ULN2003)</text>
 </g>`;
       }
     },
@@ -613,7 +620,7 @@
     // ── L293D DCモータードライバー (DIP-16 IC) + DCモーター ────────────────────────
     // 制御側(Pico向け): EN, IN1, IN2, GND   出力側: OUT1/OUT2 → DCモーター
     L293D: {
-      pins: { EN: { dx: -30, dy: -15 }, IN1: { dx: -30, dy: -5 }, IN2: { dx: -30, dy: 5 }, GND: { dx: -30, dy: 15 } },
+      pins: { VSS: { dx: -30, dy: -25 }, EN: { dx: -30, dy: -15 }, IN1: { dx: -30, dy: -5 }, IN2: { dx: -30, dy: 5 }, GND: { dx: -30, dy: 15 } },
       draw(cx, cy, side = 'right') {
         const bw = 22, bh = 40;                 // IC半幅・半高さ (44×80px)
         const mdir = side === 'right' ? 1 : -1; // モーター方向 (Picoの反対側)
@@ -654,7 +661,7 @@
   <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="5.5" fill="#777" font-family="sans-serif">H-Bridge</text>
 
   <!-- 制御入力スタブ (EN / IN1 / IN2 / GND → Pico) -->
-  ${sideStubs(cx, cy, side, bw, [-15, -5, 5, 15], ['EN', 'IN1', 'IN2', 'GND'])}
+  ${sideStubs(cx, cy, side, bw, [-25, -15, -5, 5, 15], ['VSS', 'EN', 'IN1', 'IN2', 'GND'])}
 
   <!-- 出力スタブ (OUT1 / OUT2 → モーター側) -->
   <line x1="${outEdge}" y1="${out1y}" x2="${outPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
@@ -754,12 +761,12 @@
         } else if (['pico_dcmotor_run','pico_dcmotor_stop'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), en=b.getFieldValue('EN');
           add('l293d_'+in1+'_'+in2, 'L293D',
-            { IN1:{gp:in1}, IN2:{gp:in2}, EN:en?{gp:en}:null, GND:{gnd:true} });
+            { VSS:{vbus:true}, IN1:{gp:in1}, IN2:{gp:in2}, EN:en?{gp:en}:null, GND:{gnd:true} });
 
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), in3=gf('IN3'), in4=gf('IN4');
           add('step_'+[in1,in2,in3,in4].join('_'), 'STEPPER',
-            { IN1:{gp:in1}, IN2:{gp:in2}, IN3:{gp:in3}, IN4:{gp:in4} });
+            { VCC:{vbus:true}, IN1:{gp:in1}, IN2:{gp:in2}, IN3:{gp:in3}, IN4:{gp:in4}, GND:{gnd:true} });
         }
       });
 
@@ -778,7 +785,7 @@
         if (L_PINS.includes('GP' + gp)) leftGp++;
         else rightGp++;
       }
-      if (spec.v3v3) hasVcc = true;
+      if (spec.v3v3 || spec.vbus) hasVcc = true;
     }
     const wrapsIfLeft  = rightGp + (hasVcc ? 1 : 0);  // 右Picoピン→左部品の数
     const wrapsIfRight = leftGp;                       // 左Picoピン→右部品の数
@@ -918,6 +925,7 @@
   function wireColor(s) {
     if (s.gnd)  return '#546e7a';
     if (s.v3v3) return '#e53935';
+    if (s.vbus) return '#ff7043';  // VBUS 5V: ディープオレンジ
     return SIGNAL_COLORS[parseInt(s.gp || 0) % SIGNAL_COLORS.length];
   }
 
