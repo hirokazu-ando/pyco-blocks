@@ -1279,6 +1279,13 @@
     let bMinY = PY - BOUND_PAD;
     let bMaxX = PX + PW + routingR + Math.max(rCols, 1) * C_CW + 30;
     let bMaxY = PY + PH + BOUND_PAD;
+    // 空状態のメッセージ (Pico下に2行表示) のため下端と左右を拡張
+    if (comps.length === 0 && !onboardLedOn && badPins.length === 0) {
+      const msgCenter = PX + PW / 2;
+      bMinX = Math.min(bMinX, msgCenter - 230);
+      bMaxX = Math.max(bMaxX, msgCenter + 230);
+      bMaxY = PY + PH + 130;
+    }
 
     comps.forEach(c => {
       bMinX = Math.min(bMinX, c.cx - 210);
@@ -1535,9 +1542,10 @@
     }
 
     if (comps.length === 0 && !onboardLedOn && badPins.length === 0) {
-      const mx = vx + svgW / 2, my = vy + svgH / 2;
-      els.push(`<text x="${mx}" y="${my-10}" text-anchor="middle" fill="#30363d" font-size="26">MicroPython ブロックを追加すると</text>`);
-      els.push(`<text x="${mx}" y="${my+20}" text-anchor="middle" fill="#30363d" font-size="26">配線図が表示されます</text>`);
+      // Pico本体の下に表示 (重なり回避): PY+PH = Pico下端
+      const mx = PX + PW / 2, my = PY + PH + 50;
+      els.push(`<text x="${mx}" y="${my}"    text-anchor="middle" fill="#30363d" font-size="26">MicroPython ブロックを追加すると</text>`);
+      els.push(`<text x="${mx}" y="${my+34}" text-anchor="middle" fill="#30363d" font-size="26">配線図が表示されます</text>`);
     }
 
     const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="${vx} ${vy} ${svgW} ${svgH}">
