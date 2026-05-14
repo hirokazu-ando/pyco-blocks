@@ -952,7 +952,7 @@
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), in3=gf('IN3'), in4=gf('IN4');
           add('step_'+[in1,in2,in3,in4].join('_'), 'STEPPER',
-            { VCC:{vbus:true}, IN1:{gp:in1}, IN2:{gp:in2}, IN3:{gp:in3}, IN4:{gp:in4}, GND:{gnd:true} });
+            { VCC:{vext:true}, IN1:{gp:in1}, IN2:{gp:in2}, IN3:{gp:in3}, IN4:{gp:in4}, GND:{gnd:true} });
         }
       });
 
