@@ -4803,6 +4803,36 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('touchend', endDrag);
   })();
 
+  // 配線図プレビュー 折りたたみ
+  (function() {
+    const collapseBtn = document.getElementById('btn-circuit-collapse');
+    const svgEl = document.getElementById('circuit-preview-svg');
+    const previewArea = document.getElementById('circuit-preview-area');
+    const resizeHandle = document.getElementById('circuit-preview-resize-handle');
+    const blocklyDiv = document.getElementById('blockly-div');
+    if (!collapseBtn || !svgEl || !previewArea) return;
+
+    collapseBtn.addEventListener('click', () => {
+      const isCollapsed = svgEl.style.display === 'none';
+      if (isCollapsed) {
+        svgEl.style.display = 'flex';
+        previewArea.style.flex = '';
+        if (blocklyDiv) blocklyDiv.style.flex = '';
+        if (resizeHandle) resizeHandle.style.display = '';
+        collapseBtn.textContent = '非表示 ▼';
+        collapseBtn.title = 'プレビューを折りたたむ';
+      } else {
+        svgEl.style.display = 'none';
+        previewArea.style.flex = '0 0 auto';
+        if (blocklyDiv) blocklyDiv.style.flex = '1 1 0';
+        if (resizeHandle) resizeHandle.style.display = 'none';
+        collapseBtn.textContent = '配線図を表示 ▲';
+        collapseBtn.title = 'プレビューを展開する';
+      }
+      requestAnimationFrame(() => Blockly.svgResize(workspace));
+    });
+  })();
+
   // 上下リサイズ（上エリア ↔ 下段ゲームシェル）
   (function() {
     const handle = document.getElementById('game-dock-resize-handle');
@@ -5061,19 +5091,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!modal || !btnOpen) return;
 
     let currentScale = 1;
+    let panX = 0, panY = 0;
     let currentSvgStr = '';
     // セッション内で部品の手動位置 (自動配置からのオフセット) を保持
     const circuitOverrides = {};
     // セッション内で配線縦セグメントの左右ずらし (chDx) を保持
     const circuitWireOverrides = {};
 
-    function applyZoom(scale) {
-      currentScale = Math.max(0.3, Math.min(3, scale));
+    function applyView() {
       const svgEl = wrap.querySelector('svg');
       if (svgEl) {
-        svgEl.style.transform = `scale(${currentScale})`;
+        svgEl.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
         svgEl.style.transformOrigin = 'top left';
       }
+    }
+    function applyZoom(scale) {
+      currentScale = Math.max(0.3, Math.min(3, scale));
+      applyView();
     }
 
     function renderInto(target) {
@@ -5088,7 +5122,24 @@ document.addEventListener('DOMContentLoaded', function() {
       setupWireDrag();
     }
 
+    // ── スクリーン座標 → SVG内部座標変換 ──
+    // getBoundingClientRect() を使うことで CSS transform: scale() を正確に吸収する
+    function toSVGCoord(clientX, clientY) {
+      const svg = wrap.querySelector('svg');
+      if (!svg) return { x: clientX, y: clientY };
+      const rect = svg.getBoundingClientRect();
+      const vb = svg.viewBox.baseVal;
+      if (!vb || rect.width === 0) return { x: clientX, y: clientY };
+      return {
+        x: (clientX - rect.left) * (vb.width  / rect.width),
+        y: (clientY - rect.top)  * (vb.height / rect.height),
+      };
+    }
+
     // ── 部品ドラッグ処理 ──
+    // renderInto() 後のコンポーネントは絶対座標(cx,cy)で再描画されグループtransformは無い。
+    // baseDx/baseDy を持ち越すと次回ドラッグ開始直後に旧オフセット分ジャンプするため、
+    // 常に translate(今回dx, 今回dy) だけ設定し、確定時に prevOv に累積する。
     let dragState = null;
     function setupCompDrag() {
       const svg = wrap.querySelector('svg');
@@ -5110,23 +5161,28 @@ document.addEventListener('DOMContentLoaded', function() {
       e.stopPropagation();
       startDrag(this, e.touches[0].clientX, e.touches[0].clientY);
     }
+    const DRAG_SNAP = 20; // グリッドスナップ間隔 (SVG座標px、グリッド40pxの半分)
+    function snapVal(v) { return Math.round(v / DRAG_SNAP) * DRAG_SNAP; }
+
     function startDrag(g, clientX, clientY) {
-      const id = g.getAttribute('data-comp-id');
-      const ov = circuitOverrides[id] || { dx: 0, dy: 0 };
-      dragState = { g, id, startX: clientX, startY: clientY, baseDx: ov.dx, baseDy: ov.dy };
+      const svgPt = toSVGCoord(clientX, clientY);
+      dragState = { g, id: g.getAttribute('data-comp-id'), startSvgX: svgPt.x, startSvgY: svgPt.y };
       g.style.opacity = '0.7';
     }
     function onDocMove(clientX, clientY) {
       if (!dragState) return;
-      const dx = (clientX - dragState.startX) / currentScale;
-      const dy = (clientY - dragState.startY) / currentScale;
-      dragState.g.setAttribute('transform', `translate(${dragState.baseDx + dx},${dragState.baseDy + dy})`);
+      const svgPt = toSVGCoord(clientX, clientY);
+      const dx = snapVal(svgPt.x - dragState.startSvgX);
+      const dy = snapVal(svgPt.y - dragState.startSvgY);
+      dragState.g.setAttribute('transform', `translate(${dx},${dy})`);
     }
     function endDrag(clientX, clientY) {
       if (!dragState) return;
-      const dx = (clientX - dragState.startX) / currentScale;
-      const dy = (clientY - dragState.startY) / currentScale;
-      circuitOverrides[dragState.id] = { dx: dragState.baseDx + dx, dy: dragState.baseDy + dy };
+      const svgPt = toSVGCoord(clientX, clientY);
+      const dx = snapVal(svgPt.x - dragState.startSvgX);
+      const dy = snapVal(svgPt.y - dragState.startSvgY);
+      const prev = circuitOverrides[dragState.id] || { dx: 0, dy: 0 };
+      circuitOverrides[dragState.id] = { dx: prev.dx + dx, dy: prev.dy + dy };
       dragState.g.style.opacity = '';
       dragState = null;
       // 新しい位置で配線を再ルーティング
@@ -5145,7 +5201,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('touchend', e => {
       if (!dragState) return;
       const t = e.changedTouches[0];
-      endDrag(t ? t.clientX : dragState.startX, t ? t.clientY : dragState.startY);
+      if (!t) return;
+      endDrag(t.clientX, t.clientY);
     });
 
     // ── 配線縦セグメントのドラッグ処理 ──
@@ -5174,7 +5231,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const ov = circuitWireOverrides[id] || { chDx: 0 };
       wireDragState = {
         g, id,
-        startX: clientX,
+        startSvgX: toSVGCoord(clientX, 0).x,
         baseChDx: ov.chDx,
         baseCh: parseFloat(g.getAttribute('data-ch')),
         x1: parseFloat(g.getAttribute('data-x1')),
@@ -5188,7 +5245,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function onWireDocMove(clientX) {
       if (!wireDragState) return;
-      const dx = (clientX - wireDragState.startX) / currentScale;
+      const dx = toSVGCoord(clientX, 0).x - wireDragState.startSvgX;
       const newCh = wireDragState.baseCh + dx;
       const s = wireDragState;
       let d;
@@ -5203,7 +5260,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function endWireDrag(clientX) {
       if (!wireDragState) return;
-      const dx = (clientX - wireDragState.startX) / currentScale;
+      const dx = toSVGCoord(clientX, 0).x - wireDragState.startSvgX;
       circuitWireOverrides[wireDragState.id] = { chDx: wireDragState.baseChDx + dx };
       wireDragState.g.style.opacity = '';
       wireDragState = null;
@@ -5221,8 +5278,53 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('touchend', e => {
       if (!wireDragState) return;
       const t = e.changedTouches[0];
-      endWireDrag(t ? t.clientX : wireDragState.startX);
+      endWireDrag(t ? t.clientX : wireDragState.startSvgX);
     });
+
+    // ── 空白ドラッグでパン (SVG 自体を translate で動かす) ──
+    // .cv-comp / .cv-wire の mousedown は stopPropagation しているのでここに来るのは空白だけ
+    let panState = null;
+    wrap.addEventListener('mousedown', e => {
+      if (e.button !== 0) return; // 左クリックのみ
+      if (e.target.closest('.cv-comp') || e.target.closest('.cv-wire')) return;
+      panState = {
+        startX: e.clientX, startY: e.clientY,
+        basePanX: panX, basePanY: panY,
+      };
+      wrap.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!panState) return;
+      panX = panState.basePanX + (e.clientX - panState.startX);
+      panY = panState.basePanY + (e.clientY - panState.startY);
+      applyView();
+    });
+    document.addEventListener('mouseup', () => {
+      if (!panState) return;
+      panState = null;
+      wrap.style.cursor = 'grab';
+    });
+
+    // ── ホイールでカーソル位置中心にズーム ──
+    wrap.addEventListener('wheel', e => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+      const newScale = Math.max(0.3, Math.min(3, currentScale * factor));
+      if (newScale === currentScale) return;
+      const rect = wrap.getBoundingClientRect();
+      // カーソルの wrap 左上基準座標
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      // カーソル下にあるSVG論理座標 (translate+scale 逆算)
+      const logicalX = (cx - panX) / currentScale;
+      const logicalY = (cy - panY) / currentScale;
+      // ズーム後も同じ論理点をカーソル下に維持
+      panX = cx - logicalX * newScale;
+      panY = cy - logicalY * newScale;
+      currentScale = newScale;
+      applyView();
+    }, { passive: false });
 
     function openModal() {
       if (currentMode !== 'micropython') return;
@@ -5233,6 +5335,7 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         renderInto(wrap);
         currentScale = 1;
+        panX = 0; panY = 0;
         applyZoom(1);
         modal.style.display = 'flex';
       } catch(err) {
@@ -5267,7 +5370,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnZoomIn.addEventListener('click',  () => applyZoom(currentScale * 1.25));
     btnZoomOut.addEventListener('click', () => applyZoom(currentScale * 0.8));
-    btnZoomFit.addEventListener('click', () => applyZoom(1));
+    btnZoomFit.addEventListener('click', () => { panX = 0; panY = 0; applyZoom(1); });
 
     if (btnDlSvg) btnDlSvg.addEventListener('click', function() {
       const blob = new Blob([currentSvgStr], { type: 'image/svg+xml' });
