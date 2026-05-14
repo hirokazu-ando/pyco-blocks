@@ -319,39 +319,84 @@
     },
 
     // ── SG90 サーボ (Wokwi wokwi-servo, MIT © 2020 Uri Shaked) ──
-    // ピン位置: connectorface cx-61, pad cx-69; dy=-6(GND), 0(VCC外部電源), +6(PWM)
+    // 配置に応じて左右反転し、コードがPico側を向くようにする:
+    //   compSide='left'  (サーボ画面左, Pico右): SVGを180度回転、コード=右向き
+    //   compSide='right' (サーボ画面右, Pico左): SVG原位置、コード=左向き
+    // SVGは cx 中央寄せ (sx = cx - W/2)、コネクタ3ピンは実位置 (cx ± 136, cy ± 6) から配線
+    // 標準配色: 橙=PWM(信号), 赤=Vcc(+), 茶=GND
+    // noSideFlip=true で sideFlip 無効化、ピン位置は getPins() で動的決定
     SERVO: {
-      // コネクタピン順(上→下): GND(茶) / VCC(赤) / PWM(橙) ← 元のSVG通り
-      pins: { GND: { dx: -69, dy: -19 }, VCC: { dx: -69, dy: 0 }, PWM: { dx: -69, dy: 19 } },
+      noSideFlip: true,
+      // SVG W=337px → 本体障害物範囲は cx±170 (cellWidth/2-10=170)。
+      // 配線出口 cx±184 はこの範囲外にしてVext→EXTPWR配線が本体障害物判定に引っかからないようにする。
+      cellWidth: 340,
+      // 実SVG高さ H=237 で cy±118.5 が本体範囲 → vext配線迂回判定用
+      cellHeight: 240,
+      // ラベル右端の外側 (cx ± 184, cy -19/0/+19) から19pxピッチで配線を出す
+      pins: { GND: { dx: 184, dy: 19 }, VCC: { dx: 184, dy: 0 }, PWM: { dx: 184, dy: -19 } },
+      getPins(compSide) {
+        if (compSide === 'right') {
+          return { GND: { dx: -184, dy: 19 }, VCC: { dx: -184, dy: 0 }, PWM: { dx: -184, dy: -19 } };
+        }
+        return this.pins;
+      },
       draw(cx, cy, side = 'right') {
-        // scale=19/9.6≈1.979 でコネクタピン間隔がPPピッチ(19px)に一致
         const W = 337, H = 237;
-        const sx = cx - 65, sy = cy - 119;
+        // SVG中央寄せ: 視覚的中心 = cx
+        const sx = cx - W / 2, sy = cy - 118.5;
+        // dir=+1: コード右出し (サーボ画面左/Pico右), dir=-1: コード左出し (サーボ画面右/Pico左)
+        const dir = (side === 'left') ? 1 : -1;
+        const rotateAttr = (side === 'left') ? `transform="rotate(180 ${cx} ${cy})"` : '';
+        // コネクタパッド (viewBox x=16.6, 幅3.72): 物理 x = sx + 33 = cx - 135.5 (回転前)
         const pin = (x, y) =>
           `<g transform="translate(${x},${y})">
             <rect x="0" y="-1.91" width="3.72" height="3.71" fill="#111"/>
             <rect fill="#ccc" x="0.33" y="-1.23" width="3.04" height="2.46" rx=".15"/>
           </g>`;
+        // ラベルはコネクタの外側 (Pico方向) に配置、配線はラベルのさらに先 (cx±184) から出る
+        // コネクタピン物理位置: cx + dir*136, cy -6/0/+6 (3ピン縦並び)
+        const pinX = cx + dir * 136;
+        const lblX = cx + dir * 158;  // コネクタとPicoの間
+        const wireX = cx + dir * 184; // 配線出口 (= pins.dx)
+        const lblPairs = [
+          { wireY: cy - 19, t: 'PWM',  pinY: cy - 6 },
+          { wireY: cy,      t: 'Vext', pinY: cy },
+          { wireY: cy + 19, t: 'GND',  pinY: cy + 6 },
+        ];
+        const anchor = 'middle';
+        const labels = lblPairs.map(({ wireY, t }) =>
+          `<text x="${lblX}" y="${wireY + 4}" text-anchor="${anchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">${t}</text>`
+        ).join('\n  ');
+        // 引出し線: コネクタ先端 (pinX, pinY) → ラベル手前 (lblX - dir*15, wireY) → ラベル後ろ (lblX + dir*15, wireY) → 配線出口 (wireX, wireY)
+        // ラベル前後は描画しない (テキストが見えるよう途切れさせる)
+        const leaders = lblPairs.map(({ wireY, pinY }) =>
+          `<polyline points="${pinX},${pinY} ${cx + dir * 142},${pinY} ${cx + dir * 146},${wireY} ${lblX - dir * 14},${wireY}" fill="none" stroke="#788a96" stroke-width="0.8"/>
+  <line x1="${lblX + dir * 14}" y1="${wireY}" x2="${wireX}" y2="${wireY}" stroke="#788a96" stroke-width="0.8"/>`
+        ).join('\n  ');
         return `<g>
-  <svg x="${sx}" y="${sy}" width="${W}" height="${H}" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
-    <path fill="none" stroke="#b44200" stroke-width="2.7" d="m83.32,56.6c0,0-32.99,0.96-43.32,0-6.20,-0.58-10.60,-6.20-14.87,-6.31"/>
-    <path fill="none" stroke="#ff2300" stroke-width="2.7" d="m83.326 59.6h-62.971"/>
-    <path fill="none" stroke="#f47b00" stroke-width="2.7" d="m83.32,62.6c0,0-32.60,-0.61-43.33,-0.15-6.87,0.29-12.01,6.82-14.77,6.73"/>
-    <rect fill="#666" y="45.5" width="25.71" height="28" rx="1.14"/>
-    ${pin(4.7, 50.06)}${pin(4.7, 59.66)}${pin(4.7, 69.26)}
-    <path fill="#4d4d4d" d="m55.068 66.75a7.09 7.09 0 1 0-5.8261-11.136 0.18 0.18 0 0 1-0.33-0.10234v-14.346h17.676v36.98h-17.676v-14.346a0.18 0.18 0 0 1 0.333-0.107 7.08 7.08 0 0 0 5.83 3.06z"/>
-    <path fill="#4d4d4d" d="m163.92 66.867a7.09 7.09 0 1 1 5.8145-11.136 0.18 0.18 0 0 0 0.33-0.10234v-14.346h-17.664v36.98h17.676v-14.346a0.18 0.18 0 0 0-0.333-0.107 7.08 7.08 0 0 1-5.83 3.06z"/>
-    <rect fill="#666" x="64.255" y="37.911" width="90.241" height="43.725" rx="5.3331"/>
-    <path fill="gray" d="m110.07 50.005h-14.42v19.537h14.42a9.7684 9.7684 0 0 0 0-19.537z"/>
-    <circle fill="#999" cx="91.467" cy="59.773" r="18.606"/>
-    <rect fill="#e0e0e0" x="88.5" y="40" width="6" height="20" rx="3"/>
-    <rect fill="#e0e0e0" x="79" y="57" width="25" height="6" rx="3"/>
-    <circle fill="gray" cx="91.467" cy="59.773" r="8.3729"/>
-    <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
-  </svg>
-  <!-- 端子スタブ (GND / Vext / PWM) -->
-  ${sideStubs(cx, cy, side, 61, [-19, 0, 19], ['GND', 'Vext', 'PWM'])}
-  <text x="${cx}" y="${cy + 133}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
+  <g ${rotateAttr}>
+    <svg x="${sx}" y="${sy}" width="${W}" height="${H}" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
+      <path fill="none" stroke="#b44200" stroke-width="2.7" d="m83.32,56.6c0,0-32.99,0.96-43.32,0-6.20,-0.58-10.60,-6.20-14.87,-6.31"/>
+      <path fill="none" stroke="#ff2300" stroke-width="2.7" d="m83.326 59.6h-62.971"/>
+      <path fill="none" stroke="#f47b00" stroke-width="2.7" d="m83.32,62.6c0,0-32.60,-0.61-43.33,-0.15-6.87,0.29-12.01,6.82-14.77,6.73"/>
+      <rect fill="#666" y="45.5" width="25.71" height="28" rx="1.14"/>
+      ${pin(16.6, 56.6)}${pin(16.6, 59.6)}${pin(16.6, 62.6)}
+      <path fill="#4d4d4d" d="m55.068 66.75a7.09 7.09 0 1 0-5.8261-11.136 0.18 0.18 0 0 1-0.33-0.10234v-14.346h17.676v36.98h-17.676v-14.346a0.18 0.18 0 0 1 0.333-0.107 7.08 7.08 0 0 0 5.83 3.06z"/>
+      <path fill="#4d4d4d" d="m163.92 66.867a7.09 7.09 0 1 1 5.8145-11.136 0.18 0.18 0 0 0 0.33-0.10234v-14.346h-17.664v36.98h17.676v-14.346a0.18 0.18 0 0 0-0.333-0.107 7.08 7.08 0 0 1-5.83 3.06z"/>
+      <rect fill="#666" x="64.255" y="37.911" width="90.241" height="43.725" rx="5.3331"/>
+      <path fill="gray" d="m110.07 50.005h-14.42v19.537h14.42a9.7684 9.7684 0 0 0 0-19.537z"/>
+      <circle fill="#999" cx="91.467" cy="59.773" r="18.606"/>
+      <rect fill="#e0e0e0" x="88.5" y="40" width="6" height="20" rx="3"/>
+      <rect fill="#e0e0e0" x="79" y="57" width="25" height="6" rx="3"/>
+      <circle fill="gray" cx="91.467" cy="59.773" r="8.3729"/>
+      <circle fill="#ccc" cx="91.467" cy="59.773" r="6.2494"/>
+    </svg>
+  </g>
+  <!-- リード線終端からラベル位置への引出し線 -->
+  ${leaders}
+  <!-- 端子ラベル(PWM/Vext/GND) -->
+  ${labels}
+  <text x="${cx}" y="${cy + 58}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
     },
@@ -616,32 +661,51 @@
     },
 
     // ── L293D DCモータードライバー (DIP-16 IC) + DCモーター ────────────────────────
-    // 回路図表現(Top View): Pico側=EN1/IN1/GND/IN2/Vcc2、モーター側=OUT1/OUT2/Vcc1
-    // TIデータシート表記: pin8=Vcc2(モーター電源), pin16=Vcc1(ロジック電源)
-    // OUT1/OUT2 を物理的な左側(pin3/pin6)ではなくモーター側スタブとして描画し
-    // バイパス配線なしで直接モーターに接続する(視認性優先のスキーマティック表現)
+    // データシート Top View 厳守 (16-Pin DIP):
+    //   IC左 (pin1-8):  1=1,2EN, 2=1A, 3=1Y, 4=GND, 5=GND, 6=2Y, 7=2A, 8=Vcc2
+    //   IC右 (pin16-9): 16=Vcc1, 15=4A, 14=4Y, 13=GND, 12=GND, 11=3Y, 10=3A, 9=3,4EN
+    // noSideFlip=true で sideFlip 無効化、pins.dx は絶対値。
+    // getPins(compSide) でチャネルを動的切替:
+    //   compSide='right' (Pico左, IC右配置, モーター右迂回): チャネル1 (pin1-8, IC左)
+    //   compSide='left'  (Pico右, IC左配置, モーター左迂回): チャネル2 (pin9-15, IC右)
+    // Vcc1(pin16)/Vcc2(pin8) は固定位置 (IC右上/IC左下)。
     L293D: {
+      noSideFlip: true,
+      // モータ含む水平範囲: cx ± (bw/2 + 100) ≒ cx ± 115 → cellWidth=240 で両側カバー
+      cellWidth: 240,
+      // bh=72 + ラベル余白 → cellHeight=160 で本体カバー
+      cellHeight: 160,
       pins: {
-        EN:  { dx: -38, dy: -66.5 }, // pin1
-        IN1: { dx: -38, dy: -47.5 }, // pin2
-        GND: { dx: -38, dy:  -9.5 }, // pin4
-        IN2: { dx: -38, dy:  47.5 }, // pin7
-        VS:  { dx: -38, dy:  66.5 }, // pin8: 外部電源(vext)
-        VSS: { dx:  38, dy: -66.5 }, // pin16: 外部電源(vext)
+        // チャネル1 (デフォルト): IC左 pin1-7 を使用
+        EN:  { dx: -38, dy: -66.5 }, // pin1  1,2EN
+        IN1: { dx: -38, dy: -47.5 }, // pin2  1A
+        GND: { dx: -38, dy:  -9.5 }, // pin4  GND
+        IN2: { dx: -38, dy:  47.5 }, // pin7  2A
+        VS:  { dx: -38, dy:  66.5 }, // pin8  Vcc2 外部電源(vext)
+        VSS: { dx:  38, dy: -66.5 }, // pin16 Vcc1 外部電源(vext)
+      },
+      getPins(compSide) {
+        if (compSide === 'left') {
+          // チャネル2: IC右 pin9-15 を使用
+          return {
+            EN:  { dx:  38, dy:  66.5 }, // pin9   3,4EN
+            IN1: { dx:  38, dy:  47.5 }, // pin10  3A
+            GND: { dx:  38, dy:   9.5 }, // pin12  GND
+            IN2: { dx:  38, dy: -47.5 }, // pin15  4A
+            VS:  { dx: -38, dy:  66.5 }, // pin8   Vcc2 (IC左, 固定)
+            VSS: { dx:  38, dy: -66.5 }, // pin16  Vcc1 (IC右, 固定)
+          };
+        }
+        return this.pins;
       },
       draw(cx, cy, side = 'right') {
         const bw = 30, bh = 72, nubPitch = 19;
-        const mdir = side === 'right' ? 1 : -1;
-        const mx  = cx + mdir * (bw + 85);
-        const mR  = 28;
-
-        const out1y = cy - 28.5, out2y = cy + 28.5; // pin3, pin6
-
-        const motorFacingEdge = cx + mdir * bw;       // ICモーター側エッジ
-        const motorSidePad    = motorFacingEdge + mdir * 8;
-        const motorEdge       = mx - mdir * mR;       // モーター矩形のIC側エッジ
-        const motorSideLblX   = motorSidePad + mdir * 4;
-        const motorSideLblA   = mdir > 0 ? 'start' : 'end';
+        const mdir = side === 'right' ? 1 : -1;        // モーター方向 (+1=右, -1=左)
+        const useCh2 = mdir < 0;                       // チャネル2 (IC右) 使用判定
+        const mx   = cx + mdir * (bw + 85);
+        const mR   = 28;
+        const motorEdge = mx - mdir * mR;              // モーター矩形のIC側エッジ
+        const outUpY = cy - 28.5, outDnY = cy + 28.5;  // OUT スタブ y座標 (pin3/6 または pin11/14)
 
         const leftNubs = Array.from({ length: 8 }, (_, i) => {
           const py = cy - 66.5 + i * nubPitch;
@@ -651,59 +715,128 @@
           const py = cy - 66.5 + i * nubPitch;
           return `<rect x="${cx + bw}" y="${py - 2}" width="6" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
         }).join('\n  ');
-        const pinLblX  = cx - mdir * (bw - 4);
-        const pinLblA  = mdir > 0 ? 'start' : 'end';
-        const mtrLblXi = cx + mdir * (bw - 4);
-        const mtrLblAi = mdir > 0 ? 'end' : 'start';
+
+        // ピン番号テキスト位置: IC内側 (左は start, 右は end)
+        const pinLblXL = cx - bw + 4;
+        const pinLblXR = cx + bw - 4;
+
+        // 使用中のチャネルに対応するスタブ＋ラベル
+        // チャネル1: IC左外 EN1/IN1/GND/GND/IN2/Vcc2 + IC右外 Vcc1
+        // チャネル2: IC右外 3,4EN/3A/GND/GND/4A/Vcc1 + IC左外 Vcc2
+        const ch1Left = [
+          { dy: -66.5, lbl: 'EN1',  fill: '#c8a86e', stroke: '#8a7040' },
+          { dy: -47.5, lbl: 'IN1',  fill: '#c8a86e', stroke: '#8a7040' },
+          { dy:  -9.5, lbl: 'GND',  fill: '#c8a86e', stroke: '#8a7040' },
+          { dy:   9.5, lbl: 'GND',  fill: '#c8a86e', stroke: '#8a7040' },
+          { dy:  47.5, lbl: 'IN2',  fill: '#c8a86e', stroke: '#8a7040' },
+          { dy:  66.5, lbl: 'Vcc2', fill: '#ffb74d', stroke: '#e65100' },
+        ];
+        const ch2Right = [
+          { dy: -66.5, lbl: 'Vcc1', fill: '#ff7043', stroke: '#e64a19' },
+          { dy: -47.5, lbl: 'IN2',  fill: '#c8a86e', stroke: '#8a7040' }, // pin15 4A
+          { dy:  -9.5, lbl: 'GND',  fill: '#c8a86e', stroke: '#8a7040' }, // pin13
+          { dy:   9.5, lbl: 'GND',  fill: '#c8a86e', stroke: '#8a7040' }, // pin12
+          { dy:  47.5, lbl: 'IN1',  fill: '#c8a86e', stroke: '#8a7040' }, // pin10 3A
+          { dy:  66.5, lbl: 'EN2',  fill: '#c8a86e', stroke: '#8a7040' }, // pin9 3,4EN
+        ];
+
+        const stubLeft = (dy, lbl, fill, stroke) => {
+          const py = cy + dy;
+          return `<line x1="${cx - bw}" y1="${py}" x2="${cx - bw - 8}" y2="${py}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${cx - bw - 8}" cy="${py}" r="3" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>
+  <text x="${cx - bw - 12}" y="${py + 4}" text-anchor="end" font-size="11" fill="#b0bec5" font-family="sans-serif">${lbl}</text>`;
+        };
+        const stubRight = (dy, lbl, fill, stroke) => {
+          const py = cy + dy;
+          return `<line x1="${cx + bw}" y1="${py}" x2="${cx + bw + 8}" y2="${py}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${cx + bw + 8}" cy="${py}" r="3" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>
+  <text x="${cx + bw + 12}" y="${py + 4}" text-anchor="start" font-size="11" fill="#b0bec5" font-family="sans-serif">${lbl}</text>`;
+        };
+
+        // 使用中チャネルのスタブ群
+        let mainStubs, vccStubOpposite;
+        if (useCh2) {
+          mainStubs = ch2Right.map(s => stubRight(s.dy, s.lbl, s.fill, s.stroke)).join('\n  ');
+          // Vcc2 (pin8) のスタブを IC左外に
+          vccStubOpposite = stubLeft(66.5, 'Vcc2', '#ffb74d', '#e65100');
+        } else {
+          mainStubs = ch1Left.map(s => stubLeft(s.dy, s.lbl, s.fill, s.stroke)).join('\n  ');
+          // Vcc1 (pin16) のスタブを IC右外に
+          vccStubOpposite = stubRight(-66.5, 'Vcc1', '#ff7043', '#e64a19');
+        }
+
+        // OUT 配線: チャネル1 は pin3/6 (IC左)、チャネル2 は pin11/14 (IC右)
+        const outStartX = useCh2 ? (cx + bw) : (cx - bw);
+        let outUpPath, outDnPath;
+        const sameSide = (useCh2 && mdir > 0) || (!useCh2 && mdir < 0);
+        if (sameSide) {
+          // OUT のIC側とモーターのIC側が同じ: 直線
+          outUpPath = `M${outStartX} ${outUpY} L${motorEdge} ${outUpY}`;
+          outDnPath = `M${outStartX} ${outDnY} L${motorEdge} ${outDnY}`;
+        } else {
+          // OUT のIC側とモーターのIC側が反対: IC上下14px外を迂回
+          const detourX   = outStartX + (useCh2 ? 14 : -14);
+          const upDetourY = cy - bh - 14;
+          const dnDetourY = cy + bh + 14;
+          outUpPath = `M${outStartX} ${outUpY} L${detourX} ${outUpY} L${detourX} ${upDetourY} L${motorEdge} ${upDetourY} L${motorEdge} ${outUpY}`;
+          outDnPath = `M${outStartX} ${outDnY} L${detourX} ${outDnY} L${detourX} ${dnDetourY} L${motorEdge} ${dnDetourY} L${motorEdge} ${outDnY}`;
+        }
+
+        // ピン番号ラベル色: 使用中チャネルのIN/OUT/ENを強調
+        const dim = '#666';
+        const ch1Color = useCh2 ? dim : '#666';
+        const ch2Color = useCh2 ? '#666' : dim;
+        const out1Color = useCh2 ? dim : '#e57373';
+        const out2Color = useCh2 ? dim : '#64b5f6';
+        const out3Color = useCh2 ? '#64b5f6' : dim;
+        const out4Color = useCh2 ? '#e57373' : dim;
+        const vcc2Color = useCh2 ? '#ffb74d' : '#ffb74d';
+        const vcc1Color = useCh2 ? '#ff7043' : '#ff7043';
 
         return `<g filter="url(#fDrop)">
   <!-- L293D DIP-16 IC ボディ -->
   <rect x="${cx - bw}" y="${cy - bh}" width="${bw * 2}" height="${bh * 2}" fill="#1a1a1a" stroke="#444" stroke-width="1.5" rx="2"/>
   <path d="M${cx - 9},${cy - bh} a9,9 0 0,0 18,0" fill="#2a2a2a"/>
-  <circle cx="${cx - mdir * (bw - 8)}" cy="${cy - bh + 10}" r="3" fill="#555"/>
+  <circle cx="${cx - bw + 8}" cy="${cy - bh + 10}" r="3" fill="#555"/>
   ${leftNubs}
   ${rightNubs}
-  <!-- ICピン番号 (Pico側) -->
-  <text x="${pinLblX}" y="${cy - 61.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">1:EN1</text>
-  <text x="${pinLblX}" y="${cy - 42.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">2:IN1</text>
-  <text x="${pinLblX}" y="${cy - 4.5}"  font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">4:GND</text>
-  <text x="${pinLblX}" y="${cy + 14.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">5:GND</text>
-  <text x="${pinLblX}" y="${cy + 52.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">7:IN2</text>
-  <text x="${pinLblX}" y="${cy + 71.5}" font-size="5" fill="#ffb74d" text-anchor="${pinLblA}" font-family="sans-serif">8:Vcc2</text>
-  <!-- ICピン番号 (モーター側) -->
-  <text x="${mtrLblXi}" y="${cy - 61.5}" font-size="5" fill="#ff7043" text-anchor="${mtrLblAi}" font-family="sans-serif">16:Vcc1</text>
-  <text x="${mtrLblXi}" y="${cy - 23.5}" font-size="5" fill="#e57373" text-anchor="${mtrLblAi}" font-family="sans-serif">3:OUT1</text>
-  <text x="${mtrLblXi}" y="${cy + 33.5}" font-size="5" fill="#64b5f6" text-anchor="${mtrLblAi}" font-family="sans-serif">6:OUT2</text>
+  <!-- ICピン番号 (データシート Top View) -->
+  <text x="${pinLblXL}" y="${cy - 66.5}" font-size="5" fill="${ch1Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">1:EN1</text>
+  <text x="${pinLblXL}" y="${cy - 47.5}" font-size="5" fill="${ch1Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">2:IN1</text>
+  <text x="${pinLblXL}" y="${cy - 28.5}" font-size="5" fill="${out1Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">3:OUT1</text>
+  <text x="${pinLblXL}" y="${cy - 9.5}"  font-size="5" fill="${ch1Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">4:GND</text>
+  <text x="${pinLblXL}" y="${cy + 9.5}"  font-size="5" fill="${ch1Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">5:GND</text>
+  <text x="${pinLblXL}" y="${cy + 28.5}" font-size="5" fill="${out2Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">6:OUT2</text>
+  <text x="${pinLblXL}" y="${cy + 47.5}" font-size="5" fill="${ch1Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">7:IN2</text>
+  <text x="${pinLblXL}" y="${cy + 66.5}" font-size="5" fill="${vcc2Color}" text-anchor="start" dominant-baseline="middle" font-family="sans-serif">8:Vcc2</text>
+  <text x="${pinLblXR}" y="${cy - 66.5}" font-size="5" fill="${vcc1Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">Vcc1:16</text>
+  <text x="${pinLblXR}" y="${cy - 47.5}" font-size="5" fill="${ch2Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">4A:15</text>
+  <text x="${pinLblXR}" y="${cy - 28.5}" font-size="5" fill="${out4Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">OUT4:14</text>
+  <text x="${pinLblXR}" y="${cy - 9.5}"  font-size="5" fill="${ch2Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">GND:13</text>
+  <text x="${pinLblXR}" y="${cy + 9.5}"  font-size="5" fill="${ch2Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">GND:12</text>
+  <text x="${pinLblXR}" y="${cy + 28.5}" font-size="5" fill="${out3Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">OUT3:11</text>
+  <text x="${pinLblXR}" y="${cy + 47.5}" font-size="5" fill="${ch2Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">3A:10</text>
+  <text x="${pinLblXR}" y="${cy + 66.5}" font-size="5" fill="${ch2Color}" text-anchor="end"   dominant-baseline="middle" font-family="sans-serif">EN2:9</text>
   <!-- ICラベル -->
   <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="10" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
   <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="7" fill="#777" font-family="sans-serif">H-Bridge</text>
 
-  <!-- Pico側スタブ: EN1/IN1/GND/IN2/Vcc2 (PP=19px間隔) -->
-  ${sideStubs(cx, cy, side, bw, [-66.5, -47.5, -9.5, 47.5, 66.5], ['EN1', 'IN1', 'GND', 'IN2', 'Vcc2'])}
+  <!-- 使用中チャネルのスタブ -->
+  ${mainStubs}
 
-  <!-- Vcc1 (pin16, モーター側スタブ → EXTPWR) -->
-  <line x1="${motorFacingEdge}" y1="${cy - 66.5}" x2="${motorSidePad}" y2="${cy - 66.5}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${motorSidePad}" cy="${cy - 66.5}" r="3" fill="#ff7043" stroke="#e64a19" stroke-width="0.5"/>
-  <text x="${motorSideLblX}" y="${cy - 61.5}" text-anchor="${motorSideLblA}" font-size="10" fill="#b0bec5" font-family="sans-serif">Vcc1</text>
+  <!-- 反対側 Vcc スタブ -->
+  ${vccStubOpposite}
 
-  <!-- OUT1 (pin3, モーター側スタブ) → モーターへ直接配線 -->
-  <line x1="${motorFacingEdge}" y1="${out1y}" x2="${motorSidePad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${motorSidePad}" cy="${out1y}" r="3" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
-  <text x="${motorSideLblX}" y="${out1y + 4}" text-anchor="${motorSideLblA}" font-size="10" fill="#ef9a9a" font-family="sans-serif">OUT1</text>
-  <line x1="${motorSidePad}" y1="${out1y}" x2="${motorEdge}" y2="${out1y}" fill="none" stroke="#e53935" stroke-width="2" opacity="0.9"/>
+  <!-- OUT (使用中チャネル) → モーター -->
+  <path d="${outUpPath}" fill="none" stroke="#e53935" stroke-width="2" opacity="0.9"/>
+  <path d="${outDnPath}" fill="none" stroke="#1e88e5" stroke-width="2" opacity="0.9"/>
 
-  <!-- OUT2 (pin6, モーター側スタブ) → モーターへ直接配線 -->
-  <line x1="${motorFacingEdge}" y1="${out2y}" x2="${motorSidePad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${motorSidePad}" cy="${out2y}" r="3" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
-  <text x="${motorSideLblX}" y="${out2y + 4}" text-anchor="${motorSideLblA}" font-size="10" fill="#90caf9" font-family="sans-serif">OUT2</text>
-  <line x1="${motorSidePad}" y1="${out2y}" x2="${motorEdge}" y2="${out2y}" fill="none" stroke="#1e88e5" stroke-width="2" opacity="0.9"/>
-
-  <!-- DCモーター本体 (矩形アイコン) -->
+  <!-- DCモーター本体 -->
   <rect x="${mx - mR}" y="${cy - 32}" width="${mR * 2}" height="64" fill="#0d47a1" stroke="#1a237e" stroke-width="1.5" rx="6"/>
   <rect x="${mx - mR + 4}" y="${cy - 28}" width="${mR * 2 - 8}" height="56" fill="none" stroke="#283593" stroke-width="0.8" rx="4"/>
   <text x="${mx}" y="${cy + 8}" text-anchor="middle" font-size="22" fill="#e8eaf6" font-weight="bold" font-family="sans-serif">M</text>
-  <circle cx="${motorEdge}" cy="${out1y}" r="3" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
-  <circle cx="${motorEdge}" cy="${out2y}" r="3" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
+  <circle cx="${motorEdge}" cy="${outUpY}" r="3" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
+  <circle cx="${motorEdge}" cy="${outDnY}" r="3" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
 
   <text x="${cx}" y="${cy + bh + 16}" text-anchor="middle" class="cv-lbl">L293D + DC Motor</text>
 </g>`;
@@ -876,16 +1009,20 @@
 
   function layoutComps(comps) {
     comps.forEach(c => { c.compSide = compSide(c); });
-    const leftComps  = comps.filter(c => c.compSide === 'left');
-    const rightComps = comps.filter(c => c.compSide === 'right');
+    // EXTPWR は他コンポーネントの最外側に独立配置する
+    const extpwr = comps.find(c => c.type === 'EXTPWR');
+    const otherComps = comps.filter(c => c.type !== 'EXTPWR');
+    const leftComps  = otherComps.filter(c => c.compSide === 'left');
+    const rightComps = otherComps.filter(c => c.compSide === 'right');
 
     // 各サイドのワイヤー数 → ルーティング幅を動的決定
     const countWires = list => list.reduce((sum, c) =>
       sum + Object.values(c.pins).filter(Boolean).length, 0);
     const lWires = countWires(leftComps);
     const rWires = countWires(rightComps);
-    const routingL = Math.max(110, CH_STEP * (lWires + 1) + 20);
-    const routingR = Math.max(110, CH_STEP * (rWires + 1) + 20);
+    // 最低200: サーボのラベルゾーン (lblX=cx±158) が Picoピンラベル (PX+PW+50) と50px以上離れるため
+    const routingL = Math.max(200, CH_STEP * (lWires + 1) + 20);
+    const routingR = Math.max(200, CH_STEP * (rWires + 1) + 20);
 
     // 各部品を主要GPピンのy揃え → 既存列に最小プッシュで収まればそこに、
     // どの列でもCOMP_MAX_PUSH以上ずれる場合のみ新列を作る ベストフィット型パッキング
@@ -924,6 +1061,48 @@
     rightComps.forEach(c => {
       c.cx = PX + PW + routingR + c.col * C_CW + C_CW / 2;
     });
+
+    // EXTPWR の配置:
+    //   優先: SERVO のコネクタの「すぐ下」に置く (V+ tip が Vext ピン直下、GND ピンの少し下)
+    //   フォールバック: 最上部の vext コンポーネントの真上 (主に L293D 単体時)
+    if (extpwr) {
+      const servoComp = otherComps.find(c =>
+        c.type === 'SERVO' && Object.values(c.pins).some(s => s && s.vext)
+      );
+      if (servoComp) {
+        const sym = SYM.SERVO;
+        const symPins = sym.getPins ? sym.getPins(servoComp.compSide) : sym.pins;
+        const vccPin = symPins.VCC;
+        // sideFlip は noSideFlip により常に 1
+        const connX = servoComp.cx + (vccPin.dx || 0);
+        const connY = servoComp.cy + (vccPin.dy || 0);
+        // Vext 配線が GND コネクタピンを縦に貫通しないよう、EXTPWR を 14px Pico 側へオフセット。
+        // これで HVH の小さなL字を描いて Vext ピン → trackX → V+ へ抜ける。
+        const outDir = Math.sign(vccPin.dx) || 1; // +1: Servo左/出口右, -1: Servo右/出口左
+        extpwr.cx = connX + outDir * 14;
+        // V+ tip (cy_ext - 30) を Vext ピンの直下 GND ピンよりさらに 8px 下に
+        // → cy_ext - 30 = connY + 19 + 8 = connY + 27 → cy_ext = connY + 57
+        extpwr.cy = connY + 57;
+        extpwr.compSide = servoComp.compSide;
+        extpwr.col = servoComp.col;
+      } else {
+        const vextComps = otherComps.filter(c => Object.values(c.pins).some(s => s && s.vext));
+        if (vextComps.length > 0) {
+          const topComp = vextComps.reduce((a, b) => (a.cy < b.cy ? a : b));
+          const sym = SYM[topComp.type];
+          const ch = (sym && sym.cellHeight) || 180;
+          extpwr.cx = topComp.cx;
+          extpwr.cy = topComp.cy - ch / 2 - 62;
+          extpwr.compSide = topComp.compSide;
+          extpwr.col = topComp.col;
+        } else {
+          extpwr.cx = PX + PW / 2;
+          extpwr.cy = PY - 100;
+          extpwr.compSide = 'right';
+          extpwr.col = 0;
+        }
+      }
+    }
 
     return { lCols, rCols, leftCount: leftComps.length, rightCount: rightComps.length, routingL, routingR };
   }
@@ -1133,10 +1312,13 @@
       if (!sym) return;
       Object.entries(comp.pins).forEach(([pname, spec]) => {
         if (!spec) return;
-        const sp = sym.pins[pname];
+        // compSideに応じてピン位置を切り替える部品 (L293D等) は getPins() を持つ
+        const symPins = sym.getPins ? sym.getPins(comp.compSide) : sym.pins;
+        const sp = symPins[pname];
         if (!sp) return;
         // 左側配置部品はdxを反転して右側出しにする
-        const sideFlip = comp.compSide === 'left' ? -1 : 1;
+        // ただし、データシート Top View を厳守する部品 (noSideFlip=true) は反転しない
+        const sideFlip = (sym.noSideFlip || comp.compSide !== 'left') ? 1 : -1;
         const cpX = comp.cx + sp.dx * sideFlip, cpY = comp.cy + sp.dy;
         const pc = picoCoordOf(spec, cpX, cpY, comp.compSide);
         if (!pc) {
@@ -1242,31 +1424,77 @@
     });
 
     // vext → EXTPWR V+ ワイヤー (橙破線)
-    // 全vextピンで共通ハイウェイを使い、ジグザグを防ぐ
+    // 通常配線と同じ縦トラックL字 Manhattan。Pico/コンポーネント本体を横切る場合は上下ラップ。
+    //   同側: cpX,cpY → trackX,cpY → trackX,epY → epX,epY
+    //   反対側: cpX,cpY → cpX,wrapY → trackX,wrapY → trackX,epY → epX,epY
+    // trackX = EXTPWR の左 14px (全 vext ピンで共通、同電位なので重なり可)
     const extpwrComp = comps.find(c => c.type === 'EXTPWR');
     if (extpwrComp) {
       const epX = extpwrComp.cx, epY = extpwrComp.cy - 30;
-      const hwyTop = PY - 36, hwyBot = PY + PH + 36;
-      // 全vextピンを収集
       const vextPins = [];
+      // 配線が回避すべきコンポーネント本体 (vext を持つコンポ自身も含む)
+      // cellWidth を本体水平範囲、cellHeight (なければ180) を垂直範囲として扱う
+      const bodyObstacles = [];
       comps.forEach(comp => {
         if (comp.type === 'EXTPWR') return;
         const sym = SYM[comp.type];
         if (!sym) return;
-        const sideFlip = comp.compSide === 'left' ? -1 : 1;
+        const cw = (sym.cellWidth || C_CW) / 2 - 10; // 余裕を引いた本体半幅
+        const ch = (sym.cellHeight || 180) / 2;
+        bodyObstacles.push({ comp, left: comp.cx - cw, right: comp.cx + cw, top: comp.cy - ch, bot: comp.cy + ch, cy: comp.cy });
+        const sideFlip = (sym.noSideFlip || comp.compSide !== 'left') ? 1 : -1;
+        const symPins = sym.getPins ? sym.getPins(comp.compSide) : sym.pins;
         Object.entries(comp.pins).forEach(([pname, spec]) => {
           if (!spec || !spec.vext) return;
-          const sp = sym.pins[pname];
+          const sp = symPins[pname];
           if (!sp) return;
-          vextPins.push({ cpX: comp.cx + sp.dx * sideFlip, cpY: comp.cy + sp.dy });
+          vextPins.push({ cpX: comp.cx + sp.dx * sideFlip, cpY: comp.cy + sp.dy, ownerComp: comp });
         });
       });
-      // 全ピン共通で最小移動コストのハイウェイを選択
-      const costTop = vextPins.reduce((s, p) => s + Math.abs(p.cpY - hwyTop), 0) + Math.abs(epY - hwyTop);
-      const costBot = vextPins.reduce((s, p) => s + Math.abs(p.cpY - hwyBot), 0) + Math.abs(epY - hwyBot);
-      const hwy = costTop <= costBot ? hwyTop : hwyBot;
-      vextPins.forEach(({ cpX, cpY }) => {
-        els.push(`<polyline points="${cpX},${cpY} ${cpX},${hwy} ${epX},${hwy} ${epX},${epY}" fill="none" stroke="#ff8f00" stroke-width="2" stroke-dasharray="7,3" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>`);
+      const trackX = epX - 14;
+      // 既存ラップワイヤーの最外Yより外側にvextラップトラックを置く
+      const maxTopY = topWraps.length ? PY - 12 - (topWraps.length - 1) * 12 - 12 : PY - 12;
+      const maxBotY = botWraps.length ? PY + PH + 12 + (botWraps.length - 1) * 12 + 12 : PY + PH + 12;
+      vextPins.forEach(({ cpX, cpY, ownerComp }) => {
+        const crossesPico = (cpX < PX && trackX > PX + PW) || (cpX > PX + PW && trackX < PX);
+        // cpY 高さの水平線 (cpX → trackX) が他のコンポーネント本体を横切るか判定
+        const hxMin = Math.min(cpX, trackX), hxMax = Math.max(cpX, trackX);
+        const blocker = bodyObstacles.find(b =>
+          b.comp !== ownerComp &&
+          b.right > hxMin && b.left < hxMax &&
+          cpY > b.top && cpY < b.bot
+        );
+        // ピン所属コンポ本体を横切るか (コネクタ先端から trackX への直線が本体内部を通る場合)
+        // 水平経路 [min(cpX,trackX), max(cpX,trackX)] が本体水平範囲 [left+5, right-5] と重なり、
+        // かつ cpY が本体垂直範囲内ならば本体を通る (+/-5 は コネクタ位置誤判定回避)
+        const ownBody = bodyObstacles.find(b => b.comp === ownerComp);
+        const ownBlocks = ownBody && (
+          Math.min(cpX, trackX) < ownBody.right - 5 &&
+          Math.max(cpX, trackX) > ownBody.left + 5 &&
+          cpY > ownBody.top && cpY < ownBody.bot
+        );
+        let pts;
+        // 同列 (cpX==epX) または同行 (cpY==epY) かつ障害物なし → 直線最短経路
+        const aligned = Math.abs(cpX - epX) < 1 || Math.abs(cpY - epY) < 1;
+        if (aligned && !crossesPico && !blocker && !ownBlocks) {
+          pts = `${cpX},${cpY} ${epX},${epY}`;
+        } else if (crossesPico) {
+          const wrapY = cpY < picoMidY ? maxTopY : maxBotY;
+          pts = `${cpX},${cpY} ${cpX},${wrapY} ${trackX},${wrapY} ${trackX},${epY} ${epX},${epY}`;
+        } else if (blocker || ownBlocks) {
+          // 障害コンポ本体を上下迂回 (実本体外周 14px の最短ルート)
+          // EXTPWR が障害より上 → 上ラップ、下 → 下ラップ、同高なら cpY 基準
+          const obstacle = blocker || ownBody;
+          let goTop;
+          if (epY < obstacle.top) goTop = true;
+          else if (epY > obstacle.bot) goTop = false;
+          else goTop = cpY < obstacle.cy;
+          const wrapY = goTop ? (obstacle.top - 14) : (obstacle.bot + 14);
+          pts = `${cpX},${cpY} ${cpX},${wrapY} ${trackX},${wrapY} ${trackX},${epY} ${epX},${epY}`;
+        } else {
+          pts = `${cpX},${cpY} ${trackX},${cpY} ${trackX},${epY} ${epX},${epY}`;
+        }
+        els.push(`<polyline points="${pts}" fill="none" stroke="#ff8f00" stroke-width="2" stroke-dasharray="7,3" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>`);
       });
     }
 
