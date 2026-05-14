@@ -672,24 +672,29 @@
           const py = cy - 35 + i * 10;
           return `<rect x="${cx + bw}" y="${py - 2}" width="5" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
         }).join('\n  ');
-        const shaftX = mdir > 0 ? mx + mR : mx - mR - 12;
+        const pinLblX = cx - mdir * (bw - 3);
+        const pinLblA = mdir > 0 ? 'start' : 'end';
+        const vssLblXi = cx + mdir * (bw - 3);
+        const vssLblAi = mdir > 0 ? 'end' : 'start';
 
         return `<g filter="url(#fDrop)">
   <!-- L293D DIP-16 IC ボディ -->
   <rect x="${cx - bw}" y="${cy - bh}" width="${bw * 2}" height="${bh * 2}" fill="#1a1a1a" stroke="#444" stroke-width="1.5" rx="2"/>
   <path d="M${cx - 7},${cy - bh} a7,7 0 0,0 14,0" fill="#2a2a2a"/>
-  <circle cx="${cx - bw + 6}" cy="${cy - bh + 8}" r="2.5" fill="#555"/>
+  <circle cx="${cx - mdir * (bw - 6)}" cy="${cy - bh + 8}" r="2.5" fill="#555"/>
   ${leftNubs}
   ${rightNubs}
-  <!-- ICピン番号 (左側: 実物理位置) -->
-  <text x="${cx - bw + 3}" y="${cy - 31}" font-size="4" fill="#666" font-family="sans-serif">1:EN1</text>
-  <text x="${cx - bw + 3}" y="${cy - 21}" font-size="4" fill="#666" font-family="sans-serif">2:IN1</text>
-  <text x="${cx - bw + 3}" y="${cy - 11}" font-size="4" fill="#e57373" font-family="sans-serif">3:OUT1</text>
-  <text x="${cx - bw + 3}" y="${cy - 1}"  font-size="4" fill="#666" font-family="sans-serif">4:GND</text>
-  <text x="${cx - bw + 3}" y="${cy + 9}"  font-size="4" fill="#666" font-family="sans-serif">5:GND</text>
-  <text x="${cx - bw + 3}" y="${cy + 19}" font-size="4" fill="#64b5f6" font-family="sans-serif">6:OUT2</text>
-  <text x="${cx - bw + 3}" y="${cy + 29}" font-size="4" fill="#666" font-family="sans-serif">7:IN2</text>
-  <text x="${cx - bw + 3}" y="${cy + 39}" font-size="4" fill="#ffb74d" font-family="sans-serif">8:VS</text>
+  <!-- ICピン番号 (Pico側・mdir依存) -->
+  <text x="${pinLblX}" y="${cy - 31}" font-size="4" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">1:EN1</text>
+  <text x="${pinLblX}" y="${cy - 21}" font-size="4" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">2:IN1</text>
+  <text x="${pinLblX}" y="${cy - 11}" font-size="4" fill="#e57373" text-anchor="${pinLblA}" font-family="sans-serif">3:OUT1</text>
+  <text x="${pinLblX}" y="${cy - 1}"  font-size="4" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">4:GND</text>
+  <text x="${pinLblX}" y="${cy + 9}"  font-size="4" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">5:GND</text>
+  <text x="${pinLblX}" y="${cy + 19}" font-size="4" fill="#64b5f6" text-anchor="${pinLblA}" font-family="sans-serif">6:OUT2</text>
+  <text x="${pinLblX}" y="${cy + 29}" font-size="4" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">7:IN2</text>
+  <text x="${pinLblX}" y="${cy + 39}" font-size="4" fill="#ffb74d" text-anchor="${pinLblA}" font-family="sans-serif">8:VS</text>
+  <!-- VSS(pin16) ICボディ内ラベル (モーター側) -->
+  <text x="${vssLblXi}" y="${cy - 31}" font-size="4" fill="#ff7043" text-anchor="${vssLblAi}" font-family="sans-serif">16:VSS</text>
   <!-- ICラベル -->
   <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="8" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
   <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="5.5" fill="#777" font-family="sans-serif">H-Bridge</text>
@@ -716,13 +721,12 @@
   <polyline points="${picoPad},${out2y} ${bypassX},${out2y} ${bypassX},${bypassBotY} ${motorEdge},${bypassBotY} ${motorEdge},${out2y}"
     fill="none" stroke="#1e88e5" stroke-width="1.5" opacity="0.9"/>
 
-  <!-- DCモーター本体 -->
-  <circle cx="${mx}" cy="${cy}" r="${mR}" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="1.5"/>
-  <circle cx="${mx}" cy="${cy}" r="${mR - 6}" fill="none" stroke="#1565c0" stroke-width="0.7" stroke-dasharray="3 2"/>
-  <text x="${mx}" y="${cy + 4}" text-anchor="middle" font-size="12" fill="#e3f2fd" font-weight="bold" font-family="sans-serif">M</text>
+  <!-- DCモーター本体 (矩形アイコン) -->
+  <rect x="${mx - mR}" y="${cy - 20}" width="${mR * 2}" height="40" fill="#0d47a1" stroke="#1a237e" stroke-width="1.5" rx="5"/>
+  <rect x="${mx - mR + 3}" y="${cy - 17}" width="${mR * 2 - 6}" height="34" fill="none" stroke="#283593" stroke-width="0.8" rx="3"/>
+  <text x="${mx}" y="${cy + 6}" text-anchor="middle" font-size="16" fill="#e8eaf6" font-weight="bold" font-family="sans-serif">M</text>
   <circle cx="${motorEdge}" cy="${out1y}" r="2.5" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
   <circle cx="${motorEdge}" cy="${out2y}" r="2.5" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
-  <rect x="${shaftX}" y="${cy - 3}" width="12" height="6" fill="#b0bec5" stroke="#78909c" stroke-width="0.6" rx="1.5"/>
 
   <text x="${cx}" y="${cy + bh + 14}" text-anchor="middle" class="cv-lbl">L293D + DC Motor</text>
 </g>`;
@@ -737,7 +741,8 @@
         return `<g>
   <!-- V+ 端子線 -->
   <line x1="${cx}" y1="${cy - 30}" x2="${cx}" y2="${cy - 20}" stroke="#ff8f00" stroke-width="2"/>
-  <text x="${cx + 4}" y="${cy - 21}" font-size="10" fill="#ff8f00" font-weight="bold" font-family="sans-serif">+</text>
+  <circle cx="${cx}" cy="${cy - 30}" r="3" fill="#ffa000" stroke="#e65100" stroke-width="0.5"/>
+  <text x="${cx + 5}" y="${cy - 26}" font-size="10" fill="#ff8f00" font-weight="bold" font-family="sans-serif">V+</text>
   <!-- 電池セル1: 長線(正極) -->
   <line x1="${cx - 14}" y1="${cy - 20}" x2="${cx + 14}" y2="${cy - 20}" stroke="#333" stroke-width="2.5"/>
   <!-- 電池セル1: 短線(負極) -->
@@ -832,7 +837,7 @@
         } else if (['pico_dcmotor_run','pico_dcmotor_stop'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), en=b.getFieldValue('EN');
           add('l293d_'+in1+'_'+in2, 'L293D',
-            { VSS:{vbus:true}, EN:en?{gp:en}:null, IN1:{gp:in1}, IN2:{gp:in2}, GND:{gnd:true}, VS:{vext:true} });
+            { VSS:{vext:true}, EN:en?{gp:en}:null, IN1:{gp:in1}, IN2:{gp:in2}, GND:{gnd:true}, VS:{vext:true} });
 
         } else if (['pico_stepper_step','pico_stepper_angle'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), in3=gf('IN3'), in4=gf('IN4');
@@ -1258,6 +1263,29 @@
       );
       wireCount++;
     });
+
+    // vext → EXTPWR V+ ワイヤー (橙破線, 上下ハイウェイ経由)
+    const extpwrComp = comps.find(c => c.type === 'EXTPWR');
+    if (extpwrComp) {
+      const epX = extpwrComp.cx, epY = extpwrComp.cy - 30;
+      const hwyTop = PY - 32, hwyBot = PY + PH + 32;
+      comps.forEach(comp => {
+        if (comp.type === 'EXTPWR') return;
+        const sym = SYM[comp.type];
+        if (!sym) return;
+        const sideFlip = comp.compSide === 'left' ? -1 : 1;
+        Object.entries(comp.pins).forEach(([pname, spec]) => {
+          if (!spec || !spec.vext) return;
+          const sp = sym.pins[pname];
+          if (!sp) return;
+          const cpX = comp.cx + sp.dx * sideFlip, cpY = comp.cy + sp.dy;
+          const costTop = Math.abs(cpY - hwyTop) + Math.abs(epY - hwyTop);
+          const costBot = Math.abs(cpY - hwyBot) + Math.abs(epY - hwyBot);
+          const hwy = costTop <= costBot ? hwyTop : hwyBot;
+          els.push(`<polyline points="${cpX},${cpY} ${cpX},${hwy} ${epX},${hwy} ${epX},${epY}" fill="none" stroke="#ff8f00" stroke-width="2" stroke-dasharray="7,3" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>`);
+        });
+      });
+    }
 
     // Pico (cv-comp としてドラッグ可能にする。data-comp-id='__pico__')
     els.push(`<g class="cv-comp" data-comp-id="__pico__">${buildPicoSVG(onboardLedOn)}</g>`);
