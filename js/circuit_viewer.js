@@ -627,13 +627,17 @@
     // OUT1(pin3)/OUT2(pin6)はIN1/IN2と同じ左側(Pico面)にあるが、
     // 視認性のためモーター側スタブとして表示し、IC内ピン番号で明示する
     L293D: {
+      // 物理DIP-16ピン位置に完全対応
+      // 左側(pin1-8): EN1, IN1, OUT1, GND, GND, OUT2, IN2, VS
+      // 右側(pin16): VSS
+      // OUT1(pin3)/OUT2(pin6)はPico側スタブ → ICの上下を迂回してモーターへ
       pins: {
-        EN:  { dx: -30, dy: -47 }, // pin1: Pico側、ICボディ上端より上に退避
-        VSS: { dx: -30, dy: -35 }, // pin16: Pico側最上部(VBUS) ← ICに正しく入る
+        EN:  { dx: -30, dy: -35 }, // pin1: 左上
         IN1: { dx: -30, dy: -25 }, // pin2
         GND: { dx: -30, dy:  -5 }, // pin4
         IN2: { dx: -30, dy:  25 }, // pin7
         VS:  { dx: -30, dy:  35 }, // pin8: 外部電源(vext)
+        VSS: { dx:  30, dy: -35 }, // pin16: 右上(VBUS)
       },
       draw(cx, cy, side = 'right') {
         const bw = 22, bh = 40;
@@ -641,12 +645,24 @@
         const mx  = cx + mdir * (bw + 62);
         const mR  = 22;
         const motorEdge = mx - mdir * mR;
-        // OUT1/OUT2: モーター側スタブ (pin3=dy-15, pin6=dy+15)
-        const outEdge = cx + mdir * bw;
-        const outPad  = outEdge + mdir * 8;
+
         const out1y = cy - 15, out2y = cy + 15;
-        const outLblAnchor = mdir > 0 ? 'start' : 'end';
-        const outLblX = outPad + mdir * 4;
+
+        // OUT1/OUT2: Pico側エッジから短スタブ → ICを迂回してモーターへ
+        const picoEdge  = cx - mdir * bw;       // ICのPico側エッジ
+        const picoPad   = picoEdge - mdir * 8;  // stubパッド (dx=-30相当)
+        const bypassX   = picoPad - mdir * 8;   // 迂回コーナーX (さらに外側)
+        const bypassTopY = cy - bh - 12;         // IC上端より上
+        const bypassBotY = cy + bh + 12;         // IC下端より下
+        const outLblAnchor = mdir > 0 ? 'end' : 'start';
+        const outLblX = picoPad - mdir * 4;
+
+        // VSS(pin16): モーター側エッジに物理的に正しく配置
+        const motorFacingEdge = cx + mdir * bw;
+        const vssPad = motorFacingEdge + mdir * 8;
+        const vssLblAnchor = mdir > 0 ? 'start' : 'end';
+        const vssLblX = vssPad + mdir * 4;
+
         // DIP nubs
         const leftNubs = Array.from({ length: 8 }, (_, i) => {
           const py = cy - 35 + i * 10;
@@ -665,7 +681,7 @@
   <circle cx="${cx - bw + 6}" cy="${cy - bh + 8}" r="2.5" fill="#555"/>
   ${leftNubs}
   ${rightNubs}
-  <!-- ICピン番号 (左側: 実物理ピン位置) -->
+  <!-- ICピン番号 (左側: 実物理位置) -->
   <text x="${cx - bw + 3}" y="${cy - 31}" font-size="4" fill="#666" font-family="sans-serif">1:EN1</text>
   <text x="${cx - bw + 3}" y="${cy - 21}" font-size="4" fill="#666" font-family="sans-serif">2:IN1</text>
   <text x="${cx - bw + 3}" y="${cy - 11}" font-size="4" fill="#e57373" font-family="sans-serif">3:OUT1</text>
@@ -678,23 +694,27 @@
   <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="8" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
   <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="5.5" fill="#777" font-family="sans-serif">H-Bridge</text>
 
-  <!-- Pico側スタブ: EN1(1)/VSS(16)/IN1(2)/GND(4)/IN2(7)/VS(8) -->
-  <!-- VSS(pin16)はPico側からICに入力 → VBUS配線がICに正しく接続される -->
-  ${sideStubs(cx, cy, side, bw, [-47, -35, -25, -5, 25, 35], ['EN1', 'VSS', 'IN1', 'GND', 'IN2', 'VS'])}
+  <!-- Pico側スタブ: EN1(pin1)/IN1(pin2)/GND(pin4)/IN2(pin7)/VS(pin8) -->
+  ${sideStubs(cx, cy, side, bw, [-35, -25, -5, 25, 35], ['EN1', 'IN1', 'GND', 'IN2', 'VS'])}
 
-  <!-- OUT1 stub (pin3=dy-15, モーター側) -->
-  <line x1="${outEdge}" y1="${out1y}" x2="${outPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${outPad}" cy="${out1y}" r="2.5" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
+  <!-- VSS (pin16, 右側 = 物理的に正しい位置) -->
+  <line x1="${motorFacingEdge}" y1="${cy - 35}" x2="${vssPad}" y2="${cy - 35}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${vssPad}" cy="${cy - 35}" r="3" fill="#ff7043" stroke="#e64a19" stroke-width="0.5"/>
+  <text x="${vssLblX}" y="${cy - 31}" text-anchor="${vssLblAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">VSS</text>
+
+  <!-- OUT1 (pin3, Pico側dy=-15): スタブ + ICを上側迂回してモーターへ -->
+  <line x1="${picoEdge}" y1="${out1y}" x2="${picoPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${picoPad}" cy="${out1y}" r="2.5" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
   <text x="${outLblX}" y="${out1y + 4}" text-anchor="${outLblAnchor}" font-size="9" fill="#ef9a9a" font-family="sans-serif">OUT1</text>
+  <polyline points="${picoPad},${out1y} ${bypassX},${out1y} ${bypassX},${bypassTopY} ${motorEdge},${bypassTopY} ${motorEdge},${out1y}"
+    fill="none" stroke="#e53935" stroke-width="1.5" opacity="0.9"/>
 
-  <!-- OUT2 stub (pin6=dy+15, モーター側) -->
-  <line x1="${outEdge}" y1="${out2y}" x2="${outPad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${outPad}" cy="${out2y}" r="2.5" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
+  <!-- OUT2 (pin6, Pico側dy=+15): スタブ + ICを下側迂回してモーターへ -->
+  <line x1="${picoEdge}" y1="${out2y}" x2="${picoPad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${picoPad}" cy="${out2y}" r="2.5" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
   <text x="${outLblX}" y="${out2y + 4}" text-anchor="${outLblAnchor}" font-size="9" fill="#90caf9" font-family="sans-serif">OUT2</text>
-
-  <!-- OUT1/OUT2 → DCモーター接続ワイヤー -->
-  <line x1="${outPad}" y1="${out1y}" x2="${motorEdge}" y2="${out1y}" stroke="#e53935" stroke-width="1.5" opacity="0.9"/>
-  <line x1="${outPad}" y1="${out2y}" x2="${motorEdge}" y2="${out2y}" stroke="#1e88e5" stroke-width="1.5" opacity="0.9"/>
+  <polyline points="${picoPad},${out2y} ${bypassX},${out2y} ${bypassX},${bypassBotY} ${motorEdge},${bypassBotY} ${motorEdge},${out2y}"
+    fill="none" stroke="#1e88e5" stroke-width="1.5" opacity="0.9"/>
 
   <!-- DCモーター本体 -->
   <circle cx="${mx}" cy="${cy}" r="${mR}" fill="url(#gMotorBlue)" stroke="#0d47a1" stroke-width="1.5"/>
