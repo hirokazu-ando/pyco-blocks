@@ -321,17 +321,19 @@
     // ── SG90 サーボ (Wokwi wokwi-servo, MIT © 2020 Uri Shaked) ──
     // ピン位置: connectorface cx-61, pad cx-69; dy=-6(GND), 0(VCC外部電源), +6(PWM)
     SERVO: {
+      // コネクタピン順(上→下): GND(茶) / VCC(赤) / PWM(橙) ← 元のSVG通り
       pins: { GND: { dx: -69, dy: -19 }, VCC: { dx: -69, dy: 0 }, PWM: { dx: -69, dy: 19 } },
       draw(cx, cy, side = 'right') {
-        const sdir = side === 'right' ? -1 : 1;
-        const sx = cx - 65, sy = cy - 36;
+        // scale=19/9.6≈1.979 でコネクタピン間隔がPPピッチ(19px)に一致
+        const W = 337, H = 237;
+        const sx = cx - 65, sy = cy - 119;
         const pin = (x, y) =>
           `<g transform="translate(${x},${y})">
             <rect x="0" y="-1.91" width="3.72" height="3.71" fill="#111"/>
             <rect fill="#ccc" x="0.33" y="-1.23" width="3.04" height="2.46" rx=".15"/>
           </g>`;
         return `<g>
-  <svg x="${sx}" y="${sy}" width="130" height="72" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
+  <svg x="${sx}" y="${sy}" width="${W}" height="${H}" viewBox="0 0 170.08 119.55" xmlns="http://www.w3.org/2000/svg">
     <path fill="none" stroke="#b44200" stroke-width="2.7" d="m83.32,56.6c0,0-32.99,0.96-43.32,0-6.20,-0.58-10.60,-6.20-14.87,-6.31"/>
     <path fill="none" stroke="#ff2300" stroke-width="2.7" d="m83.326 59.6h-62.971"/>
     <path fill="none" stroke="#f47b00" stroke-width="2.7" d="m83.32,62.6c0,0-32.60,-0.61-43.33,-0.15-6.87,0.29-12.01,6.82-14.77,6.73"/>
@@ -349,7 +351,7 @@
   </svg>
   <!-- 端子スタブ (GND / Vext / PWM) -->
   ${sideStubs(cx, cy, side, 61, [-19, 0, 19], ['GND', 'Vext', 'PWM'])}
-  <text x="${cx}" y="${cy + 46}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
+  <text x="${cx}" y="${cy + 133}" text-anchor="middle" class="cv-lbl">Servo (SG90)</text>
 </g>`;
       }
     },
@@ -614,14 +616,11 @@
     },
 
     // ── L293D DCモータードライバー (DIP-16 IC) + DCモーター ────────────────────────
-    // 正確なピンアサイン: 左側(pin1-8): EN1,IN1,OUT1,GND,GND,OUT2,IN2,VS
-    //                     右側(pin16): VSS (ロジック電源=VBUS)
-    // OUT1(pin3)/OUT2(pin6)はIN1/IN2と同じ左側(Pico面)にあるが、
-    // 視認性のためモーター側スタブとして表示し、IC内ピン番号で明示する
+    // 回路図表現(Top View): Pico側=EN1/IN1/GND/IN2/Vcc2、モーター側=OUT1/OUT2/Vcc1
+    // TIデータシート表記: pin8=Vcc2(モーター電源), pin16=Vcc1(ロジック電源)
+    // OUT1/OUT2 を物理的な左側(pin3/pin6)ではなくモーター側スタブとして描画し
+    // バイパス配線なしで直接モーターに接続する(視認性優先のスキーマティック表現)
     L293D: {
-      // 物理DIP-16ピン位置: Pico側(pin1-8): EN1,IN1,OUT1,GND,GND,OUT2,IN2,VS
-      //                      モーター側(pin16): VSS
-      // Picoピッチ(PP=19px)に合わせて8ピン配置: dy = ±66.5, ±47.5, ±28.5, ±9.5
       pins: {
         EN:  { dx: -38, dy: -66.5 }, // pin1
         IN1: { dx: -38, dy: -47.5 }, // pin2
@@ -635,22 +634,14 @@
         const mdir = side === 'right' ? 1 : -1;
         const mx  = cx + mdir * (bw + 85);
         const mR  = 28;
-        const motorEdge = mx - mdir * mR;
 
-        const out1y = cy - 28.5, out2y = cy + 28.5; // pin3, pin6 (PP=19px pitch)
+        const out1y = cy - 28.5, out2y = cy + 28.5; // pin3, pin6
 
-        const picoEdge   = cx - mdir * bw;
-        const picoPad    = picoEdge - mdir * 8;
-        const bypassX    = picoPad - mdir * 10;
-        const bypassTopY = cy - bh - 14;
-        const bypassBotY = cy + bh + 14;
-        const outLblAnchor = mdir > 0 ? 'end' : 'start';
-        const outLblX = picoPad - mdir * 4;
-
-        const motorFacingEdge = cx + mdir * bw;
-        const vssPad = motorFacingEdge + mdir * 8;
-        const vssLblAnchor = mdir > 0 ? 'start' : 'end';
-        const vssLblX = vssPad + mdir * 4;
+        const motorFacingEdge = cx + mdir * bw;       // ICモーター側エッジ
+        const motorSidePad    = motorFacingEdge + mdir * 8;
+        const motorEdge       = mx - mdir * mR;       // モーター矩形のIC側エッジ
+        const motorSideLblX   = motorSidePad + mdir * 4;
+        const motorSideLblA   = mdir > 0 ? 'start' : 'end';
 
         const leftNubs = Array.from({ length: 8 }, (_, i) => {
           const py = cy - 66.5 + i * nubPitch;
@@ -660,10 +651,10 @@
           const py = cy - 66.5 + i * nubPitch;
           return `<rect x="${cx + bw}" y="${py - 2}" width="6" height="4" fill="#bdbdbd" stroke="#888" stroke-width="0.3" rx="0.5"/>`;
         }).join('\n  ');
-        const pinLblX = cx - mdir * (bw - 4);
-        const pinLblA = mdir > 0 ? 'start' : 'end';
-        const vssLblXi = cx + mdir * (bw - 4);
-        const vssLblAi = mdir > 0 ? 'end' : 'start';
+        const pinLblX  = cx - mdir * (bw - 4);
+        const pinLblA  = mdir > 0 ? 'start' : 'end';
+        const mtrLblXi = cx + mdir * (bw - 4);
+        const mtrLblAi = mdir > 0 ? 'end' : 'start';
 
         return `<g filter="url(#fDrop)">
   <!-- L293D DIP-16 IC ボディ -->
@@ -672,42 +663,40 @@
   <circle cx="${cx - mdir * (bw - 8)}" cy="${cy - bh + 10}" r="3" fill="#555"/>
   ${leftNubs}
   ${rightNubs}
-  <!-- ICピン番号 (Pico側・mdir依存) -->
+  <!-- ICピン番号 (Pico側) -->
   <text x="${pinLblX}" y="${cy - 61.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">1:EN1</text>
   <text x="${pinLblX}" y="${cy - 42.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">2:IN1</text>
-  <text x="${pinLblX}" y="${cy - 23.5}" font-size="5" fill="#e57373" text-anchor="${pinLblA}" font-family="sans-serif">3:OUT1</text>
   <text x="${pinLblX}" y="${cy - 4.5}"  font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">4:GND</text>
   <text x="${pinLblX}" y="${cy + 14.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">5:GND</text>
-  <text x="${pinLblX}" y="${cy + 33.5}" font-size="5" fill="#64b5f6" text-anchor="${pinLblA}" font-family="sans-serif">6:OUT2</text>
   <text x="${pinLblX}" y="${cy + 52.5}" font-size="5" fill="#666" text-anchor="${pinLblA}" font-family="sans-serif">7:IN2</text>
-  <text x="${pinLblX}" y="${cy + 71.5}" font-size="5" fill="#ffb74d" text-anchor="${pinLblA}" font-family="sans-serif">8:VS</text>
-  <!-- VSS(pin16) ICボディ内ラベル (モーター側) -->
-  <text x="${vssLblXi}" y="${cy - 61.5}" font-size="5" fill="#ff7043" text-anchor="${vssLblAi}" font-family="sans-serif">16:VSS</text>
+  <text x="${pinLblX}" y="${cy + 71.5}" font-size="5" fill="#ffb74d" text-anchor="${pinLblA}" font-family="sans-serif">8:Vcc2</text>
+  <!-- ICピン番号 (モーター側) -->
+  <text x="${mtrLblXi}" y="${cy - 61.5}" font-size="5" fill="#ff7043" text-anchor="${mtrLblAi}" font-family="sans-serif">16:Vcc1</text>
+  <text x="${mtrLblXi}" y="${cy - 23.5}" font-size="5" fill="#e57373" text-anchor="${mtrLblAi}" font-family="sans-serif">3:OUT1</text>
+  <text x="${mtrLblXi}" y="${cy + 33.5}" font-size="5" fill="#64b5f6" text-anchor="${mtrLblAi}" font-family="sans-serif">6:OUT2</text>
   <!-- ICラベル -->
   <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="10" fill="#ccc" font-weight="bold" font-family="sans-serif">L293D</text>
   <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="7" fill="#777" font-family="sans-serif">H-Bridge</text>
 
-  <!-- Pico側スタブ: EN1/IN1/GND/IN2/VS (PP=19px間隔) -->
-  ${sideStubs(cx, cy, side, bw, [-66.5, -47.5, -9.5, 47.5, 66.5], ['EN1', 'IN1', 'GND', 'IN2', 'VS'])}
+  <!-- Pico側スタブ: EN1/IN1/GND/IN2/Vcc2 (PP=19px間隔) -->
+  ${sideStubs(cx, cy, side, bw, [-66.5, -47.5, -9.5, 47.5, 66.5], ['EN1', 'IN1', 'GND', 'IN2', 'Vcc2'])}
 
-  <!-- VSS (pin16, モーター側) -->
-  <line x1="${motorFacingEdge}" y1="${cy - 66.5}" x2="${vssPad}" y2="${cy - 66.5}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${vssPad}" cy="${cy - 66.5}" r="3" fill="#ff7043" stroke="#e64a19" stroke-width="0.5"/>
-  <text x="${vssLblX}" y="${cy - 61.5}" text-anchor="${vssLblAnchor}" font-size="11" fill="#b0bec5" font-family="sans-serif">VSS</text>
+  <!-- Vcc1 (pin16, モーター側スタブ → EXTPWR) -->
+  <line x1="${motorFacingEdge}" y1="${cy - 66.5}" x2="${motorSidePad}" y2="${cy - 66.5}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${motorSidePad}" cy="${cy - 66.5}" r="3" fill="#ff7043" stroke="#e64a19" stroke-width="0.5"/>
+  <text x="${motorSideLblX}" y="${cy - 61.5}" text-anchor="${motorSideLblA}" font-size="10" fill="#b0bec5" font-family="sans-serif">Vcc1</text>
 
-  <!-- OUT1 (pin3, Pico側): スタブ + IC上側迂回 → モーターへ -->
-  <line x1="${picoEdge}" y1="${out1y}" x2="${picoPad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${picoPad}" cy="${out1y}" r="3" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
-  <text x="${outLblX}" y="${out1y + 4}" text-anchor="${outLblAnchor}" font-size="10" fill="#ef9a9a" font-family="sans-serif">OUT1</text>
-  <polyline points="${picoPad},${out1y} ${bypassX},${out1y} ${bypassX},${bypassTopY} ${motorEdge},${bypassTopY} ${motorEdge},${out1y}"
-    fill="none" stroke="#e53935" stroke-width="2" opacity="0.9"/>
+  <!-- OUT1 (pin3, モーター側スタブ) → モーターへ直接配線 -->
+  <line x1="${motorFacingEdge}" y1="${out1y}" x2="${motorSidePad}" y2="${out1y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${motorSidePad}" cy="${out1y}" r="3" fill="#e53935" stroke="#b71c1c" stroke-width="0.5"/>
+  <text x="${motorSideLblX}" y="${out1y + 4}" text-anchor="${motorSideLblA}" font-size="10" fill="#ef9a9a" font-family="sans-serif">OUT1</text>
+  <line x1="${motorSidePad}" y1="${out1y}" x2="${motorEdge}" y2="${out1y}" fill="none" stroke="#e53935" stroke-width="2" opacity="0.9"/>
 
-  <!-- OUT2 (pin6, Pico側): スタブ + IC下側迂回 → モーターへ -->
-  <line x1="${picoEdge}" y1="${out2y}" x2="${picoPad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
-  <circle cx="${picoPad}" cy="${out2y}" r="3" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
-  <text x="${outLblX}" y="${out2y + 4}" text-anchor="${outLblAnchor}" font-size="10" fill="#90caf9" font-family="sans-serif">OUT2</text>
-  <polyline points="${picoPad},${out2y} ${bypassX},${out2y} ${bypassX},${bypassBotY} ${motorEdge},${bypassBotY} ${motorEdge},${out2y}"
-    fill="none" stroke="#1e88e5" stroke-width="2" opacity="0.9"/>
+  <!-- OUT2 (pin6, モーター側スタブ) → モーターへ直接配線 -->
+  <line x1="${motorFacingEdge}" y1="${out2y}" x2="${motorSidePad}" y2="${out2y}" stroke="#888" stroke-width="1.5"/>
+  <circle cx="${motorSidePad}" cy="${out2y}" r="3" fill="#1e88e5" stroke="#0d47a1" stroke-width="0.5"/>
+  <text x="${motorSideLblX}" y="${out2y + 4}" text-anchor="${motorSideLblA}" font-size="10" fill="#90caf9" font-family="sans-serif">OUT2</text>
+  <line x1="${motorSidePad}" y1="${out2y}" x2="${motorEdge}" y2="${out2y}" fill="none" stroke="#1e88e5" stroke-width="2" opacity="0.9"/>
 
   <!-- DCモーター本体 (矩形アイコン) -->
   <rect x="${mx - mR}" y="${cy - 32}" width="${mR * 2}" height="64" fill="#0d47a1" stroke="#1a237e" stroke-width="1.5" rx="6"/>
