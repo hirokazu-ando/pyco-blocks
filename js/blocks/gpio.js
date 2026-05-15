@@ -146,6 +146,22 @@ Blockly.Blocks['pico_pwm_write'] = {
   }
 };
 
+Blockly.Blocks['pico_pwm_write_val'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('PWM出力  ピン')
+      .appendField(new Blockly.FieldDropdown(makePinOptions('0')), 'PIN');
+    this.appendValueInput('DUTY').setCheck('Number')
+      .appendField('  デューティ');
+    this.appendDummyInput().appendField('%');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioOutput);
+    this.setTooltip('PWMでアナログ的な出力をします。デューティに変数や式を差し込めます（0〜100）');
+  }
+};
+
 // ===== ブザー =====
 
 Blockly.Blocks['pico_buzzer_tone'] = {

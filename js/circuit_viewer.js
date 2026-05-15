@@ -929,7 +929,7 @@
       .forEach(b => {
         const t = b.type, gf = n => b.getFieldValue(n);
 
-        if (['pico_led_on','pico_led_off','pico_digital_write','pico_pwm_write'].includes(t)) {
+        if (['pico_led_on','pico_led_off','pico_digital_write','pico_pwm_write','pico_pwm_write_val'].includes(t)) {
           const p = gf('PIN');
           if (parseInt(p) === 25) {
             // GP25はオンボードLED — 外部配線なし、Pico上のLEDを光らせる

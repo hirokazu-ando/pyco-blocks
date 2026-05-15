@@ -2075,6 +2075,12 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `PWM(Pin(${pin})).duty_u16(${dutyU16})\n`);
         break;
       }
+      case 'pico_pwm_write_val': {
+        const pin = block.getFieldValue('PIN');
+        const dutyExpr = valueToCode(block, 'DUTY', '0');
+        code = appendLocal(code, indent + `PWM(Pin(${pin})).duty_u16(int(max(0, min(100, ${dutyExpr})) * 65535 / 100))\n`);
+        break;
+      }
 
       // ===== ブザー =====
       case 'pico_buzzer_tone': {

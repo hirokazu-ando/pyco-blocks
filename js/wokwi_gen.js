@@ -143,6 +143,7 @@
       pico_led_off:       b => mkLed(b.getFieldValue('PIN')),
       pico_digital_write: b => mkLed(b.getFieldValue('PIN')),
       pico_pwm_write:     b => mkLed(b.getFieldValue('PIN')),
+      pico_pwm_write_val: b => mkLed(b.getFieldValue('PIN')),
 
       pico_digital_read:      b => mkButton(b.getFieldValue('PIN')),
       pico_digital_read_val:  b => mkButton(b.getFieldValue('PIN')),
