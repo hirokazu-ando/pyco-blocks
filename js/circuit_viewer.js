@@ -918,10 +918,10 @@
     let onboardLedOn = false;   // GP25 オンボードLED点灯フラグ
     const badPins = [];          // 接続不可ピン情報
 
-    function add(key, type, pins) {
+    function add(key, type, pins, opts) {
       if (seen.has(key)) return;
       seen.add(key);
-      comps.push({ compId: key, type, pins });
+      comps.push({ compId: key, type, pins, ...(opts || {}) });
     }
 
     workspace.getAllBlocks(false)
@@ -945,15 +945,19 @@
           const pull = gf('PULL') || 'PULLUP_EXT';
           if (pull === 'PULLDOWN_EXT') {
             // 外付けプルダウン：ボタンが3V3とGPの間、抵抗がGPとGNDの間。押下時にGP=HIGH
-            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{v3v3:true} });
-            add('respd'+p, 'RES', { A:{gp:p}, B:{gnd:true} });
+            // ボタンを上、抵抗を下に縦並びさせる（同列内で上下に積む）
+            const pair = 'pdpair'+p;
+            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{v3v3:true} }, { stackOffset: -90, pairKey: pair, pairOrder: 0 });
+            add('respd'+p, 'RES', { A:{gp:p}, B:{gnd:true} }, { stackOffset: 90, pairKey: pair, pairOrder: 1 });
           } else if (pull === 'PULLUP_INT') {
             // 内部プルアップ：ボタンがGPとGNDの間のみ。押下時にGP=LOW
             add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{gnd:true} });
           } else {
             // 外付けプルアップ（既定）：ボタンがGPとGNDの間、抵抗が3V3とGPの間。押下時にGP=LOW
-            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{gnd:true} });
-            add('respu'+p, 'RES', { A:{v3v3:true}, B:{gp:p} });
+            // 抵抗を上、ボタンを下に縦並びさせる（同列内で上下に積む）
+            const pair = 'pupair'+p;
+            add('respu'+p, 'RES', { A:{v3v3:true}, B:{gp:p} }, { stackOffset: -90, pairKey: pair, pairOrder: 0 });
+            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{gnd:true} }, { stackOffset: 90, pairKey: pair, pairOrder: 1 });
           }
 
         } else if (['pico_analog_read','pico_analog_read_val'].includes(t)) {
@@ -1053,7 +1057,7 @@
       }
     }
     if (!best) return PY + 100;
-    return Math.max(PY + 30, best.ideal);
+    return Math.max(PY + 30, best.ideal + (comp.stackOffset || 0));
   }
 
   function layoutComps(comps) {
@@ -1074,13 +1078,55 @@
     const routingR = Math.max(200, CH_STEP * (rWires + 1) + 20);
 
     // 各部品を主要GPピンのy揃え → 既存列に最小プッシュで収まればそこに、
-    // どの列でもCOMP_MAX_PUSH以上ずれる場合のみ新列を作る ベストフィット型パッキング
+    // どの列でもCOMP_MAX_PUSH以上ずれる場合のみ新列を作る ベストフィット型パッキング。
+    // pairKey が付いた部品は同じ列に強制配置し、ペア間の最小ギャップだけ離す。
     function packCols(list) {
       if (list.length === 0) return 0;
       list.forEach(c => { c.idealCy = idealCyOf(c); });
-      list.sort((a, b) => a.idealCy - b.idealCy);
-      const lastInCol = [];
+      // ペア優先: 同じ pairKey の部品は一つのソート単位として扱い、min(idealCy) でソート
+      const pairs = new Map();
       list.forEach(c => {
+        if (!c.pairKey) return;
+        if (!pairs.has(c.pairKey)) pairs.set(c.pairKey, []);
+        pairs.get(c.pairKey).push(c);
+      });
+      pairs.forEach(arr => arr.sort((a, b) => (a.pairOrder || 0) - (b.pairOrder || 0)));
+      const handled = new Set();
+      const units = [];
+      list.forEach(c => {
+        if (handled.has(c)) return;
+        if (c.pairKey && pairs.has(c.pairKey)) {
+          const arr = pairs.get(c.pairKey);
+          arr.forEach(p => handled.add(p));
+          units.push({ items: arr, sortKey: Math.min(...arr.map(p => p.idealCy)) });
+        } else {
+          units.push({ items: [c], sortKey: c.idealCy });
+        }
+      });
+      // ペア (items.length > 1) は他の単体部品より後に処理し、内側 (Pico寄り) の列を取らせる
+      units.sort((a, b) => {
+        const ap = a.items.length > 1 ? 1 : 0;
+        const bp = b.items.length > 1 ? 1 : 0;
+        if (ap !== bp) return ap - bp;
+        return a.sortKey - b.sortKey;
+      });
+      const lastInCol = [];
+      units.forEach(unit => {
+        // ペア（複数アイテム）はまとめて新列に配置し、ペア内では COMP_MIN_GAP で並べる
+        if (unit.items.length > 1) {
+          const col = lastInCol.length;
+          lastInCol.push(0);
+          let prevCy = -Infinity;
+          unit.items.forEach(c => {
+            const cy = prevCy === -Infinity ? c.idealCy : Math.max(c.idealCy, prevCy + COMP_MIN_GAP);
+            c.col = col;
+            c.cy  = cy;
+            prevCy = cy;
+          });
+          lastInCol[col] = prevCy;
+          return;
+        }
+        const c = unit.items[0];
         let bestCol = -1, bestPush = Infinity, bestCy = 0;
         for (let i = 0; i < lastInCol.length; i++) {
           const minCy = Math.max(c.idealCy, lastInCol[i] + COMP_MIN_GAP);
