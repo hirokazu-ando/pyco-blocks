@@ -195,14 +195,14 @@
     // ── タクタイルスイッチ (Wokwi wokwi-pushbutton, MIT © 2020 Uri Shaked) ──
     // 小型化(36×36)+両ピンPico側に集約
     BTN: {
-      pins: { VCC: { dx: -34, dy: -8 }, SIG: { dx: -34, dy: 8 } },
+      pins: { SIG: { dx: -34, dy: -8 }, VCC: { dx: -34, dy: 8 } },
       draw(cx, cy, side = 'right') {
         const sdir = side === 'right' ? -1 : 1;
         const sx = cx - 18, sy = cy - 18;
         // 本体SVGの向きは固定(正方形なので回転不要)
         const pinSpec = [
-          { lbl: 'VCC', dy: -8 },
-          { lbl: 'SIG', dy:  8 },
+          { lbl: 'SIG', dy: -8 },
+          { lbl: 'VCC', dy:  8 },
         ];
         const tipX = cx + sdir * 18;
         const padX = cx + sdir * 34;
@@ -1407,12 +1407,13 @@
     const normalRightCount = maxCh(normalWires.filter(w => w.side === 'right'));
     const normalLeftCount  = maxCh(normalWires.filter(w => w.side === 'left'));
 
-    // ラップワイヤーを「上回り」「下回り」に分類してトラックyを割当
+    // ラップワイヤーを「上回り」「下回り」に分類してトラックyを割当。
+    // Pico ピン側 (y1) の上下で判定する：3V3 など上半分のピンから出る線は上回りに、
+    // GND など下半分のピンから出る線は下回りにし、ピンから出る方向と一致させる。
     const picoMidY = PY + PH / 2;
     const topWraps = [], botWraps = [];
     wrapWires.forEach(w => {
-      const mid = (w.y1 + w.y2) / 2;
-      (mid < picoMidY ? topWraps : botWraps).push(w);
+      (w.y1 < picoMidY ? topWraps : botWraps).push(w);
     });
     // トラック割当: 上回りは y が小さい順、下回りは y が大きい順 (Picoから順に外へ離す)
     topWraps.sort((a, b) => Math.min(a.y1, a.y2) - Math.min(b.y1, b.y2));
@@ -1462,10 +1463,13 @@
         chForData = ch;
         pathD = wirePath(w.x1, w.y1, ch, w.x2, w.y2);
       } else {
-        // M(x1,y1) V(trackY) H(destCh) V(y2) H(x2)
+        // M(x1,y1) H(stubX) V(trackY) H(destCh) V(y2) H(x2)
+        // ピンから水平に短いスタブ (Pico外側) を出してから縦移動 → 部品側ピンを明示
         const destCh = w.destCh + chDx;
         chForData = destCh;
-        pathD = `M${w.x1},${w.y1} V${w.trackY} H${destCh} V${w.y2} H${w.x2}`;
+        const stubLen = 28;
+        const stubX = w.x1 + (w.side === 'right' ? stubLen : -stubLen);
+        pathD = `M${w.x1},${w.y1} H${stubX} V${w.trackY} H${destCh} V${w.y2} H${w.x2}`;
       }
       // cv-wire でラップして data-* に再計算用パラメータを埋め込む。
       // hit-path は不可視で太いストロークを持ち、クリック判定を広く取る。
