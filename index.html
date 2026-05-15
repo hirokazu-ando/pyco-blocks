@@ -314,6 +314,23 @@
       <sep gap="20"></sep>
       <block type="pico_dht_read" gap="8"></block>
     </category>
+    <category name="Pico W 専用" colour="#3949AB">
+      <label text="内蔵 LED（Pin('LED')）" web-class="pyco-toolbox-label"></label>
+      <block type="pico_w_led_on" gap="8"></block>
+      <block type="pico_w_led_off" gap="8"></block>
+      <sep gap="20"></sep>
+      <label text="WiFi 接続" web-class="pyco-toolbox-label"></label>
+      <block type="pico_w_wifi_connect" gap="8"></block>
+      <block type="pico_w_wifi_ip" gap="8"></block>
+      <sep gap="20"></sep>
+      <label text="HTTP 通信" web-class="pyco-toolbox-label"></label>
+      <block type="pico_w_http_get" gap="8"></block>
+      <block type="pico_w_http_post" gap="8">
+        <value name="DATA">
+          <shadow type="val_str"><field name="STR">{"v":0}</field></shadow>
+        </value>
+      </block>
+    </category>
     <category name="変数" colour="#558B2F">
       <block type="var_set" gap="8">
         <value name="VALUE">

@@ -528,6 +528,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const v = block.getFieldValue('VAL') === '1' ? 'HIGH' : 'LOW';
         return `GPIOピン${block.getFieldValue('PIN')} → ${v}`;
       }
+      case 'pico_w_led_on':    return `Pico W 内蔵LED → HIGH（点灯）`;
+      case 'pico_w_led_off':   return `Pico W 内蔵LED → LOW（消灯）`;
+      case 'pico_w_wifi_connect': return `WiFi 接続（SSID: ${block.getFieldValue('SSID')}）`;
+      case 'pico_w_wifi_ip':   return `IP アドレスを取得`;
+      case 'pico_w_http_get':  return `HTTP GET → 変数`;
+      case 'pico_w_http_post': return `HTTP POST → 変数`;
       case 'pico_wait':        return `秒数待機`;
       case 'pico_repeat':      return `繰り返す`;
       case 'pico_forever':     return `ずっと繰り返す（無限ループ）`;
@@ -981,6 +987,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const pin = block.getFieldValue('PIN');
         return `ADC(${pin}).read_u16()`;
       }
+      case 'pico_w_wifi_ip':
+        return `_wlan.ifconfig()[0]`;
       case 'pico_ultrasonic_cm_val': {
         const trig = block.getFieldValue('TRIG');
         const echo = block.getFieldValue('ECHO');
@@ -1799,6 +1807,46 @@ document.addEventListener('DOMContentLoaded', function() {
         const pin = block.getFieldValue('PIN');
         const val = block.getFieldValue('VAL');
         code = appendLocal(code, indent + `Pin(${pin}, Pin.OUT).value(${val})\n`);
+        break;
+      }
+
+      // ===== Pico W 専用 =====
+      case 'pico_w_led_on': {
+        code = appendLocal(code, indent + `Pin('LED', Pin.OUT).value(1)\n`);
+        break;
+      }
+      case 'pico_w_led_off': {
+        code = appendLocal(code, indent + `Pin('LED', Pin.OUT).value(0)\n`);
+        break;
+      }
+      case 'pico_w_wifi_connect': {
+        const ssid = block.getFieldValue('SSID');
+        const pass = block.getFieldValue('PASS');
+        code = appendLocal(code, indent + `import network, utime\n`);
+        code = appendLocal(code, indent + `_wlan = network.WLAN(network.STA_IF)\n`);
+        code = appendLocal(code, indent + `_wlan.active(True)\n`);
+        code = appendLocal(code, indent + `_wlan.connect(${JSON.stringify(ssid)}, ${JSON.stringify(pass)})\n`);
+        code = appendLocal(code, indent + `while not _wlan.isconnected():\n`);
+        code = appendLocal(code, indent + `    utime.sleep(0.5)\n`);
+        break;
+      }
+      case 'pico_w_http_get': {
+        const url = block.getFieldValue('URL');
+        const v = getVarName(block, 'VAR');
+        code = appendLocal(code, indent + `import urequests\n`);
+        code = appendLocal(code, indent + `_r = urequests.get(${JSON.stringify(url)})\n`);
+        code = appendLocal(code, indent + `${v} = _r.text\n`);
+        code = appendLocal(code, indent + `_r.close()\n`);
+        break;
+      }
+      case 'pico_w_http_post': {
+        const url = block.getFieldValue('URL');
+        const v = getVarName(block, 'VAR');
+        const data = valueToCode(block, 'DATA', '""');
+        code = appendLocal(code, indent + `import urequests\n`);
+        code = appendLocal(code, indent + `_r = urequests.post(${JSON.stringify(url)}, data=${data})\n`);
+        code = appendLocal(code, indent + `${v} = _r.text\n`);
+        code = appendLocal(code, indent + `_r.close()\n`);
         break;
       }
 

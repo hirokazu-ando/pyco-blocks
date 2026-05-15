@@ -18,6 +18,7 @@ window.PycoPalette = {
   gpioMotor:   '#F57C00',  // Part 3: サーボ・DCモーター・ステッピングモーター
   gpioDisplay: '#1565C0',  // Part 3: 7セグメント・LCD1602
   gpioSensor:  '#00897B',  // Part 3: 超音波・DHT11（gpioInput と同色）
+  gpioPicoW:   '#3949AB',  // Part 3-14/15: Pico W 専用 LED/WiFi/HTTP（無印 Pico と視覚分離）
   logic: '#5E35B1',
   loops: '#F9A825',
   lists: '#689F38',

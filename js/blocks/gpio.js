@@ -384,4 +384,95 @@ Blockly.Blocks['pico_dht_read'] = {
   }
 };
 
+// ==========================================================
+// Pico W 専用ブロック（3-14 WiFi / 3-15 IoT 対応）
+// ----------------------------------------------------------
+// Pico W のオンボード LED は Pin(25) ではなく Pin('LED') に接続されている。
+// WiFi 接続には network モジュール、HTTP には urequests モジュールが必要。
+// 全て MicroPython モード専用（Skulpt 上では shim が必要）。
+// ==========================================================
+
+// ===== Pico W 内蔵 LED =====
+
+Blockly.Blocks['pico_w_led_on'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Pico W 内蔵LEDを点灯する');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip("Pico W の内蔵 LED を点灯します（Pin('LED', Pin.OUT).value(1)）");
+  }
+};
+Blockly.Blocks['pico_w_led_off'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Pico W 内蔵LEDを消灯する');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip("Pico W の内蔵 LED を消灯します（Pin('LED', Pin.OUT).value(0)）");
+  }
+};
+
+// ===== Pico W WiFi 接続 =====
+
+Blockly.Blocks['pico_w_wifi_connect'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Pico W で WiFi に接続  SSID:')
+      .appendField(new Blockly.FieldTextInput('your-ssid'), 'SSID')
+      .appendField('  パスワード:')
+      .appendField(new Blockly.FieldTextInput('your-password'), 'PASS');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W を STA モードで起動し、指定した SSID に接続します。接続完了まで待機します');
+  }
+};
+
+Blockly.Blocks['pico_w_wifi_ip'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Pico W の IP アドレス');
+    this.setOutput(true, 'String');
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('現在接続中の WiFi の IP アドレスを文字列で返します（接続後に使用）');
+  }
+};
+
+// ===== Pico W HTTP 通信 =====
+
+Blockly.Blocks['pico_w_http_get'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('HTTP GET  URL:')
+      .appendField(new Blockly.FieldTextInput('https://example.com/'), 'URL')
+      .appendField('  結果→変数')
+      .appendField(new Blockly.FieldVariable('resp'), 'VAR');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('指定 URL に HTTP GET を送り、レスポンス本文（文字列）を変数に入れます');
+  }
+};
+
+Blockly.Blocks['pico_w_http_post'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('HTTP POST  URL:')
+      .appendField(new Blockly.FieldTextInput('https://example.com/'), 'URL')
+      .appendField('  送るデータ:');
+    this.appendValueInput('DATA');
+    this.appendDummyInput()
+      .appendField('  結果→変数')
+      .appendField(new Blockly.FieldVariable('resp'), 'VAR');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('指定 URL に HTTP POST を送ります。データは文字列（JSON など）。レスポンス本文を変数に入れます');
+  }
+};
+
 })();
