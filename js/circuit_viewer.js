@@ -232,6 +232,40 @@
       }
     },
 
+    // ── 抵抗（10kΩ プルアップ／プルダウン用）──
+    // 両ピン (A: 上, B: 下) は Pico 側に並ぶ縦長ブロック。カラーバンド: 茶黒橙金 (10kΩ)。
+    RES: {
+      pins: { A: { dx: -34, dy: -14 }, B: { dx: -34, dy: 14 } },
+      draw(cx, cy, side = 'right') {
+        const sdir = side === 'right' ? -1 : 1;
+        const tipX = cx + sdir * 10;
+        const padX = cx + sdir * 34;
+        const labelAnchor = side === 'right' ? 'end' : 'start';
+        const bodyX0 = cx - 10;
+        const bodyX1 = cx + 10;
+        const bodyY0 = cy - 22;
+        const bodyY1 = cy + 22;
+        const bodyW  = bodyX1 - bodyX0;
+        const bands = ['#5d4037', '#212121', '#ff8c00', '#fdd835'];
+        const bandsHtml = bands.map((c, i) =>
+          `<rect x="${bodyX0}" y="${bodyY0 + 8 + i * 7}" width="${bodyW}" height="4" fill="${c}"/>`
+        ).join('\n  ');
+        return `<g>
+  <rect x="${bodyX0}" y="${bodyY0}" width="${bodyW}" height="${bodyY1 - bodyY0}" rx="3" fill="#d4b483" stroke="#8a7040" stroke-width="0.8"/>
+  ${bandsHtml}
+  <line x1="${cx - sdir * 10}" y1="${cy - 14}" x2="${tipX}" y2="${cy - 14}" stroke="#c8a86e" stroke-width="2.5"/>
+  <line x1="${tipX}" y1="${cy - 14}" x2="${padX}" y2="${cy - 14}" stroke="#c8a86e" stroke-width="2.5"/>
+  <circle cx="${tipX}" cy="${cy - 14}" r="2" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${tipX - sdir * 4}" y="${cy - 17}" text-anchor="${labelAnchor}" font-size="9" fill="#b0bec5" font-family="sans-serif">A</text>
+  <line x1="${cx - sdir * 10}" y1="${cy + 14}" x2="${tipX}" y2="${cy + 14}" stroke="#c8a86e" stroke-width="2.5"/>
+  <line x1="${tipX}" y1="${cy + 14}" x2="${padX}" y2="${cy + 14}" stroke="#c8a86e" stroke-width="2.5"/>
+  <circle cx="${tipX}" cy="${cy + 14}" r="2" fill="#c8a86e" stroke="#8a7040" stroke-width="0.5"/>
+  <text x="${tipX - sdir * 4}" y="${cy + 11}" text-anchor="${labelAnchor}" font-size="9" fill="#b0bec5" font-family="sans-serif">B</text>
+  <text x="${cx}" y="${bodyY1 + 14}" text-anchor="middle" class="cv-lbl">10kΩ</text>
+</g>`;
+      }
+    },
+
     // ── ポテンショメーター (Wokwi wokwi-potentiometer, MIT © 2020 Uri Shaked) ──
     // 90°回転でピンを横向きに（元SVGのピンは底部横並び → rotate(90)で左側縦並びに）
     // 回転後ピン位置計算: rotate(90 cx cy) → GND(cx-32,cy-9) SIG(cx-32,cy+1) VCC(cx-32,cy+11)
@@ -908,7 +942,19 @@
 
         } else if (['pico_digital_read','pico_digital_read_val'].includes(t)) {
           const p = gf('PIN');
-          add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{v3v3:true} });
+          const pull = gf('PULL') || 'PULLUP_EXT';
+          if (pull === 'PULLDOWN_EXT') {
+            // 外付けプルダウン：ボタンが3V3とGPの間、抵抗がGPとGNDの間。押下時にGP=HIGH
+            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{v3v3:true} });
+            add('respd'+p, 'RES', { A:{gp:p}, B:{gnd:true} });
+          } else if (pull === 'PULLUP_INT') {
+            // 内部プルアップ：ボタンがGPとGNDの間のみ。押下時にGP=LOW
+            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{gnd:true} });
+          } else {
+            // 外付けプルアップ（既定）：ボタンがGPとGNDの間、抵抗が3V3とGPの間。押下時にGP=LOW
+            add('btn'+p, 'BTN', { SIG:{gp:p}, VCC:{gnd:true} });
+            add('respu'+p, 'RES', { A:{v3v3:true}, B:{gp:p} });
+          }
 
         } else if (['pico_analog_read','pico_analog_read_val'].includes(t)) {
           const p = gf('PIN');
@@ -983,7 +1029,10 @@
     const wrapsIfRight = leftGp;                       // 左Picoピン→右部品の数
     if (wrapsIfLeft < wrapsIfRight) return 'left';
     if (wrapsIfRight < wrapsIfLeft) return 'right';
-    return hasVcc ? 'right' : (leftGp > 0 ? 'left' : 'right');
+    // タイブレーク: GPピンが多い側を優先（信号線の引き回しを短くし、抵抗をボタン側に揃える）
+    if (leftGp > rightGp) return 'left';
+    if (rightGp > leftGp) return 'right';
+    return hasVcc ? 'right' : 'right';
   }
 
   // ===== レイアウト =====

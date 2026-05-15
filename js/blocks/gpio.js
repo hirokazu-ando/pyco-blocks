@@ -64,13 +64,19 @@ Blockly.Blocks['pico_digital_read'] = {
     this.appendDummyInput()
       .appendField('デジタル入力  ピン')
       .appendField(new Blockly.FieldDropdown(makePinOptions('0')), 'PIN')
-      .appendField('を読み  変数')
+      .appendField('  プルアップ')
+      .appendField(new Blockly.FieldDropdown([
+        ['外付け(PU)','PULLUP_EXT'],
+        ['外付け(PD)','PULLDOWN_EXT'],
+        ['内部(PU)','PULLUP_INT'],
+      ]), 'PULL')
+      .appendField('  を読み  変数')
       .appendField(new Blockly.FieldVariable('val'), 'VAR')
       .appendField('に入れる');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.gpioInput);
-    this.setTooltip('デジタルピンの値（0 or 1）を変数に入れます');
+    this.setTooltip('デジタルピンの値（0 or 1）を変数に入れます。プルアップ方式により配線図と生成コードが切り替わります。');
   }
 };
 
@@ -98,10 +104,16 @@ Blockly.Blocks['pico_digital_read_val'] = {
     this.appendDummyInput()
       .appendField('ピン')
       .appendField(new Blockly.FieldDropdown(makePinOptions('0')), 'PIN')
-      .appendField('の入力値');
+      .appendField('  プルアップ')
+      .appendField(new Blockly.FieldDropdown([
+        ['外付け(PU)','PULLUP_EXT'],
+        ['外付け(PD)','PULLDOWN_EXT'],
+        ['内部(PU)','PULLUP_INT'],
+      ]), 'PULL')
+      .appendField('  の入力値');
     this.setOutput(true, 'Boolean');
     this.setColour(P.gpioInput);
-    this.setTooltip('デジタルピンの値（True/False）を返します。条件ブロックにはめ込めます');
+    this.setTooltip('デジタルピンの値（0/1）を返します。プルアップ方式により配線図と生成コードが切り替わります。');
   }
 };
 

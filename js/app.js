@@ -981,7 +981,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       case 'pico_digital_read_val': {
         const pin = block.getFieldValue('PIN');
-        return `Pin(${pin}, Pin.IN).value()`;
+        const pull = block.getFieldValue('PULL') || 'PULLUP_EXT';
+        const pinArgs = pull === 'PULLUP_INT' ? `${pin}, Pin.IN, Pin.PULL_UP` : `${pin}, Pin.IN`;
+        return `Pin(${pinArgs}).value()`;
       }
       case 'pico_analog_read_val': {
         const pin = block.getFieldValue('PIN');
@@ -2052,8 +2054,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       case 'pico_digital_read': {
         const pin = block.getFieldValue('PIN');
+        const pull = block.getFieldValue('PULL') || 'PULLUP_EXT';
+        const pinArgs = pull === 'PULLUP_INT' ? `${pin}, Pin.IN, Pin.PULL_UP` : `${pin}, Pin.IN`;
         const varName = getVarName(block, 'VAR');
-        code = appendLocal(code, indent + `${varName} = Pin(${pin}, Pin.IN).value()\n`);
+        code = appendLocal(code, indent + `${varName} = Pin(${pinArgs}).value()\n`);
         break;
       }
       case 'pico_analog_read': {
