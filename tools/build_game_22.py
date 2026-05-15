@@ -1047,7 +1047,7 @@ SPEC = Spec(
     ],
     next_article_id=5152,
     next_article_title='【Pygameでゲーム㉔】シューティング完成版',
-    cache_buster="20260509f",
+    cache_buster="20260509g",
 )
 
 

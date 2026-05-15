@@ -821,7 +821,7 @@ SPEC = Spec(
     ],
     next_article_id=5154,
     next_article_title='【Pygameでゲーム㉕】ジャンプと重力',
-    cache_buster="20260509e",
+    cache_buster="20260509g",
 )
 
 
