@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://developers.google.com/blockly/xml">
+<file name="rpg_funcs.py"><xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+  </variables>
+  <block type="py_custom_stmt"><field name="CODE">import pygame</field><next><block type="py_custom_stmt"><field name="CODE">TILE = 32</field><next><block type="game_init"><value name="W"><block type="val_number"><field name="NUM">800</field></block></value><value name="H"><block type="val_number"><field name="NUM">480</field></block></value><value name="TITLE"><block type="val_str"><field name="TEXT">Python × RPG #01</field></block></value><next><block type="py_def_noarg"><field name="NAME" variabletype="function">init_images</field><statement name="BODY"><block type="py_custom_stmt"><field name="CODE">images = {}
+for tid, col in [
+    (0, (140, 200,  90)),
+    (1, (230, 200, 140)),
+    (2, (110,  80,  50)),
+    (3, ( 60, 130, 200)),
+]:
+    s = pygame.Surface((TILE, TILE))
+    s.fill(col)
+    images[tid] = s</field><next><block type="py_return"><value name="VALUE"><block type="py_custom_expr"><field name="CODE">images</field></block></value></block></next></block></statement><next><block type="py_def_noarg"><field name="NAME" variabletype="function">init_map</field><statement name="BODY"><block type="py_custom_stmt"><field name="CODE">m = [[0] * 25 for _ in range(15)]
+for x in range(25):
+    m[0][x]  = 2
+    m[14][x] = 2
+for y in range(15):
+    m[y][0]  = 2
+    m[y][24] = 2
+for x in range(5, 20):
+    m[7][x] = 1
+for y in range(2, 13):
+    m[y][12] = 1
+for y in range(3, 5):
+    for x in range(3, 5):
+        m[y][x] = 3</field><next><block type="py_return"><value name="VALUE"><block type="py_custom_expr"><field name="CODE">m</field></block></value></block></next></block></statement><next><block type="py_def_noarg"><field name="NAME" variabletype="function">init_state</field><statement name="BODY"><block type="py_return"><value name="VALUE"><block type="py_dict_literal"><mutation items="9"></mutation><field name="COUNT">9</field><field name="KEY0">mode</field><value name="PAIR0"><block type="val_str"><field name="TEXT">field</field></block></value><field name="KEY1">map_id</field><value name="PAIR1"><block type="val_str"><field name="TEXT">town</field></block></value><field name="KEY2">map</field><value name="PAIR2"><block type="py_custom_expr"><field name="CODE">init_map()</field></block></value><field name="KEY3">images</field><value name="PAIR3"><block type="py_custom_expr"><field name="CODE">init_images()</field></block></value><field name="KEY4">px</field><value name="PAIR4"><block type="val_number"><field name="NUM">12</field></block></value><field name="KEY5">py</field><value name="PAIR5"><block type="val_number"><field name="NUM">7</field></block></value><field name="KEY6">dir</field><value name="PAIR6"><block type="val_str"><field name="TEXT">down</field></block></value><field name="KEY7">cam_x</field><value name="PAIR7"><block type="val_number"><field name="NUM">0</field></block></value><field name="KEY8">cam_y</field><value name="PAIR8"><block type="val_number"><field name="NUM">0</field></block></value></block></value></block></statement><next><block type="py_custom_stmt"><field name="CODE">state = init_state()</field></block></next></block></next></block></next></block></next></block></next></block></next></block>
+</xml></file>
+<file name="rpg_draw_field.py"><xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+    <variable id="vsc">screen</variable>
+  </variables>
+  <block type="py_custom_stmt"><field name="CODE">import pygame</field><next><block type="py_custom_stmt"><field name="CODE">TILE = 32</field><next><block type="py_def_args2"><field name="NAME" variabletype="function">draw_field</field><field name="PARAM1">screen</field><field name="PARAM2">state</field><statement name="BODY"><block type="py_custom_stmt"><field name="CODE">images  = state["images"]
+cam_x   = state["cam_x"]
+cam_y   = state["cam_y"]
+tilemap = state["map"]</field><next><block type="game_tilemap_draw"><value name="MAP"><block type="py_custom_expr"><field name="CODE">tilemap</field></block></value><value name="TILE"><block type="val_number"><field name="NUM">32</field></block></value><value name="IMAGES"><block type="py_custom_expr"><field name="CODE">images</field></block></value><next><block type="py_custom_stmt"><field name="CODE">pygame.draw.rect(
+    screen, (255, 85, 85),
+    (state["px"] * TILE - cam_x,
+     state["py"] * TILE - cam_y,
+     TILE, TILE),
+)</field></block></next></block></next></block></statement></block></next></block></next></block>
+</xml></file>
+<file name="rpg_main.py"><xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+    <variable id="vsc">screen</variable>
+  </variables>
+  <block type="py_from_import_multi"><mutation items="3"/><field name="MODULE">rpg_funcs</field><field name="NAME0">screen</field><field name="NAME1">clock</field><field name="NAME2">state</field><next><block type="py_from_import_multi"><mutation items="1"/><field name="MODULE">rpg_draw_field</field><field name="NAME0">draw_field</field><next><block type="game_loop"><statement name="DO"><block type="game_events"><next><block type="game_fill"><value name="COLOR"><block type="colour_picker"><field name="COLOUR">#222222</field></block></value><next><block type="py_call_stmt_arg2"><field name="NAME" variabletype="function">draw_field</field><value name="ARG1"><block type="val_var"><field name="VAR" id="vsc">screen</field></block></value><value name="ARG2"><block type="val_var"><field name="VAR" id="vst">state</field></block></value><next><block type="game_flip"><value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value></block></next></block></next></block></next></block></statement><next><block type="game_quit"></block></next></block></next></block></next></block>
+</xml></file>
+</project>
