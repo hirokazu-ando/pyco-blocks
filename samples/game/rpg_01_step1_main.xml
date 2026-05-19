@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vst">state</variable>
+    <variable id="vsc">screen</variable>
+  </variables>
+  <block type="py_from_import_multi"><mutation items="3"/><field name="MODULE">rpg_funcs</field><field name="NAME0">screen</field><field name="NAME1">clock</field><field name="NAME2">state</field><next><block type="py_from_import_multi"><mutation items="1"/><field name="MODULE">rpg_draw_field</field><field name="NAME0">draw_field</field><next><block type="game_loop"><statement name="DO"><block type="game_events"><next><block type="game_fill"><value name="COLOR"><block type="colour_picker"><field name="COLOUR">#222222</field></block></value><next><block type="py_call_stmt_arg2"><field name="NAME" variabletype="function">draw_field</field><value name="ARG1"><block type="val_var"><field name="VAR" id="vsc">screen</field></block></value><value name="ARG2"><block type="val_var"><field name="VAR" id="vst">state</field></block></value><next><block type="game_flip"><value name="FPS"><block type="val_number"><field name="NUM">60</field></block></value></block></next></block></next></block></next></block></statement><next><block type="game_quit"></block></next></block></next></block></next></block>
+</xml>
