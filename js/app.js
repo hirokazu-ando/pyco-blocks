@@ -800,6 +800,7 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'game_world_to_screen_x': return 'ワールドX → 画面X（worldX − cam_x）';
       case 'game_world_to_screen_y': return 'ワールドY → 画面Y（worldY − cam_y）';
       case 'game_tilemap_create':    return 'タイルマップを作る（W×H, 初期値 FILL）';
+      case 'game_tilemap_from_text': return '文字列マップから 2 次元配列を作る';
       case 'game_tilemap_get':       return 'マップ[行Y][列X] を取り出す';
       case 'game_tilemap_set':       return 'マップ[行Y][列X] = VALUE';
       case 'game_tilemap_draw':      return 'タイルマップを描画する（cam_x, cam_y を引いて）';
@@ -1475,6 +1476,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const tf = valueToCode(block, 'FILL', '0');
         return `[[${tf}] * ${tw} for _ in range(${th})]`;
       }
+      case 'game_tilemap_from_text': {
+        const raw = block.getFieldValue('TEXT') || '';
+        const vDot   = Number(block.getFieldValue('V_DOT')   || 0);
+        const vEq    = Number(block.getFieldValue('V_EQ')    || 1);
+        const vHash  = Number(block.getFieldValue('V_HASH')  || 2);
+        const vTilde = Number(block.getFieldValue('V_TILDE') || 3);
+        const rows = raw.split('\n').filter(r => r.length > 0);
+        const charMap = { '.': vDot, '=': vEq, '#': vHash, '~': vTilde };
+        const pyRows = rows.map(r => {
+          const cells = Array.from(r).map(c => String(charMap[c] !== undefined ? charMap[c] : 0));
+          return '[' + cells.join(', ') + ']';
+        });
+        return '[' + pyRows.join(', ') + ']';
+      }
       case 'game_tilemap_get': {
         const tg = valueToCode(block, 'MAP', 'tilemap');
         const ty = valueToCode(block, 'Y', '0');
@@ -2147,6 +2162,13 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `_sv.duty_u16(int(1638 + ${svAngle} * 8192 // 180))\n`);
         break;
       }
+      case 'pico_servo_angle_val': {
+        const svvPin   = block.getFieldValue('PIN');
+        const svvAngle = valueToCode(block, 'ANGLE', '90');
+        code = appendLocal(code, indent + `_sv = PWM(Pin(${svvPin}), freq=50)\n`);
+        code = appendLocal(code, indent + `_sv.duty_u16(int(1638 + max(0, min(180, ${svvAngle})) * 8192 // 180))\n`);
+        break;
+      }
 
       // ===== DCモーター (L298N) =====
       case 'pico_dcmotor_run': {
@@ -2162,6 +2184,20 @@ document.addEventListener('DOMContentLoaded', function() {
           code = appendLocal(code, indent + `Pin(${dcIn1}, Pin.OUT).value(0); Pin(${dcIn2}, Pin.OUT).value(1)\n`);
         }
         code = appendLocal(code, indent + `PWM(Pin(${dcEn})).duty_u16(${dcDuty})\n`);
+        break;
+      }
+      case 'pico_dcmotor_run_val': {
+        const dcvIn1 = block.getFieldValue('IN1');
+        const dcvIn2 = block.getFieldValue('IN2');
+        const dcvEn  = block.getFieldValue('EN');
+        const dcvDir = block.getFieldValue('DIR');
+        const dcvSpd = valueToCode(block, 'SPEED', '50');
+        if (dcvDir === 'fwd') {
+          code = appendLocal(code, indent + `Pin(${dcvIn1}, Pin.OUT).value(1); Pin(${dcvIn2}, Pin.OUT).value(0)\n`);
+        } else {
+          code = appendLocal(code, indent + `Pin(${dcvIn1}, Pin.OUT).value(0); Pin(${dcvIn2}, Pin.OUT).value(1)\n`);
+        }
+        code = appendLocal(code, indent + `PWM(Pin(${dcvEn})).duty_u16(int(max(0, min(100, ${dcvSpd})) * 65535 // 100))\n`);
         break;
       }
       case 'pico_dcmotor_stop': {
@@ -2197,7 +2233,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const staDelay = block.getFieldValue('DELAY');
         code = appendLocal(code, indent + `_st_pins = [Pin(p, Pin.OUT) for p in [${staIn1},${staIn2},${staIn3},${staIn4}]]\n`);
         code = appendLocal(code, indent + `_st_seq = [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,1,1],[0,0,0,1],[1,0,0,1]]\n`);
-        code = appendLocal(code, indent + `_st_n = int(abs(${staAngle}) * 512 / 360); _st_dir = 1 if (${staAngle}) >= 0 else -1\n`);
+        code = appendLocal(code, indent + `_st_n = int(abs(${staAngle}) * 4096 / 360); _st_dir = 1 if (${staAngle}) >= 0 else -1\n`);
         code = appendLocal(code, indent + `for _s in range(_st_n):\n`);
         code = appendLocal(code, indent + `    _st_i = (_s * _st_dir) % 8\n`);
         code = appendLocal(code, indent + `    for _j in range(4): _st_pins[_j].value(_st_seq[_st_i][_j])\n`);

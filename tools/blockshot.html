@@ -14,6 +14,15 @@
           crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js"
           crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@blockly/field-multilineinput@6.0.9/dist/index.js"></script>
+  <script>
+    if (typeof window.registerFieldMultilineInput === 'function') {
+      window.registerFieldMultilineInput();
+    }
+    if (typeof window.FieldMultilineInput !== 'undefined' && typeof Blockly !== 'undefined') {
+      Blockly.FieldMultilineInput = window.FieldMultilineInput;
+    }
+  </script>
 </head>
 <body>
   <div id="blockly-div"></div>

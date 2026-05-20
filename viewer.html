@@ -74,6 +74,15 @@
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop"
           crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@blockly/field-multilineinput@6.0.9/dist/index.js"></script>
+  <script>
+    if (typeof window.registerFieldMultilineInput === 'function') {
+      window.registerFieldMultilineInput();
+    }
+    if (typeof window.FieldMultilineInput !== 'undefined' && typeof Blockly !== 'undefined') {
+      Blockly.FieldMultilineInput = window.FieldMultilineInput;
+    }
+  </script>
 </head>
 <body>
   <div id="title-bar"></div>

@@ -752,6 +752,33 @@
     }
   };
 
+  // game_tilemap_from_text : value
+  //   \u2192 ASCII \u6587\u5b57\u5217\u30de\u30c3\u30d7\u3092 2D \u914d\u5217\u306b\u5c55\u958b
+  //     '.'\u2192GRASS '='\u2192ROAD '#'\u2192WALL '~'\u2192WATER
+  Blockly.Blocks['game_tilemap_from_text'] = {
+    init: function() {
+      this.appendDummyInput().appendField('\u6587\u5b57\u5217\u304b\u3089\u30bf\u30a4\u30eb\u30de\u30c3\u30d7\u3092\u4f5c\u308b');
+      var defaultMap = '##########\n#....=...#\n#....=...#\n#....=...#\n#........#\n#........#\n##########';
+      this.appendDummyInput().appendField(
+        new Blockly.FieldMultilineInput(defaultMap), 'TEXT');
+      this.appendDummyInput()
+        .appendField('\u300c.\u300d=')
+        .appendField(new Blockly.FieldNumber(0), 'V_DOT')
+        .appendField('\u3000\u300c=\u300d=')
+        .appendField(new Blockly.FieldNumber(1), 'V_EQ');
+      this.appendDummyInput()
+        .appendField('\u300c#\u300d=')
+        .appendField(new Blockly.FieldNumber(2), 'V_HASH')
+        .appendField('\u3000\u300c~\u300d=')
+        .appendField(new Blockly.FieldNumber(3), 'V_TILDE');
+      this.setOutput(true, 'Array');
+      this.setColour(P.gameWorld || '#6D4C41');
+      this.setInputsInline(false);
+      this.setTooltip('ASCII \u30de\u30c3\u30d7\u6587\u5b57\u5217\u3092 2 \u6b21\u5143\u914d\u5217\u306b\u5c55\u958b\u3057\u307e\u3059\u3002\u8a18\u53f7\u3068\u30bf\u30a4\u30ebID\u306e\u5bfe\u5fdc\u306f\u4e0b\u306e\u30d5\u30a3\u30fc\u30eb\u30c9\u3067\u8abf\u6574\u3067\u304d\u307e\u3059\u3002');
+      this.setHelpUrl('');
+    }
+  };
+
   // game_tilemap_get : value
   //   \u2192 <MAP>[<Y>][<X>]
   Blockly.Blocks['game_tilemap_get'] = {

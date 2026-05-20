@@ -16,6 +16,15 @@
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@blockly/field-multilineinput@6.0.9/dist/index.js"></script>
+  <script>
+    if (typeof window.registerFieldMultilineInput === 'function') {
+      window.registerFieldMultilineInput();
+    }
+    if (typeof window.FieldMultilineInput !== 'undefined' && typeof Blockly !== 'undefined') {
+      Blockly.FieldMultilineInput = window.FieldMultilineInput;
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"
           integrity="sha384-xKdsXwmsmIOznHB5nMknv/xlle/iCeNcEabalNUx5oSJIBHdxM1Qfnb50Y/w1zRU" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"
@@ -302,8 +311,10 @@
     </category>
     <category name="モーター" colour="#F57C00">
       <block type="pico_servo_angle" gap="8"></block>
+      <block type="pico_servo_angle_val" gap="8"></block>
       <sep gap="20"></sep>
       <block type="pico_dcmotor_run" gap="8"></block>
+      <block type="pico_dcmotor_run_val" gap="8"></block>
       <block type="pico_dcmotor_stop" gap="8"></block>
       <sep gap="20"></sep>
       <block type="pico_stepper_step" gap="8"></block>
@@ -1325,6 +1336,7 @@
         <value name="H"><shadow type="val_number"><field name="NUM">12</field></shadow></value>
         <value name="FILL"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
       </block>
+      <block type="game_tilemap_from_text" gap="8"></block>
       <block type="game_tilemap_get" gap="8">
         <value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
         <value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value>
