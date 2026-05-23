@@ -2122,6 +2122,40 @@ body.mobile-mode #mobile-tabbar .m-tab.active {
   background: rgba(0, 255, 65, 0.06);
 }
 
+/* ----- モバイル：実行ボタンをドロワー外に常設（右下フローティング） ----- */
+#btn-mobile-run { display: none; }
+body.mobile-mode #btn-mobile-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: fixed;
+  right: 14px;
+  bottom: calc(var(--mobile-tabbar-h) + 14px);
+  z-index: 560;
+  min-height: 48px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 24px;
+  background: var(--accent-green, #00ff41);
+  color: #06210d;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 12px rgba(0, 255, 65, 0.4);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 実行不可（未接続のMicroPython等）はグレーアウト */
+body.mobile-mode #btn-mobile-run:disabled {
+  background: var(--border-dim, #2d3748);
+  color: var(--text-dim, #8a97a5);
+  box-shadow: none;
+  cursor: default;
+}
+/* ドロワーを開いている間は重なり防止のため隠す */
+body.mobile-mode.menu-open #btn-mobile-run { display: none; }
+
 /* メインを全画面化し、ペインを縦積みではなく「切替」で扱う */
 body.mobile-mode .main,
 body.mobile-mode .main.game-layout {

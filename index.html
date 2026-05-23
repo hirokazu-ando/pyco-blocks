@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/game-icons/star.svg">
-  <link rel="stylesheet" href="css/style.css?v=20260523b">
+  <link rel="stylesheet" href="css/style.css?v=20260523c">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -1803,7 +1803,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260523a"></script>
+  <script src="js/app.js?v=20260523c"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -1835,6 +1835,10 @@
 
   <!-- モバイル：ツールメニュー（ドロワー）の背景。タップで閉じる -->
   <div id="mobile-menu-backdrop"></div>
+
+  <!-- モバイル：よく使う「実行」をドロワー外に常設（右下FAB・body.mobile-mode 時のみ表示）。
+       その時点で有効な実行ボタン(btn-run-python / btn-run)へ委譲する -->
+  <button id="btn-mobile-run" type="button" aria-label="実行" title="実行">▶ 実行</button>
 
   <!-- モバイル編集モード用ボトムタブバー（body.mobile-mode 時のみ表示） -->
   <nav id="mobile-tabbar" aria-label="表示の切り替え">

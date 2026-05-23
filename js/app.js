@@ -5660,6 +5660,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         requestAnimationFrame(refreshPanes);
       }
+      if (typeof syncRunFab === 'function') syncRunFab(); // FAB の表示/有効状態を反映
     }
 
     // ボトムタブのクリックでペイン切替
@@ -5692,6 +5693,40 @@ document.addEventListener('DOMContentLoaded', function() {
         setPane(isGame ? 'blocks' : 'code');
       });
     });
+
+    // ----- フローティング実行ボタン（ドロワー外・右下） -----
+    // モードで切り替わる実体ボタン(btn-run-python / btn-run)のうち、
+    // いま表示中＝有効なものへ委譲する。状態(disabled/表示)はそれに同期。
+    const runFab = document.getElementById('btn-mobile-run');
+    const realRunBtns = ['btn-run-python', 'btn-run']
+      .map(function(id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    function activeRunBtn() {
+      // display:none でない（＝そのモードで使う）実行ボタンを返す
+      for (let i = 0; i < realRunBtns.length; i++) {
+        if (getComputedStyle(realRunBtns[i]).display !== 'none') return realRunBtns[i];
+      }
+      return null;
+    }
+    function syncRunFab() {
+      if (!runFab) return;
+      const target = activeRunBtn();
+      // 使える実行ボタンが無いモード（例：MicroPython DEMO）は隠す
+      runFab.style.display = target ? '' : 'none';
+      runFab.disabled = target ? target.disabled : true;
+    }
+    if (runFab) {
+      runFab.addEventListener('click', function() {
+        const target = activeRunBtn();
+        if (target && !target.disabled) target.click(); // 実体ボタンの click を発火
+      });
+      // 実体ボタンの disabled / display 変化に追従
+      const ro = new MutationObserver(syncRunFab);
+      realRunBtns.forEach(function(b) {
+        ro.observe(b, { attributes: true, attributeFilter: ['disabled', 'style'] });
+      });
+    }
 
     // ☰ メニューでドロワー開閉、背景タップで閉じる
     if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
