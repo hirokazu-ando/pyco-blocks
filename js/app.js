@@ -4905,6 +4905,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewArea = document.getElementById('circuit-preview-area');
     const resizeHandle = document.getElementById('circuit-preview-resize-handle');
     const blocklyDiv = document.getElementById('blockly-div');
+    const leftCol = document.getElementById('game-left-column');
     if (!collapseBtn || !svgEl || !previewArea) return;
 
     collapseBtn.addEventListener('click', () => {
@@ -4924,6 +4925,9 @@ document.addEventListener('DOMContentLoaded', function() {
         collapseBtn.textContent = '配線図を表示 ▲';
         collapseBtn.title = 'プレビューを展開する';
       }
+      // スマホ表示は flex 比率を !important で固定しているため、
+      // クラスで上書きしてブロックを全面化する（!isCollapsed=これから折りたたむ）
+      if (leftCol) leftCol.classList.toggle('circuit-collapsed', !isCollapsed);
       requestAnimationFrame(() => Blockly.svgResize(workspace));
     });
   })();

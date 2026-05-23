@@ -2122,6 +2122,18 @@ body.mobile-mode #mobile-tabbar .m-tab.active {
   background: rgba(0, 255, 65, 0.06);
 }
 
+/* ----- モバイル：エラー表示をボトムタブバー上の全幅バナーに -----
+   PC ではエラーパネルを blockly-div の座標(JSがinline指定)に合わせるが、
+   スマホではエラー時にコードペインへ切替→blockly が隠れて幅0になり見えない。
+   どのペインでも読めるよう、タブバー直上に全幅で固定表示する。 */
+body.mobile-mode #error-hint {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  bottom: var(--mobile-tabbar-h) !important;
+  max-height: 45vh;
+}
+
 /* ----- モバイル：実行ボタンをドロワー外に常設（右下フローティング） ----- */
 #btn-mobile-run { display: none; }
 body.mobile-mode #btn-mobile-run {
@@ -2156,11 +2168,16 @@ body.mobile-mode #btn-mobile-run:disabled {
 /* ドロワーを開いている間は重なり防止のため隠す */
 body.mobile-mode.menu-open #btn-mobile-run { display: none; }
 
-/* メインを全画面化し、ペインを縦積みではなく「切替」で扱う */
+/* メインを全画面化し、ペインを縦積みではなく「切替」で扱う。
+   .main は親(body)の flex カラムで flex:1 1 auto により引き伸ばされ height 指定が
+   無視される。ボトムタブバーは position:fixed で流れ外のため、放置すると .main が
+   画面下端まで伸びてタブバーの下にコンテンツが隠れる。flex を殺して height を効かせ、
+   タブバー分を確保する。 */
 body.mobile-mode .main,
 body.mobile-mode .main.game-layout {
   display: flex;
   flex-direction: column;
+  flex: none !important;
   height: calc(100vh - var(--header-h) - var(--mobile-tabbar-h));
 }
 
@@ -2218,6 +2235,14 @@ body.mobile-mode .main.game-layout > #game-left-column > #blockly-div {
 body.mobile-mode .main.game-layout > #game-left-column > #game-canvas-area,
 body.mobile-mode .main.game-layout > #game-left-column > #circuit-preview-area {
   flex: 3 1 0 !important;
+}
+/* 配線図プレビューを「非表示」に折りたたんだら、ブロック画面を全面に広げる
+   （JS が #game-left-column に circuit-collapsed クラスを付与する） */
+body.mobile-mode .main.game-layout > #game-left-column.circuit-collapsed > #blockly-div {
+  flex: 1 1 0 !important;
+}
+body.mobile-mode .main.game-layout > #game-left-column.circuit-collapsed > #circuit-preview-area {
+  flex: 0 0 auto !important;
 }
 body.mobile-mode.pane-blocks .main.game-layout > #game-right-column { display: none !important; }
 body.mobile-mode.pane-code   .main.game-layout > #game-left-column  { display: none !important; }
