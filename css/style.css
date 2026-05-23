@@ -2251,10 +2251,12 @@ body.mobile-mode.menu-open #btn-mobile-menu {
   color: #06210d;
 }
 
-/* ツールバー本体をヘッダー直下に固定したドロワーへ。既定は画面外に退避 */
+/* ツールバー本体をドロワー化。基準を画面最上部(top:0)に置き、閉時は自身の
+   高さ分だけ上へ退避(translateY(-100%))することでドロワーの高さに依存せず
+   完全に隠す。開時はヘッダーの高さ分だけ下げてヘッダー直下に出す。 */
 body.mobile-mode .toolbar {
   position: fixed;
-  top: var(--header-h);
+  top: 0;
   left: 0;
   right: 0;
   z-index: 600;
@@ -2269,13 +2271,15 @@ body.mobile-mode .toolbar {
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   max-height: calc(100vh - var(--header-h) - var(--mobile-tabbar-h));
   overflow-y: auto;
-  transform: translateY(-120%);
+  transform: translateY(-100%);
   transition: transform 0.22s ease;
   pointer-events: none;
+  visibility: hidden;
 }
 body.mobile-mode.menu-open .toolbar {
-  transform: translateY(0);
+  transform: translateY(var(--header-h));
   pointer-events: auto;
+  visibility: visible;
 }
 /* header には transform が掛かっており fixed 子要素の containing block 兼
    stacking context になる。そのままだと overflow:hidden でドロワーがクリップされ、
