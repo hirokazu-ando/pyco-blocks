@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/game-icons/star.svg">
-  <link rel="stylesheet" href="css/style.css?v=20260512f">
+  <link rel="stylesheet" href="css/style.css?v=20260523a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -49,6 +49,7 @@
     </div>
     <span class="version-tag">v2.1 · UME</span>
     <span class="demo-badge" id="demo-badge" style="display:none">DEMO MODE</span>
+    <button id="btn-mobile-menu" type="button" aria-label="ツールメニュー" aria-expanded="false" title="ツールメニューを開く">☰ メニュー</button>
     <div class="toolbar">
       <button id="btn-save-xml">ブロック保存</button>
       <button id="btn-load-xml">ブロック読込</button>
@@ -76,6 +77,7 @@
       <div class="toolbar-sep"></div>
       <button id="btn-theme">黒</button>
       <button id="btn-tutorial">ガイド</button>
+      <button id="btn-mobile-toggle" title="スマホ・タブレット表示に切り替え">スマホ表示</button>
     </div>
   </header>
 
@@ -1801,7 +1803,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260514b"></script>
+  <script src="js/app.js?v=20260523a"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -1830,5 +1832,14 @@
     <div class="error-hint-title" id="error-hint-title"></div>
     <div id="error-hint-body"></div>
   </div>
+
+  <!-- モバイル：ツールメニュー（ドロワー）の背景。タップで閉じる -->
+  <div id="mobile-menu-backdrop"></div>
+
+  <!-- モバイル編集モード用ボトムタブバー（body.mobile-mode 時のみ表示） -->
+  <nav id="mobile-tabbar" aria-label="表示の切り替え">
+    <button class="m-tab active" type="button" data-pane="blocks">ブロック</button>
+    <button class="m-tab" type="button" data-pane="code">コード・実行</button>
+  </nav>
 </body>
 </html>

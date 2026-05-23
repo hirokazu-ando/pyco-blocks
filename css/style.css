@@ -2082,3 +2082,233 @@ h1 {
   border: 1px solid rgba(0,255,65,0.12);
   background: #000;
 }
+
+/* ============================================================
+   モバイル編集モード（body.mobile-mode）
+   - ヘッダーの「スマホ表示」ボタンで手動切替、画面幅でも自動切替
+   - 画面下部のボトムタブで「ブロック」「コード・実行」を全画面切替
+   - 切替時のリサイズ反映は app.js 側で svgResize / refresh を呼ぶ
+   ============================================================ */
+:root { --mobile-tabbar-h: 52px; }
+
+/* ボトムタブバーは通常時は非表示 */
+#mobile-tabbar { display: none; }
+
+body.mobile-mode #mobile-tabbar {
+  display: flex;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--mobile-tabbar-h);
+  z-index: 500;
+  background: var(--bg-surface, #11161c);
+  border-top: 1px solid var(--border-dim, #2d3748);
+}
+body.mobile-mode #mobile-tabbar .m-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-top: 3px solid transparent;
+  color: var(--text-dim, #8a97a5);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+body.mobile-mode #mobile-tabbar .m-tab.active {
+  color: var(--accent-green, #00ff41);
+  border-top-color: var(--accent-green, #00ff41);
+  background: rgba(0, 255, 65, 0.06);
+}
+
+/* メインを全画面化し、ペインを縦積みではなく「切替」で扱う */
+body.mobile-mode .main,
+body.mobile-mode .main.game-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-h) - var(--mobile-tabbar-h));
+}
+
+/* --- 通常モード(Python入門)：blockly-div と code-panel を全画面切替 --- */
+body.mobile-mode .main:not(.game-layout) > #blockly-div,
+body.mobile-mode .main:not(.game-layout) > .code-panel {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: none !important;
+}
+body.mobile-mode.pane-blocks .main:not(.game-layout) > .code-panel { display: none !important; }
+body.mobile-mode.pane-code   .main:not(.game-layout) > #blockly-div { display: none !important; }
+body.mobile-mode.pane-code   .main:not(.game-layout) > .code-panel {
+  display: flex !important;
+  flex-direction: column;
+}
+
+/* --- ゲーム/MicroPythonモード(2x2 game-layout)：左列・右列を全画面切替 ---
+   左列 = ブロック ＋ ゲーム画面/配線図プレビュー（上下に積む）
+   右列 = コード ＋ シリアルモニタ（上下に積む）
+   ボトムタブ「ブロック」で左列、「コード・実行」で右列を表示 */
+body.mobile-mode .main.game-layout > #game-left-column,
+body.mobile-mode .main.game-layout > #game-right-column {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  flex: none !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* 列内の各要素（ブロック/ゲーム画面、コード/モニタ）を上下で均等配分 */
+body.mobile-mode .main.game-layout > #game-left-column > *,
+body.mobile-mode .main.game-layout > #game-right-column > * {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+}
+/* 左列内の空アンカー div は領域を取らないよう除外（display 指定が無く
+   flex:1 のままだと縦幅を山分けしてしまうため 0 に潰す） */
+body.mobile-mode .main.game-layout > #game-left-column > #game-left-top-anchor,
+body.mobile-mode .main.game-layout > #game-left-column > #game-left-bottom-anchor {
+  flex: 0 0 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+/* ブロック : ゲーム画面/配線図プレビュー = 2 : 3 でプレビュー側を広く取る
+   （実行結果が見える領域を優先。比率は数値を変えるだけで調整可能） */
+body.mobile-mode .main.game-layout > #game-left-column > #blockly-div {
+  flex: 2 1 0 !important;
+}
+body.mobile-mode .main.game-layout > #game-left-column > #game-canvas-area,
+body.mobile-mode .main.game-layout > #game-left-column > #circuit-preview-area {
+  flex: 3 1 0 !important;
+}
+body.mobile-mode.pane-blocks .main.game-layout > #game-right-column { display: none !important; }
+body.mobile-mode.pane-code   .main.game-layout > #game-left-column  { display: none !important; }
+
+/* モバイルでは区切り線・各種リサイズハンドル・構文リファレンスを隠す */
+body.mobile-mode .divider,
+body.mobile-mode #syntax-panel,
+body.mobile-mode #btn-syntax-toggle,
+body.mobile-mode #game-grid-v-handle,
+body.mobile-mode #game-resize-handle,
+body.mobile-mode #game-area-resize-handle,
+body.mobile-mode .game-column-split-handle {
+  display: none !important;
+}
+
+/* タッチ操作向け：ヘッダーボタンの当たり判定を確保 */
+body.mobile-mode .toolbar button,
+body.mobile-mode .mode-btn {
+  min-height: 38px;
+}
+
+/* トグルボタンの ON 表示 */
+#btn-mobile-toggle.active {
+  background: var(--accent-green, #00ff41);
+  color: #06210d;
+}
+
+/* ----- モバイル：ヘッダーを1段に圧縮しツールバーを横スクロール ----- */
+/* タイトルは省略して編集領域の幅を確保（ステータスドットは残す） */
+body.mobile-mode .title-block { display: none; }
+body.mobile-mode .version-tag { display: none; }
+
+body.mobile-mode header {
+  flex-wrap: nowrap;
+  height: var(--header-h);
+  min-height: var(--header-h);
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+/* モード切替（Python/ゲーム/μPython）は左寄せで固定 */
+body.mobile-mode .mode-toggle {
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+/* ----- モバイル：ツールバーをドロワー（ヘッダー直下からスライドダウン）化 -----
+   横スクロールだと画面外のボタンに気づきにくいため、☰ メニューで開く
+   全画面ドロワーに切り替え、flex-wrap で全ボタンを一覧表示する。 */
+
+/* ☰ メニューボタンは通常時非表示、モバイル時のみ右端に表示 */
+#btn-mobile-menu { display: none; }
+body.mobile-mode #btn-mobile-menu {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  min-height: 38px;
+  white-space: nowrap;
+}
+body.mobile-mode.menu-open #btn-mobile-menu {
+  background: var(--accent-green, #00ff41);
+  color: #06210d;
+}
+
+/* ツールバー本体をヘッダー直下に固定したドロワーへ。既定は画面外に退避 */
+body.mobile-mode .toolbar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  z-index: 600;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  width: auto;
+  margin: 0;
+  padding: 12px;
+  background: var(--bg-surface, #11161c);
+  border-bottom: 1px solid var(--border-dim, #2d3748);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  max-height: calc(100vh - var(--header-h) - var(--mobile-tabbar-h));
+  overflow-y: auto;
+  transform: translateY(-120%);
+  transition: transform 0.22s ease;
+  pointer-events: none;
+}
+body.mobile-mode.menu-open .toolbar {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+/* header には transform が掛かっており fixed 子要素の containing block 兼
+   stacking context になる。そのままだと overflow:hidden でドロワーがクリップされ、
+   背景オーバーレイ(z550)が header コンテキストごとツールバー(z600)の上に乗る。
+   ドロワーを開く間だけ header を最前面化＋はみ出し許可して回避する。 */
+body.mobile-mode.menu-open header {
+  z-index: 700;
+  overflow: visible;
+}
+/* ドロワー内ボタンはタッチしやすい大きさに。縮まない */
+body.mobile-mode .toolbar button {
+  flex: 0 0 auto;
+  min-height: 44px;
+}
+/* 区切り線は折り返しの改行として使い、ボタンを論理グループ化する */
+body.mobile-mode .toolbar .toolbar-sep {
+  flex-basis: 100%;
+  width: 100%;
+  height: 0;
+  margin: 2px 0;
+  border: 0;
+  border-top: 1px dashed var(--border-dim, #2d3748);
+}
+
+/* ドロワー背景。タップで閉じられるようにする */
+#mobile-menu-backdrop { display: none; }
+body.mobile-mode.menu-open #mobile-menu-backdrop {
+  display: block;
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 550;
+  background: rgba(0, 0, 0, 0.45);
+}

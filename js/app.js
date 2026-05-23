@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     renderer: 'zelos',
     scrollbars: true,
     trashcan: true,
-    zoom: { controls: true, wheel: true, startScale: 1.0, maxScale: 3, minScale: 0.3 }
+    zoom: { controls: true, wheel: true, pinch: true, startScale: 1.0, maxScale: 3, minScale: 0.3 },
+    move: { drag: true, wheel: false, scrollbars: true }
   });
 
   const lightTheme = Blockly.Theme.defineTheme('pycoLight', {
@@ -5586,4 +5587,125 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .catch(function(err) { console.warn('PycoBlocks: ?src= load failed:', err); });
   }
+
+  // ============================================================
+  // モバイル編集モード
+  //   - 自動判定（画面幅 ≤900px）＋ヘッダーの「スマホ表示」ボタンで手動切替
+  //   - 手動切替は localStorage に記憶し、以後の自動判定より優先する
+  //   - ボトムタブで #blockly-div と .code-panel を全画面切替
+  //   - ペイン表示を切り替えたら Blockly.svgResize / editor.refresh を必ず呼ぶ
+  //     （display:none から復帰した直後はサイズが 0 のままで潰れるため）
+  // ============================================================
+  (function setupMobileMode() {
+    const body      = document.body;
+    const toggleBtn = document.getElementById('btn-mobile-toggle');
+    const tabbar    = document.getElementById('mobile-tabbar');
+    if (!tabbar) return;
+
+    const tabs     = tabbar.querySelectorAll('.m-tab');
+    const mq       = window.matchMedia('(max-width: 900px)');
+    const STORE_KEY = 'pyco-mobile-override'; // 'on' | 'off' | 未設定(=自動)
+
+    // ツールメニュー（ドロワー）関連
+    const menuBtn   = document.getElementById('btn-mobile-menu');
+    const backdrop  = document.getElementById('mobile-menu-backdrop');
+    const toolbar   = document.querySelector('.toolbar');
+
+    function closeMenu() {
+      body.classList.remove('menu-open');
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+    }
+    function toggleMenu() {
+      const open = !body.classList.contains('menu-open');
+      body.classList.toggle('menu-open', open);
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function isMobileActive() {
+      const ov = localStorage.getItem(STORE_KEY);
+      if (ov === 'on')  return true;
+      if (ov === 'off') return false;
+      return mq.matches; // どちらでもなければ画面幅で自動判定
+    }
+
+    // display 復帰後のサイズ反映。両エディタが潰れないよう必ず呼ぶ
+    function refreshPanes() {
+      try {
+        if (workspace) Blockly.svgResize(workspace);
+      } catch (e) { /* noop */ }
+      try {
+        if (editor) editor.refresh();
+      } catch (e) { /* noop */ }
+    }
+
+    function setPane(pane) {
+      body.classList.remove('pane-blocks', 'pane-code');
+      body.classList.add('pane-' + pane);
+      tabs.forEach(function(t) {
+        t.classList.toggle('active', t.dataset.pane === pane);
+      });
+      // クラス適用→レイアウト確定後にリサイズ
+      requestAnimationFrame(refreshPanes);
+    }
+
+    function applyMobile(on) {
+      body.classList.toggle('mobile-mode', on);
+      if (!on) closeMenu(); // PC 表示へ戻すときはドロワーを閉じる
+      if (toggleBtn) {
+        toggleBtn.textContent = on ? 'PC表示' : 'スマホ表示';
+        toggleBtn.classList.toggle('active', on);
+      }
+      if (on && !body.classList.contains('pane-blocks') && !body.classList.contains('pane-code')) {
+        setPane('blocks'); // 初回は「ブロック」タブから
+      } else {
+        requestAnimationFrame(refreshPanes);
+      }
+    }
+
+    // ボトムタブのクリックでペイン切替
+    tabs.forEach(function(t) {
+      t.addEventListener('click', function() { setPane(t.dataset.pane); });
+    });
+
+    // ヘッダーの手動トグル（localStorage に記憶して自動判定より優先）
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function() {
+        const next = !body.classList.contains('mobile-mode');
+        localStorage.setItem(STORE_KEY, next ? 'on' : 'off');
+        applyMobile(next);
+      });
+    }
+
+    // 画面幅の変化に追従（手動オーバーライドが無いときだけ）
+    mq.addEventListener('change', function() {
+      if (localStorage.getItem(STORE_KEY) === null) applyMobile(mq.matches);
+    });
+
+    // 実行ボタンを押したら結果が見えるタブへ自動遷移
+    //   通常/MicroPython：結果はコード・モニタ側 → 「コード・実行」タブ
+    //   ゲーム：ゲーム画面は左列にある        → 「ブロック」タブ
+    ['btn-run', 'btn-run-python'].forEach(function(id) {
+      const b = document.getElementById(id);
+      if (b) b.addEventListener('click', function() {
+        if (!body.classList.contains('mobile-mode')) return;
+        const isGame = (typeof currentMode !== 'undefined') && currentMode === 'game';
+        setPane(isGame ? 'blocks' : 'code');
+      });
+    });
+
+    // ☰ メニューでドロワー開閉、背景タップで閉じる
+    if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
+    if (backdrop) backdrop.addEventListener('click', closeMenu);
+
+    // ドロワー内のボタンをタップしたら自動で閉じる（操作後すぐ編集に戻れる）
+    if (toolbar) {
+      toolbar.addEventListener('click', function(e) {
+        if (!body.classList.contains('mobile-mode')) return;
+        if (e.target.closest('button')) closeMenu();
+      });
+    }
+
+    // 初期適用
+    applyMobile(isMobileActive());
+  })();
 });
