@@ -968,7 +968,7 @@
           const p = gf('PIN');
           add('buzz'+p, 'BUZZ', { SIG:{gp:p}, GND:{gnd:true} });
 
-        } else if (t === 'pico_servo_angle') {
+        } else if (['pico_servo_angle','pico_servo_angle_val'].includes(t)) {
           const p = gf('PIN');
           add('servo'+p, 'SERVO', { PWM:{gp:p}, VCC:{vext:true}, GND:{gnd:true} });
 
@@ -994,7 +994,7 @@
           });
           add('seg7', 'SEG7', pins);
 
-        } else if (['pico_dcmotor_run','pico_dcmotor_stop'].includes(t)) {
+        } else if (['pico_dcmotor_run','pico_dcmotor_run_val','pico_dcmotor_stop'].includes(t)) {
           const in1=gf('IN1'), in2=gf('IN2'), en=b.getFieldValue('EN');
           add('l293d_'+in1+'_'+in2, 'L293D',
             { VSS:{vext:true}, EN:en?{gp:en}:null, IN1:{gp:in1}, IN2:{gp:in2}, GND:{gnd:true}, VS:{vext:true} });

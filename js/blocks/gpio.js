@@ -282,6 +282,22 @@ Blockly.Blocks['pico_servo_angle'] = {
   }
 };
 
+Blockly.Blocks['pico_servo_angle_val'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('サーボ  ピン')
+      .appendField(new Blockly.FieldDropdown(makePinOptions('15')), 'PIN');
+    this.appendValueInput('ANGLE').setCheck('Number')
+      .appendField('  角度');
+    this.appendDummyInput().appendField('度に回す');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioMotor);
+    this.setTooltip('SG90サーボの角度に変数や式を差し込めます（0〜180）');
+  }
+};
+
 // ===== DCモーター (L298N) =====
 
 Blockly.Blocks['pico_dcmotor_run'] = {
@@ -301,6 +317,27 @@ Blockly.Blocks['pico_dcmotor_run'] = {
     this.setNextStatement(true, null);
     this.setColour(P.gpioMotor);
     this.setTooltip('L298NでDCモーターを回します。速度0〜100%、方向を指定');
+  }
+};
+Blockly.Blocks['pico_dcmotor_run_val'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('DCモーター  IN1ピン')
+      .appendField(new Blockly.FieldDropdown(makePinOptions('2')), 'IN1')
+      .appendField('  IN2ピン')
+      .appendField(new Blockly.FieldDropdown(makePinOptions('3')), 'IN2')
+      .appendField('  ENピン')
+      .appendField(new Blockly.FieldDropdown(makePinOptions('4')), 'EN');
+    this.appendValueInput('SPEED').setCheck('Number')
+      .appendField('  速度');
+    this.appendDummyInput()
+      .appendField('%  方向')
+      .appendField(new Blockly.FieldDropdown([['正転','fwd'],['逆転','rev']]), 'DIR');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioMotor);
+    this.setTooltip('L293D/L298NでDCモーターを回します。速度に変数や式を差し込めます（0〜100）');
   }
 };
 Blockly.Blocks['pico_dcmotor_stop'] = {
@@ -331,14 +368,14 @@ Blockly.Blocks['pico_stepper_step'] = {
       .appendField('IN4:')
       .appendField(new Blockly.FieldDropdown(makePinOptions('11')), 'IN4')
       .appendField('  ステップ数')
-      .appendField(new Blockly.FieldNumber(512, -4096, 4096), 'STEPS')
+      .appendField(new Blockly.FieldNumber(4096, -8192, 8192), 'STEPS')
       .appendField('  遅延')
       .appendField(new Blockly.FieldNumber(2, 1, 20), 'DELAY')
       .appendField('ms');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.gpioMotor);
-    this.setTooltip('28BYJ-48+ULN2003でN ステップ動かします。負値で逆転。512ステップ≒1回転');
+    this.setTooltip('28BYJ-48+ULN2003でN ステップ動かします（半ステップ駆動）。負値で逆転。4096ステップ≒1回転');
   }
 };
 Blockly.Blocks['pico_stepper_angle'] = {
