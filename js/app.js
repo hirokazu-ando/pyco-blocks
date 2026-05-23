@@ -435,7 +435,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return new Klass(fname, mode);
   }
 
-  let Tutorial;   // 後で代入（generateCode から参照するため先に宣言）
   let blockLineMap = new Map(); // blockId → { from, to }（CodeMirror の 0 始まり行番号）
   const BLOCK_SEL_BG_CLASS = 'block-selection-highlight';
   let _emitCtx = { line: 0 };
@@ -3193,9 +3192,6 @@ document.addEventListener('DOMContentLoaded', function() {
       clearBlockSelectionHighlight();
     }
 
-    // チュートリアル自動チェック（Tutorial代入済みの場合のみ）
-    if (Tutorial) Tutorial.check(blockTypes);
-
     // MicroPython モード: 配線図プレビューを更新
     if (currentMode === 'micropython') updateCircuitPreview();
   }
@@ -3905,11 +3901,6 @@ document.addEventListener('DOMContentLoaded', function() {
       mode === 'python' ? 'Python Output'
       : mode === 'game' ? 'Game'
       : 'MicroPython Output';
-    const tutLabel = document.getElementById('tut-mode-label');
-    if (tutLabel) tutLabel.textContent =
-      mode === 'python' ? 'Python入門'
-      : mode === 'game' ? 'ゲーム'
-      : 'MicroPython';
 
     // シリアル関連ボタン（MicroPython && Web Serial対応のみ表示）
     const showSerial = mode === 'micropython' && hasSerial;
@@ -4059,9 +4050,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (monHandle) monHandle.style.display = '';
     if (shellDock) shellDock.style.display = 'none';
     if (dockHandle) dockHandle.style.display = 'none';
-
-    // チュートリアルリセット
-    Tutorial.resetForMode();
 
     // ファイルタブバー表示切り替え（Python入門・ゲームモードでマルチファイル対応）
     const fileTabs = document.getElementById('file-tabs');
@@ -4466,119 +4454,6 @@ document.addEventListener('DOMContentLoaded', function() {
     targetEl.replaceChildren(frag);
   }
 
-  Tutorial = {
-    currentStep: 0,
-    isOpen: false,
-
-    init() {
-      document.getElementById('btn-tutorial').addEventListener('click', () => {
-        if (this.isOpen) this.close(); else this.open();
-      });
-      document.getElementById('tut-close').addEventListener('click', () => this.close());
-      document.getElementById('tut-hint-toggle').addEventListener('click', () => {
-        const hint = document.getElementById('tut-hint');
-        const btn  = document.getElementById('tut-hint-toggle');
-        const shown = hint.style.display !== 'none';
-        hint.style.display = shown ? 'none' : 'block';
-        btn.textContent    = shown ? 'ヒントを見る' : 'ヒントを隠す';
-      });
-      document.getElementById('tut-prev').addEventListener('click', () => this.prev());
-      document.getElementById('tut-next').addEventListener('click', () => this.next());
-    },
-
-    open() {
-      this.isOpen = true;
-      document.getElementById('tutorial-panel').classList.add('tutorial-panel--open');
-      document.getElementById('btn-tutorial').classList.add('tutorial-active');
-      this.render();
-      // Blocklyのリサイズを通知
-      setTimeout(() => Blockly.svgResize(workspace), 310);
-    },
-
-    close() {
-      this.isOpen = false;
-      document.getElementById('tutorial-panel').classList.remove('tutorial-panel--open');
-      document.getElementById('btn-tutorial').classList.remove('tutorial-active');
-      setTimeout(() => Blockly.svgResize(workspace), 310);
-    },
-
-    steps() {
-      return (typeof TUTORIALS !== 'undefined' && TUTORIALS[currentMode]) || [];
-    },
-
-    resetForMode() {
-      this.currentStep = 0;
-      if (this.isOpen) this.render();
-    },
-
-    render() {
-      const steps = this.steps();
-      if (!steps.length) return;
-      const idx   = Math.min(this.currentStep, steps.length - 1);
-      const step  = steps[idx];
-      const total = steps.length;
-
-      document.getElementById('tut-title').textContent    = step.title;
-      setSafeRichText(document.getElementById('tut-body'), step.body);
-      setSafeRichText(document.getElementById('tut-hint'), step.hint);
-      document.getElementById('tut-hint').style.display  = 'none';
-      document.getElementById('tut-hint-toggle').textContent = 'ヒントを見る';
-      document.getElementById('tut-progress').textContent = `${idx + 1} / ${total}`;
-      document.getElementById('tut-pbar-fill').style.width = `${(idx + 1) / total * 100}%`;
-
-      document.getElementById('tut-prev').disabled = (idx === 0);
-      const nextBtn = document.getElementById('tut-next');
-      nextBtn.disabled    = true;
-      nextBtn.textContent = (idx === total - 1) ? '完了' : '次へ';
-
-      const checkEl = document.getElementById('tut-check');
-      checkEl.textContent = '○ 待機中';
-      checkEl.className   = 'tut-check';
-
-      // 現在のワークスペース状態で即時チェック
-      const blockTypes = new Set(workspace.getAllBlocks(false).map(b => b.type));
-      this._applyCheck(step, blockTypes);
-    },
-
-    check(blockTypes) {
-      if (!this.isOpen) return;
-      const steps = this.steps();
-      if (!steps.length) return;
-      this._applyCheck(steps[this.currentStep], blockTypes);
-    },
-
-    _applyCheck(step, blockTypes) {
-      const passed  = step.check(blockTypes);
-      const checkEl = document.getElementById('tut-check');
-      const nextBtn = document.getElementById('tut-next');
-      if (passed) {
-        checkEl.textContent = 'クリア！';
-        checkEl.className   = 'tut-check tut-check--done';
-        nextBtn.disabled    = false;
-      } else {
-        checkEl.textContent = '○ 待機中';
-        checkEl.className   = 'tut-check';
-        nextBtn.disabled    = true;
-      }
-    },
-
-    next() {
-      const steps = this.steps();
-      if (this.currentStep < steps.length - 1) {
-        this.currentStep++;
-        this.render();
-      } else {
-        this.close();
-      }
-    },
-
-    prev() {
-      if (this.currentStep > 0) {
-        this.currentStep--;
-        this.render();
-      }
-    },
-  };
 
   // ===== リサイズ機能 =====
 
@@ -5523,7 +5398,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== 初期化 =====
-  Tutorial.init();
   // URLパラメータ ?mode=micropython でモードを指定できる（省略時は python）
   const _urlParams = new URLSearchParams(window.location.search);
   const _urlMode = _urlParams.get('mode');

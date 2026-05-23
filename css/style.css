@@ -456,14 +456,6 @@ h1 {
   overflow: hidden;
 }
 
-.main.game-layout .tutorial-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-}
-
 .main.game-layout #game-left-column {
   grid-column: 1;
   grid-row: 1;
@@ -1008,239 +1000,6 @@ h1 {
   color: #fff;
 }
 
-/* ガイドボタン */
-#btn-tutorial {
-  color: var(--accent-amber);
-  border-color: var(--accent-amber);
-  text-shadow: 0 0 5px rgba(255,183,0,0.5);
-}
-#btn-tutorial:hover {
-  background: rgba(255,183,0,0.1);
-  box-shadow: 0 0 10px rgba(255,183,0,0.3);
-  color: #fff;
-}
-#btn-tutorial.tutorial-active {
-  background: rgba(255,183,0,0.18);
-  box-shadow: 0 0 10px rgba(255,183,0,0.4);
-  color: var(--accent-amber);
-}
-
-/* ===== チュートリアルパネル ===== */
-.tutorial-panel {
-  width: 0;
-  overflow: hidden;
-  background: var(--bg-panel);
-  border-left: 1px solid var(--border-dim);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  transition: width 0.3s ease;
-  /* スキャンライン */
-  position: relative;
-}
-.tutorial-panel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
-  );
-  pointer-events: none;
-}
-
-.tutorial-panel--open {
-  width: 280px;
-}
-
-/* ヘッダー */
-.tut-hdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px 8px;
-  background: #0a120a;
-  border-bottom: 1px solid var(--border-dim);
-  flex-shrink: 0;
-}
-
-.tut-mode-label {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-amber);
-  text-shadow: 0 0 5px rgba(255,183,0,0.5);
-}
-
-.tut-close {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  background: transparent;
-  border: 1px solid var(--border-dim);
-  cursor: pointer;
-  padding: 2px 7px;
-  transition: color 0.2s, border-color 0.2s;
-}
-.tut-close:hover {
-  color: #ff6060;
-  border-color: #ff6060;
-}
-
-/* プログレスバー */
-.tut-pbar-wrap {
-  height: 3px;
-  background: var(--border-dim);
-  flex-shrink: 0;
-}
-.tut-pbar-fill {
-  height: 100%;
-  background: var(--accent-amber);
-  box-shadow: 0 0 6px rgba(255,183,0,0.6);
-  transition: width 0.4s ease;
-  width: 0%;
-}
-
-/* ステップ番号 */
-.tut-progress {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  color: var(--text-dim);
-  letter-spacing: 0.1em;
-  padding: 6px 14px 0;
-  flex-shrink: 0;
-}
-
-/* ステップタイトル */
-.tut-title {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: var(--accent-green);
-  text-shadow: 0 0 6px rgba(0,255,65,0.4);
-  padding: 4px 14px 8px;
-  border-bottom: 1px solid var(--border-dim);
-  flex-shrink: 0;
-}
-
-/* 説明文 */
-.tut-body {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--text-primary);
-  line-height: 1.7;
-  padding: 14px;
-  overflow-y: auto;
-  flex: 1;
-}
-.tut-body code {
-  color: var(--accent-green);
-  background: rgba(0,255,65,0.08);
-  padding: 1px 5px;
-  font-family: var(--font-mono);
-}
-
-/* ヒントセクション */
-.tut-hint-section {
-  padding: 0 14px 10px;
-  flex-shrink: 0;
-}
-
-.tut-hint-toggle {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--accent-amber);
-  background: transparent;
-  border: 1px solid rgba(255,183,0,0.3);
-  cursor: pointer;
-  padding: 5px 10px;
-  width: 100%;
-  text-align: left;
-  transition: background 0.2s;
-  clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
-}
-.tut-hint-toggle:hover {
-  background: rgba(255,183,0,0.08);
-}
-
-.tut-hint {
-  display: none;
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  color: var(--text-dim);
-  line-height: 1.65;
-  padding: 10px 10px 4px;
-  border-left: 2px solid rgba(255,183,0,0.3);
-  margin-top: 8px;
-}
-.tut-hint strong { color: var(--text-primary); }
-.tut-hint code {
-  color: var(--accent-green);
-  background: rgba(0,255,65,0.08);
-  padding: 1px 4px;
-}
-.tut-hint em { color: var(--accent-cyan); font-style: normal; }
-
-/* ナビゲーション */
-.tut-nav {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px 14px;
-  border-top: 1px solid var(--border-dim);
-  flex-shrink: 0;
-  background: #0a120a;
-}
-
-.tut-nav-btn {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  padding: 6px 10px;
-  border: 1px solid var(--border-dim);
-  color: var(--text-dim);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s;
-  clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
-  white-space: nowrap;
-}
-.tut-nav-btn:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--text-dim);
-  background: rgba(90,138,90,0.1);
-}
-.tut-nav-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.tut-nav-btn--next {
-  color: var(--accent-green);
-  border-color: var(--accent-green);
-}
-.tut-nav-btn--next:hover:not(:disabled) {
-  background: rgba(0,255,65,0.1);
-  box-shadow: 0 0 8px rgba(0,255,65,0.3);
-  color: #fff;
-}
-
-/* 完了チェック表示 */
-.tut-check {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--text-dim);
-  flex: 1;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.tut-check--done {
-  color: var(--accent-green);
-  text-shadow: 0 0 5px rgba(0,255,65,0.5);
-}
-
 /* ===== Python シェル ===== */
 #monitor-output.python-shell {
   color: var(--accent-green);
@@ -1502,26 +1261,6 @@ h1 {
     width: 100%;
   }
 
-  /* チュートリアルパネル：下からスライドアップするドロワーに変更 */
-  .tutorial-panel {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100% !important;       /* width: 0 / 280px の上書き */
-    height: 0;
-    max-height: 58vh;
-    overflow: hidden;
-    border-left: none;
-    border-top: 1px solid var(--border-dim);
-    transition: height 0.3s ease; /* width トランジションを高さに置換 */
-    z-index: 200;
-  }
-  .tutorial-panel--open {
-    width: 100% !important;
-    height: 58vh;                 /* width: 280px の代わり */
-  }
-
   /* ゲームモード：細い画面では縦積みに切り替え */
   .main.game-layout {
     display: flex;
@@ -1707,10 +1446,6 @@ h1 {
   color: #1e7a1e;
   text-shadow: none;
 }
-[data-theme="light"] .tut-hdr,
-[data-theme="light"] .tut-nav {
-  background: #e8f0e8;
-}
 [data-theme="light"] .syntax-header {
   background: #e8f0e8;
 }
@@ -1775,9 +1510,6 @@ h1 {
   box-shadow: 0 0 6px rgba(30,122,30,0.2);
 }
 [data-theme="light"] .code-panel::after {
-  background: none;
-}
-[data-theme="light"] .tutorial-panel::after {
   background: none;
 }
 
