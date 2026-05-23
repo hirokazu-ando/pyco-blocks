@@ -2213,16 +2213,35 @@ body.mobile-mode .mode-btn {
 
 /* ----- モバイル：ヘッダーを1段に圧縮しツールバーを横スクロール ----- */
 /* タイトルは省略して編集領域の幅を確保（ステータスドットは残す） */
-body.mobile-mode .title-block { display: none; }
+/* タイトル「PycoBlocks」はモバイルでも省略させず表示（サブタイトルは隠す）。
+   居場所はモード切替ボタンを縮めて確保する */
+body.mobile-mode .title-block {
+  display: flex;
+  flex: 0 0 auto;
+}
+body.mobile-mode .title-block h1 {
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-transform: none; /* 大文字変換せず「PycoBlocks」表記＝横幅も節約 */
+}
+body.mobile-mode .title-sub { display: none; }
 body.mobile-mode .version-tag { display: none; }
+/* モード切替ボタンを詰めて、タイトルと☰メニューの居場所を確保 */
+body.mobile-mode .mode-btn {
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 0.66rem;
+  letter-spacing: 0;
+}
 
 body.mobile-mode header {
   flex-wrap: nowrap;
   height: var(--header-h);
   min-height: var(--header-h);
   align-items: center;
-  gap: 8px;
-  padding: 0 8px;
+  gap: 6px;
+  padding: 0 6px;
   overflow: hidden;
 }
 
