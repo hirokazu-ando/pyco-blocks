@@ -1,0 +1,66 @@
+# PycoBlocks � ??????? XML ? headless Chromium ? PNG ??? Artifact ??????
+# ??: Actions ?? ? Blockshot PNG ? Run workflow
+# ?Cursor ?????? Python ????????????????? CI ????????
+#
+# ??:
+#   xml_path � ?? samples/python-intro/intro_0-1_ex1_word.xml
+#   png_path � ?? samples/python-intro/screenshots/intro_0-1_ex1_word.png
+name: Blockshot PNG
+
+on:
+  workflow_dispatch:
+    inputs:
+      xml_path:
+        description: Repo ??????????????? XML?
+        type: string
+        default: samples/python-intro/intro_0-1_ex1_word.xml
+      png_path:
+        description: ?? PNG ?????
+        type: string
+        default: samples/python-intro/screenshots/intro_0-1_ex1_word.png
+      wait_ms:
+        description: viewer ????????(ms)
+        type: number
+        default: 6500
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blockshot-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Playwright and deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tools/requirements-blockshot.txt
+          playwright install chromium --with-deps
+
+      - name: Render PNG
+        env:
+          XML_PATH: ${{ inputs.xml_path }}
+          PNG_PATH: ${{ inputs.png_path }}
+          WAIT_MS: ${{ inputs.wait_ms }}
+        run: |
+          python tools/blockshot.py render "$XML_PATH" "$PNG_PATH" --wait-ms "$WAIT_MS"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blockshot-png
+          path: ${{ inputs.png_path }}
+          if-no-files-found: error
