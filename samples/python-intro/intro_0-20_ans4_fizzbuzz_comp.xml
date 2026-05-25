@@ -10,7 +10,7 @@
       <block type="py_list_comp">
         <field name="VAR" id="vn">n</field>
         <value name="EXPR">
-          <block type="py_ternary">
+          <block type="py_ternary" inline="false">
             <value name="THEN"><block type="val_str"><field name="TEXT">FizzBuzz</field></block></value>
             <value name="COND">
               <block type="cond_compare">
@@ -26,7 +26,7 @@
               </block>
             </value>
             <value name="ELSE">
-              <block type="py_ternary">
+              <block type="py_ternary" inline="false">
                 <value name="THEN"><block type="val_str"><field name="TEXT">Fizz</field></block></value>
                 <value name="COND">
                   <block type="cond_compare">
@@ -42,7 +42,7 @@
                   </block>
                 </value>
                 <value name="ELSE">
-                  <block type="py_ternary">
+                  <block type="py_ternary" inline="false">
                     <value name="THEN"><block type="val_str"><field name="TEXT">Buzz</field></block></value>
                     <value name="COND">
                       <block type="cond_compare">
