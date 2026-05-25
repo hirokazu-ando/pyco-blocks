@@ -72,8 +72,23 @@
                     <field name="INST" id="var_b">b</field>
                     <field name="METHOD">tick</field>
                     <next>
-                      <block type="py_custom_stmt" id="b18">
-                        <field name="CODE">print(a.value, b.value)</field>
+                      <block type="py_print" id="b18">
+                        <value name="VALUE">
+                          <block type="py_attr_get" id="b19">
+                            <field name="INST" id="var_a">a</field>
+                            <field name="ATTR">value</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="py_print" id="b20">
+                            <value name="VALUE">
+                              <block type="py_attr_get" id="b21">
+                                <field name="INST" id="var_b">b</field>
+                                <field name="ATTR">value</field>
+                              </block>
+                            </value>
+                          </block>
+                        </next>
                       </block>
                     </next>
                   </block>
