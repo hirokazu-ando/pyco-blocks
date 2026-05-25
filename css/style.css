@@ -38,7 +38,8 @@ body {
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh;        /* dvh 非対応ブラウザ用フォールバック */
+  height: 100dvh;       /* モバイルのアドレスバー伸縮に追従し、はみ出しによるスクロール固着を防ぐ */
   overflow: hidden;
   /* PCB格子パターン */
   background-image:
@@ -674,6 +675,11 @@ h1 {
   background: var(--bg-panel) !important;
   color: var(--text-code) !important;
 }
+/* コード本文のスクロールが末端で文書側へ波及しないようにする */
+.CodeMirror-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
 .CodeMirror-gutters {
   background: #060b06 !important;
   border-right: 1px solid var(--border-dim) !important;
@@ -727,6 +733,8 @@ h1 {
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-y: auto;
+  overscroll-behavior: contain;          /* 末端到達時のスクロール連鎖を内部で止める */
+  -webkit-overflow-scrolling: touch;      /* iOS の慣性スクロールを有効化 */
   background: #050d0d;
   text-shadow: 0 0 4px rgba(0,212,255,0.4);
   position: relative;
@@ -1910,7 +1918,8 @@ body.mobile-mode .main.game-layout {
   display: flex;
   flex-direction: column;
   flex: none !important;
-  height: calc(100vh - var(--header-h) - var(--mobile-tabbar-h));
+  height: calc(100vh - var(--header-h) - var(--mobile-tabbar-h));   /* フォールバック */
+  height: calc(100dvh - var(--header-h) - var(--mobile-tabbar-h));  /* 実表示領域に一致させ、下スクロール後に上へ戻れなくなる不具合を防ぐ */
 }
 
 /* --- 通常モード(Python入門)：blockly-div と code-panel を全画面切替 --- */
