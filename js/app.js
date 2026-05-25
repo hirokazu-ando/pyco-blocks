@@ -3709,9 +3709,14 @@ document.addEventListener('DOMContentLoaded', function() {
     ta.value = url;
     if (msg) msg.textContent = '';
     if (lenEl) lenEl.textContent = url.length + ' 文字';
+    // モバイルではツールメニュー(ドロワー)を閉じてからモーダルを最前面に出す
+    document.body.classList.remove('menu-open');
     modal.style.display = 'flex';
-    // 表示直後に全選択しておく（そのまま Ctrl+C でコピー可能に）
-    requestAnimationFrame(function() { ta.focus(); ta.select(); });
+    // PCでは全選択して即 Ctrl+C 可能に。モバイルは自動フォーカスでキーボードが
+    // URLを隠すのを避け、「コピー」ボタン操作に委ねる
+    if (!document.body.classList.contains('mobile-mode')) {
+      requestAnimationFrame(function() { ta.focus(); ta.select(); });
+    }
   }
   function _closeShareModal() {
     var modal = document.getElementById('share-modal');
