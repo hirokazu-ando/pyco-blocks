@@ -3674,9 +3674,11 @@ document.addEventListener('DOMContentLoaded', function() {
   //   前処理は座標(x/y)の除去のみ。id は残す（変数の再リンク崩れを防ぐため）。
   //
   //   URL形式（版を分けて後方互換を保つ）:
-  //     #x1=...  辞書v1付き deflate（現行・最短。辞書は js/share_dict.js に凍結）
-  //     #xml=... 無辞書 deflate（旧形式・読み込みのみ対応）
-  //   辞書はアプリ同梱でURLには載らないため、ブロック語彙ぶんURLが短くなる。
+  //     #m=<mode>&x1=...  編集モード + 辞書v1付き deflate（現行・最短）
+  //     #x1=...           辞書v1付き deflate（mode省略時は読込側でpython既定）
+  //     #xml=...          無辞書 deflate（旧形式・読み込みのみ対応）
+  //   m は python/game/micropython。読込側はブロック展開前にこのモードへ切替える。
+  //   辞書(js/share_dict.js)はアプリ同梱でURLには載らないため、語彙ぶんURLが短くなる。
   var _SHARE_DICT_V1 = (typeof window !== 'undefined' && window.PCO_SHARE_DICT_V1)
     ? new TextEncoder().encode(window.PCO_SHARE_DICT_V1) : null;
 
@@ -3754,13 +3756,14 @@ document.addEventListener('DOMContentLoaded', function() {
       var bytes, key;
       if (_SHARE_DICT_V1) {
         bytes = pako.deflateRaw(rawBytes, { level: 9, dictionary: _SHARE_DICT_V1 });
-        key = '#x1=';
+        key = 'x1=';
       } else {
         bytes = pako.deflateRaw(rawBytes, { level: 9 });
-        key = '#xml=';
+        key = 'xml=';
       }
       var encoded = _bytesToBase64Url(bytes);
-      var url = location.origin + location.pathname + key + encoded;
+      // 開く相手が別モードでも自動で合わせられるよう、編集モードもハッシュに含める
+      var url = location.origin + location.pathname + '#m=' + currentMode + '&' + key + encoded;
 
       // URLが長すぎる場合は共有を止め、サーバ設置(?src=)を案内する
       if (url.length > 8000) {
@@ -5627,6 +5630,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       var _dom = Blockly.utils.xml.textToDom(_xmlText);
       var _rootName = (_dom.tagName || _dom.localName || '').toLowerCase();
+      // ハッシュに編集モード(#m=)が含まれていれば、ブロック読込前に切り替える
+      // （ツールボックス/生成コードを共有元と一致させ、未知ブロック化を防ぐ）
+      var _hashMode = _hash.match(/[#&]m=([^&]+)/);
+      if (_hashMode) {
+        var _m = _hashMode[1];
+        if ((_m === 'python' || _m === 'game' || _m === 'micropython') && _m !== currentMode) {
+          applyMode(_m, false);
+        }
+      }
       workspace.clear();
       if (_rootName === 'project') {
         _loadProjectXml(_dom);
