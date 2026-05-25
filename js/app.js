@@ -3670,8 +3670,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== ブロック共有URL =====
   //   ワークスペースのXMLを pako(deflateRaw) で圧縮し Base64URL にして
-  //   URLの #xml= に載せる。サーバ不要・1リンクで丸ごと復元できる。
+  //   URLのハッシュに載せる。サーバ不要・1リンクで丸ごと復元できる。
   //   前処理は座標(x/y)の除去のみ。id は残す（変数の再リンク崩れを防ぐため）。
+  //
+  //   URL形式（版を分けて後方互換を保つ）:
+  //     #x1=...  辞書v1付き deflate（現行・最短。辞書は js/share_dict.js に凍結）
+  //     #xml=... 無辞書 deflate（旧形式・読み込みのみ対応）
+  //   辞書はアプリ同梱でURLには載らないため、ブロック語彙ぶんURLが短くなる。
+  var _SHARE_DICT_V1 = (typeof window !== 'undefined' && window.PCO_SHARE_DICT_V1)
+    ? new TextEncoder().encode(window.PCO_SHARE_DICT_V1) : null;
+
   function _bytesToBase64Url(bytes) {
     var bin = '';
     var chunk = 0x8000;
@@ -3700,15 +3708,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // 共有URLモーダルを開いてURLを表示する
+  var _shareCurrentUrl = '';
   function _openShareModal(url) {
     var modal = document.getElementById('share-modal');
     var ta    = document.getElementById('share-url-text');
     var msg   = document.getElementById('share-copy-msg');
     var lenEl = document.getElementById('share-url-len');
+    var nativeBtn = document.getElementById('share-native');
     if (!modal || !ta) { window.prompt('このURLをコピーしてください:', url); return; }
+    _shareCurrentUrl = url;
     ta.value = url;
     if (msg) msg.textContent = '';
     if (lenEl) lenEl.textContent = url.length + ' 文字';
+    // ネイティブ共有(Web Share API)が使える端末でのみ「SNSで共有」を出す
+    if (nativeBtn) nativeBtn.style.display = (typeof navigator.share === 'function') ? '' : 'none';
     // モバイルではツールメニュー(ドロワー)を閉じてからモーダルを最前面に出す
     document.body.classList.remove('menu-open');
     modal.style.display = 'flex';
@@ -3736,9 +3749,18 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       var xmlText = _workspaceToShareXmlText();
-      var bytes = pako.deflateRaw(new TextEncoder().encode(xmlText), { level: 9 });
+      var rawBytes = new TextEncoder().encode(xmlText);
+      // 辞書v1が使えれば辞書付きで圧縮（#x1=）。無ければ無辞書（#xml=）にフォールバック
+      var bytes, key;
+      if (_SHARE_DICT_V1) {
+        bytes = pako.deflateRaw(rawBytes, { level: 9, dictionary: _SHARE_DICT_V1 });
+        key = '#x1=';
+      } else {
+        bytes = pako.deflateRaw(rawBytes, { level: 9 });
+        key = '#xml=';
+      }
       var encoded = _bytesToBase64Url(bytes);
-      var url = location.origin + location.pathname + '#xml=' + encoded;
+      var url = location.origin + location.pathname + key + encoded;
 
       // URLが長すぎる場合は共有を止め、サーバ設置(?src=)を案内する
       if (url.length > 8000) {
@@ -3765,6 +3787,18 @@ document.addEventListener('DOMContentLoaded', function() {
         ok = true;
       }
       if (msg) msg.textContent = ok ? 'コピーしました ✓' : '↑ 枠内を選んで手動でコピーしてください';
+    });
+  }
+  // SNSで共有（Web Share API）: OSのネイティブ共有シートを開く
+  var shareNativeBtn = document.getElementById('share-native');
+  if (shareNativeBtn) {
+    shareNativeBtn.addEventListener('click', function() {
+      if (typeof navigator.share !== 'function' || !_shareCurrentUrl) return;
+      navigator.share({
+        title: 'PycoBlocks のブロック',
+        text: 'PycoBlocks で作ったブロックを共有します',
+        url: _shareCurrentUrl
+      }).catch(function() { /* ユーザーがキャンセルした場合など。無視 */ });
     });
   }
   var shareCloseBtn = document.getElementById('share-close');
@@ -5574,14 +5608,23 @@ document.addEventListener('DOMContentLoaded', function() {
       .catch(function(err) { console.warn('PycoBlocks: ?src= load failed:', err); });
   }
 
-  // URL の #xml=... （共有URL）でワークスペースを復元
-  //   「共有URL」ボタンが作る pako(deflateRaw)+Base64URL を展開して読み込む。
-  var _hashXml = (window.location.hash || '').match(/[#&]xml=([^&]+)/);
-  if (_hashXml) {
+  // URL の共有ハッシュ（#x1= / #xml=）でワークスペースを復元
+  //   #x1=  … 辞書v1付き deflate（現行）
+  //   #xml= … 無辞書 deflate（旧形式・後方互換）
+  var _hash = window.location.hash || '';
+  var _hashV1 = _hash.match(/[#&]x1=([^&]+)/);
+  var _hashLegacy = _hash.match(/[#&]xml=([^&]+)/);
+  if (_hashV1 || _hashLegacy) {
     try {
       if (typeof pako === 'undefined') throw new Error('pako 未読み込み');
-      var _bytes = _base64UrlToBytes(_hashXml[1]);
-      var _xmlText = new TextDecoder().decode(pako.inflateRaw(_bytes));
+      var _xmlText;
+      if (_hashV1) {
+        if (!_SHARE_DICT_V1) throw new Error('共有辞書(share_dict.js)が未読み込み');
+        _xmlText = new TextDecoder().decode(
+          pako.inflateRaw(_base64UrlToBytes(_hashV1[1]), { dictionary: _SHARE_DICT_V1 }));
+      } else {
+        _xmlText = new TextDecoder().decode(pako.inflateRaw(_base64UrlToBytes(_hashLegacy[1])));
+      }
       var _dom = Blockly.utils.xml.textToDom(_xmlText);
       var _rootName = (_dom.tagName || _dom.localName || '').toLowerCase();
       workspace.clear();
@@ -5593,7 +5636,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (typeof generateCode === 'function') generateCode();
       requestAnimationFrame(function() { requestAnimationFrame(autoFitInitialZoom); });
     } catch (err) {
-      console.warn('PycoBlocks: #xml= load failed:', err);
+      console.warn('PycoBlocks: 共有ハッシュの復元に失敗:', err);
       alert('共有URLのブロックを復元できませんでした。URLが途中で切れていないか確認してください。');
     }
   }
