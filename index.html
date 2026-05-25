@@ -34,6 +34,8 @@
           integrity="sha384-ZYmwuq4n2gOcNxMSiJ6jyTj+BbIrilr7p6dlq6q5nmSWKmsH9UU4K1qqjycMkfmR" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"
           integrity="sha384-Xy+2exU6lBoT4OpUOtnQb+cUpn+nlJQEHvRobWVtwz6wIsw4oNoO7xyd/l8rYgMy" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"
+          integrity="sha512-g2TeAWw5GPnX7z0Kn8nFbYfeHcvAu/tx6d6mrLe/90mkCxO+RcptyYpksUz35EO337F83bZwcmUyHiHamspkfg==" crossorigin="anonymous"></script>
 </head>
 <body>
   <header>
@@ -53,6 +55,7 @@
     <div class="toolbar">
       <button id="btn-save-xml">ブロック保存</button>
       <button id="btn-load-xml">ブロック読込</button>
+      <button id="btn-share-url" title="今のブロックを復元できる共有URLをコピー">共有URL</button>
       <input type="file" id="xml-input" accept=".xml" style="display:none">
       <div class="toolbar-sep"></div>
       <button id="btn-download">.py↓</button>
@@ -1779,7 +1782,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260523e"></script>
+  <script src="js/app.js?v=20260526a"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">

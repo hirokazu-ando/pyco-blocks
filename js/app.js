@@ -3668,6 +3668,76 @@ document.addEventListener('DOMContentLoaded', function() {
     e.target.value = '';
   });
 
+  // ===== ブロック共有URL =====
+  //   ワークスペースのXMLを pako(deflateRaw) で圧縮し Base64URL にして
+  //   URLの #xml= に載せる。サーバ不要・1リンクで丸ごと復元できる。
+  //   前処理は座標(x/y)の除去のみ。id は残す（変数の再リンク崩れを防ぐため）。
+  function _bytesToBase64Url(bytes) {
+    var bin = '';
+    var chunk = 0x8000;
+    for (var i = 0; i < bytes.length; i += chunk) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function _base64UrlToBytes(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    var bin = atob(str);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+  // 共有URL用に座標を落とした XML 文字列を作る
+  function _workspaceToShareXmlText() {
+    var dom = Blockly.Xml.workspaceToDom(workspace);
+    var blocks = dom.querySelectorAll('block');
+    for (var i = 0; i < blocks.length; i++) {
+      blocks[i].removeAttribute('x');
+      blocks[i].removeAttribute('y');
+    }
+    return Blockly.Xml.domToText(dom);
+  }
+
+  var btnShareUrl = document.getElementById('btn-share-url');
+  if (btnShareUrl) {
+    btnShareUrl.addEventListener('click', function() {
+      if (typeof pako === 'undefined') {
+        alert('圧縮ライブラリ(pako)を読み込めませんでした。通信環境を確認してください。');
+        return;
+      }
+      var topBlocks = workspace.getTopBlocks(false);
+      if (topBlocks.length === 0) {
+        alert('共有するブロックがありません。先にブロックを並べてください。');
+        return;
+      }
+      var xmlText = _workspaceToShareXmlText();
+      var bytes = pako.deflateRaw(new TextEncoder().encode(xmlText), { level: 9 });
+      var encoded = _bytesToBase64Url(bytes);
+      var url = location.origin + location.pathname + '#xml=' + encoded;
+
+      // URLが長すぎる場合は共有を止め、サーバ設置(?src=)を案内する
+      if (url.length > 8000) {
+        alert('作品が大きすぎて共有URLに収まりません（' + url.length + '文字）。\n'
+            + '「ブロック保存」でXMLを書き出し、サーバに置いて ?src= で読み込む方法をご検討ください。');
+        return;
+      }
+
+      var done = function(ok) {
+        var orig = '共有URL';
+        btnShareUrl.textContent = ok ? 'コピーしました' : '↓下の窓からコピー';
+        setTimeout(function() { btnShareUrl.textContent = orig; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() { done(true); },
+                                                function() { window.prompt('このURLをコピーしてください:', url); done(false); });
+      } else {
+        window.prompt('このURLをコピーしてください:', url);
+        done(false);
+      }
+    });
+  }
+
   document.getElementById('btn-download').addEventListener('click', function() {
     saveCurrentFile();
     const activeFile = pyFiles[activeFileIdx];
@@ -5464,6 +5534,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       })
       .catch(function(err) { console.warn('PycoBlocks: ?src= load failed:', err); });
+  }
+
+  // URL の #xml=... （共有URL）でワークスペースを復元
+  //   「共有URL」ボタンが作る pako(deflateRaw)+Base64URL を展開して読み込む。
+  var _hashXml = (window.location.hash || '').match(/[#&]xml=([^&]+)/);
+  if (_hashXml) {
+    try {
+      if (typeof pako === 'undefined') throw new Error('pako 未読み込み');
+      var _bytes = _base64UrlToBytes(_hashXml[1]);
+      var _xmlText = new TextDecoder().decode(pako.inflateRaw(_bytes));
+      var _dom = Blockly.utils.xml.textToDom(_xmlText);
+      var _rootName = (_dom.tagName || _dom.localName || '').toLowerCase();
+      workspace.clear();
+      if (_rootName === 'project') {
+        _loadProjectXml(_dom);
+      } else {
+        Blockly.Xml.domToWorkspace(_dom, workspace);
+      }
+      if (typeof generateCode === 'function') generateCode();
+      requestAnimationFrame(function() { requestAnimationFrame(autoFitInitialZoom); });
+    } catch (err) {
+      console.warn('PycoBlocks: #xml= load failed:', err);
+      alert('共有URLのブロックを復元できませんでした。URLが途中で切れていないか確認してください。');
+    }
   }
 
   // ============================================================
