@@ -38,5 +38,11 @@ build/
 
 # 動作に不要なドキュメント・管理ファイル
 AGENTS.md
-tools/
+tools/*
+!tools/blockshot.py
 docs/
+
+# Kindle 出版ビルド成果物（自動生成・大容量）
+kindle/**/src/
+kindle/**/assets/img/
+kindle/**/build/
