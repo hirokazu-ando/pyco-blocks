@@ -3699,6 +3699,25 @@ document.addEventListener('DOMContentLoaded', function() {
     return Blockly.Xml.domToText(dom);
   }
 
+  // 共有URLモーダルを開いてURLを表示する
+  function _openShareModal(url) {
+    var modal = document.getElementById('share-modal');
+    var ta    = document.getElementById('share-url-text');
+    var msg   = document.getElementById('share-copy-msg');
+    var lenEl = document.getElementById('share-url-len');
+    if (!modal || !ta) { window.prompt('このURLをコピーしてください:', url); return; }
+    ta.value = url;
+    if (msg) msg.textContent = '';
+    if (lenEl) lenEl.textContent = url.length + ' 文字';
+    modal.style.display = 'flex';
+    // 表示直後に全選択しておく（そのまま Ctrl+C でコピー可能に）
+    requestAnimationFrame(function() { ta.focus(); ta.select(); });
+  }
+  function _closeShareModal() {
+    var modal = document.getElementById('share-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
   var btnShareUrl = document.getElementById('btn-share-url');
   if (btnShareUrl) {
     btnShareUrl.addEventListener('click', function() {
@@ -3722,19 +3741,33 @@ document.addEventListener('DOMContentLoaded', function() {
             + '「ブロック保存」でXMLを書き出し、サーバに置いて ?src= で読み込む方法をご検討ください。');
         return;
       }
+      _openShareModal(url);
+    });
+  }
 
-      var done = function(ok) {
-        var orig = '共有URL';
-        btnShareUrl.textContent = ok ? 'コピーしました' : '↓下の窓からコピー';
-        setTimeout(function() { btnShareUrl.textContent = orig; }, 1600);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(function() { done(true); },
-                                                function() { window.prompt('このURLをコピーしてください:', url); done(false); });
-      } else {
-        window.prompt('このURLをコピーしてください:', url);
-        done(false);
+  // 共有モーダルの操作（コピー / 閉じる / 背景クリックで閉じる）
+  var shareCopyBtn = document.getElementById('share-copy');
+  if (shareCopyBtn) {
+    shareCopyBtn.addEventListener('click', function() {
+      var ta  = document.getElementById('share-url-text');
+      var msg = document.getElementById('share-copy-msg');
+      if (!ta) return;
+      ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      if (!ok && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ta.value);
+        ok = true;
       }
+      if (msg) msg.textContent = ok ? 'コピーしました ✓' : '↑ 枠内を選んで手動でコピーしてください';
+    });
+  }
+  var shareCloseBtn = document.getElementById('share-close');
+  if (shareCloseBtn) shareCloseBtn.addEventListener('click', _closeShareModal);
+  var shareModalEl = document.getElementById('share-modal');
+  if (shareModalEl) {
+    shareModalEl.addEventListener('click', function(e) {
+      if (e.target === shareModalEl) _closeShareModal();
     });
   }
 

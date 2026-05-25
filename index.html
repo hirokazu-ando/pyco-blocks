@@ -1782,7 +1782,7 @@
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
-  <script src="js/app.js?v=20260526a"></script>
+  <script src="js/app.js?v=20260526b"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -1801,6 +1801,23 @@
         <button id="circuit-zoom-fit" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">全体</button>
         <button id="circuit-reset-pos" style="background:#5a3a2a; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;" title="部品・配線の手動調整を全て自動配置に戻す">自動配置に戻す</button>
         <span style="color:#718096; font-size:.78em; align-self:center; margin-left:8px;">部品ドラッグで位置・線ドラッグで縦線位置</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 共有URLモーダル -->
+  <div id="share-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
+    <div style="background:#111827; border:1px solid #2d3748; border-radius:10px; padding:16px; width:min(640px,94vw); display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <span style="color:#68d391; font-weight:bold; font-size:1.05em;">共有URL</span>
+        <button id="share-close" style="background:none; border:none; color:#718096; font-size:.9em; cursor:pointer; line-height:1;">閉じる</button>
+      </div>
+      <p style="color:#a0aec0; font-size:.85em; margin:0; line-height:1.5;">このURLを開くと、いまのブロックがそのまま復元されます。下の枠を選んでコピーしてください。</p>
+      <textarea id="share-url-text" readonly style="width:100%; height:84px; resize:none; box-sizing:border-box; background:#0d1117; color:#e2e8f0; border:1px solid #2d3748; border-radius:6px; padding:8px; font-family:monospace; font-size:.82em; word-break:break-all;"></textarea>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="share-copy" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">コピー</button>
+        <span id="share-copy-msg" style="color:#68d391; font-size:.82em;"></span>
+        <span id="share-url-len" style="color:#718096; font-size:.78em; margin-left:auto;"></span>
       </div>
     </div>
   </div>
