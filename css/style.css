@@ -1962,10 +1962,14 @@ body.mobile-mode .main.game-layout > #game-right-column > * {
   width: 100% !important;
   height: auto !important;
 }
-/* 左列内の空アンカー div は領域を取らないよう除外（display 指定が無く
-   flex:1 のままだと縦幅を山分けしてしまうため 0 に潰す） */
+/* 列内の空アンカー div は領域を取らないよう除外（display 指定が無く
+   flex:1 のままだと縦幅を山分けしてしまうため 0 に潰す）。
+   左右どちらの列も対象にする（右列の除外漏れでコード/モニタが
+   半分に圧縮される不具合があったため） */
 body.mobile-mode .main.game-layout > #game-left-column > #game-left-top-anchor,
-body.mobile-mode .main.game-layout > #game-left-column > #game-left-bottom-anchor {
+body.mobile-mode .main.game-layout > #game-left-column > #game-left-bottom-anchor,
+body.mobile-mode .main.game-layout > #game-right-column > #game-right-top-anchor,
+body.mobile-mode .main.game-layout > #game-right-column > #game-right-bottom-anchor {
   flex: 0 0 0 !important;
   height: 0 !important;
   min-height: 0 !important;
