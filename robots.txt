@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://blocks.sakigake-robo.com/sitemap.xml
