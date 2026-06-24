@@ -1024,6 +1024,32 @@ h1 {
   text-shadow: none;
 }
 
+/* エラーの直し方ヒント（シェル内・赤より柔らかい色） */
+.py-hint {
+  color: #8fc0f0;
+  white-space: pre-wrap;
+}
+[data-theme="light"] .py-hint { color: #2c6fb0; }
+
+/* コーディングモード：エラーが起きた行のハイライト */
+.cm-error-line {
+  background: rgba(231, 76, 60, 0.20) !important;
+  box-shadow: inset 3px 0 0 #e74c3c;
+}
+[data-theme="light"] .cm-error-line {
+  background: rgba(231, 76, 60, 0.13) !important;
+}
+
+/* 全角スペースを見えるようにする（コード中の見えない全角スペース対策） */
+.cm-zenkaku-space {
+  background: rgba(231, 76, 60, 0.30);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(231, 76, 60, 0.7);
+}
+[data-theme="light"] .cm-zenkaku-space {
+  background: rgba(231, 76, 60, 0.22);
+}
+
 /* プロンプト行（実行開始マーカー） */
 .py-prompt {
   color: var(--text-dim);

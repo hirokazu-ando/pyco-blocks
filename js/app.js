@@ -82,10 +82,44 @@ document.addEventListener('DOMContentLoaded', function() {
     readOnly: true,
     lineWrapping: false,
     tabSize: 4,
-    indentWithTabs: false,
+    indentUnit: 4,            // 自動字下げ・Tab を 4 スペースに統一（タブ/スペース混在のIndentationError防止）
+    indentWithTabs: false,    // タブ文字を使わず常にスペース
+    smartIndent: true,        // `:` の次の行などを自動で1段下げる
+    extraKeys: {
+      // Tab = 4スペース（選択中はまとめて字下げ）
+      Tab: function(cm) {
+        if (cm.somethingSelected()) cm.indentSelection('add');
+        else cm.execCommand('insertSoftTab');
+      },
+      'Shift-Tab': function(cm) { cm.indentSelection('subtract'); },
+      // 行頭のスペースは Backspace で1段（4つ）まとめて消す＝インデントを崩しにくく
+      Backspace: function(cm) {
+        const cur = cm.getCursor();
+        const before = cm.getLine(cur.line).slice(0, cur.ch);
+        if (/^ +$/.test(before)) {
+          const unit = cm.getOption('indentUnit') || 4;
+          const del = ((before.length - 1) % unit) + 1;
+          cm.replaceRange('', { line: cur.line, ch: cur.ch - del }, { line: cur.line, ch: cur.ch });
+        } else {
+          cm.execCommand('delCharBefore');
+        }
+      },
+      Enter: 'newlineAndIndent',
+    },
+  });
+
+  // 全角スペース（U+3000）を見えるようにするオーバーレイ（コード中の見えない全角スペース対策）
+  editor.addOverlay({
+    name: 'zenkaku-space',
+    token: function(stream) {
+      if (stream.next() === '　') return 'zenkaku-space';
+      while (stream.peek() != null && stream.peek() !== '　') stream.next();
+      return null;
+    }
   });
   let codingMode = false;
   let syntaxCollapsed = false;
+  let _errorLineNo = -1;   // コーディングモードでハイライト中のエラー行（0始まり・無しは-1）
   let currentMode = 'micropython'; // 初期値は後で applyMode('python') で上書き
 
   // ===== ファイルタブ管理（Python入門モードのみ） =====
@@ -908,6 +942,11 @@ document.addEventListener('DOMContentLoaded', function() {
   function valueBlockToCode(block) {
     if (!block) return '0';
     switch (block.type) {
+      // ===== やさしいAI（pyco_ai）値ブロック =====
+      case 'ai_what':
+        return 'pyco_ai.what()';
+      case 'ai_confidence':
+        return 'pyco_ai.confidence()';
       case 'val_var':
         return getVarName(block, 'VAR') || 'x';
       case 'val_number':
@@ -3024,6 +3063,38 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       }
 
+      // ===== 小中向け: やさしいAI（pyco_ai）=====
+      case 'ai_import': {
+        code = appendLocal(code, indent + 'import pyco_ai\n');
+        break;
+      }
+      case 'ai_use_camera': {
+        code = appendLocal(code, indent + 'pyco_ai.use_camera()\n');
+        break;
+      }
+      case 'ai_use_image': {
+        const aiSrc = block.getFieldValue('SRC') || 'sample';
+        code = appendLocal(code, indent + `pyco_ai.use_image("${aiSrc}")\n`);
+        break;
+      }
+      case 'ai_teach': {
+        const aiLabel = block.getFieldValue('LABEL') || '';
+        code = appendLocal(code, indent + `pyco_ai.teach(${JSON.stringify(aiLabel)})\n`);
+        break;
+      }
+      case 'ai_learn': {
+        code = appendLocal(code, indent + 'pyco_ai.learn()\n');
+        break;
+      }
+      case 'ai_what': {
+        code = appendLocal(code, indent + 'pyco_ai.what()\n');
+        break;
+      }
+      case 'ai_confidence': {
+        code = appendLocal(code, indent + 'pyco_ai.confidence()\n');
+        break;
+      }
+
       case 'py_tuple_unpack': {
         const tpX   = getVarName(block, 'VAR_X');
         const tpY   = getVarName(block, 'VAR_Y');
@@ -4270,6 +4341,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.PycoCv && window.PycoCv.source && x.includes('pyco_cv')) {
       return window.PycoCv.source;
     }
+    // やさしいAIモジュール（小中向け pyco_ai）
+    if (window.PycoAi && window.PycoAi.source && x.includes('pyco_ai')) {
+      return window.PycoAi.source;
+    }
     // 統計モジュール（Skulptは標準statisticsを持たないのでshimを供給）
     if (window.PycoStats && window.PycoStats.source && x.includes('statistics')) {
       return window.PycoStats.source;
@@ -4379,6 +4454,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.PycoCv && typeof window.PycoCv.installIntoSkulpt === 'function') {
       try { window.PycoCv.installIntoSkulpt(Sk); } catch (e) { console.warn('pyco_cv install failed', e); }
     }
+    // やさしいAIモジュール登録（小中向け pyco_ai）
+    if (window.PycoAi && typeof window.PycoAi.installIntoSkulpt === 'function') {
+      try { window.PycoAi.installIntoSkulpt(Sk); } catch (e) { console.warn('pyco_ai install failed', e); }
+    }
     // matplotlib グラフモジュール登録
     if (window.PycoChart && typeof window.PycoChart.installIntoSkulpt === 'function') {
       try { window.PycoChart.installIntoSkulpt(Sk); } catch (e) { console.warn('matplotlib install failed', e); }
@@ -4413,12 +4492,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       const parsed = parseSkulptError(err);
-      // シェルにエラー表示
-      appendShellText('\n' + parsed.title + '\n', true);
-      // ブロックハイライト（コーディングモードでなく blockLineMap がある場合のみ）
-      if (!codingMode && blockLineMap.size > 0) {
-        const bid = parsed.lineno ? blockIdAtLine(parsed.lineno) : null;
-        showErrorOnBlock(bid, parsed.title, parsed.detail);
+      if (codingMode) {
+        // コーディングモード：行番号＋内容＋直し方を日本語で表示し、該当行をハイライト
+        showCodingError(parsed);
+      } else {
+        // ブロックモード：シェルにタイトル＋該当ブロックをハイライト（詳細はパネル）
+        appendShellText('\n' + parsed.title + '\n', true);
+        if (blockLineMap.size > 0) {
+          const bid = parsed.lineno ? blockIdAtLine(parsed.lineno) : null;
+          showErrorOnBlock(bid, parsed.title, parsed.detail);
+        }
       }
     }).finally(function() {
       setPythonRunning(false);
@@ -4459,6 +4542,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     const panel = document.getElementById('error-hint');
     if (panel) panel.style.display = 'none';
+    // コーディングモードのエラー行ハイライトを消す
+    if (_errorLineNo >= 0) {
+      try { editor.removeLineClass(_errorLineNo, 'background', 'cm-error-line'); } catch (e) {}
+      _errorLineNo = -1;
+    }
   }
 
   function showErrorOnBlock(blockId, title, detail) {
@@ -4482,6 +4570,27 @@ document.addEventListener('DOMContentLoaded', function() {
     panel.style.display = 'block';
   }
 
+  // コーディングモード：シェルに「何行目で・何が・どう直すか」を日本語で出し、該当行をハイライト
+  function showCodingError(parsed) {
+    const ln = parsed.lineno;
+    appendShellText('\n' + (ln ? `❌ ${ln}行目でエラーが起きました` : '❌ エラーが起きました') + '\n', true);
+    appendShellText(parsed.title + '\n', true);
+    if (ln) {
+      let lineText = '';
+      try { lineText = (editor.getLine(ln - 1) || '').replace(/\t/g, '  '); } catch (e) {}
+      if (lineText.trim()) appendShellText('　　' + ln + '| ' + lineText + '\n', true);
+    }
+    if (parsed.detail) appendShellText(parsed.detail + '\n', false, 'py-hint');
+    // エディタの該当行をハイライト＋スクロール
+    if (ln) {
+      try {
+        editor.addLineClass(ln - 1, 'background', 'cm-error-line');
+        editor.scrollIntoView({ line: ln - 1, ch: 0 }, 120);
+        _errorLineNo = ln - 1;
+      } catch (e) {}
+    }
+  }
+
   // Skulptエラーを解析して { lineno, title, detail } を返す
   function parseSkulptError(err) {
     const tp = err.tp$name || '';
@@ -4492,6 +4601,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let lineno = null;
     if (err.traceback && err.traceback.length > 0) {
       lineno = err.traceback[err.traceback.length - 1].lineno;
+    }
+    // フォールバック：SyntaxError 等で traceback が無い場合、メッセージや err から行番号を拾う
+    if (!lineno && typeof err.$lineno === 'number') lineno = err.$lineno;
+    if (!lineno) {
+      const lm = String(rawMsg).match(/on line (\d+)/);
+      if (lm) lineno = parseInt(lm[1], 10);
     }
 
     // エラー種別ごとの日本語タイトル＋解説
@@ -4505,8 +4620,8 @@ document.addEventListener('DOMContentLoaded', function() {
       detail = `${name} はまだ定義されていません。\n・スペルミスがないか確認してください\n・変数を使う前に「変数に入れる」ブロックで値をセットしてください\n・関数を使う前に「関数を定義する」ブロックが必要です`;
     } else if (tp === 'TypeError') {
       title = `TypeError — データの型が合っていません`;
-      if (rawMsg.includes('unsupported operand') || rawMsg.includes('can only concatenate')) {
-        detail = `文字列と数値を足し算しようとしています。\n・数値に変換するには「型変換（int/float）」ブロックを使ってください\n・文字列として結合するには「文字列に変換（str）」してから「文字列連結」ブロックを使ってください`;
+      if (rawMsg.includes('unsupported operand') || rawMsg.includes('concatenate')) {
+        detail = `文字列と数値を そのまま 足し算しようとしています。\n・数値を文字列にして つなげるには： "点数" + str(100)\n・文字列を数値にして 計算するには： int("100") + 5\n（コーディングモードでは str(...) / int(...) / float(...) で型をそろえます）`;
       } else if (rawMsg.includes('takes') && rawMsg.includes('argument')) {
         detail = `関数に渡す引数の数が間違っています。\n・関数定義の引数の数と、呼び出し時の引数の数を合わせてください`;
       } else {
@@ -4528,9 +4643,16 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         detail = `値の形式が正しくありません。\n原因: ${rawMsg}`;
       }
-    } else if (tp === 'IndentationError' || tp === 'SyntaxError') {
-      title = `${tp} — コードの形式エラー（ブロックモードでは通常発生しません）`;
-      detail = `コーディングモードで直接書いたコードに問題があります。\n原因: ${rawMsg}`;
+    } else if (tp === 'IndentationError') {
+      title = `IndentationError — 字下げ（インデント）がそろっていません`;
+      detail = `行のはじめの空白（字下げ）がそろっていません。\n・同じまとまりの行は、同じ深さに字下げします（スペース4つが目安）\n・if / for / while / def の次の行は、1段深く字下げします\n・タブとスペースを混ぜないでください`;
+    } else if (tp === 'SyntaxError') {
+      title = `SyntaxError — 書き方（文法）のまちがいがあります`;
+      let hint = '';
+      if (/EOF|unexpected|unbalanced|never closed|expected|bracket|paren/i.test(rawMsg)) {
+        hint = `・かっこ ( ) [ ] や クォート " ' の閉じ忘れがないか確認してください\n`;
+      }
+      detail = `コードの書き方にまちがいがあります。\n${hint}・行のおわりに コロン : を忘れていませんか（if / for / while / def の行）\n・全角スペースや全角の記号（：　（）など）を使っていないか確認してください\n・= は1つで「代入」、== は2つで「等しいか比較」です\n（くわしい原因: ${rawMsg}）`;
     } else if (rawMsg.includes('execLimit') || rawMsg.includes('Execution exceeded')) {
       title = `TimeLimitError — 実行ステップ数の上限を超えました`;
       detail = `ループが終わらずに繰り返し続けている可能性があります。\n・「ずっと繰り返す（while True）」の中に終了条件があるか確認してください\n・繰り返し回数が多すぎないか確認してください`;

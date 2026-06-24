@@ -57,7 +57,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/game-icons/star.svg">
-  <link rel="stylesheet" href="css/style.css?v=20260526h">
+  <link rel="stylesheet" href="css/style.css?v=20260624a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -1021,6 +1021,18 @@
           <value name="X_TEST"><shadow type="val_var"><field name="VAR">X_te</field></shadow></value>
         </block>
       </category>
+      <category name="やさしいAI" colour="#D81B60">
+        <block type="ai_import" gap="8"></block>
+        <sep gap="20"></sep>
+        <block type="ai_use_camera" gap="8"></block>
+        <block type="ai_use_image" gap="8"></block>
+        <sep gap="20"></sep>
+        <block type="ai_teach" gap="8"></block>
+        <block type="ai_learn" gap="8"></block>
+        <sep gap="20"></sep>
+        <block type="ai_what" gap="8"></block>
+        <block type="ai_confidence" gap="8"></block>
+      </category>
     </category>
   </xml>
 
@@ -1804,7 +1816,7 @@
     </category>
   </xml>
 
-  <script src="js/block_palette.js?v=20260511a"></script>
+  <script src="js/block_palette.js?v=20260530a"></script>
   <script src="js/serial.js"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
@@ -1824,11 +1836,13 @@
   <script src="js/blocks/ml.js?v=20260503b"></script>
   <script src="js/image_engine.js?v=20260503b"></script>
   <script src="js/blocks/image_blocks.js?v=20260503b"></script>
+  <script src="js/ai_engine.js?v=20260624a"></script>
+  <script src="js/blocks/ai.js?v=20260624a"></script>
   <script src="js/chart_engine.js?v=20260506g"></script>
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/app.js?v=20260526e"></script>
+  <script src="js/app.js?v=20260624a"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">

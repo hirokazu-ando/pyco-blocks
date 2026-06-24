@@ -42,6 +42,7 @@ window.PycoPalette = {
   stats:   '#00695C',   // Part 2: statistics / csv
   ml:      '#283593',   // Part 6: 機械学習
   cv:      '#1B5E20',   // Part 5: 画像処理
+  ai:      '#D81B60',   // 小中向け: やさしいAI（自分で教えるAI・pyco_ai）
   customPython: '#455A64',
   timing: '#2E7D32',
   polyvia: '#EF5350',
