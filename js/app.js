@@ -4491,7 +4491,7 @@ document.addEventListener('DOMContentLoaded', function() {
         appendShellText('>>> 停止しました\n', false, 'py-prompt');
         return;
       }
-      const parsed = parseSkulptError(err);
+      const parsed = parseSkulptError(err, code);
       if (codingMode) {
         // コーディングモード：行番号＋内容＋直し方を日本語で表示し、該当行をハイライト
         showCodingError(parsed);
@@ -4591,8 +4591,89 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // SyntaxError の「実際のコード行」を解析して、初心者向けに具体的な原因＋直し方を返す。
+  // Skulptのエラー文は不親切なので、該当行（無ければ1つ上の行）をヒューリスティックで診断する。
+  function diagnoseSyntaxError(code, lineno) {
+    if (!code) return null;
+    const lines = String(code).split('\n');
+    // 文字列リテラルとコメントを除去してコード構造だけにする（"…"内の#や全角は誤検知しないため）
+    function stripStr(s) {
+      return String(s)
+        .replace(/"(?:[^"\\]|\\.)*"/g, '__')
+        .replace(/'(?:[^'\\]|\\.)*'/g, '__')
+        .replace(/#.*$/, '');
+    }
+    function check(raw) {
+      if (raw == null) return null;
+      const line = raw.replace(/\s+$/, '');
+      // 1. 行のはじめに全角スペース（インデントの全角スペースは必ず誤り）
+      if (/^[ \t]*　/.test(raw)) {
+        return { cause: '行のはじめに 全角スペース が入っています',
+                 fix: '字下げ（インデント）は 半角スペース で書きます。\n赤い箱で表示された全角スペースを、半角スペース（4つが目安）に直してください。' };
+      }
+      const codeOnly = stripStr(line);
+      // 2. コード部分に全角スペース・全角記号が混じっている
+      const zen = codeOnly.match(/[　：；（）＜＞＝”’［］｛｝＋－＊／、。！？]/);
+      if (zen) {
+        const nm = zen[0] === '　' ? '全角スペース' : `全角の「${zen[0]}」`;
+        return { cause: `コードに ${nm} が混じっています`,
+                 fix: `プログラムの記号やスペースは 半角 で書きます（日本語は " " の中だけ）。\n${nm} を半角に直してください。` };
+      }
+      // 3. if/for/while/def 等の行末にコロン : が無い
+      if (/^\s*(if|elif|else|for|while|def|class|try|except|finally|with)\b/.test(codeOnly)
+          && !/:\s*$/.test(codeOnly) && !/\\\s*$/.test(codeOnly)) {
+        const kw = codeOnly.match(/^\s*(\w+)/)[1];
+        return { cause: `「${kw}」の行の終わりに コロン : がありません`,
+                 fix: `Python では if / elif / else / for / while / def の行の最後に : を付けます。\n例:  if 点数 >= 60:` };
+      }
+      // 4. 比較のつもりで = が1つ（if/elif/while の条件・かっこ内の引数は除外）
+      const cond = codeOnly.replace(/^\s*\w+/, '').replace(/\([^()]*\)/g, '()');
+      if (/^\s*(if|elif|while)\b/.test(codeOnly) && /[^=!<>]=[^=]/.test(cond)) {
+        return { cause: '「等しいか」を調べるところが = （代入）になっています',
+                 fix: '比較は == （イコール2つ）です。\n例:  if なまえ == "たろう":' };
+      }
+      // 5. print のあとにかっこが無い（Python2式）
+      if (/^\s*print\s+[^(\s=]/.test(line) && !/^\s*print\s*\(/.test(line)) {
+        return { cause: 'print のあとに かっこ ( ) がありません',
+                 fix: 'print は  print("メッセージ")  のように かっこ で囲みます。' };
+      }
+      // 6. かっこの数が合わない（その行）
+      const op = (codeOnly.match(/[([{]/g) || []).length;
+      const cl = (codeOnly.match(/[)\]}]/g) || []).length;
+      if (op > cl) return { cause: 'かっこ ( [ { の 閉じ忘れ があります',
+                            fix: '開いた かっこ と 閉じる かっこ の数をそろえてください。' };
+      if (cl > op) return { cause: 'かっこ ) ] } が多すぎます（開きが足りません）',
+                            fix: '閉じる かっこ に対して、開く かっこ が足りません。' };
+      // 7. クォートの数が奇数＝閉じ忘れの可能性
+      if (((line.match(/"/g) || []).length % 2) === 1 || ((line.match(/'/g) || []).length % 2) === 1) {
+        return { cause: 'クォート " または \' の 閉じ忘れ がありそうです',
+                 fix: '文字列は  "..."  または  \'...\'  のように、同じ記号ではさんで とじます。' };
+      }
+      return null;
+    }
+    // 行が分かるなら 該当行 → 1つ上の行（本文行で報告され、原因が上のヘッダ行のことがある）
+    if (lineno) {
+      const r = check(lines[lineno - 1]) || check(lines[lineno - 2]);
+      if (r) return r;
+    } else {
+      // 行が分からない場合（閉じ忘れ等でEOFに達したとき）は全行を走査
+      for (let i = 0; i < lines.length; i++) { const r = check(lines[i]); if (r) return r; }
+    }
+    // 複数行にまたがる かっこ／クォート の閉じ忘れ（全体のバランス）
+    const all = lines.map(stripStr).join('\n');
+    const op = (all.match(/[([{]/g) || []).length;
+    const cl = (all.match(/[)\]}]/g) || []).length;
+    if (op > cl) return { cause: 'かっこ ( [ { の 閉じ忘れ があります',
+                          fix: 'プログラム全体で、開いた かっこ と 閉じる かっこ の数をそろえてください。' };
+    if (cl > op) return { cause: 'かっこ ) ] } が多すぎます（開きが足りません）',
+                          fix: '閉じる かっこ に対して、開く かっこ が足りません。' };
+    if (/["']/.test(all)) return { cause: 'クォート " または \' の 閉じ忘れ がありそうです',
+                                   fix: '文字列は "..." または \'...\' のように、同じ記号ではさんで とじます。' };
+    return null;
+  }
+
   // Skulptエラーを解析して { lineno, title, detail } を返す
-  function parseSkulptError(err) {
+  function parseSkulptError(err, code) {
     const tp = err.tp$name || '';
     let rawMsg = '';
     try { rawMsg = err.args.v[0].v; } catch (e) { rawMsg = err.toString ? err.toString() : String(err); }
@@ -4644,15 +4725,26 @@ document.addEventListener('DOMContentLoaded', function() {
         detail = `値の形式が正しくありません。\n原因: ${rawMsg}`;
       }
     } else if (tp === 'IndentationError') {
-      title = `IndentationError — 字下げ（インデント）がそろっていません`;
-      detail = `行のはじめの空白（字下げ）がそろっていません。\n・同じまとまりの行は、同じ深さに字下げします（スペース4つが目安）\n・if / for / while / def の次の行は、1段深く字下げします\n・タブとスペースを混ぜないでください`;
-    } else if (tp === 'SyntaxError') {
-      title = `SyntaxError — 書き方（文法）のまちがいがあります`;
-      let hint = '';
-      if (/EOF|unexpected|unbalanced|never closed|expected|bracket|paren/i.test(rawMsg)) {
-        hint = `・かっこ ( ) [ ] や クォート " ' の閉じ忘れがないか確認してください\n`;
+      if (/expected an indented block/i.test(rawMsg)) {
+        title = `IndentationError — 字下げ（インデント）が足りません`;
+        detail = `if / for / while / def などの 次の行 は、1段（スペース4つ）深く字下げします。\n例:\n  if 点数 >= 60:\n      print("合格")   ← この行を字下げ`;
+      } else if (/unexpected indent/i.test(rawMsg)) {
+        title = `IndentationError — 字下げ（インデント）が多すぎます`;
+        detail = `この行だけ よけいに字下げされています。\n・前の行と同じ深さにそろえてください\n・行のはじめに よけいなスペースが無いか確認してください`;
+      } else {
+        title = `IndentationError — 字下げ（インデント）がそろっていません`;
+        detail = `行のはじめの空白（字下げ）がそろっていません。\n・同じまとまりの行は、同じ深さに字下げします（スペース4つが目安）\n・タブとスペースを混ぜないでください（Tabキーで4スペースが入ります）`;
       }
-      detail = `コードの書き方にまちがいがあります。\n${hint}・行のおわりに コロン : を忘れていませんか（if / for / while / def の行）\n・全角スペースや全角の記号（：　（）など）を使っていないか確認してください\n・= は1つで「代入」、== は2つで「等しいか比較」です\n（くわしい原因: ${rawMsg}）`;
+    } else if (tp === 'SyntaxError') {
+      const diag = diagnoseSyntaxError(code, lineno);
+      if (diag) {
+        // コード行を解析して具体的な原因を特定できた場合
+        title = `SyntaxError — ${diag.cause}`;
+        detail = diag.fix;
+      } else {
+        title = `SyntaxError — 書き方（文法）のまちがいがあります`;
+        detail = `コードの書き方にまちがいがあります。よくある原因:\n・行のおわりに コロン : を忘れていませんか（if / for / while / def の行）\n・かっこ ( ) [ ] や クォート " ' の閉じ忘れはありませんか\n・全角スペースや全角の記号（：　（）など）が混じっていませんか\n・= は1つで「代入」、== は2つで「等しいか比較」です\n（くわしい原因: ${rawMsg}）`;
+      }
     } else if (rawMsg.includes('execLimit') || rawMsg.includes('Execution exceeded')) {
       title = `TimeLimitError — 実行ステップ数の上限を超えました`;
       detail = `ループが終わらずに繰り返し続けている可能性があります。\n・「ずっと繰り返す（while True）」の中に終了条件があるか確認してください\n・繰り返し回数が多すぎないか確認してください`;
