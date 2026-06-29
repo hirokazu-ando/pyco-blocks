@@ -4726,6 +4726,40 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         detail = `値の形式が正しくありません。\n原因: ${rawMsg}`;
       }
+    } else if (tp === 'UnboundLocalError') {
+      const m = rawMsg.match(/local variable '(.+?)'/);
+      const name = m ? `「${m[1]}」` : 'その変数';
+      title = `UnboundLocalError — ${name} に値を入れる前に使っています`;
+      detail = `関数の中で ${name} を、まだ値を入れていない状態で使おうとしています。\n・使う前に「変数に入れる」ブロックで ${name} に値をセットしてください\n・比較の == と 代入の = をまちがえていませんか（最初の代入は = ひとつです）\n　例:  biggest = a   ← まず値を入れる`;
+    } else if (tp === 'KeyError') {
+      title = `KeyError — 辞書にそのキーがありません`;
+      detail = `辞書（ディクショナリ）に、指定したキーが存在しません。\n・キーのスペルが合っているか確認してください\n・キーがあるか先に確認するには  if キー in 辞書:  を使います\n（くわしい原因: ${rawMsg}）`;
+    } else if (tp === 'ModuleNotFoundError' || tp === 'ImportError') {
+      title = `ImportError — モジュールを読み込めません`;
+      detail = `import しようとしたモジュール（ライブラリ）が見つからない、またはこの環境では使えません。\n・モジュール名のスペルを確認してください\n・このブラウザ版では使えないモジュールもあります\n（くわしい原因: ${rawMsg}）`;
+    } else if (tp === 'RecursionError') {
+      title = `RecursionError — 関数の呼び出しが深くなりすぎました`;
+      detail = `関数が自分自身を呼び続けて、止まらなくなっています。\n・再帰の「終わりの条件（これ以上呼ばない条件）」があるか確認してください\n・呼び出すたびに ゴールに近づいているか確認してください`;
+    } else if (tp === 'AssertionError') {
+      title = `AssertionError — assert の条件が成り立ちませんでした`;
+      // assert に独自メッセージが付いている場合だけ表示（Skulptの内部文字列は出さない）
+      const amOk = rawMsg && !/on line \d+/.test(rawMsg) && rawMsg !== 'AssertionError';
+      detail = `assert で「正しいはず」とした条件が、実際には成り立っていませんでした。\n・条件式が本当に正しいか、変数の値を print で確認してください${amOk ? '\n（メッセージ: ' + rawMsg + '）' : ''}`;
+    } else if (tp === 'OverflowError') {
+      title = `OverflowError — 数が大きくなりすぎました`;
+      detail = `計算の結果が、あつかえる範囲をこえて大きくなりました。\n・くり返しで数をかけ続けていないか確認してください`;
+    } else if (tp === 'StopIteration') {
+      title = `StopIteration — 取り出せる要素がもうありません`;
+      detail = `next() などで要素を取り出そうとしましたが、もう残っていません。\n・for ループを使うと、要素の数だけ自動でくり返せます`;
+    } else if (tp === 'FileNotFoundError' || tp === 'IOError' || tp === 'OSError') {
+      title = `FileNotFoundError — ファイルが見つかりません`;
+      detail = `open しようとしたファイルが見つかりません。\n・ファイル名のスペルや拡張子（.txt など）を確認してください\n・先に「書き込み」でファイルを作ってから読み込んでください\n（くわしい原因: ${rawMsg}）`;
+    } else if (tp === 'TabError') {
+      title = `TabError — タブとスペースが混ざっています`;
+      detail = `字下げ（インデント）に タブ と スペース が混ざっています。\n・字下げはスペースだけにそろえてください（Tabキーでスペース4つが入ります）`;
+    } else if (tp === 'NotImplementedError') {
+      title = `NotImplementedError — この機能はこの環境では使えません`;
+      detail = `使おうとした機能は、このブラウザ版では対応していません。\n・別のやり方で書けないか確認してください\n（くわしい原因: ${rawMsg}）`;
     } else if (tp === 'IndentationError') {
       if (/expected an indented block/i.test(rawMsg)) {
         title = `IndentationError — 字下げ（インデント）が足りません`;
@@ -4752,7 +4786,9 @@ document.addEventListener('DOMContentLoaded', function() {
       detail = `ループが終わらずに繰り返し続けている可能性があります。\n・「ずっと繰り返す（while True）」の中に終了条件があるか確認してください\n・繰り返し回数が多すぎないか確認してください`;
       lineno = null; // 特定行なし
     } else {
-      detail = rawMsg;
+      // 上のどれにも当てはまらない種別：英語のまま出さず、日本語の枠で包む
+      title = tp ? `${tp} — エラーが起きました` : 'エラーが起きました';
+      detail = `プログラムの実行中にエラーが起きました。\n原因: ${rawMsg}`;
     }
 
     return { lineno: lineno, title: title, detail: detail };
