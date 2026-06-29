@@ -4678,10 +4678,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let rawMsg = '';
     try { rawMsg = err.args.v[0].v; } catch (e) { rawMsg = err.toString ? err.toString() : String(err); }
 
-    // 行番号取得（tracebackの最後のフレーム）
+    // 行番号取得（tracebackの先頭フレーム＝エラーが実際に起きた最深部）
+    // Skulptはエラー発生地点を traceback[0]、呼び出し元を末尾に積む。
+    // 末尾を使うと、関数内エラーが呼び出し側の行に表示されてしまうため先頭を使う。
     let lineno = null;
     if (err.traceback && err.traceback.length > 0) {
-      lineno = err.traceback[err.traceback.length - 1].lineno;
+      lineno = err.traceback[0].lineno;
     }
     // フォールバック：SyntaxError 等で traceback が無い場合、メッセージや err から行番号を拾う
     if (!lineno && typeof err.$lineno === 'number') lineno = err.$lineno;
