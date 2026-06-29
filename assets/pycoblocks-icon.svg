@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2dd4bf"/><stop offset="100%" stop-color="#0d9488"/></linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient>
+    <linearGradient id="r" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fb7185"/><stop offset="100%" stop-color="#f43f5e"/></linearGradient>
+  </defs>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="15" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <!-- top block (teal) with bump on top, notch under -->
+  <path fill="url(#t)" d="M12 14 h8 a3.2 3.2 0 0 1 6.4 0 h21.6 a3.5 3.5 0 0 1 3.5 3.5 v6 a3.5 3.5 0 0 1 -3.5 3.5 h-21.6 a3.2 3.2 0 0 1 -6.4 0 h-8 a3.5 3.5 0 0 1 -3.5 -3.5 v-6 a3.5 3.5 0 0 1 3.5 -3.5 z"/>
+  <!-- middle block (amber) -->
+  <path fill="url(#a)" d="M12 30.5 h8 a3.2 3.2 0 0 1 6.4 0 h21.6 a3.5 3.5 0 0 1 3.5 3.5 v6 a3.5 3.5 0 0 1 -3.5 3.5 h-21.6 a3.2 3.2 0 0 1 -6.4 0 h-8 a3.5 3.5 0 0 1 -3.5 -3.5 v-6 a3.5 3.5 0 0 1 3.5 -3.5 z"/>
+  <!-- bottom block (rose) no bottom notch -->
+  <path fill="url(#r)" d="M12 47 h8 a3.2 3.2 0 0 1 6.4 0 h21.6 a3.5 3.5 0 0 1 3.5 3.5 v3 a3.5 3.5 0 0 1 -3.5 3.5 h-32 a3.5 3.5 0 0 1 -3.5 -3.5 v-3 a3.5 3.5 0 0 1 3.5 -3.5 z"/>
+</svg>
