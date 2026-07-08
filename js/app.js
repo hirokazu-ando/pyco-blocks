@@ -2002,22 +2002,18 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'pvb_sonar': {
         const varName = getVarName(block, 'VAR');
         code = appendLocal(code, indent + `_trig = Pin(7, Pin.OUT); _echo = Pin(6, Pin.IN)\n`);
-        code = appendLocal(code, indent + `_trig.value(0); utime.sleep_us(2)\n`);
+        code = appendLocal(code, indent + `_trig.value(0); utime.sleep_us(5)\n`);
         code = appendLocal(code, indent + `_trig.value(1); utime.sleep_us(10); _trig.value(0)\n`);
-        code = appendLocal(code, indent + `while _echo.value() == 0: pass\n`);
-        code = appendLocal(code, indent + `_t0 = utime.ticks_us()\n`);
-        code = appendLocal(code, indent + `while _echo.value() == 1: pass\n`);
-        code = appendLocal(code, indent + `${varName} = utime.ticks_diff(utime.ticks_us(), _t0) / 58\n`);
+        code = appendLocal(code, indent + `_dur = time_pulse_us(_echo, 1, 30000)\n`);
+        code = appendLocal(code, indent + `${varName} = 999.0 if _dur < 0 else _dur * 0.0343 / 2\n`);
         break;
       }
       case 'pvb_if_obstacle': {
         code = appendLocal(code, indent + `_trig = Pin(7, Pin.OUT); _echo = Pin(6, Pin.IN)\n`);
-        code = appendLocal(code, indent + `_trig.value(0); utime.sleep_us(2)\n`);
+        code = appendLocal(code, indent + `_trig.value(0); utime.sleep_us(5)\n`);
         code = appendLocal(code, indent + `_trig.value(1); utime.sleep_us(10); _trig.value(0)\n`);
-        code = appendLocal(code, indent + `while _echo.value() == 0: pass\n`);
-        code = appendLocal(code, indent + `_t0 = utime.ticks_us()\n`);
-        code = appendLocal(code, indent + `while _echo.value() == 1: pass\n`);
-        code = appendLocal(code, indent + `_dist_cm = utime.ticks_diff(utime.ticks_us(), _t0) / 58\n`);
+        code = appendLocal(code, indent + `_dur = time_pulse_us(_echo, 1, 30000)\n`);
+        code = appendLocal(code, indent + `_dist_cm = 999.0 if _dur < 0 else _dur * 0.0343 / 2\n`);
         const lnObs = _emitCtx.line;
         registerExprBlocksAtLineFromInput(block, 'DIST', lnObs);
         const dist  = valueToCode(block, 'DIST', '20');
@@ -2291,11 +2287,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const usVar  = getVarName(block, 'VAR');
         code = appendLocal(code, indent + `def _us_dist(tr, ec):\n`);
         code = appendLocal(code, indent + `    t=Pin(tr,Pin.OUT); e=Pin(ec,Pin.IN)\n`);
-        code = appendLocal(code, indent + `    t.value(0); utime.sleep_us(2); t.value(1); utime.sleep_us(10); t.value(0)\n`);
-        code = appendLocal(code, indent + `    while e.value()==0: pass\n`);
-        code = appendLocal(code, indent + `    t0=utime.ticks_us()\n`);
-        code = appendLocal(code, indent + `    while e.value()==1: pass\n`);
-        code = appendLocal(code, indent + `    return utime.ticks_diff(utime.ticks_us(),t0)/58\n`);
+        code = appendLocal(code, indent + `    t.value(0); utime.sleep_us(5); t.value(1); utime.sleep_us(10); t.value(0)\n`);
+        code = appendLocal(code, indent + `    _d=time_pulse_us(e,1,30000)\n`);
+        code = appendLocal(code, indent + `    return 999.0 if _d<0 else _d*0.0343/2\n`);
         code = appendLocal(code, indent + `${usVar} = _us_dist(${usTrig}, ${usEcho})\n`);
         break;
       }
@@ -3200,10 +3194,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const motorTypes = ['pvb_forward','pvb_backward','pvb_turn_right','pvb_turn_left','pvb_stop'];
       const hasMotor   = motorTypes.some(t => blockTypes.has(t));
       const hasSonarVal = blockTypes.has('pvb_sonar_val');
+      // 超音波系ブロックがあれば machine.time_pulse_us を取り込む（タイムアウト付き測定に必須）
+      const sonarTypes = ['pvb_sonar_val','pvb_sonar','pvb_if_obstacle','pico_ultrasonic_cm'];
+      const hasSonar    = sonarTypes.some(t => blockTypes.has(t));
 
       const needsRandom = blockTypes.has('py_random_int');
+      const machineImports = 'Pin, PWM, ADC' + (hasSonar ? ', time_pulse_us' : '');
       const baseHeader =
-        (showComments ? '# Picoのピン・PWM・ADC制御用\n' : '') + `${cm}from machine import Pin, PWM, ADC\n` +
+        (showComments ? '# Picoのピン・PWM・ADC制御用\n' : '') + `${cm}from machine import ${machineImports}\n` +
         (showComments ? '# 時間待機用（MicroPython版 time モジュール）\n' : '') + `${cm}import utime\n` +
         (needsRandom ? ((showComments ? '# 乱数生成用\n' : '') + `${cm}import random\n`) : '') +
         '\n';
@@ -3212,15 +3210,16 @@ document.addEventListener('DOMContentLoaded', function() {
         '_lm = PWM(Pin(1)); _lm.freq(1000)\n' +
         '_rp = PWM(Pin(2)); _rp.freq(1000)\n' +
         '_rm = PWM(Pin(3)); _rm.freq(1000)\n\n';
+      // Thonny 動作版(07_sonar_test.py)に合わせ、time_pulse_us でタイムアウト付き測定。
+      // エコーが返らない時も無限ループせず、遠距離(999cm)扱いで安全に抜ける。
       const sonarHelper =
         'def _pvb_sonar_cm():\n' +
         '    _trig = Pin(7, Pin.OUT); _echo = Pin(6, Pin.IN)\n' +
-        '    _trig.value(0); utime.sleep_us(2)\n' +
+        '    _trig.value(0); utime.sleep_us(5)\n' +
         '    _trig.value(1); utime.sleep_us(10); _trig.value(0)\n' +
-        '    while _echo.value() == 0: pass\n' +
-        '    _t0 = utime.ticks_us()\n' +
-        '    while _echo.value() == 1: pass\n' +
-        '    return utime.ticks_diff(utime.ticks_us(), _t0) / 58\n\n';
+        '    _dur = time_pulse_us(_echo, 1, 30000)\n' +
+        '    if _dur < 0: return 999.0\n' +
+        '    return _dur * 0.0343 / 2\n\n';
 
       header = baseHeader;
       if (hasMotor)    header += motorInit;
