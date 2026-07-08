@@ -1938,8 +1938,9 @@ document.addEventListener('DOMContentLoaded', function() {
         registerExprBlocksAtLineFromInput(block, 'SPEED', lnFwd);
         const spd = valueToCode(block, 'SPEED', '50');
         code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        code = appendLocal(code, indent + `_lm.duty_u16(0); _rm.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(_d); _rp.duty_u16(_d)\n`);
+        // 右モーターは左と物理的に反対向きに取り付けられているため +/- を反転する
+        code = appendLocal(code, indent + `_lm.duty_u16(0); _rp.duty_u16(0)\n`);
+        code = appendLocal(code, indent + `_lp.duty_u16(_d); _rm.duty_u16(_d)\n`);
         break;
       }
       case 'pvb_backward': {
@@ -1947,8 +1948,9 @@ document.addEventListener('DOMContentLoaded', function() {
         registerExprBlocksAtLineFromInput(block, 'SPEED', lnBwd);
         const spd = valueToCode(block, 'SPEED', '50');
         code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(0); _rp.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lm.duty_u16(_d); _rm.duty_u16(_d)\n`);
+        // 右モーターは反転取り付けのため +/- を反転する
+        code = appendLocal(code, indent + `_lp.duty_u16(0); _rm.duty_u16(0)\n`);
+        code = appendLocal(code, indent + `_lm.duty_u16(_d); _rp.duty_u16(_d)\n`);
         break;
       }
       case 'pvb_turn_right': {
@@ -1956,8 +1958,9 @@ document.addEventListener('DOMContentLoaded', function() {
         registerExprBlocksAtLineFromInput(block, 'SPEED', lnTR);
         const spd = valueToCode(block, 'SPEED', '50');
         code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        code = appendLocal(code, indent + `_lm.duty_u16(0); _rm.duty_u16(_d)\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(_d); _rp.duty_u16(0)\n`);
+        // 左=前進・右=後退（右モーターは反転取り付けのため +/- を反転）
+        code = appendLocal(code, indent + `_lm.duty_u16(0); _rp.duty_u16(_d)\n`);
+        code = appendLocal(code, indent + `_lp.duty_u16(_d); _rm.duty_u16(0)\n`);
         break;
       }
       case 'pvb_turn_left': {
@@ -1965,8 +1968,9 @@ document.addEventListener('DOMContentLoaded', function() {
         registerExprBlocksAtLineFromInput(block, 'SPEED', lnTL);
         const spd = valueToCode(block, 'SPEED', '50');
         code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        code = appendLocal(code, indent + `_lm.duty_u16(_d); _rm.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(0); _rp.duty_u16(_d)\n`);
+        // 左=後退・右=前進（右モーターは反転取り付けのため +/- を反転）
+        code = appendLocal(code, indent + `_lm.duty_u16(_d); _rp.duty_u16(0)\n`);
+        code = appendLocal(code, indent + `_lp.duty_u16(0); _rm.duty_u16(_d)\n`);
         break;
       }
       case 'pvb_stop': {
