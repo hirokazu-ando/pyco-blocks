@@ -267,6 +267,18 @@
       <block type="pvb_line_read" gap="8"></block>
       <block type="pvb_line_val" gap="8"></block>
       <block type="pvb_if_line" gap="8"></block>
+      <sep gap="20"></sep>
+      <block type="pvb_oled_text" gap="8">
+        <value name="TEXT">
+          <shadow type="val_str"><field name="TEXT">Hello</field></shadow>
+        </value>
+      </block>
+      <block type="pvb_oled_label_val" gap="8">
+        <value name="VALUE">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="pvb_oled_clear" gap="8"></block>
     </category>
     <category name="繰り返し" colour="#F9A825">
       <block type="pico_forever" gap="8"></block>
@@ -1838,7 +1850,7 @@
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <script src="js/blocks/control.js"></script>
-  <script src="js/blocks/polyviabot.js?v=20260427c"></script>
+  <script src="js/blocks/polyviabot.js?v=20260708d"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
   <script src="js/blocks/values.js?v=20260427b"></script>
   <script src="js/blocks/variables.js"></script>
@@ -1859,7 +1871,7 @@
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/app.js?v=20260708c"></script>
+  <script src="js/app.js?v=20260708d"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">

@@ -609,6 +609,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return `ラインセンサー（${l}）が${c}だったら`;
       }
       case 'pvb_print':        return `変数「${getVarName(block, 'VAR')}」を表示する`;
+      case 'pvb_oled_text':      return `OLEDの${block.getFieldValue('ROW')}行目に表示する`;
+      case 'pvb_oled_label_val': return `OLEDの${block.getFieldValue('ROW')}行目に「${block.getFieldValue('LABEL')}」＋値を表示する`;
+      case 'pvb_oled_clear':     return `OLED画面を消す`;
       case 'var_set':          return `変数「${getVarName(block, 'VAR')}」に値をセットする`;
       case 'var_change':       return `変数「${getVarName(block, 'VAR')}」を増減する`;
       case 'var_if_greater':   return `変数「${getVarName(block, 'VAR')}」が大きかったら`;
@@ -2044,6 +2047,31 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `print(${varName})\n`);
         break;
       }
+      // ===== PoliviaBot OLED（SSD1306・自動初期化／書くたび自動更新）=====
+      case 'pvb_oled_text': {
+        const oRow = parseInt(block.getFieldValue('ROW'), 10) || 1;
+        const oTop = (oRow - 1) * 10;
+        const oTxt = valueToCode(block, 'TEXT', '""');
+        code = appendLocal(code, indent + `_oled.fill_rect(0, ${oTop}, 128, 10, 0)\n`);
+        code = appendLocal(code, indent + `_oled.text(str(${oTxt}), 0, ${oTop + 1})\n`);
+        code = appendLocal(code, indent + `_oled.show()\n`);
+        break;
+      }
+      case 'pvb_oled_label_val': {
+        const olRow = parseInt(block.getFieldValue('ROW'), 10) || 1;
+        const olTop = (olRow - 1) * 10;
+        const olLabel = JSON.stringify(block.getFieldValue('LABEL') || '');
+        const olVal = valueToCode(block, 'VALUE', '""');
+        code = appendLocal(code, indent + `_oled.fill_rect(0, ${olTop}, 128, 10, 0)\n`);
+        code = appendLocal(code, indent + `_oled.text(${olLabel} + str(${olVal}), 0, ${olTop + 1})\n`);
+        code = appendLocal(code, indent + `_oled.show()\n`);
+        break;
+      }
+      case 'pvb_oled_clear': {
+        code = appendLocal(code, indent + `_oled.fill(0)\n`);
+        code = appendLocal(code, indent + `_oled.show()\n`);
+        break;
+      }
       case 'pico_if': {
         const lnIf0 = _emitCtx.line;
         registerExprBlocksAtLineFromInput(block, 'IF0', lnIf0);
@@ -3201,11 +3229,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const sonarTypes = ['pvb_sonar_val','pvb_sonar','pvb_if_obstacle','pico_ultrasonic_cm'];
       const hasSonar    = sonarTypes.some(t => blockTypes.has(t));
 
+      // OLED画面ブロックがあれば I2C と framebuf を取り込み、ドライバをコードに同梱する
+      const oledTypes = ['pvb_oled_text','pvb_oled_label_val','pvb_oled_clear'];
+      const hasOled = oledTypes.some(t => blockTypes.has(t));
+
       const needsRandom = blockTypes.has('py_random_int');
-      const machineImports = 'Pin, PWM, ADC' + (hasSonar ? ', time_pulse_us' : '');
+      const machineImports = 'Pin, PWM, ADC' + (hasSonar ? ', time_pulse_us' : '') + (hasOled ? ', I2C' : '');
       const baseHeader =
         (showComments ? '# Picoのピン・PWM・ADC制御用\n' : '') + `${cm}from machine import ${machineImports}\n` +
         (showComments ? '# 時間待機用（MicroPython版 time モジュール）\n' : '') + `${cm}import utime\n` +
+        (hasOled ? ((showComments ? '# OLED画面の描画用\n' : '') + `${cm}import framebuf\n`) : '') +
         (needsRandom ? ((showComments ? '# 乱数生成用\n' : '') + `${cm}import random\n`) : '') +
         '\n';
       const motorInit =
@@ -3225,9 +3258,33 @@ document.addEventListener('DOMContentLoaded', function() {
         '    if _dur < 0: return 999.0\n' +
         '    return _dur * 0.0343 / 2\n\n';
 
+      // SSD1306 OLED 最小ドライバ（framebuf 継承・128x64）。
+      // show() はページ単位に分割転送する（100kHz・基板にプルアップ無しのため
+      // 一括転送だと I2C タイムアウトで ETIMEDOUT になる。2026-06-12 実機確認済み）。
+      const oledSetup =
+        (showComments ? '# OLED(SSD1306) ドライバとI2C初期化（SDA=GP4 / SCL=GP5 / 0x3C）\n' : '') +
+        'class SSD1306_I2C(framebuf.FrameBuffer):\n' +
+        '    def __init__(self, w, h, i2c, addr=0x3C):\n' +
+        '        self.i2c = i2c; self.addr = addr; self.w = w; self.pages = h // 8\n' +
+        '        self.buffer = bytearray(self.pages * w)\n' +
+        '        super().__init__(self.buffer, w, h, framebuf.MONO_VLSB)\n' +
+        '        for c in (0xAE,0x20,0x00,0x40,0xA1,0xA8,h-1,0xC8,0xD3,0x00,0xDA,0x12,\n' +
+        '                  0xD5,0x80,0xD9,0xF1,0xDB,0x30,0x81,0xFF,0xA4,0xA6,0x8D,0x14,0xAF):\n' +
+        '            self.i2c.writeto(addr, bytes([0x80, c]))\n' +
+        '        self.fill(0); self.show()\n' +
+        '    def show(self):\n' +
+        '        for c in (0x21, 0, self.w - 1, 0x22, 0, self.pages - 1):\n' +
+        '            self.i2c.writeto(self.addr, bytes([0x80, c]))\n' +
+        '        for p in range(self.pages):\n' +
+        '            self.i2c.writeto(self.addr, b"\\x40" + self.buffer[p * self.w:(p + 1) * self.w])\n' +
+        '\n' +
+        '_i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=100000)\n' +
+        '_oled = SSD1306_I2C(128, 64, _i2c, 0x3C)\n\n';
+
       header = baseHeader;
       if (hasMotor)    header += motorInit;
       if (hasSonarVal) header += sonarHelper;
+      if (hasOled)     header += oledSetup;
     }
 
     const isMain = activeFileIdx === 0;
