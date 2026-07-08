@@ -52,7 +52,10 @@ body {
 
 /* ===== ヘッダー ===== */
 header {
-  height: var(--header-h);
+  /* 行1=タイトル＋モード切替、行2=ツールバー の2段構成。
+     ツールバーは常に行2へ折り返すのでタイトル行に余裕があり、
+     モードでボタン数が違ってもロゴの縦位置が一致する。 */
+  min-height: var(--header-h);
   background: linear-gradient(90deg, #060f06 0%, #0b1a0b 50%, #060f06 100%);
   border-bottom: 1px solid var(--border-dim);
   box-shadow:
@@ -60,8 +63,10 @@ header {
     0 4px 20px rgba(0,0,0,0.8);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  gap: 16px;
+  align-content: center;
+  flex-wrap: wrap;
+  padding: 6px 20px;
+  gap: 10px 16px;
   flex-shrink: 0;
   position: relative;
   animation: headerReveal 0.6s ease-out both;
@@ -86,9 +91,8 @@ header::before {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  /* 幅が詰まったらサブタイトル側を縮めて省略させる（ヘッダー幅を増やさない） */
-  min-width: 0;
-  flex-shrink: 1;
+  /* h1 は絶対に潰さない（潰すとロゴが枠外へはみ出しボタンと重なる） */
+  flex-shrink: 0;
 }
 
 h1 {
@@ -134,11 +138,13 @@ h1 {
 }
 
 .toolbar {
-  margin-left: auto;
+  /* 常にヘッダー行2へ回して全幅で折り返す（行1のタイトルを圧迫しない） */
+  width: 100%;
+  margin-left: 0;
   display: flex;
   gap: 10px;
   align-items: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 /* バージョン表示 */
@@ -980,6 +986,8 @@ h1 {
   overflow: hidden;
   clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
   flex-shrink: 0;
+  /* タイトルとモード切替の間を開け、行1の右側へ寄せる */
+  margin-left: auto;
 }
 
 .mode-btn {
