@@ -2005,6 +2005,7 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `_trig.value(0); utime.sleep_us(5)\n`);
         code = appendLocal(code, indent + `_trig.value(1); utime.sleep_us(10); _trig.value(0)\n`);
         code = appendLocal(code, indent + `_dur = time_pulse_us(_echo, 1, 30000)\n`);
+        code = appendLocal(code, indent + `utime.sleep_ms(60)  # 連続測定で失敗しないよう測定間隔を確保\n`);
         code = appendLocal(code, indent + `${varName} = 999.0 if _dur < 0 else _dur * 0.0343 / 2\n`);
         break;
       }
@@ -2013,6 +2014,7 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `_trig.value(0); utime.sleep_us(5)\n`);
         code = appendLocal(code, indent + `_trig.value(1); utime.sleep_us(10); _trig.value(0)\n`);
         code = appendLocal(code, indent + `_dur = time_pulse_us(_echo, 1, 30000)\n`);
+        code = appendLocal(code, indent + `utime.sleep_ms(60)  # 連続測定で失敗しないよう測定間隔を確保\n`);
         code = appendLocal(code, indent + `_dist_cm = 999.0 if _dur < 0 else _dur * 0.0343 / 2\n`);
         const lnObs = _emitCtx.line;
         registerExprBlocksAtLineFromInput(block, 'DIST', lnObs);
@@ -2289,6 +2291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `    t=Pin(tr,Pin.OUT); e=Pin(ec,Pin.IN)\n`);
         code = appendLocal(code, indent + `    t.value(0); utime.sleep_us(5); t.value(1); utime.sleep_us(10); t.value(0)\n`);
         code = appendLocal(code, indent + `    _d=time_pulse_us(e,1,30000)\n`);
+        code = appendLocal(code, indent + `    utime.sleep_ms(60)  # 連続測定で失敗しないよう測定間隔を確保\n`);
         code = appendLocal(code, indent + `    return 999.0 if _d<0 else _d*0.0343/2\n`);
         code = appendLocal(code, indent + `${usVar} = _us_dist(${usTrig}, ${usEcho})\n`);
         break;
@@ -3218,6 +3221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         '    _trig.value(0); utime.sleep_us(5)\n' +
         '    _trig.value(1); utime.sleep_us(10); _trig.value(0)\n' +
         '    _dur = time_pulse_us(_echo, 1, 30000)\n' +
+        '    utime.sleep_ms(60)  # 連続測定で失敗しないよう測定間隔を確保\n' +
         '    if _dur < 0: return 999.0\n' +
         '    return _dur * 0.0343 / 2\n\n';
 
