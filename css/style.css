@@ -2059,12 +2059,36 @@ body.mobile-mode .title-block h1 {
 }
 body.mobile-mode .title-sub { display: none; }
 body.mobile-mode .version-tag { display: none; }
+/* 「PycoBlocksとは」リンクはモバイルでは横幅を食って☰メニューを画面外へ
+   押し出す原因になるため非表示にする（about は PC 表示で参照可能） */
+body.mobile-mode .about-link { display: none; }
 /* モード切替ボタンを詰めて、タイトルと☰メニューの居場所を確保 */
 body.mobile-mode .mode-btn {
   padding-left: 5px;
   padding-right: 5px;
   font-size: 0.66rem;
   letter-spacing: 0;
+}
+/* さらに狭い端末でも☰メニューが必ず画面内に収まるよう、モード切替群は
+   必要に応じて縮む・タイトルも縮む・☰メニューは縮ませない */
+body.mobile-mode .mode-toggle { min-width: 0; flex-shrink: 1; }
+body.mobile-mode .title-block { min-width: 0; }
+body.mobile-mode .title-block h1 { overflow: hidden; text-overflow: ellipsis; }
+
+/* iPhone SE 等の極狭端末（≤380px）：各要素をさらに詰めて☰メニューを収める */
+@media (max-width: 380px) {
+  body.mobile-mode header { gap: 4px; padding: 0 4px; }
+  body.mobile-mode .title-block h1 { font-size: 0.78rem; }
+  body.mobile-mode .mode-btn {
+    padding-left: 3px;
+    padding-right: 3px;
+    font-size: 0.6rem;
+  }
+  body.mobile-mode #btn-mobile-menu {
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 0.72rem;
+  }
 }
 
 body.mobile-mode header {

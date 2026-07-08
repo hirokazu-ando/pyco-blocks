@@ -2,6 +2,7 @@
 const PicoSerial = (() => {
   let port   = null;
   let writer = null;
+  let lastInfo = null;   // 直近に接続したポートの USB 情報（再接続でダイアログ無し復帰に使う）
 
   // --- シリアルモニター状態 ---
   let monitorReader = null;
@@ -21,6 +22,39 @@ const PicoSerial = (() => {
     port = await navigator.serial.requestPort();
     await port.open({ baudRate: 115200 });
     writer = port.writable.getWriter();
+    try { lastInfo = port.getInfo(); } catch (_) { lastInfo = null; }
+  }
+
+  // --- 再接続：Pico を抜き差ししたあとダイアログ無しで接続し直す ---
+  // 既に許可済みのポート（getPorts）を直接開くため、ポート選択ダイアログが出ない。
+  // 抜線後に port が残って「接続済み」誤判定のままになる場合に備え、先に確実に閉じる。
+  async function reconnect() {
+    if (!('serial' in navigator)) {
+      throw new Error('Web Serial API 非対応です。Chrome または Edge をお使いください。');
+    }
+    await stopMonitor();
+    await disconnect();
+    await sleep(200);
+
+    const ports = await navigator.serial.getPorts();
+    let target = null;
+    if (lastInfo) {
+      target = ports.find(p => {
+        const info = p.getInfo();
+        return info.usbVendorId === lastInfo.usbVendorId &&
+               info.usbProductId === lastInfo.usbProductId;
+      }) || null;
+    }
+    if (!target && ports.length === 1) target = ports[0];   // 許可済みが1つだけなら迷わずそれ
+    if (!target) {
+      // 過去に許可したポートが無ければ通常の接続ダイアログにフォールバック
+      return connect();
+    }
+
+    port = target;
+    await port.open({ baudRate: 115200 });
+    writer = port.writable.getWriter();
+    try { lastInfo = port.getInfo(); } catch (_) {}
   }
 
   async function disconnect() {
@@ -215,6 +249,6 @@ const PicoSerial = (() => {
     }
   }
 
-  return { connect, disconnect, isConnected, stopCode, runCode, writeMainPy,
+  return { connect, reconnect, disconnect, isConnected, stopCode, runCode, writeMainPy,
            startMonitor, stopMonitor, isMonitoring };
 })();

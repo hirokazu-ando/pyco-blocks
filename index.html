@@ -72,7 +72,7 @@
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20260624a">
+  <link rel="stylesheet" href="css/style.css?v=20260708a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -127,6 +127,7 @@
       <button id="btn-coding-mode">コード編集</button>
       <div class="toolbar-sep" id="serial-sep"></div>
       <button id="btn-connect">接続</button>
+      <button id="btn-reconnect" title="Pico を抜き差ししたあと、ポート選択なしで接続し直します">再接続</button>
       <button id="btn-run" disabled>▶ 実行</button>
       <button id="btn-stop" disabled>⏹ 停止</button>
       <button id="btn-write" disabled>書き込み</button>
@@ -1833,7 +1834,7 @@
   </xml>
 
   <script src="js/block_palette.js?v=20260530a"></script>
-  <script src="js/serial.js"></script>
+  <script src="js/serial.js?v=20260708a"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <script src="js/blocks/control.js"></script>
@@ -1858,7 +1859,7 @@
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/app.js?v=20260624b"></script>
+  <script src="js/app.js?v=20260708a"></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">

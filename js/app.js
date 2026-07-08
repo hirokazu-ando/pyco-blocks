@@ -3932,9 +3932,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const hasSerial = 'serial' in navigator;
 
   // ===== Web Serial：接続 / 書き込み =====
-  const btnConnect = document.getElementById('btn-connect');
-  const btnWrite   = document.getElementById('btn-write');
-  const statusEl   = document.getElementById('serial-status');
+  const btnConnect   = document.getElementById('btn-connect');
+  const btnReconnect = document.getElementById('btn-reconnect');
+  const btnWrite     = document.getElementById('btn-write');
+  const statusEl     = document.getElementById('serial-status');
 
   function setSerialStatus(msg, type) {
     statusEl.textContent = msg;
@@ -3958,6 +3959,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const connected = PicoSerial.isConnected();
     btnConnect.textContent = connected ? '切断' : '接続';
     btnConnect.classList.toggle('connected', connected);
+    btnReconnect.disabled = false;   // 抜き差し後の復帰に使うため常に押せる
     btnWrite.disabled = !connected;
     document.getElementById('btn-run').disabled = !connected;
     document.getElementById('btn-stop').disabled = !connected;
@@ -3967,6 +3969,15 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (!connected) {
       PicoSerial.stopMonitor();
     }
+  }
+
+  // 接続失敗メッセージを分かりやすい日本語に整える
+  function friendlyConnectError(e) {
+    return e.message.includes('open') || e.message.includes('Failed')
+      ? 'ポートが他のアプリ（Thonny等）に使用中です'
+      : e.message.includes('No port selected') || e.message.includes('cancelled')
+      ? 'キャンセルされました'
+      : e.message;
   }
 
   btnConnect.addEventListener('click', async function() {
@@ -3982,12 +3993,21 @@ document.addEventListener('DOMContentLoaded', function() {
       setSerialStatus('接続済み', 'ok');
       updateSerialUI();
     } catch (e) {
-      const msg = e.message.includes('open') || e.message.includes('Failed')
-        ? 'ポートが他のアプリ（Thonny等）に使用中です'
-        : e.message.includes('No port selected') || e.message.includes('cancelled')
-        ? 'キャンセルされました'
-        : e.message;
-      setSerialStatus('接続失敗: ' + msg, 'err');
+      setSerialStatus('接続失敗: ' + friendlyConnectError(e), 'err');
+      updateSerialUI();
+    }
+  });
+
+  // 再接続：Pico を抜き差ししたあと、ポート選択ダイアログ無しで接続し直す
+  btnReconnect.addEventListener('click', async function() {
+    btnReconnect.disabled = true;
+    setSerialStatus('再接続中...', 'progress');
+    try {
+      await PicoSerial.reconnect();
+      setSerialStatus('再接続しました', 'ok');
+    } catch (e) {
+      setSerialStatus('再接続失敗: ' + friendlyConnectError(e), 'err');
+    } finally {
       updateSerialUI();
     }
   });
@@ -4124,7 +4144,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // シリアル関連ボタン（MicroPython && Web Serial対応のみ表示）
     const showSerial = mode === 'micropython' && hasSerial;
-    ['serial-sep', 'btn-connect', 'btn-run', 'btn-stop', 'btn-write'].forEach(id => {
+    ['serial-sep', 'btn-connect', 'btn-reconnect', 'btn-run', 'btn-stop', 'btn-write'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = showSerial ? '' : 'none';
     });
