@@ -93,6 +93,24 @@ header::before {
   gap: 10px;
   /* h1 は絶対に潰さない（潰すとロゴが枠外へはみ出しボタンと重なる） */
   flex-shrink: 0;
+  /* トップページへのリンク：見た目は現状維持しつつクリック可能に */
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.title-block:hover {
+  background-color: rgba(0, 255, 65, 0.08);
+  box-shadow: 0 0 0 1px rgba(0, 255, 65, 0.25);
+}
+
+.title-block:focus-visible {
+  outline: 2px solid var(--accent-green);
+  outline-offset: 2px;
 }
 
 h1 {
