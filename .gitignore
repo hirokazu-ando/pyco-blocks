@@ -46,3 +46,6 @@ docs/
 kindle/**/src/
 kindle/**/assets/img/
 kindle/**/build/
+
+# 環境変数（秘匿情報）
+.env
