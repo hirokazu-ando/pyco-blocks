@@ -121,6 +121,7 @@
     + 'border-bottom:1px solid var(--border-dim,#1a341a);flex-shrink:0;}'
     + '.pyco-tut-head .t{font-size:.82rem;font-weight:bold;color:var(--accent-green,#00ff41);'
     + 'letter-spacing:.06em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}'
+    + '.pyco-tut-head .hp{font-size:.72rem;color:var(--text-dim,#5a8a5a);white-space:nowrap;}'
     + '.pyco-tut-head button{background:transparent;border:1px solid var(--border-dim,#1a341a);'
     + 'color:var(--text-dim,#5a8a5a);cursor:pointer;font:inherit;font-size:.72rem;padding:3px 8px;'
     + 'border-radius:4px;}'
@@ -245,12 +246,30 @@
     + '#pyco-tut-callout .arrow-left{right:-16px;border-left-color:var(--accent-amber,#ffb700);}'
     + '#pyco-tut-callout .arrow-bottom{top:-16px;border-bottom-color:var(--accent-amber,#ffb700);}'
     + '#pyco-tut-callout .arrow-top{bottom:-16px;border-top-color:var(--accent-amber,#ffb700);}'
-    // モバイル：下部シート化
-    + '@media (max-width:900px){#pyco-tut-panel{top:auto;left:0;right:0;bottom:56px;width:100%;'
-    + 'height:auto;max-height:48vh;border-left:none;border-top:1px solid var(--border-dim,#1a341a);'
-    + 'transform:translateY(100%);box-shadow:0 -4px 24px rgba(0,0,0,.45);}'
-    + '#pyco-tut-panel.open{transform:translateY(0);}'
-    + '#pyco-tut-panel.collapsed{transform:translateY(calc(100% - 40px));}}';
+    // ---- モバイル：折りたたみ式ボトムシート ----
+    //   判定はメディアクエリではなく body.mobile-mode（アプリ本体の判定と同一。
+    //   手動「スマホ表示/PC表示」切替にも正しく追従する）
+    + 'body.mobile-mode #pyco-tut-panel{top:auto;left:0;right:0;width:auto;'
+    + 'bottom:var(--mobile-tabbar-h,52px);height:auto;max-height:50vh;box-sizing:border-box;'
+    + 'border-left:none;border-right:none;border-top:1px solid var(--border-dim,#1a341a);'
+    + 'transform:translateY(110%);box-shadow:0 -4px 24px rgba(0,0,0,.45);}'
+    + 'body.mobile-mode #pyco-tut-panel, body.mobile-mode #pyco-tut-panel *{box-sizing:border-box;}'
+    + 'body.mobile-mode #pyco-tut-panel.open{transform:translateY(0);}'
+    // デスクトップ用の横スライドcollapsedはモバイルでは無効（縦の最小化を使う）
+    + 'body.mobile-mode #pyco-tut-panel.collapsed{transform:translateY(0);}'
+    // 最小化＝コンパクトバー：本文と進捗バーを隠す。ヘッダー＋判定＋次へは常時可視
+    + 'body.mobile-mode #pyco-tut-panel.minimized .pyco-tut-body,'
+    + 'body.mobile-mode #pyco-tut-panel.minimized .pyco-tut-pbar{display:none;}'
+    + 'body.mobile-mode #pyco-tut-panel.minimized .pyco-tut-foot{padding:6px 12px 8px;}'
+    + 'body.mobile-mode #pyco-tut-panel .pyco-tut-head{cursor:pointer;}'
+    + 'body.mobile-mode .pyco-tut-body{padding:12px 12px 14px;}'
+    // iOSの自動ズーム防止（16px未満のinputはフォーカスでズームされる）
+    + 'body.mobile-mode .pyco-tut-answer input{font-size:16px;}'
+    // シート表示中は実行FAB(#btn-mobile-run)をシートの直上に退避し前面へ
+    //  （既定位置だとシートに覆われてタップ不能になるため）
+    + 'body.mobile-mode.pyco-tut-open #btn-mobile-run{z-index:9200;'
+    + 'bottom:calc(var(--pyco-tut-sheet-h,40vh) + var(--mobile-tabbar-h,52px) + 12px);'
+    + 'transition:bottom .25s ease;}';
     var st = document.createElement('style');
     st.id = STYLE_ID;
     st.textContent = css;
@@ -270,6 +289,7 @@
     panel.innerHTML = ''
       + '<div class="pyco-tut-head">'
       +   '<span class="t" id="pyco-tut-lesson-title">学習モード</span>'
+      +   '<span class="hp" id="pyco-tut-head-progress"></span>'
       +   '<button type="button" id="pyco-tut-collapse" title="折りたたむ">▶</button>'
       +   '<button type="button" id="pyco-tut-close" title="学習をやめる">✕</button>'
       + '</div>'
@@ -284,6 +304,7 @@
       + '</div>';
     document.body.appendChild(panel);
     els.lessonTitle = $('pyco-tut-lesson-title');
+    els.headProgress = $('pyco-tut-head-progress');
     els.collapse = $('pyco-tut-collapse');
     els.close = $('pyco-tut-close');
     els.pbar = $('pyco-tut-pbar-fill');
@@ -295,14 +316,46 @@
 
     els.close.addEventListener('click', function() { endLesson(false); });
     els.collapse.addEventListener('click', toggleCollapse);
+    // モバイル：ヘッダー行のタップでも最小化⇄展開（ボタン部分は除く）
+    panel.querySelector('.pyco-tut-head').addEventListener('click', function(ev) {
+      if (!isMobileLayout()) return;
+      if (ev.target.closest('button')) return;
+      setMinimized(!panel.classList.contains('minimized'));
+    });
     els.prev.addEventListener('click', prevStep);
     els.next.addEventListener('click', nextStep);
     return panel;
   }
   function toggleCollapse() {
+    if (isMobileLayout()) {
+      setMinimized(!panel.classList.contains('minimized'));
+      return;
+    }
+    panel.classList.remove('minimized');
     var c = panel.classList.toggle('collapsed');
-    els.collapse.textContent = c ? '◀' : '▶';
+    syncCollapseGlyph();
     resizeBlockly();
+  }
+  // モバイル：最小化（コンパクトバー）⇄ 展開
+  function setMinimized(min) {
+    if (!panel) return;
+    panel.classList.remove('collapsed'); // 横スライド状態とは排他
+    panel.classList.toggle('minimized', !!min);
+    syncCollapseGlyph();
+    updateSheetHeightVar();
+    setTimeout(updateSheetHeightVar, 300); // transition後の実高も反映
+  }
+  function syncCollapseGlyph() {
+    if (!els.collapse) return;
+    if (isMobileLayout()) {
+      var min = panel.classList.contains('minimized');
+      els.collapse.textContent = min ? '▲' : '▼';
+      els.collapse.title = min ? 'ガイドを展開' : 'ガイドを最小化';
+    } else {
+      var c = panel.classList.contains('collapsed');
+      els.collapse.textContent = c ? '◀' : '▶';
+      els.collapse.title = c ? 'ガイドを展開' : '折りたたむ';
+    }
   }
   function resizeBlockly() {
     try {
@@ -395,7 +448,8 @@
   }
 
   function isMobileLayout() {
-    return window.innerWidth <= 900 || document.body.classList.contains('mobile-mode');
+    // アプリ本体のモバイル判定（幅900px自動＋手動切替）と完全に一致させる
+    return document.body.classList.contains('mobile-mode');
   }
 
   function ensureCalloutDom() {
@@ -472,7 +526,17 @@
     } catch (e) { return null; }
   }
 
+  // モバイルシートの実高を CSS 変数へ反映（実行FABの退避位置に使用）
+  function updateSheetHeightVar() {
+    try {
+      if (isOpen && isMobileLayout() && panel) {
+        document.documentElement.style.setProperty('--pyco-tut-sheet-h', panel.offsetHeight + 'px');
+      }
+    } catch (e) { /* noop */ }
+  }
+
   function positionCallout() {
+    updateSheetHeightVar(); // リサイズ・ステップ変更等の全トリガで追従
     if (!currentCallout || !isOpen) { hideCalloutVisual(); return; }
     ensureCalloutDom();
     var rect = resolveTargetRect(currentCallout.target);
@@ -744,15 +808,20 @@
     isOpen = true;
     panel.classList.add('open');
     panel.classList.remove('collapsed');
-    els.collapse.textContent = '▶';
+    panel.classList.remove('minimized');
+    document.body.classList.add('pyco-tut-open'); // 実行FAB退避用（mobile-modeと併用）
+    syncCollapseGlyph();
     var btn = $('btn-tutorial');
     if (btn) btn.classList.add('tutorial-active');
     resizeBlockly();
+    updateSheetHeightVar();
+    setTimeout(updateSheetHeightVar, 320);
   }
   function closePanel() {
     isOpen = false;
     hideCallout();
-    if (panel) panel.classList.remove('open');
+    document.body.classList.remove('pyco-tut-open');
+    if (panel) { panel.classList.remove('open'); panel.classList.remove('minimized'); }
     var btn = $('btn-tutorial');
     if (btn) btn.classList.remove('tutorial-active');
     resizeBlockly();
@@ -765,7 +834,19 @@
     stopMonitorObserver();
     var out = $('monitor-output');
     if (!out || typeof MutationObserver === 'undefined') return;
-    monObserver = new MutationObserver(function() { evaluateCurrent(); });
+    monObserver = new MutationObserver(function() {
+      // モバイル：runステップで実行が始まったら自動で最小化し、出力を見せる
+      try {
+        if (isOpen && isMobileLayout() && els.check && els.check.dataset.run) {
+          var out = ($('monitor-output') || {}).textContent || '';
+          if (out.indexOf('実行開始') >= 0 && !/>>> *(完了|エラー)/.test(out)
+              && !panel.classList.contains('minimized')) {
+            setMinimized(true);
+          }
+        }
+      } catch (e) { /* noop */ }
+      evaluateCurrent();
+    });
     monObserver.observe(out, { childList: true, subtree: true, characterData: true });
   }
   function stopMonitorObserver() {
@@ -783,6 +864,9 @@
     stepIndex = Math.max(0, Math.min(stepIndex, all.length - 1));
     var step = all[stepIndex];
     var total = all.length;
+
+    // 新しいステップの指示が読めるよう、最小化していたら展開する
+    if (panel && panel.classList.contains('minimized')) setMinimized(false);
 
     // 本文
     var html = '';
@@ -832,6 +916,7 @@
 
     // 進捗バー / ナビ
     els.pbar.style.width = ((stepIndex + 1) / total * 100) + '%';
+    if (els.headProgress) els.headProgress.textContent = (stepIndex + 1) + ' / ' + total;
     els.prev.disabled = (stepIndex === 0);
     els.next.textContent = (stepIndex === total - 1) ? '完了 ✓' : '次へ ▶';
 
