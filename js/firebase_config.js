@@ -9,14 +9,11 @@
 //   有効化するには、下の null を削除して、コンソールでコピーした
 //   firebaseConfig オブジェクトをそのまま代入してください。
 // =============================================================
-window.PYCO_FIREBASE_CONFIG = null;
-
-// 例（docs/FIREBASE-SETUP.md の手順5でコピーした値に置き換える）:
-// window.PYCO_FIREBASE_CONFIG = {
-//   apiKey:            "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-//   authDomain:        "pycoblocks-xxxxx.firebaseapp.com",
-//   projectId:         "pycoblocks-xxxxx",
-//   storageBucket:     "pycoblocks-xxxxx.appspot.com",
-//   messagingSenderId: "000000000000",
-//   appId:             "1:000000000000:web:xxxxxxxxxxxxxxxxxxxxxx"
-// };
+window.PYCO_FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAA82kVFKCx3A1K18s7SwmvWCR6gx95dRs",
+  authDomain:        "pycoblocks.firebaseapp.com",
+  projectId:         "pycoblocks",
+  storageBucket:     "pycoblocks.firebasestorage.app",
+  messagingSenderId: "533582189550",
+  appId:             "1:533582189550:web:8db15117389ffda80bb4ff"
+};
