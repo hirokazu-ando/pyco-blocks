@@ -392,6 +392,12 @@
     'code':         function() { return $('code-editor'); },
     'output':       function() { return $('monitor-panel') || $('monitor-output'); },
     'run':          function() {
+      // モバイルではヘッダーの実行ボタンはドロワー内で不可視。
+      // 常時表示のフローティング実行ボタン(FAB)を指す
+      if (isMobileLayout()) {
+        var fab = $('btn-mobile-run');
+        if (fab && window.getComputedStyle(fab).display !== 'none') return fab;
+      }
       // モードで実体が切り替わる実行ボタンのうち、表示中のものを返す
       var ids = ['btn-run-python', 'btn-run'];
       for (var i = 0; i < ids.length; i++) {
@@ -414,6 +420,27 @@
   //   - エディタ内容は CodeMirror 5 が DOM に公開するインスタンスから取得
   //   - 注意: 編集モード OFF でブロックから再生成され編集コードは消える
   // =============================================================
+  // ---- モバイルのタブ式ペイン切替（blocks / code）との連携 ----
+  //   callout の対象が非アクティブタブ側にあると枠が表示できないため、
+  //   ステップ表示時に対象のあるタブへ自動切替する（1ステップ表示につき1回。
+  //   その後の手動切替は尊重して引き戻さない）。
+  function currentPane() {
+    return document.body.classList.contains('pane-code') ? 'code' : 'blocks';
+  }
+  function switchPane(pane) {
+    try {
+      var btn = document.querySelector('#mobile-tabbar .m-tab[data-pane="' + pane + '"]');
+      if (btn) btn.click(); // アプリ既存ハンドラ経由（app.js 無編集）
+    } catch (e) { /* noop */ }
+  }
+  // callout ターゲット → 表示に必要なペイン（null=切替不要）
+  function paneForTarget(target) {
+    if (target && typeof target === 'object' && target.block) return 'blocks';
+    if (target === 'toolbox' || target === 'workspace') return 'blocks';
+    if (target === 'code' || target === 'output') return 'code';
+    return null; // run / learn-button / coding-button / CSSセレクタは切替不要
+  }
+
   function isCodingOn() {
     var btn = $('btn-coding-mode');
     return !!(btn && btn.classList.contains('coding-active'));
@@ -441,6 +468,8 @@
       var step = steps()[stepIndex];
       if (step && step.check && step.check.codeRun) {
         refreshCodeRunUI(step);
+        // コード編集がONになった直後はエディタが見えるタブへ（モバイルのみ）
+        if (isCodingOn() && isMobileLayout()) switchPane('code');
         evaluateCurrent();
       }
     });
@@ -547,13 +576,29 @@
       return;
     }
 
-    // ハイライト枠（常に表示）
+    // ハイライト枠（常に表示）。モバイルではボトムシート・タブバーの
+    // 上端でクリップし、枠がシートに重なって描画されないようにする
     var pad = 3;
+    var maxBottom = vh;
+    if (isMobileLayout()) {
+      try {
+        if (panel && panel.classList.contains('open')) {
+          maxBottom = Math.min(maxBottom, panel.getBoundingClientRect().top - 2);
+        }
+        var tabbar = $('mobile-tabbar');
+        if (tabbar && window.getComputedStyle(tabbar).display !== 'none') {
+          maxBottom = Math.min(maxBottom, tabbar.getBoundingClientRect().top - 2);
+        }
+      } catch (e) { /* noop */ }
+    }
+    var hlTop = rect.top - pad;
+    var hlBottom = Math.min(rect.bottom + pad, maxBottom);
+    if (hlBottom - hlTop < 12) { hideCalloutVisual(); return; } // ほぼ全て隠れるなら出さない
     calloutHl.style.display = 'block';
     calloutHl.style.left   = (rect.left - pad) + 'px';
-    calloutHl.style.top    = (rect.top - pad) + 'px';
+    calloutHl.style.top    = hlTop + 'px';
     calloutHl.style.width  = (rect.width + pad * 2) + 'px';
-    calloutHl.style.height = (rect.height + pad * 2) + 'px';
+    calloutHl.style.height = (hlBottom - hlTop) + 'px';
 
     // 吹き出し（text 無し・スマホレイアウトでは出さない＝枠のみ）
     var text = currentCallout.text;
@@ -888,6 +933,7 @@
     step._passed = false;
     step._failMsg = null;
     step._countedOut = null;
+    step._paneSwitched = false;
     if (step.check && step.check.choice) {
       renderChoices(step);
     }
@@ -931,6 +977,15 @@
     if (!stepCallout && step.check && step.check.codeRun && !isCodingOn()) {
       stepCallout = { target: 'coding-button',
         text: 'ここを押して「コード編集」をONにすると、コードを直接書けます', placement: 'bottom' };
+    }
+    // モバイル: callout 対象が非アクティブタブ側なら、対象のあるタブへ自動切替。
+    // このステップ表示につき1回だけ（以後の手動タブ切替は引き戻さない）。
+    if (stepCallout && isMobileLayout() && !step._paneSwitched) {
+      var wantPane = paneForTarget(stepCallout.target);
+      if (wantPane && wantPane !== currentPane()) {
+        step._paneSwitched = true;
+        switchPane(wantPane);
+      }
     }
     if (stepCallout) showCallout(stepCallout); else hideCallout();
     setTimeout(positionCallout, 350);
@@ -1042,7 +1097,11 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = 'コード編集をONにする';
-      btn.addEventListener('click', function() { setCodingMode(true); });
+      btn.addEventListener('click', function() {
+        setCodingMode(true);
+        // タイプする場所（エディタ）が見えるよう、コード側タブへ
+        if (isMobileLayout()) setTimeout(function() { switchPane('code'); }, 80);
+      });
       wrap.appendChild(btn);
     }
   }
@@ -1463,6 +1522,15 @@
     // コールアウトの位置追従（ウィンドウリサイズ・ページ内スクロール）
     window.addEventListener('resize', positionCallout);
     window.addEventListener('scroll', positionCallout, true);
+    // モバイルのタブ切替（ペイン切替）でも再配置。対象が非表示になった
+    // ハイライトはここで消える（レイアウト確定後に遅延実行）
+    var tabbar = $('mobile-tabbar');
+    if (tabbar) {
+      tabbar.addEventListener('click', function() {
+        setTimeout(positionCallout, 120);
+        setTimeout(positionCallout, 400);
+      });
+    }
     checkHashLaunch();
   }
 

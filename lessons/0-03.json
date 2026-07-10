@@ -87,7 +87,7 @@
     },
     {
       "title": "コードを読もう",
-      "body": "<p>右上のコードエリアには、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">total = 10 + 20\nprint(total)</pre><ul><li><b>1行目</b>：右がわの <code>10 + 20</code> が先に計算されて <code>30</code> になり、その結果を <code>=</code> で変数 <code>total</code> に入れます。「計算してから代入する」という順番です。</li><li><b>2行目</b>：<code>print(total)</code> で <code>total</code> の中身（<code>30</code>）を表示します。</li></ul>",
+      "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">total = 10 + 20\nprint(total)</pre><ul><li><b>1行目</b>：右がわの <code>10 + 20</code> が先に計算されて <code>30</code> になり、その結果を <code>=</code> で変数 <code>total</code> に入れます。「計算してから代入する」という順番です。</li><li><b>2行目</b>：<code>print(total)</code> で <code>total</code> の中身（<code>30</code>）を表示します。</li></ul>",
       "callout": {
         "target": "code",
         "text": "右上に同じ total = 10 + 20 / print(total) が出ています",

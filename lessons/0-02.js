@@ -61,7 +61,7 @@ window.PYCO_LESSONS["0-02"] = {
     },
     {
       "title": "コードを読もう",
-      "body": "<p>右上のコードエリアには、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>score = 80</code> の <code>=</code> は「右の値を左の変数に入れる」という記号（代入）です。<code>score</code> という名前の箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、変数 <code>score</code> の中身（<code>80</code>）を取り出して表示します。<code>\"</code> で囲まないので、名前ではなく中身が出ます。</li></ul>",
+      "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>score = 80</code> の <code>=</code> は「右の値を左の変数に入れる」という記号（代入）です。<code>score</code> という名前の箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、変数 <code>score</code> の中身（<code>80</code>）を取り出して表示します。<code>\"</code> で囲まないので、名前ではなく中身が出ます。</li></ul>",
       "callout": {
         "target": "code",
         "text": "右上に同じ score = 80 / print(score) が出ています",
