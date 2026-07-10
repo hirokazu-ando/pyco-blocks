@@ -211,6 +211,33 @@ h1 {
   clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
 }
 
+/* 学習モード（チュートリアル）ボタン：主要導線のため塗りつぶしで強調。
+   実行ボタン（緑グロー）とは系統を分けたアンバー＝学習パネルのアクセント色と統一 */
+#btn-tutorial {
+  color: #171004;
+  background: var(--accent-amber);
+  border-color: var(--accent-amber);
+  font-weight: bold;
+  text-shadow: none;
+  box-shadow: 0 0 10px rgba(255,183,0,0.25);
+}
+#btn-tutorial:hover {
+  background: #ffc933;
+  border-color: #ffc933;
+  color: #171004;
+  box-shadow: 0 0 14px rgba(255,183,0,0.55);
+}
+#btn-tutorial:active {
+  transform: translateY(1px);
+}
+/* 学習中（パネル表示中）は反転して「稼働中」を示す */
+#btn-tutorial.tutorial-active {
+  background: rgba(255,183,0,0.14);
+  color: var(--accent-amber);
+  border-color: var(--accent-amber);
+  box-shadow: inset 0 0 10px rgba(255,183,0,0.15);
+}
+
 #btn-generate {
   color: var(--accent-green);
   border-color: var(--accent-green);

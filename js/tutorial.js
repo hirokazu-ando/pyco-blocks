@@ -194,9 +194,7 @@
     + 'border:1px solid var(--accent-amber,#ffb700);color:var(--accent-amber,#ffb700);cursor:pointer;'
     + 'font:inherit;font-size:.86rem;padding:11px;border-radius:8px;font-weight:bold;}'
     + '.pyco-tut-certbtn:disabled{opacity:.4;cursor:not-allowed;}'
-    // ヘッダーの学習ボタン active
-    + '#btn-tutorial.tutorial-active{color:var(--accent-green,#00ff41)!important;'
-    + 'border-color:var(--accent-green,#00ff41)!important;}'
+    // ヘッダーの学習ボタンの見た目（塗り・.tutorial-active反転）は css/style.css 側で定義
     // コールアウト：対象要素のハイライト枠（パルス）
     + '#pyco-tut-highlight{position:fixed;z-index:9050;pointer-events:none;display:none;'
     + 'border:2px solid var(--accent-amber,#ffb700);border-radius:8px;'
