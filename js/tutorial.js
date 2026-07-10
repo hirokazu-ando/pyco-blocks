@@ -86,6 +86,11 @@
       var tag = node.tagName;
       if (!allowed.has(tag)) return document.createTextNode(node.textContent || '');
       var el = document.createElement(tag.toLowerCase());
+      // class 属性のみ許可（英数と-_のみ。行番号つきコード表示 pre.code-lines 等に使用）
+      try {
+        var cls = node.getAttribute && node.getAttribute('class');
+        if (cls && /^[a-zA-Z0-9_ -]+$/.test(cls)) el.className = cls;
+      } catch (e) { /* noop */ }
       Array.from(node.childNodes).forEach(function(c) {
         var s = cloneSafe(c); if (s) el.appendChild(s);
       });
@@ -138,6 +143,33 @@
     + '.pyco-tut-img{background:#fff;border:1px solid var(--border-dim,#1a341a);border-radius:6px;'
     + 'padding:8px;margin:10px 0;text-align:center;}'
     + '.pyco-tut-img img{max-width:100%;height:auto;display:inline-block;vertical-align:middle;}'
+    // 行番号つきコード表示（body 内 <pre class="code-lines">）
+    + '.pyco-tut-text pre.code-lines{counter-reset:pycoLn;padding:8px 10px 8px 6px;}'
+    + '.pyco-tut-text pre.code-lines .ln{display:block;counter-increment:pycoLn;white-space:pre;}'
+    + '.pyco-tut-text pre.code-lines .ln::before{content:counter(pycoLn);display:inline-block;'
+    + 'min-width:1.6em;margin-right:.7em;padding-right:.45em;text-align:right;'
+    + 'color:var(--text-dim,#5a8a5a);border-right:1px solid var(--border-dim,#1a341a);}'
+    // 記述式（answerText）の解答欄
+    + '.pyco-tut-answer{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}'
+    + '.pyco-tut-answer input{flex:1;min-width:110px;background:var(--bg-surface,#0b150b);'
+    + 'border:1px solid var(--border-dim,#1a341a);color:var(--text-primary,#c8e6c8);font:inherit;'
+    + 'font-size:.86rem;padding:8px 10px;border-radius:6px;}'
+    + '.pyco-tut-answer input:focus{outline:none;border-color:var(--accent-cyan,#00d4ff);}'
+    + '.pyco-tut-answer input:disabled{opacity:.6;}'
+    + '.pyco-tut-answer button{background:transparent;border:1px solid var(--accent-cyan,#00d4ff);'
+    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;font-size:.8rem;'
+    + 'padding:8px 14px;border-radius:6px;}'
+    + '.pyco-tut-answer button:disabled{opacity:.4;cursor:not-allowed;}'
+    + '.pyco-tut-answer-msg{width:100%;font-size:.8rem;min-height:1.2em;}'
+    + '.pyco-tut-answer-msg.ok{color:var(--accent-green,#00ff41);font-weight:bold;}'
+    + '.pyco-tut-answer-msg.ng{color:#ff9090;}'
+    // コード記述テスト（codeRun）の案内ボックス
+    + '.pyco-tut-coderun{margin-top:12px;padding:10px 12px;border:1px dashed var(--accent-cyan,#00d4ff);'
+    + 'border-radius:6px;font-size:.8rem;line-height:1.6;}'
+    + '.pyco-tut-coderun button{background:transparent;border:1px solid var(--accent-cyan,#00d4ff);'
+    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;font-size:.8rem;'
+    + 'padding:7px 12px;border-radius:6px;margin-top:6px;}'
+    + '.pyco-tut-coderun .cm-on{color:var(--accent-green,#00ff41);font-weight:bold;}'
     + '.pyco-tut-hint{margin-top:12px;}'
     + '.pyco-tut-hint-toggle{background:transparent;border:1px dashed var(--accent-amber,#ffb700);'
     + 'color:var(--accent-amber,#ffb700);cursor:pointer;font:inherit;font-size:.76rem;padding:5px 10px;'
@@ -316,10 +348,51 @@
       return null;
     },
     'learn-button': function() { return $('btn-tutorial'); },
+    'coding-button': function() { return $('btn-coding-mode'); },
     'code-panel':   function() { return document.querySelector('.code-panel'); }
   };
 
   var calloutBubble = null, calloutHl = null, currentCallout = null;
+
+  // =============================================================
+  // コード編集モード連携（app.js 無編集）
+  //   - 状態は #btn-coding-mode の .coding-active クラスで判定
+  //   - ON/OFF はボタンの click() を発火（app.js の正規ハンドラ経由）
+  //   - エディタ内容は CodeMirror 5 が DOM に公開するインスタンスから取得
+  //   - 注意: 編集モード OFF でブロックから再生成され編集コードは消える
+  // =============================================================
+  function isCodingOn() {
+    var btn = $('btn-coding-mode');
+    return !!(btn && btn.classList.contains('coding-active'));
+  }
+  function setCodingMode(on) {
+    var btn = $('btn-coding-mode');
+    if (!btn) return;
+    if (isCodingOn() !== !!on) { try { btn.click(); } catch (e) { /* noop */ } }
+  }
+  function getEditorCode() {
+    try {
+      var el = document.querySelector('#code-editor .CodeMirror');
+      if (el && el.CodeMirror) return el.CodeMirror.getValue();
+    } catch (e) { /* noop */ }
+    return '';
+  }
+  // コード編集ボタンの状態変化（ユーザーが直接押した場合も）に追従
+  var codingObserver = null;
+  function watchCodingButton() {
+    if (codingObserver) return;
+    var btn = $('btn-coding-mode');
+    if (!btn || typeof MutationObserver === 'undefined') return;
+    codingObserver = new MutationObserver(function() {
+      if (!isOpen) return;
+      var step = steps()[stepIndex];
+      if (step && step.check && step.check.codeRun) {
+        refreshCodeRunUI(step);
+        evaluateCurrent();
+      }
+    });
+    codingObserver.observe(btn, { attributes: true, attributeFilter: ['class'] });
+  }
 
   function isMobileLayout() {
     return window.innerWidth <= 900 || document.body.classList.contains('mobile-mode');
@@ -563,6 +636,8 @@
       wrongCount = 0;
       quizTotal = (def.steps || []).filter(function(s) { return s.quiz; }).length;
 
+      // コード編集モードが残っていたら解除（ブロック学習が基本状態）
+      setCodingMode(false);
       // ワークスペースを白紙に（レッスン用のツールボックスへ）
       try { ws.clear(); } catch (e) { /* noop */ }
       applyLessonToolbox(def);
@@ -588,6 +663,7 @@
   // レッスンを終了して元の作品へ戻す
   function endLesson(completed) {
     hideCallout();
+    setCodingMode(false); // コード記述テスト中の終了でも通常状態へ戻す
     stopMonitorObserver();
     restoreToolbox();
     closePanel();
@@ -717,14 +793,25 @@
     els.body.innerHTML = html;
     setSafeRichText($('pyco-tut-text'), step.body || '');
 
+    // 行番号つきコード表示（<pre class="code-lines">）を装飾
+    decorateCodeLines($('pyco-tut-text'));
+
     // ステップ画像（ブロック図）。サニタイザに <img> は許さず専用フィールドで扱う。
     // step.image = "パス" | {src, alt} | それらの配列。パスは app.html からの相対。
     if (step.image) renderStepImages(step);
 
-    // 選択式クイズ
+    // 選択式クイズ / 記述式 / コード記述テスト
     step._passed = false;
+    step._failMsg = null;
+    step._countedOut = null;
     if (step.check && step.check.choice) {
       renderChoices(step);
+    }
+    if (step.check && step.check.answerText) {
+      renderAnswerInput(step);
+    }
+    if (step.check && step.check.codeRun) {
+      renderCodeRunUI(step);
     }
     // ヒント
     if (step.hint) {
@@ -749,12 +836,18 @@
     els.next.textContent = (stepIndex === total - 1) ? '完了 ✓' : '次へ ▶';
 
     // 実行が必要なステップの案内
-    els.check.dataset.run = (step.check && (step.check.outputEquals != null || step.run)) ? '1' : '';
+    els.check.dataset.run = (step.check && (step.check.outputEquals != null || step.check.codeRun || step.run)) ? '1' : '';
 
     evaluateCurrent();
 
-    // コールアウト（吹き出し）。パネル開閉アニメ後にも再配置する
-    if (step.callout) showCallout(step.callout); else hideCallout();
+    // コールアウト（吹き出し）。パネル開閉アニメ後にも再配置する。
+    // codeRun ステップで未指定なら「コード編集」ボタンへの誘導を既定表示
+    var stepCallout = step.callout;
+    if (!stepCallout && step.check && step.check.codeRun && !isCodingOn()) {
+      stepCallout = { target: 'coding-button',
+        text: 'ここを押して「コード編集」をONにすると、コードを直接書けます', placement: 'bottom' };
+    }
+    if (stepCallout) showCallout(stepCallout); else hideCallout();
     setTimeout(positionCallout, 350);
   }
 
@@ -788,6 +881,85 @@
       card.appendChild(img);
       els.body.appendChild(card);
     });
+  }
+
+  // 記述式（answerText）: 入力欄＋答え合わせボタン。正答は表示しない
+  function renderAnswerInput(step) {
+    var conf = step.check.answerText || {};
+    var wrap = document.createElement('div');
+    wrap.className = 'pyco-tut-answer';
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = '答えを入力';
+    input.setAttribute('aria-label', '答えを入力');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '答え合わせ';
+    var msg = document.createElement('div');
+    msg.className = 'pyco-tut-answer-msg';
+    wrap.appendChild(input); wrap.appendChild(btn); wrap.appendChild(msg);
+    els.body.appendChild(wrap);
+
+    function judge() {
+      if (step._passed) return;
+      var got = normAnswer(input.value, conf.caseInsensitive);
+      if (!got) { input.focus(); return; }
+      var accept = (conf.accept || []).map(function(a) { return normAnswer(a, conf.caseInsensitive); });
+      if (accept.indexOf(got) >= 0) {
+        step._passed = true;
+        msg.textContent = '正解！';
+        msg.className = 'pyco-tut-answer-msg ok';
+        input.disabled = true;
+        btn.disabled = true;
+        evaluateCurrent();
+      } else {
+        if (step.quiz) wrongCount++;
+        msg.textContent = 'もう一度考えてみよう';
+        msg.className = 'pyco-tut-answer-msg ng';
+        input.select();
+      }
+    }
+    btn.addEventListener('click', judge);
+    input.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') judge(); });
+  }
+  // 解答の正規化: trim・連続空白圧縮・全角英数記号→半角・(任意)小文字化
+  function normAnswer(sVal, caseInsensitive) {
+    var t = String(sVal == null ? '' : sVal);
+    t = t.replace(/[\uFF01-\uFF5E]/g, function(c) {
+      return String.fromCharCode(c.charCodeAt(0) - 0xFEE0);
+    });
+    t = t.replace(/\u3000/g, ' ').replace(/\s+/g, ' ').trim();
+    if (caseInsensitive) t = t.toLowerCase();
+    return t;
+  }
+
+  // コード記述テスト（codeRun）: コード編集モードへの誘導ボックス
+  function renderCodeRunUI(step) {
+    var wrap = document.createElement('div');
+    wrap.className = 'pyco-tut-coderun';
+    wrap.id = 'pyco-tut-coderun';
+    els.body.appendChild(wrap);
+    refreshCodeRunUI(step);
+  }
+  function refreshCodeRunUI(step) {
+    var wrap = $('pyco-tut-coderun');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    var st = document.createElement('div');
+    if (isCodingOn()) {
+      st.innerHTML = '<span class="cm-on">コード編集はONです。</span>'
+        + 'コードを書いたら「▶ 実行」を押すと自動で答え合わせします。';
+      wrap.appendChild(st);
+      hideCallout();
+    } else {
+      st.textContent = 'この問題はコードを直接書いて解きます。';
+      wrap.appendChild(st);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'コード編集をONにする';
+      btn.addEventListener('click', function() { setCodingMode(true); });
+      wrap.appendChild(btn);
+    }
   }
 
   function renderChoices(step) {
@@ -830,12 +1002,26 @@
       els.check.textContent = '✓ クリア！';
       els.check.className = 'pyco-tut-check done';
       els.next.disabled = false;
+      step._runActive = false;
     } else {
-      els.check.textContent = els.check.dataset.run
-        ? '○ 「▶ 実行」を押して確かめよう'
-        : '○ 待機中';
+      els.check.textContent = step._failMsg
+        ? step._failMsg
+        : (els.check.dataset.run ? '○ 「▶ 実行」を押して確かめよう' : '○ 待機中');
       els.check.className = 'pyco-tut-check';
       els.next.disabled = true;
+      // codeRun クイズ: 実行1回ごとに誤答としてカウント。
+      // 出力内容の比較では「別のコード・同じ出力」を数え損ねるため、
+      // 実行サイクル（実行開始→完了/エラーの遷移）で1回と数える。
+      if (step.quiz && step.check && step.check.codeRun) {
+        var out = ($('monitor-output') || {}).textContent || '';
+        var finished = />>> *(完了|エラー)/.test(out);
+        if (!finished) {
+          if (out.indexOf('実行開始') >= 0) step._runActive = true;
+        } else if (step._runActive) {
+          step._runActive = false;
+          wrongCount++;
+        }
+      }
     }
   }
 
@@ -843,6 +1029,8 @@
     var chk = step.check;
     if (!chk) return true;               // 情報ステップ＝常に通過
     if (chk.choice) return step._passed === true;
+    if (chk.answerText) return step._passed === true;
+    if (chk.codeRun) return checkCodeRun(step, chk.codeRun);
     var ws = getWs();
     if (!ws) return false;
 
@@ -877,6 +1065,58 @@
   }
   function normText(s) {
     return String(s == null ? '' : s).replace(/\r/g, '').replace(/[ \t]+$/gm, '').replace(/\n+$/,'').trim();
+  }
+
+  // コード記述テストの判定。
+  //   outputEquals: 実行出力の一致（必須条件があれば先に判定）
+  //   codeForbids : 禁止パターン（regex文字列 or {pattern, message}）→ 個別メッセージ
+  //   codeContains: 必須パターン（同上）
+  function checkCodeRun(step, cr) {
+    step._failMsg = null;
+    if (cr.outputEquals != null && normOutput() !== normText(cr.outputEquals)) {
+      return false; // 出力未一致は既定の「実行して確かめよう」表示
+    }
+    var code = getEditorCode();
+    function toRe(ent) {
+      try { return new RegExp(typeof ent === 'string' ? ent : (ent && ent.pattern) || ''); }
+      catch (e) { return null; } // 不正な正規表現は条件として無視
+    }
+    var i, ent, re;
+    var forb = cr.codeForbids || [];
+    for (i = 0; i < forb.length; i++) {
+      ent = forb[i]; re = toRe(ent);
+      if (re && re.test(code)) {
+        step._failMsg = '△ ' + ((ent && ent.message)
+          || '実行結果は合っていますが、別の書き方で挑戦してみましょう');
+        return false;
+      }
+    }
+    var conts = cr.codeContains || [];
+    for (i = 0; i < conts.length; i++) {
+      ent = conts[i]; re = toRe(ent);
+      if (re && !re.test(code)) {
+        step._failMsg = '△ ' + ((ent && ent.message)
+          || '実行結果は合っていますが、指定された書き方をまだ使っていません。ヒントを確認しましょう');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // 行番号つきコード表示: pre.code-lines の各行を span.ln に分解
+  function decorateCodeLines(container) {
+    if (!container) return;
+    var pres = container.querySelectorAll('pre.code-lines');
+    Array.prototype.forEach.call(pres, function(pre) {
+      var text = (pre.textContent || '').replace(/\n$/, '');
+      pre.textContent = '';
+      text.split('\n').forEach(function(line) {
+        var row = document.createElement('span');
+        row.className = 'ln';
+        row.textContent = line === '' ? '\u00A0' : line;
+        pre.appendChild(row);
+      });
+    });
   }
 
   // 構造 XML 比較（id / 座標 / 変数id を無視して type・field 値を比較）
@@ -1130,6 +1370,7 @@
     injectStyle();   // パネル未構築でも一覧モーダルが正しく表示されるよう先に注入
     wireHeaderButton();
     registerWsListener();
+    watchCodingButton();
     // コールアウトの位置追従（ウィンドウリサイズ・ページ内スクロール）
     window.addEventListener('resize', positionCallout);
     window.addEventListener('scroll', positionCallout, true);
