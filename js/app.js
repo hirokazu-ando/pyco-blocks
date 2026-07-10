@@ -5990,6 +5990,70 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================================
+  // 自動保存(js/autosave.js)向けブリッジ
+  //   ワークスペースのシリアライズ/復元を、共有URL(#x1=)や ?src= と同じ経路で
+  //   1か所にまとめて公開する。autosave.js だけでなく将来の Firebase 保存でも
+  //   この serialize/restore をそのまま使い回せるようにするのが目的。
+  //     - serialize()      … 現在の作品を XML 文字列にする（複数ファイルは <project>）
+  //     - restore(text)    … XML 文字列をワークスペースに読み込む（共有/`?src=` と同経路）
+  //     - getMode()        … 'python' / 'game' / 'micropython'
+  //     - hasUrlSource()   … 共有URLや ?src= 指定があるか（自動復元の優先判定用）
+  // ============================================================
+  function _autosaveSerialize() {
+    // アクティブファイルの現在のワークスペースを XML 化（座標も残して並び位置を保持）
+    var activeDom = Blockly.Xml.workspaceToDom(workspace);
+    var activeXmlText = Blockly.Xml.domToText(activeDom);
+    // 単一ファイルなら共有URLと同じ <xml> 表現をそのまま返す
+    if (!pyFiles || pyFiles.length <= 1) return activeXmlText;
+    // マルチファイル(自作モジュールタブ等)は <project><file><xml>…</xml></file></project>
+    // にまとめる。この構造は _loadProjectXml(=共有/`?src=` の復元経路)がそのまま読める。
+    function _escAttr(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+    var parts = ['<project>'];
+    for (var i = 0; i < pyFiles.length; i++) {
+      var f = pyFiles[i];
+      var xmlText = (i === activeFileIdx) ? activeXmlText : (f.blockXml || '');
+      parts.push('<file name="' + _escAttr(f.name) + '">');
+      if (xmlText) parts.push(xmlText);
+      parts.push('</file>');
+    }
+    parts.push('</project>');
+    return parts.join('');
+  }
+  function _autosaveRestore(text) {
+    // 共有ハッシュの復元(上のブロック)と同じ手順でワークスペースへ展開する
+    var dom = Blockly.utils.xml.textToDom(text);
+    var rootName = (dom.tagName || dom.localName || '').toLowerCase();
+    workspace.clear();
+    if (rootName === 'project') {
+      _loadProjectXml(dom);
+    } else {
+      Blockly.Xml.domToWorkspace(dom, workspace);
+    }
+    if (typeof generateCode === 'function') generateCode();
+    requestAnimationFrame(function() { requestAnimationFrame(autoFitInitialZoom); });
+  }
+  function _autosaveHasUrlSource() {
+    var h = window.location.hash || '';
+    if (/[#&]x1=/.test(h) || /[#&]xml=/.test(h)) return true;
+    if (_urlParams && _urlParams.get('src')) return true;
+    return false;
+  }
+  window.PycoWorkspaceIO = {
+    workspace: workspace,
+    getMode: function() { return currentMode; },
+    serialize: _autosaveSerialize,
+    restore: _autosaveRestore,
+    hasUrlSource: _autosaveHasUrlSource
+  };
+  // autosave.js が読み込まれていれば初期化する（復元→変更監視の開始）
+  if (window.PycoAutosave && typeof window.PycoAutosave.init === 'function') {
+    try { window.PycoAutosave.init(window.PycoWorkspaceIO); }
+    catch (e) { console.warn('PycoBlocks: 自動保存の初期化に失敗:', e); }
+  }
+
+  // ============================================================
   // モバイル編集モード
   //   - 自動判定（画面幅 ≤900px）＋ヘッダーの「スマホ表示」ボタンで手動切替
   //   - 手動切替は localStorage に記憶し、以後の自動判定より優先する

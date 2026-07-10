@@ -2248,3 +2248,293 @@ body.mobile-mode.menu-open #mobile-menu-backdrop {
   z-index: 550;
   background: rgba(0, 0, 0, 0.45);
 }
+
+/* =============================================================
+   クラウド保存（Google ログイン + Firestore）UI
+   ・js/firebase_config.js に設定がある時だけ js/cloud.js が要素を生成する。
+   ・配色は既存のサイバーパンク・ターミナル調（緑基調）を踏襲。
+   ============================================================= */
+
+/* ツールバー内のクラウド用コンテナ（.toolbar の子として並ぶ） */
+.cloud-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ログインボタン（シアン系＝データ入出力ボタンと同系統） */
+#btn-cloud-login {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  text-shadow: 0 0 6px rgba(0,212,255,0.6);
+  box-shadow: inset 0 0 12px rgba(0,212,255,0.05);
+}
+#btn-cloud-login:hover {
+  background: rgba(0,212,255,0.12);
+  box-shadow: 0 0 14px rgba(0,212,255,0.4), inset 0 0 12px rgba(0,212,255,0.08);
+  color: #fff;
+}
+
+/* アカウントボタン（写真＋名前） */
+.cloud-account-btn.toolbar-inherit, /* 保険 */
+.cloud-account-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+  text-transform: none;   /* 表示名は大文字化しない */
+  padding: 4px 12px 4px 6px;
+}
+.cloud-account-btn:hover {
+  background: rgba(0,255,65,0.10);
+  box-shadow: 0 0 12px rgba(0,255,65,0.3);
+}
+.cloud-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b1a0b;
+  border: 1px solid var(--accent-green);
+}
+.cloud-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cloud-avatar--letter {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-green);
+  font-weight: 700;
+}
+.cloud-account-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.76rem;
+}
+.cloud-caret { font-size: 0.7rem; opacity: 0.8; }
+
+/* ===== アカウントメニュー（ポップオーバー） ===== */
+.cloud-menu {
+  position: fixed;
+  z-index: 99998;
+  min-width: 190px;
+  background: var(--bg-surface, #0b150b);
+  border: 1px solid var(--accent-green);
+  box-shadow: 0 8px 26px rgba(0,0,0,0.6), 0 0 14px rgba(0,255,65,0.15);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+}
+.cloud-menu-item {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  text-align: left;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.cloud-menu-item:hover {
+  background: rgba(0,255,65,0.12);
+  color: #fff;
+}
+.cloud-menu-item--danger { color: var(--text-dim); }
+.cloud-menu-item--danger:hover {
+  background: rgba(255,60,60,0.14);
+  color: #ff9999;
+}
+
+/* ===== モーダル（保存 / 開く 共通） ===== */
+.cloud-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  z-index: 99000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.cloud-modal {
+  background: var(--bg-surface, #0b150b);
+  border: 1px solid var(--accent-green);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 24px rgba(0,255,65,0.12);
+  width: min(520px, 96vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+}
+.cloud-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+.cloud-modal-title {
+  font-family: var(--font-title, monospace);
+  font-size: 0.98rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-green);
+  text-shadow: 0 0 8px rgba(0,255,65,0.5);
+}
+.cloud-modal-close {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.cloud-modal-close:hover { color: var(--accent-green); border-color: var(--accent-green); }
+.cloud-modal-body {
+  padding: 16px 18px 20px;
+  overflow-y: auto;
+}
+.cloud-modal-note {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+}
+.cloud-modal-note--error { color: #ff9999; }
+.cloud-field-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  margin: 6px 0 6px;
+}
+.cloud-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-base, #060b06);
+  border: 1px solid var(--border-dim);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  outline: none;
+}
+.cloud-input:focus { border-color: var(--accent-green); box-shadow: 0 0 8px rgba(0,255,65,0.25); }
+
+.cloud-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.cloud-btn {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  padding: 9px 18px;
+  border: 1px solid var(--border-dim);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+}
+.cloud-btn:hover { border-color: var(--accent-green); color: var(--accent-green); }
+.cloud-btn--primary {
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+  text-shadow: 0 0 6px rgba(0,255,65,0.5);
+}
+.cloud-btn--primary:hover { background: rgba(0,255,65,0.14); color: #fff; }
+
+/* ===== 作品一覧 ===== */
+.cloud-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 60px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.cloud-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.cloud-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: var(--bg-base, #060b06);
+  border: 1px solid var(--border-dim);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.cloud-row-main:hover {
+  border-color: var(--accent-green);
+  background: rgba(0,255,65,0.06);
+}
+.cloud-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+}
+.cloud-row-date {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+.cloud-badge {
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 2px;
+  text-transform: none;
+}
+.cloud-badge--python      { color: var(--accent-green); border-color: var(--accent-green); }
+.cloud-badge--game        { color: var(--accent-cyan);  border-color: var(--accent-cyan); }
+.cloud-badge--micropython { color: var(--accent-amber); border-color: var(--accent-amber); }
+.cloud-row-del {
+  flex-shrink: 0;
+  width: 44px;
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.15s ease;
+}
+.cloud-row-del:hover { color: #ff9999; border-color: #ff9999; background: rgba(255,60,60,0.08); }
+.cloud-row-del:disabled { opacity: 0.4; cursor: default; }
+
+/* モバイル（ドロワー内）ではアカウント名を短めに */
+body.mobile-mode .cloud-account-name { max-width: 90px; }
