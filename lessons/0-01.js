@@ -1,0 +1,123 @@
+// このファイルは tools/build_lessons.py が lessons/0-01.json から自動生成したものです。
+// 直接編集しないでください（正本は JSON）。再生成: python3 tools/build_lessons.py
+window.PYCO_LESSONS = window.PYCO_LESSONS || {};
+window.PYCO_LESSONS["0-01"] = {
+  "id": "0-01",
+  "group": "part0-basic",
+  "title": "printで文字を表示しよう",
+  "subtitle": "Python × 入門 #01",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-01-print/",
+  "toolbox": [
+    "print_text",
+    "py_print",
+    "val_number",
+    "print_separator"
+  ],
+  "steps": [
+    {
+      "title": "前回のおさらい",
+      "body": "<p>前回は「Hello」を1つ表示しました。今回は <code>print</code> をもう少しくわしく使います。</p><ul><li>ブロックを <b>縦につなぐ</b> と、上から順に何行でも表示できる</li><li>文字だけでなく <b>数値</b> も表示できる</li><li><b>区切り線</b> を入れると出力が見やすくなる</li></ul><p>準備ができたら「次へ ▶」を押してください。</p>",
+      "hint": "このパネルは右上の「▶」で折りたたみ、「✕」で学習をやめられます。"
+    },
+    {
+      "title": "手順1：表示ブロックを置く",
+      "body": "<p>左のパレットから <b>「Hello」を表示する</b> ブロックを取り出し、下の図のようにワークスペースへ置きましょう。</p><p>1つ置けたら下の「✓ クリア！」が点灯します。</p>",
+      "hint": "パレットの上でマウスの左ボタンを押したまま、中央へ動かして離します。",
+      "check": {
+        "blocksRequired": [
+          "print_text"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/block_print_text.png",
+        "alt": "「Hello」を表示するブロック"
+      }
+    },
+    {
+      "title": "手順2：2つ縦に並べて実行する",
+      "body": "<p>表示ブロックを2つ縦につなぎ、下の図のように文字を <code>おはよう</code> と <code>PycoBlocks</code> にしましょう。</p><p>「▶ 実行」を押して、実行結果に2行出れば成功です。</p><pre>おはよう\nPycoBlocks</pre>",
+      "hint": "白いボックスをクリックして文字を書きかえます。ブロックの上下はカチッとはまります。入力したら「▶ 実行」。",
+      "run": true,
+      "check": {
+        "outputEquals": "おはよう\nPycoBlocks"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-01_two_prints.png",
+        "alt": "表示ブロックを2つ縦につないだ組み合わせ"
+      }
+    },
+    {
+      "title": "数値を表示するブロック",
+      "body": "<p>「表示」には役割の違うブロックがあります。</p><ul><li><b>「Hello」を表示する</b>（<code>print_text</code>）：文字をそのまま表示</li><li><b>値を表示する</b>（<code>py_print</code>）：数値や計算結果を表示</li><li><b>区切り線を表示する</b>（<code>print_separator</code>）：<code>----------------</code> の線を引く</li></ul><p><code>print_text</code> は <code>\"...\"</code> で囲んだ文字を、<code>py_print</code> は囲まずに値をそのまま出します。次で数値を表示してみましょう。</p>"
+    },
+    {
+      "title": "手順3：数値の16を表示する",
+      "body": "<p><b>値を表示する</b> ブロックに、「値」カテゴリの <b>数値</b> ブロックをはめ込み、数を <code>16</code> にします。下の図のように組みましょう。</p><p>「▶ 実行」を押して、実行結果に <code>16</code> と出れば成功です。</p><pre>print(16)</pre>",
+      "hint": "数値ブロックの白いボックスに 16 と入力してから実行します。",
+      "run": true,
+      "check": {
+        "outputEquals": "16"
+      },
+      "image": {
+        "src": "lessons/img/0-01_print16.png",
+        "alt": "数値ブロック16をはめた値を表示するブロック"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p><code>print(\"1+2\")</code> を実行すると、何が表示されるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "1+2（文字のまま）",
+            "3（計算した結果）",
+            "エラーになる"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p>では <code>print(1 + 2)</code>（<code>\"</code> で囲まない）を実行すると、何が表示されるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "3（計算した結果）",
+            "1+2（文字のまま）",
+            "12"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：自己紹介を3行で",
+      "body": "<p>表示ブロックを <b>3つ縦につないで</b>、名前・出身地・好きなものを3行で表示するプログラムを作りましょう。ブロックが3つ置けたらクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-01-print/</code></p>",
+      "hint": "パレットから表示ブロックを取り出し、順につなげます。文字は自由に決めてかまいません。",
+      "check": {
+        "blocksMin": {
+          "print_text": 3
+        }
+      },
+      "image": {
+        "src": "lessons/img/0-01_three_prints.png",
+        "alt": "表示ブロックを3つ縦につないだ例"
+      }
+    }
+  ]
+};

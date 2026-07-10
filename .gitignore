@@ -40,6 +40,7 @@ build/
 AGENTS.md
 tools/*
 !tools/blockshot.py
+!tools/build_lessons.py
 docs/
 
 # Kindle 出版ビルド成果物（自動生成・大容量）

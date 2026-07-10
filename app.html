@@ -113,6 +113,8 @@
     <span class="demo-badge" id="demo-badge" style="display:none">DEMO MODE</span>
     <button id="btn-mobile-menu" type="button" aria-label="ツールメニュー" aria-expanded="false" title="ツールメニューを開く">☰ メニュー</button>
     <div class="toolbar">
+      <button id="btn-tutorial" title="学習モード（チュートリアル）でステップ学習する">学習</button>
+      <div class="toolbar-sep"></div>
       <button id="btn-save-xml">ブロック保存</button>
       <button id="btn-load-xml">ブロック読込</button>
       <button id="btn-share-url" title="今のブロックを復元できる共有URLをコピー">共有URL</button>
@@ -1876,6 +1878,18 @@
        cloud.js は何も表示せず SDK も読み込まない＝現状の動作に一切影響しない。 -->
   <script src="js/firebase_config.js?v=20260710a"></script>
   <script src="js/cloud.js?v=20260710a" defer></script>
+  <!-- 学習モード（チュートリアル）。app.js 本体には触れず PycoWorkspaceIO 経由で連携。
+       firebase_config.js の後に読み込む（進捗のクラウド同期に config を参照するため）。
+       レッスン定義は lessons/*.js（tools/build_lessons.py が lessons/*.json から自動生成。
+       file:// 直開きでは fetch が使えないため script タグで事前読込する）。 -->
+  <script src="lessons/index.js?v=20260710b"></script>
+  <script src="lessons/0-00.js?v=20260710b"></script>
+  <script src="lessons/0-01.js?v=20260710b"></script>
+  <script src="lessons/0-02.js?v=20260710b"></script>
+  <script src="lessons/0-03.js?v=20260710b"></script>
+  <script src="lessons/0-04.js?v=20260710b"></script>
+  <script src="js/tutorial_progress.js?v=20260710b" defer></script>
+  <script src="js/tutorial.js?v=20260710b" defer></script>
 
   <!-- 実態配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
