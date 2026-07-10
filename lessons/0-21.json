@@ -83,6 +83,37 @@
       }
     },
     {
+      "title": "コードを読もう：enumerate が返すもの",
+      "body": "<p>ブロックが作った Python コードを読んでみましょう。</p><pre class=\"code-lines\">fruits = [\"apple\", \"banana\", \"cherry\"]\nfor i, f in enumerate(fruits):\n    print(i, f)</pre><ol><li><b>1行目</b>：リストを用意します。</li><li><b>2行目</b>：<code>enumerate</code> は「（番号, 値）」という<b>組</b>を順に返します。<code>for i, f in ...</code> で、番号を <code>i</code>、値を <code>f</code> に分けて受け取ります。番号は0から始まります。</li><li><b>3行目</b>：番号と値を並べて表示します。</li></ol><p><code>zip</code> も同じように「（値, 値）」の組を返し、2つのリストを一緒に回せます。</p>",
+      "hint": "enumerate も zip も、複数の値をまとめた組を1つずつ返します。",
+      "callout": { "target": "code", "text": "この形のコードが作られます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">names = [\"Tom\", \"Ann\", \"Bob\"]\nscores = [10, 20, 30]\ntotal = 0\nfor n, s in zip(names, scores):\n    total = total + s\nprint(total)</pre>",
+      "hint": "zip で名前と点数を組にして回し、点数をすべてたします。",
+      "check": { "answerText": { "accept": ["60", "\"60\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p>文字列のリスト <code>[\"5\", \"3\", \"8\"]</code> を <b>map</b> で整数に変換し、<b>sum</b> で合計を求めて表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">16</pre>",
+      "hint": "sum(map(int, nums)) のように、map と sum を組み合わせます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "16",
+          "codeContains": [
+            { "pattern": "map\\(", "message": "実行結果は合っていますが、map を使って整数に変換してみましょう" },
+            { "pattern": "sum\\(", "message": "実行結果は合っていますが、sum を使って合計を求めてみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*16\\s*\\)", "message": "実行結果は合っていますが、16 を直接書かず、map と sum で計算しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>文字列のリスト <code>[\"5\", \"3\", \"8\"]</code> を <b>一括変換</b>（map）で整数にして、<b>合計</b>（sum）を求めると、いくつになるでしょう？</p>",

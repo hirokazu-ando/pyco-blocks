@@ -82,6 +82,57 @@ window.PYCO_LESSONS["0-16"] = {
       "body": "<p>同じクラスから複数のインスタンスを作ると、それぞれが <b>独立した属性</b> を持ちます。設計図は1枚でも、作った犬はお互いに干渉しません。</p><p>また、属性はメソッドをまたいで <b>保存され続けます</b>。たとえばカウンターのクラスを作ると、増やした値が次の呼び出しにも引き継がれます。ポチが何かをしてもバディには関係ない——インスタンスはそれと同じです。</p>"
     },
     {
+      "title": "コードを読もう：class・self・メソッド",
+      "body": "<p>手順で組んだ Dog クラスは、次のPythonコードになります。用語を思い出しながら読んでみましょう。</p><pre class=\"code-lines\">class Dog:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        print(\"こんにちは！ぼくの名前はね、\" + self.name + \"！\")\ndog = Dog(\"ポチ\")\ndog.greet()</pre><ul><li>1行目：<code>class Dog:</code> は設計図の宣言です。</li><li>2〜3行目：<code>__init__</code> は<b>初期化</b>メソッド。犬を作る瞬間に呼ばれ、渡した名前を <code>self.name</code> という<b>属性</b>に保存します。<code>self</code> は「その犬自身」です。</li><li>4〜5行目：<code>greet</code> は<b>メソッド</b>（クラスの中の関数）。<code>self.name</code> を使ってあいさつを表示します。</li><li>6行目：<code>Dog(\"ポチ\")</code> で<b>インスタンス</b>（実体）を作り、変数 <code>dog</code> に入れます。</li><li>7行目：<code>dog.greet()</code> でそのメソッドを呼び出します。</li></ul>",
+      "hint": "class=設計図、self=自分自身、メソッド=クラスの中の関数、と対応づけて読みましょう。",
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで確認できます"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、最後に何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">class Counter:\n    def __init__(self):\n        self.n = 0\n    def add(self):\n        self.n = self.n + 1\nc = Counter()\nc.add()\nc.add()\nprint(c.n)</pre>",
+      "hint": "add を呼ぶたびに self.n が1ずつ増えます。add は2回呼ばれています。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "2",
+            "\"2\""
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p>名前を受け取って保存し、その名前を表示する<b>メソッド</b>を持つ<b>クラス</b>を作りましょう。<code>\"Tama\"</code> という名前のインスタンスを作ってメソッドを呼び、<code>Tama</code> と表示されれば成功です。</p><pre class=\"code-lines\">Tama</pre>",
+      "hint": "class Cat: の中で __init__ に self.name = name を書き、call メソッドで print(self.name) します。最後に c = Cat(\"Tama\") と c.call() を書きます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "Tama",
+          "codeContains": [
+            {
+              "pattern": "class\\s",
+              "message": "実行結果は合っていますが、class を使ってクラスを作ってみましょう"
+            },
+            {
+              "pattern": "self",
+              "message": "実行結果は合っていますが、self を使って名前を属性に保存してみましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "print\\(\\s*[\"']Tama",
+              "message": "実行結果は合っていますが、文字を直接printせず、クラスとメソッドを使って表示しましょう"
+            }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><b>self</b> が指しているのはどれでしょう？</p>",

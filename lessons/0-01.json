@@ -72,6 +72,15 @@
       }
     },
     {
+      "title": "コードを読もう",
+      "body": "<p>右上のコードエリアには、次の1行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">print(16)</pre><ul><li><b>1行目</b>：<code>print</code> で <code>( )</code> の中身を表示します。ここでは <code>16</code> を <code>\"</code> で囲んでいません。<code>\"</code> で囲まない数字は <b>数値</b> としてあつかわれ、計算に使えます。文字列の <code>\"16\"</code> とは別ものです。</li></ul>",
+      "callout": {
+        "target": "code",
+        "text": "右上に同じ print(16) が出ています",
+        "placement": "left"
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>print(\"1+2\")</code> を実行すると、何が表示されるでしょう？</p>",
@@ -114,6 +123,35 @@
       "image": {
         "src": "lessons/img/0-01_three_prints.png",
         "alt": "表示ブロックを3つ縦につないだ例"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、<b>2行目</b>には何が表示されるでしょう。</p><pre class=\"code-lines\">print(\"Python\")\nprint(2024)</pre>",
+      "hint": "1行目は文字列、2行目は数値をそのまま表示します。2行目の値を答えます。",
+      "check": {
+        "answerText": {
+          "accept": ["2024"],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>コード編集モード</b> でPythonを直接書いて、次の2行を表示しましょう。</p><pre class=\"code-lines\">Hello\nPython</pre><p><code>print</code> を2つ使って、1行ずつ表示します。</p>",
+      "hint": "print(\"Hello\") と print(\"Python\") を1行ずつ書きます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "Hello\nPython",
+          "codeContains": [
+            { "pattern": "print", "message": "print を使って表示しましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "\\\\n", "message": "1つの print に \\n を書かず、print を2つ使って2行に分けましょう" }
+          ]
+        }
       }
     }
   ]

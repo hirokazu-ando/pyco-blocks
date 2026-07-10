@@ -71,6 +71,39 @@
       }
     },
     {
+      "title": "コードを読もう：range(始まり, 終わり, とびかた)",
+      "body": "<p>手順3で組んだカウントダウンのコードを読んでみましょう。<code>range</code> に <b>3つの数</b> を入れています。</p><pre class=\"code-lines\">for i in range(5, 0, -1):\n    print(i)</pre><ul><li><b>1行目</b> <code>for i in range(5, 0, -1):</code> の3つの数は、順に <b>始まり（5）</b>・<b>終わり（0）</b>・<b>とびかた（-1）</b> です。とびかたが <code>-1</code> なので 1 ずつ減り、<code>5 → 4 → 3 → 2 → 1</code> と変わります。<b>終わりの 0 は含まない</b> ので、0 は表示されません。行末の <b>:</b>（コロン）で中身が始まります。</li><li><b>2行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>for</code> の中」を表し、<code>print(i)</code> がくり返されます。</li></ul><p>始まり・終わり・とびかたを変えると、とびとびの数や逆順のくり返しが自由に作れます。</p>",
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで見られます"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト（記述式）",
+      "body": "<p>次のコードを実行すると、数が何行か表示されます。<b>1行目</b>に表示される数はいくつでしょう？</p><pre class=\"code-lines\">for i in range(2, 11, 2):\n    print(i)</pre>",
+      "hint": "始まりは 2 です。2 から 2 ずつ増えていきます。",
+      "check": { "answerText": { "accept": ["2"], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><code>range</code> の <b>始まり・終わり・とびかた</b>（3つの数）を使って、<code>2</code>・<code>4</code>・<code>6</code>・<code>8</code> を表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">2\n4\n6\n8</pre>",
+      "hint": "range に 3つの数を入れます。始まりを 2、とびかたを 2 にすると 2, 4, 6, 8 の順になります。数字を直接 print してはいけません。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "2\n4\n6\n8",
+          "codeContains": [
+            { "pattern": "for\\s", "message": "for を使ってくり返しましょう" },
+            { "pattern": "range\\(\\s*\\d+\\s*,\\s*\\d+\\s*,", "message": "range に 始まり・終わり・とびかた の3つの数を入れましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*2\\s*\\)", "message": "数字を直接 print せず、カウンタ変数 i を表示しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>for i in range(2, 11, 2):</code> で表示される最後の数はどれでしょう？</p>",

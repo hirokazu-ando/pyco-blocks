@@ -64,6 +64,38 @@
       "body": "<p><b>ファイル追記</b> のブロックは、今ある内容を消さずに末尾へ付け足します。ログ（記録）をためていくときに便利です。</p><p>また <b>ファイルを行ごとに読む</b> のブロックを使うと、1行ずつのリストとして読み込めます。すでに用意されているファイルを読むときは、画面の「＋」ボタンでタブを作り、中身を書いておいてから読み込みます。</p><p>Python では、これらは <code>open(\"ファイル名\", \"w\")</code> のように書き、<code>with</code> を使って安全に開くのが基本の形です。</p>"
     },
     {
+      "title": "コードを読もう：ファイルを開いて閉じるまで",
+      "body": "<p>ブロックが作った Python コードを読んでみましょう。</p><pre class=\"code-lines\">with open(\"memo.txt\", \"w\") as f:\n    f.write(\"hello\")\nwith open(\"memo.txt\", \"r\") as f:\n    text = f.read()\nprint(text)</pre><ol><li><b>1〜2行目</b>：<code>open(\"memo.txt\", \"w\")</code> でファイルを<b>書き込みモード</b>で開き、<code>f.write(...)</code> で書き込みます。</li><li><b>3〜4行目</b>：<code>\"r\"</code>（<b>読み込みモード</b>）で開き直し、<code>f.read()</code> で全部読み込みます。</li><li><b>5行目</b>：読んだ内容を表示します。</li></ol><p>モード文字は <code>\"w\"</code>=書き込み・<code>\"a\"</code>=追記・<code>\"r\"</code>=読み込みです。<code>with</code> を使うと、ブロックを抜けるときに自動でファイルが<b>閉じられます</b>（close）。</p>",
+      "hint": "with を使うと close を書き忘れても自動で閉じてくれます。",
+      "callout": { "target": "code", "text": "この形のコードが作られます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>ファイルを<b>追記</b>（今ある内容の末尾に付け足す）モードで開くときのモード文字はどれでしょう？アルファベット1文字で答えてください。</p>",
+      "hint": "書き込みは w、読み込みは r、追記は…？",
+      "check": { "answerText": { "accept": ["a", "\"a\"", "'a'"], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><code>note.txt</code> に <code>hi</code> と書き込み、そのファイルを読み込んで表示するコードを書いて実行しましょう。<b>書き込み → 読み込み → 表示</b>の順につなぎます。</p><pre class=\"code-lines\">hi</pre>",
+      "hint": "with open(\"note.txt\", \"w\") as f: で書き、次に with open(\"note.txt\") as f: で読み込みます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "hi",
+          "codeContains": [
+            { "pattern": "open\\(", "message": "実行結果は合っていますが、open を使ってファイルを開いてみましょう" },
+            { "pattern": "\\.write\\(", "message": "実行結果は合っていますが、write でファイルに書き込んでみましょう" },
+            { "pattern": "\\.read\\(", "message": "実行結果は合っていますが、read でファイルを読み込んでみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*[\"']hi[\"']\\s*\\)", "message": "実行結果は合っていますが、直接表示せず、ファイルに書いてから読み込んで表示しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><b>書き込み</b>（w）モードで、まだ無いファイル名を指定するとどうなるでしょう？</p>",

@@ -59,6 +59,15 @@
       }
     },
     {
+      "title": "コードを読もう",
+      "body": "<p>右上のコードエリアには、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">name = input(\"名前を入力してください\")\nprint(name)</pre><ul><li><b>1行目</b>：<code>input(...)</code> はキーボードから文字を受け取る命令です。<code>( )</code> の中の <code>\"名前を入力してください\"</code> は、画面に出る <b>案内文</b> です。受け取った値を <code>=</code> で変数 <code>name</code> に入れます。</li><li><b>2行目</b>：<code>print(name)</code> で、打ち込んだ内容（<code>name</code> の中身）を表示します。</li></ul>",
+      "callout": {
+        "target": "code",
+        "text": "右上に同じ name = input(...) / print(name) が出ています",
+        "placement": "left"
+      }
+    },
+    {
       "title": "文字と数値のちがい",
       "body": "<p>入力ブロックには受け取り方が3つあります。</p><ul><li><b>テキスト</b>：打ち込んだ文字をそのまま受け取る（例：<code>\"12\"</code>）</li><li><b>数値（整数）</b>：数として受け取る（例：<code>12</code>）。計算に使える</li><li><b>数値（小数）</b>：小数として受け取る（例：<code>1.5</code>）</li></ul><p>テキストのままだと <code>\"5\" + \"3\"</code> は <code>53</code> になってしまいます。計算したいときは <b>数値（整数）</b> を選びます。</p>"
     },
@@ -118,6 +127,35 @@
           "py_input",
           "py_print"
         ]
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう。数字で答えてください。<code>int(\"12\")</code> は文字列を数値の <code>12</code> に変える命令です。</p><pre class=\"code-lines\">a = int(\"12\")\nb = int(\"30\")\nprint(a + b)</pre>",
+      "hint": "文字を数値に変えてから足し算します。12 + 30 です。",
+      "check": {
+        "answerText": {
+          "accept": ["42"],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>8</code> と表示しましょう。文字列 <code>\"5\"</code> と <code>\"3\"</code> を <code>int( )</code> で数値に変えて、足し算した結果を表示してください。</p><pre class=\"code-lines\">8</pre>",
+      "hint": "a = int(\"5\") と b = int(\"3\") を作り、print(a + b) で表示します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "8",
+          "codeContains": [
+            { "pattern": "int\\(", "message": "int( ) を使って文字を数値に変えましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*8\\s*\\)", "message": "8を直接printせず、int()で数値に変えて計算しましょう" }
+          ]
+        }
       }
     }
   ]

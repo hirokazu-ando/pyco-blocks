@@ -77,6 +77,52 @@ window.PYCO_LESSONS["0-06"] = {
       }
     },
     {
+      "title": "コードを読もう：比較の結果を表示",
+      "body": "<p>ブロックから作られた Python コードを読んでみましょう。手順3で組んだのは次の2行です。</p><pre class=\"code-lines\">a = 7\nprint(a == 7)</pre><ul><li><b>1行目</b> <code>a = 7</code>：変数 <code>a</code> に <code>7</code> を入れます。<code>=</code>（イコール1つ）は「入れる」という意味の代入です。</li><li><b>2行目</b> <code>print(a == 7)</code>：<code>a == 7</code>（<code>a</code> は <code>7</code> と等しい？）を調べ、その結果である <code>True</code> を表示します。<code>==</code>（イコール2つ）は「等しいか」を調べる比較で、代入の <code>=</code> とは役割がちがいます。</li></ul><p>比較の結果は、いつも <code>True</code> か <code>False</code> のどちらかになります。</p>",
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで見られます"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト（記述式）",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？ <code>True</code> か <code>False</code> で答えてください。</p><pre class=\"code-lines\">x = 8\nprint(x == 10)</pre>",
+      "hint": "x は 8 です。8 は 10 と等しいでしょうか。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "False",
+            "\"False\""
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>比較</b> を使って、<code>3 &lt; 5</code>（3は5より小さい？）の結果を表示するコードを書いて実行しましょう。<code>True</code> と表示されれば成功です。</p>",
+      "hint": "print の中に 3 &lt; 5 のような比較を入れます。True と直接書いてはいけません。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "True",
+          "codeContains": [
+            {
+              "pattern": "<",
+              "message": "「<」などの比較を使って書きましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "True",
+              "message": "True と直接書かず、比較した結果を表示しましょう"
+            }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>10 &lt; 5</code>（10は5より小さい？）を表示すると何が出るでしょう？</p>",

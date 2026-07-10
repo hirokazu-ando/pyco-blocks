@@ -79,6 +79,36 @@
       }
     },
     {
+      "title": "コードを読もう：メソッドの呼び出し",
+      "body": "<p>ブロックが作った Python コードを1行ずつ読んでみましょう。</p><pre class=\"code-lines\">text = \"apple,banana,cherry\"\nwords = text.split(\",\")\nprint(words)</pre><ol><li><b>1行目</b>：変数 <code>text</code> に文字列を入れます。</li><li><b>2行目</b>：<code>text.split(\",\")</code> のドット「.」は「<code>text</code> に対して <code>split</code> という操作をする」という意味です。カッコの中の <code>\",\"</code> が区切り文字で、結果はリストになります。</li><li><b>3行目</b>：できたリストを表示します。</li></ol><p>「変数.メソッド(...)」の形は、これからよく出てきます。</p>",
+      "hint": "ドットの左が操作される文字列、右が操作の名前（メソッド）です。",
+      "callout": { "target": "code", "text": "この形のコードが作られます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">s = \"red,green,blue\"\nparts = s.split(\",\")\nprint(len(parts))</pre>",
+      "hint": "split はカンマで区切ってリストにします。要素がいくつになるか数えましょう。",
+      "check": { "answerText": { "accept": ["3", "\"3\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p>変数 <code>s</code> に <code>2024-01-15</code> を入れ、<b>replace</b> を使って <code>-</code>（ハイフン）を <code>/</code>（スラッシュ）に置きかえて表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">2024/01/15</pre>",
+      "hint": "s.replace(\"-\", \"/\") のように書きます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "2024/01/15",
+          "codeContains": [
+            { "pattern": "\\.replace\\(", "message": "実行結果は合っていますが、replace を使って書いてみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "2024/01/15", "message": "実行結果は合っていますが、答えを直接書かず、replace で置きかえてみましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>検索（find）で、探す文字が <b>見つからなかった</b> ときに返る値はどれでしょう？</p>",

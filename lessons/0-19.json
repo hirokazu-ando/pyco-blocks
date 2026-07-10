@@ -81,6 +81,36 @@
       }
     },
     {
+      "title": "コードを読もう：タプルのアンパック",
+      "body": "<p>ブロックが作った Python コードを1行ずつ読んでみましょう。</p><pre class=\"code-lines\">point = (3, 7)\nx, y = point\nprint(x)\nprint(y)</pre><ol><li><b>1行目</b>：<code>( )</code> で2つの数をまとめた<b>タプル</b>を作り、<code>point</code> に入れます。</li><li><b>2行目</b>：左に変数を2つ、右にタプルを置くと、中身が順に <code>x</code> と <code>y</code> に入ります。これを<b>アンパック</b>といいます。</li><li><b>3・4行目</b>：<code>x</code> と <code>y</code> をそれぞれ表示します。</li></ol>",
+      "hint": "左辺の変数の数と、タプルの中身の数をそろえるのがポイントです。",
+      "callout": { "target": "code", "text": "この形のコードが作られます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">color = (255, 128, 0)\nr, g, b = color\nprint(g)</pre>",
+      "hint": "左から順に r・g・b に入ります。g は2番目の値です。",
+      "check": { "answerText": { "accept": ["128", "\"128\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p>タプル <code>(10, 20)</code> を作り、<b>アンパック</b>で2つの変数に分け、その2つをたし算した結果を表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">30</pre>",
+      "hint": "a, b = (10, 20) のように分けてから、a + b を表示します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "30",
+          "codeContains": [
+            { "pattern": "[A-Za-z_]\\w*\\s*,\\s*[A-Za-z_]\\w*\\s*=", "message": "実行結果は合っていますが、アンパック（a, b = ... の形）を使って書いてみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*30\\s*\\)", "message": "実行結果は合っていますが、30 を直接書かず、アンパックした2つの変数をたして表示しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><b>タプル</b> について正しい説明はどれでしょう？</p>",

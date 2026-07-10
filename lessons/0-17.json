@@ -80,6 +80,34 @@
       }
     },
     {
+      "title": "コードを読もう：try / except の流れ",
+      "body": "<p>手順2で組んだブロックは、次のPythonコードになります。エラーが起きたとき、実行の流れがどう動くかに注目しましょう。</p><pre class=\"code-lines\">try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre><ul><li>1〜2行目：<code>try:</code> の中は「エラーが起きるかもしれない処理」です。ここで <code>10 / 0</code>（0で割る）を計算しようとします。</li><li>ここで <code>ZeroDivisionError</code> というエラーが発生します。すると <code>print(10 / 0)</code> は<b>最後まで実行されず</b>、流れは <code>except</code> へ<b>飛びます</b>。</li><li>3〜4行目：<code>except ZeroDivisionError:</code> の中が動き、<code>0では割れません</code> が表示されます。</li></ul><p>エラーが起きた行で処理が中断し、<code>except</code> に飛んで続きが動く——これが例外処理の流れです。</p>",
+      "hint": "try の中でエラーが出ると、その先はスキップされて except の中に飛びます。",
+      "callout": { "target": "code", "text": "生成されたコードはここで確認できます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、<b>何行目</b>でエラーが起きるでしょう？行番号（数字）で答えてください。</p><pre class=\"code-lines\">a = 10\nb = 0\nc = a / b\nprint(c)</pre>",
+      "hint": "0で割るとエラーになります。a / b の計算をしている行を探しましょう。",
+      "check": { "answerText": { "accept": ["3", "3行目", "\"3\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>試す（try）</b>と<b>エラーのとき（except）</b>を使って、<code>10 / 0</code>（0で割る）で起きるエラーをつかまえ、<code>エラー</code> と表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">エラー</pre>",
+      "hint": "try: の中で print(10 / 0) を計算し、except ZeroDivisionError: の中で print(\"エラー\") と書きます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "エラー",
+          "codeContains": [
+            { "pattern": "try", "message": "実行結果は合っていますが、try を使って書いてみましょう" },
+            { "pattern": "except", "message": "実行結果は合っていますが、except を使ってエラーをつかまえてみましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>例外処理（try / except）を使う一番の目的はどれでしょう？</p>",

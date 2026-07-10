@@ -60,6 +60,15 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "title": "コードを読もう",
+      "body": "<p>右上のコードエリアには、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>score = 80</code> の <code>=</code> は「右の値を左の変数に入れる」という記号（代入）です。<code>score</code> という名前の箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、変数 <code>score</code> の中身（<code>80</code>）を取り出して表示します。<code>\"</code> で囲まないので、名前ではなく中身が出ます。</li></ul>",
+      "callout": {
+        "target": "code",
+        "text": "右上に同じ score = 80 / print(score) が出ています",
+        "placement": "left"
+      }
+    },
+    {
       "title": "値を更新できる",
       "body": "<p>変数のいいところは、途中で値を <b>更新</b> できることです。「変数」カテゴリの <b>変数〜を〜だけ増やす</b> ブロック（<code>var_change</code>）を使うと、今の値に足し算できます。</p><pre>score = score + 10</pre><p>これを繰り返すと、値がどんどん増えていくのが見えます。</p>"
     },
@@ -120,6 +129,43 @@ window.PYCO_LESSONS["0-02"] = {
       "image": {
         "src": "lessons/img/0-02_mynumber.png",
         "alt": "変数my_numberに数を入れて表示する例"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう。数字で答えてください。</p><pre class=\"code-lines\">x = 50\nx = x + 3\nprint(x)</pre>",
+      "hint": "2行目で x は 50 + 3 になります。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "53"
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>7</code> と表示しましょう。ただし <code>7</code> を直接 <code>print</code> せず、<b>変数に入れてから</b> 表示してください。</p><pre class=\"code-lines\">7</pre>",
+      "hint": "n = 7 のように変数に入れて、print(n) で表示します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "7",
+          "codeContains": [
+            {
+              "pattern": "=",
+              "message": "変数に値を入れる = を使いましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "print\\(\\s*[\"']?7",
+              "message": "7を直接printせず、変数に入れてから表示しましょう"
+            }
+          ]
+        }
       }
     }
   ]

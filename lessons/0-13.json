@@ -84,6 +84,36 @@
       }
     },
     {
+      "title": "コードを読もう：辞書の { } とキー参照",
+      "body": "<p>手順2で組んだブロックは、次のPythonコードになります。1行ずつ読んでみましょう。</p><pre class=\"code-lines\">person = {}\nperson[\"name\"] = \"Taro\"\nperson[\"age\"] = 16\nprint(person[\"name\"])</pre><ul><li>1行目：<code>{}</code> は空の辞書です。変数 <code>person</code> に空の辞書を入れています。</li><li>2〜3行目：<code>person[\"name\"] = \"Taro\"</code> は、<b>キー</b> <code>\"name\"</code> に値 <code>\"Taro\"</code> を対応づけます。同じように <code>\"age\"</code> に <code>16</code> を入れます。</li><li>4行目：<code>person[\"name\"]</code> は、キー <code>\"name\"</code> に対応する値を<b>取り出します</b>。ここでは <code>Taro</code> が表示されます。</li></ul><p>リストは <code>[ ]</code> の中に<b>番号</b>を書きましたが、辞書は <code>[ ]</code> の中に<b>キー（名前）</b>を書くのがちがいです。</p>",
+      "hint": "辞書は { } で作り、person[\"キー\"] の形で値を出し入れします。",
+      "callout": { "target": "code", "text": "生成されたコードはここで確認できます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">stock = {}\nstock[\"pen\"] = 5\nstock[\"note\"] = 3\nprint(stock[\"note\"])</pre>",
+      "hint": "print はキー \"note\" に対応する値を取り出しています。",
+      "check": { "answerText": { "accept": ["3", "\"3\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>辞書</b>を作り、キー <code>math</code> に <code>80</code>、キー <code>science</code> に <code>90</code> を入れて、<b>2つの値を取り出して</b>表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">80\n90</pre>",
+      "hint": "scores = {\"math\": 80, \"science\": 90} のように作り、scores[\"math\"] と scores[\"science\"] を表示します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "80\n90",
+          "codeContains": [
+            { "pattern": "\\{", "message": "実行結果は合っていますが、辞書の { } を使って書いてみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*(80|90)\\b", "message": "実行結果は合っていますが、数値を直接printせず、辞書のキーで値を取り出して表示しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>辞書 <code>scores</code> から <code>\"math\"</code> の点数を取り出す書き方はどれでしょう？</p>",

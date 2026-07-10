@@ -83,6 +83,51 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "title": "コードを読もう：whileとインデント",
+      "body": "<p>手順2で組んだコードを読んでみましょう。<b>初期化・条件・更新</b> の3つがそろっているかに注目します。</p><pre class=\"code-lines\">x = 1\nwhile x &lt;= 5:\n    print(x)\n    x = x + 1</pre><ul><li><b>1行目</b> <code>x = 1</code>：くり返しの前に <code>x</code> を <code>1</code> にしておきます（<b>初期化</b>）。</li><li><b>2行目</b> <code>while x &lt;= 5:</code>「<code>x</code> が 5 以下の <b>間</b> くり返す」という <b>条件</b> です。行末の <b>:</b>（コロン）で中身が始まります。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>while</code> の中」を表します。<code>x</code> を表示します。</li><li><b>4行目</b>：同じ4つの空白なので、これも中の処理です。<code>x</code> を1増やします（<b>更新</b>）。これがあるから、<code>x</code> はいつか 6 になって条件が成り立たなくなり、ループが止まります。</li></ul><p>更新（4行目）を書き忘れると条件がずっと成り立ったままになり、終わらなくなります。for と同じく、くり返す処理はインデントで「中」に入れます。</p>",
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで見られます"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト（記述式）",
+      "body": "<p>次のコードを実行すると、数が何行か表示されます。<b>最後（いちばん下）</b>に表示される数はいくつでしょう？</p><pre class=\"code-lines\">x = 1\nwhile x &lt;= 3:\n    print(x)\n    x = x + 1</pre>",
+      "hint": "x は 1・2・3 と表示され、4 になると x <= 3 が成り立たなくなって止まります。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "3"
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>while</b> を使って、<code>1</code>・<code>2</code>・<code>3</code> を1行ずつ表示するコードを書いて実行しましょう。必ず止まるように、くり返しの中で数を <b>1ずつ増やす</b> ことを忘れないでください。</p><pre class=\"code-lines\">1\n2\n3</pre>",
+      "hint": "x を 1 にしてから while x <= 3: と書き、中で x を表示し、x = x + 1 で増やします。数字を直接 print してはいけません。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "1\n2\n3",
+          "codeContains": [
+            {
+              "pattern": "while\\s",
+              "message": "while を使ってくり返しましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "print\\(\\s*1\\s*\\)",
+              "message": "数字を直接 print せず、変数を表示しながらくり返しましょう"
+            }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>while が「終わらないループ（無限ループ）」になってしまう、いちばんの原因はどれでしょう？</p>",

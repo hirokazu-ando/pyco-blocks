@@ -75,6 +75,40 @@
       }
     },
     {
+      "title": "コードを読もう：if〜elseとインデント",
+      "body": "<p>手順3で組んだコードを読んでみましょう。ここで大切なのは <b>行末のコロン</b> と <b>インデント（行のはじめの空白）</b> です。</p><pre class=\"code-lines\">x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre><ul><li><b>1行目</b>：変数 <code>x</code> に <code>-5</code> を入れます。</li><li><b>2行目</b> <code>if x &gt; 0:</code>「もし <code>x</code> が 0 より大きいなら」。行末の <b>:</b>（コロン）は「ここから中の処理が始まる」という合図です。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>if</code> の中」を表します。条件が正しいときだけ実行されます。今回 <code>x</code> は <code>-5</code> なので実行されません。</li><li><b>4行目</b> <code>else:</code>「そうでなければ」。こちらもコロンで終わります。</li><li><b>5行目</b>：同じく4つの空白で下げられているので「<code>else</code> の中」です。今回はこちらが実行され <code>NG</code> と表示されます。</li></ul><p>インデントの <b>4つの空白＝「中」</b> という意味を、しっかり覚えておきましょう。</p>",
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで見られます"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト（記述式）",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？</p><pre class=\"code-lines\">y = 20\nif y &gt; 10:\n    print(\"大きい\")\nelse:\n    print(\"小さい\")</pre>",
+      "hint": "y は 20 です。20 は 10 より大きいので、if の中が実行されます。",
+      "check": { "answerText": { "accept": ["大きい"], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>変数 x を 8 にして</b>、<code>x</code> が <code>5</code> より大きければ <code>OK</code> を、そうでなければ <code>NG</code> を表示する <b>if〜else</b> を書いて実行しましょう。<code>OK</code> と表示されれば成功です。</p>",
+      "hint": "1行目で x を作り、if の条件のあとにコロンを付け、中の行は4つの空白で下げます。else も忘れずに。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "OK",
+          "codeContains": [
+            { "pattern": "if\\s", "message": "if を使って判定しましょう" },
+            { "pattern": "else", "message": "else（そうでなければ）も使いましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "^\\s*print", "message": "最初に答えを直接 print せず、if〜else で分けて表示しましょう" },
+            { "pattern": "if\\s+True", "message": "条件は自分で決めましょう（if True のような書き方は使いません）" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>x</code> が <code>3</code> のとき、<code>if x &gt; 0:</code> の中の処理はどうなるでしょう？</p>",

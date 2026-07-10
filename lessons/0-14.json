@@ -85,6 +85,33 @@
       }
     },
     {
+      "title": "コードを読もう：defと呼び出しの2部構成",
+      "body": "<p>手順2で組んだブロックは、次のPythonコードになります。関数は<b>「定義する」部分</b>と<b>「呼び出す」部分</b>の2つに分かれています。</p><pre class=\"code-lines\">def greet():\n    print(\"Hello!\")\ngreet()</pre><ul><li>1〜2行目：<b>定義</b>です。<code>def greet():</code> で <code>greet</code> という名前をつけ、<b>1段下げた（インデントした）</b>行がその中身です。ここではまだ実行されません。</li><li>3行目：<b>呼び出し</b>です。<code>greet()</code> と書くと、定義した中身（<code>print(\"Hello!\")</code>）が実行され、<code>Hello!</code> が表示されます。</li></ul><p><code>def</code> で作っただけでは動かず、<code>名前()</code> で呼び出して初めて動く——この2部構成が関数の基本です。</p>",
+      "hint": "def は定義、名前() は呼び出しです。呼び出さないと中身は動きません。",
+      "callout": { "target": "code", "text": "生成されたコードはここで確認できます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">def add(a, b):\n    return a + b\nprint(add(4, 6))</pre>",
+      "hint": "add(4, 6) は関数の中で 4 + 6 を計算し、その結果を返します。",
+      "check": { "answerText": { "accept": ["10", "\"10\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>関数</b>を1つ<b>定義して</b>、それを<b>呼び出して</b> <code>Hello!</code> と表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">Hello!</pre>",
+      "hint": "def greet(): の下の行に print(\"Hello!\") を書き、最後に greet() で呼び出します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "Hello!",
+          "codeContains": [
+            { "pattern": "def\\s", "message": "実行結果は合っていますが、def を使って関数を定義してから呼び出してみましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>関数を「定義しただけ」で、中の処理は実行されるでしょうか？</p>",

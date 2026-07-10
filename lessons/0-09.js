@@ -79,6 +79,55 @@ window.PYCO_LESSONS["0-09"] = {
       }
     },
     {
+      "title": "コードを読もう：forとインデント",
+      "body": "<p>手順3で組んだコードを読んでみましょう。ここでも <b>行末のコロン</b> と <b>インデント</b> が大切です。</p><pre class=\"code-lines\">for i in range(3):\n    print(i)</pre><ul><li><b>1行目</b> <code>for i in range(3):</code>「<code>i</code> を <code>0</code>・<code>1</code>・<code>2</code> と変えながら 3回くり返す」という意味です。行末の <b>:</b>（コロン）は「ここからくり返す中身が始まる」という合図です。</li><li><b>2行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>for</code> の中」を表します。この <code>print(i)</code> が回数ぶん、つまり 3回くり返されます。<code>i</code> は 1回ごとに <code>0 → 1 → 2</code> と変わります。</li></ul><p>くり返したい処理は、必ずインデントで下げて「中」に入れます。数え始めが <b>0</b> であることも覚えておきましょう。</p>",
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで見られます"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト（記述式）",
+      "body": "<p>次のコードを実行すると、数が3行表示されます。<b>1行目</b>に表示される数はいくつでしょう？</p><pre class=\"code-lines\">for i in range(3):\n    print(i + 1)</pre>",
+      "hint": "i は 0 から始まります。1回目は i が 0 なので、0 + 1 を表示します。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "1"
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>for</b> と <b>range</b> を使って、<code>0</code>・<code>1</code>・<code>2</code> を1行ずつ表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">0\n1\n2</pre>",
+      "hint": "for i in range(3): と書き、次の行を4つの空白で下げて print(i) を書きます。数字を直接 print してはいけません。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "0\n1\n2",
+          "codeContains": [
+            {
+              "pattern": "for\\s",
+              "message": "for を使ってくり返しましょう"
+            },
+            {
+              "pattern": "range",
+              "message": "range を使って回数を決めましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "print\\(\\s*0\\s*\\)",
+              "message": "数字を直接 print せず、カウンタ変数 i を表示しましょう"
+            }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>for i in range(3):</code> のとき、<code>i</code> はどんな順に変わるでしょう？</p>",

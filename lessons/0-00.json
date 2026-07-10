@@ -106,6 +106,15 @@
       }
     },
     {
+      "title": "コードを読もう",
+      "body": "<p>右上のコードエリアには、次の1行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">print(\"Hello!\")</pre><ul><li><b>1行目</b>：<code>print</code> は「表示しろ」という命令です。<code>( )</code> の中に書いたものを画面に出します。<code>\"Hello!\"</code> のように <code>\"</code>（ダブルクォート）で囲んだ文字を <b>文字列</b> と呼びます。囲んだ <code>\"</code> 自体は表示されず、中身の <code>Hello!</code> だけが出ます。</li></ul>",
+      "callout": {
+        "target": "code",
+        "text": "右上に同じ print(\"Hello!\") が出ています",
+        "placement": "left"
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ",
       "body": "<p><code>print()</code> の役割はどれでしょう？</p>",
@@ -133,6 +142,18 @@
       "image": {
         "src": "lessons/img/0-00_two_prints.png",
         "alt": "表示ブロックを2つ縦につないだ例"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう。表示される文字を答えてください。</p><pre class=\"code-lines\">print(\"Python\")</pre>",
+      "hint": "<code>\"</code> で囲んだ中身がそのまま表示されます。",
+      "check": {
+        "answerText": {
+          "accept": ["Python", "\"Python\""],
+          "caseInsensitive": true
+        }
       }
     }
   ]

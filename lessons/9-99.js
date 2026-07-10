@@ -1,0 +1,53 @@
+// このファイルは tools/build_lessons.py が lessons/9-99.json から自動生成したものです。
+// 直接編集しないでください（正本は JSON）。再生成: python3 tools/build_lessons.py
+window.PYCO_LESSONS = window.PYCO_LESSONS || {};
+window.PYCO_LESSONS["9-99"] = {
+  "id": "9-99",
+  "group": null,
+  "title": "エンジン検証（answerText / codeRun）",
+  "subtitle": "テスト専用",
+  "mode": "python",
+  "toolbox": [
+    "print_text"
+  ],
+  "steps": [
+    {
+      "quiz": true,
+      "title": "コード読解テスト（記述式）",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">x = 50\ny = 3\nprint(x + y)</pre>",
+      "hint": "x + y は 50 + 3 の計算です。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "53",
+            "\"53\""
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>for文</b> を使って、<code>1</code>・<code>2</code>・<code>3</code> を1行ずつ表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">1\n2\n3</pre>",
+      "hint": "for i in range(1, 4): のように書きます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "1\n2\n3",
+          "codeContains": [
+            {
+              "pattern": "for\\s",
+              "message": "実行結果は合っていますが、for文を使って書いてみましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "print\\(1\\)",
+              "message": "実行結果は合っていますが、数字を直接printせず、for文でくり返してみましょう"
+            }
+          ]
+        }
+      }
+    }
+  ]
+};

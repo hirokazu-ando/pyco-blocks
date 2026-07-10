@@ -1073,6 +1073,10 @@
   //   codeContains: 必須パターン（同上）
   function checkCodeRun(step, cr) {
     step._failMsg = null;
+    // コード記述テストはコード編集モードで自分でコードを書いて解く。
+    // 編集モードOFFのまま（直前のブロック実行の出力・生成コードが残った状態）で
+    // 誤ってクリア判定になるのを防ぐため、ONでなければ未達とする。
+    if (!isCodingOn()) return false;
     if (cr.outputEquals != null && normOutput() !== normText(cr.outputEquals)) {
       return false; // 出力未一致は既定の「実行して確かめよう」表示
     }

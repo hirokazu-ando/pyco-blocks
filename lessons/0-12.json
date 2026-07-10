@@ -84,6 +84,36 @@
       }
     },
     {
+      "title": "コードを読もう：リストの [ ] とインデックス",
+      "body": "<p>手順2で組んだブロックは、次のPythonコードになります。1行ずつ読んでみましょう。</p><pre class=\"code-lines\">fruits = []\nfruits.append(\"apple\")\nfruits.append(\"orange\")\nfruits.append(\"grape\")\nprint(fruits[0])</pre><ul><li>1行目：<code>[]</code> は空のリストです。変数 <code>fruits</code> に空のリストを入れています。</li><li>2〜4行目：<code>append</code> はリストの<b>最後に値を足す</b>命令です。上から順に apple・orange・grape が並びます。</li><li>5行目：<code>fruits[0]</code> の <code>[ ]</code> は<b>インデックス（何番目か）</b>を表します。番号は <b>0から</b>始まるので、<code>fruits[0]</code> は先頭の <code>apple</code> です。</li></ul><p>この <code>[ ]</code> が、リストを作るときと、要素を取り出すときの両方で出てくることに注目しましょう。</p>",
+      "hint": "インデックスは0から数えます。先頭が0番目、次が1番目です。",
+      "callout": { "target": "code", "text": "生成されたコードはここで確認できます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">nums = [10, 20, 30, 40]\nprint(nums[2])</pre>",
+      "hint": "インデックスは0から数えます。nums[0]が10、nums[1]が20です。",
+      "check": { "answerText": { "accept": ["30", "\"30\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p>果物を3つ入れた<b>リスト</b>を作り、<b>先頭（0番目）</b>と<b>3番目（インデックス2）</b>の要素を表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">apple\ngrape</pre>",
+      "hint": "fruits = [\"apple\", \"orange\", \"grape\"] のようにリストを作り、fruits[0] と fruits[2] を表示します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "apple\ngrape",
+          "codeContains": [
+            { "pattern": "\\[", "message": "実行結果は合っていますが、リストの [ ] を使ってリストを作ってみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*[\"'](apple|grape)", "message": "実行結果は合っていますが、文字を直接printせず、リストの要素を取り出して表示しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>リスト <code>fruits = [\"apple\", \"orange\", \"grape\"]</code> のとき、先頭の <code>\"apple\"</code> を取り出す書き方はどれでしょう？</p>",

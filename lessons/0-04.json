@@ -73,6 +73,15 @@
       }
     },
     {
+      "title": "コードを読もう",
+      "body": "<p>右上のコードエリアには、次の1行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">print(f\"得点は{85}点\")</pre><ul><li><b>1行目</b>：文字列の前に付いた <code>f</code> は <b>f文字列</b> の目印です。<code>{ }</code> の中身だけが計算・置きかえされ、<code>{85}</code> は <code>85</code> になります。全体で <code>得点は85点</code> という1つの文字列ができ、<code>print</code> で表示します。<code>{ }</code> の外の <code>得点は</code> や <code>点</code> はそのままの文字です。</li></ul>",
+      "callout": {
+        "target": "code",
+        "text": "右上に同じ print(f\"得点は{85}点\") が出ています",
+        "placement": "left"
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>\"A\" + \"B\"</code> を表示すると何が出るでしょう？</p>",
@@ -115,6 +124,35 @@
       "image": {
         "src": "lessons/img/0-04_fstring_example.png",
         "alt": "変数nameをf文字列に埋め込んで表示する例"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう。</p><pre class=\"code-lines\">a = \"Py\"\nb = \"thon\"\nprint(a + b)</pre>",
+      "hint": "文字列どうしを + でつなげると、そのままくっつきます。",
+      "check": {
+        "answerText": {
+          "accept": ["Python"],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>点数は90点</code> と表示しましょう。ただし <code>点数は90点</code> という文字列をそのまま書かず、<b>f文字列</b> か <b>文字列の連結</b> で組み立ててください。</p><pre class=\"code-lines\">点数は90点</pre>",
+      "hint": "print(f\"点数は{90}点\") のように、数の 90 を { } でうめこみます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "点数は90点",
+          "codeContains": [
+            { "pattern": "print", "message": "print を使って表示しましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "点数は90点", "message": "「点数は90点」をそのまま書かず、文字と数を組み立てて作りましょう" }
+          ]
+        }
       }
     }
   ]

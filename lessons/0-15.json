@@ -85,6 +85,37 @@
       }
     },
     {
+      "title": "コードを読もう：returnとスコープ",
+      "body": "<p>次のコードは、関数が計算した結果を <b>return</b> で呼び出し元へ返し、変数に受け取って表示する例です。</p><pre class=\"code-lines\">def add(a, b):\n    return a + b\nresult = add(3, 5)\nprint(result)</pre><ul><li>1〜2行目：関数の定義です。引数 <code>a</code>・<code>b</code> は<b>関数の中だけ</b>で使える変数（スコープ）です。<code>return a + b</code> で計算結果を外へ返します。</li><li>3行目：<code>add(3, 5)</code> を呼ぶと、その場所に返ってきた <code>8</code> が入り、変数 <code>result</code> に保存されます。</li><li>4行目：<code>result</code> を表示すると <code>8</code> が出ます。</li></ul><p><code>return</code> があると、結果を変数に入れて次の処理に使えます。ただ表示するだけの命令とのちがいを意識しましょう。</p>",
+      "hint": "return は値を呼び出し元へ返します。返ってきた値は変数に入れて使えます。",
+      "callout": { "target": "code", "text": "生成されたコードはここで確認できます" }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードで、<code>square(7)</code> の<b>戻り値</b>はいくつでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">def square(n):\n    return n * n\nprint(square(7))</pre>",
+      "hint": "square(7) は 7 × 7 を計算して返します。",
+      "check": { "answerText": { "accept": ["49", "\"49\""], "caseInsensitive": true } }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p>数を受け取り、その数を<b>2倍にして return する</b>関数を作りましょう。<code>5</code> を渡した結果を表示して、<code>10</code> と出れば成功です。</p><pre class=\"code-lines\">10</pre>",
+      "hint": "def twice(n): の中で return n * 2 と書き、print(twice(5)) で呼び出します。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "10",
+          "codeContains": [
+            { "pattern": "def\\s", "message": "実行結果は合っていますが、def で関数を定義してみましょう" },
+            { "pattern": "return\\s", "message": "実行結果は合っていますが、return を使って結果を返してみましょう" }
+          ],
+          "codeForbids": [
+            { "pattern": "print\\(\\s*10\\b", "message": "実行結果は合っていますが、10を直接printせず、関数の戻り値を表示しましょう" }
+          ]
+        }
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><b>表示する</b> と <b>return</b> のちがいとして正しいのはどれでしょう？</p>",

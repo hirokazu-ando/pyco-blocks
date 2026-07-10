@@ -89,6 +89,15 @@ window.PYCO_LESSONS["0-03"] = {
       }
     },
     {
+      "title": "コードを読もう",
+      "body": "<p>右上のコードエリアには、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">total = 10 + 20\nprint(total)</pre><ul><li><b>1行目</b>：右がわの <code>10 + 20</code> が先に計算されて <code>30</code> になり、その結果を <code>=</code> で変数 <code>total</code> に入れます。「計算してから代入する」という順番です。</li><li><b>2行目</b>：<code>print(total)</code> で <code>total</code> の中身（<code>30</code>）を表示します。</li></ul>",
+      "callout": {
+        "target": "code",
+        "text": "右上に同じ total = 10 + 20 / print(total) が出ています",
+        "placement": "left"
+      }
+    },
+    {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>10 % 3</code> の結果はどれでしょう？（<code>%</code> は「余り」）</p>",
@@ -115,6 +124,43 @@ window.PYCO_LESSONS["0-03"] = {
             "64"
           ],
           "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード読解テスト",
+      "body": "<p>次のコードを実行すると、何が表示されるでしょう。数字で答えてください。（<code>%</code> は「余り」）</p><pre class=\"code-lines\">print(17 % 5)</pre>",
+      "hint": "17 を 5 で割った余りです。",
+      "check": {
+        "answerText": {
+          "accept": [
+            "2"
+          ],
+          "caseInsensitive": true
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "コード記述テスト",
+      "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>100</code> と表示しましょう。ただし <code>100</code> をそのまま書かず、<b>かけ算の式</b> で求めてください。</p><pre class=\"code-lines\">100</pre>",
+      "hint": "print(25 * 4) のように、かけ算（*）の式を書きます。",
+      "check": {
+        "codeRun": {
+          "outputEquals": "100",
+          "codeContains": [
+            {
+              "pattern": "\\*",
+              "message": "かけ算（*）を使って計算しましょう"
+            }
+          ],
+          "codeForbids": [
+            {
+              "pattern": "print\\(\\s*[\"']?100",
+              "message": "100を直接書かず、計算式で求めましょう"
+            }
+          ]
         }
       }
     }
