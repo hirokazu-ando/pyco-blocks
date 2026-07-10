@@ -1,0 +1,3 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="py_input" id="b1" x="20" y="20"><field name="TYPE">str</field><field name="VAR">name</field><field name="PROMPT">名前を入力してください</field></block>
+</xml>

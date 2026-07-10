@@ -1,0 +1,3 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="py_while" id="w1" x="20" y="20"><value name="COND"><block type="cond_compare" id="w2"><value name="LEFT"><block type="val_var" id="w3"><field name="VAR">x</field></block></value><field name="OP">&lt;=</field><value name="RIGHT"><block type="val_number" id="w4"><field name="NUM">5</field></block></value></block></value><statement name="DO"><block type="py_print" id="w5"><value name="VALUE"><block type="val_var" id="w6"><field name="VAR">x</field></block></value></block></statement></block>
+</xml>

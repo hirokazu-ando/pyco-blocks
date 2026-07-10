@@ -1,0 +1,4 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="py_tuple_literal" id="b1" x="20" y="20"><mutation items="2"/><field name="COUNT">2</field>
+<value name="ITEM0"><block type="val_number" id="b2"><field name="NUM">3</field></block></value><value name="ITEM1"><block type="val_number" id="b3"><field name="NUM">7</field></block></value></block>
+</xml>

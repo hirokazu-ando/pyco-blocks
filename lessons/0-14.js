@@ -1,0 +1,137 @@
+// このファイルは tools/build_lessons.py が lessons/0-14.json から自動生成したものです。
+// 直接編集しないでください（正本は JSON）。再生成: python3 tools/build_lessons.py
+window.PYCO_LESSONS = window.PYCO_LESSONS || {};
+window.PYCO_LESSONS["0-14"] = {
+  "id": "0-14",
+  "group": "part0-advanced",
+  "title": "関数を作ろう",
+  "subtitle": "Python × 入門 #14",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-14-functions/",
+  "toolbox": [
+    "py_def_noarg",
+    "py_def",
+    "py_def_args2",
+    "py_return",
+    "py_call_stmt",
+    "py_call_val",
+    "py_call_val2",
+    "py_math_op",
+    "val_number",
+    "val_var",
+    "val_str",
+    "py_print",
+    "print_text"
+  ],
+  "steps": [
+    {
+      "title": "関数とは何か",
+      "body": "<p>プログラムが長くなると、同じような処理を何度も書きたくなります。<b>関数</b> は、処理のまとまりに <b>名前をつけて</b>、必要なときに <b>呼び出す</b> しくみです。</p><ul><li>あいさつを表示する、合計を計算する、判定するといった処理を、部品のように再利用できます</li><li>関数は「定義する」だけでは動かず、「呼び出し」て初めて実行されます</li></ul><p>準備ができたら「次へ ▶」を押してください。</p>",
+      "hint": "このパネルは右上の「▶」で折りたたみ、「✕」で学習をやめられます。"
+    },
+    {
+      "title": "関数は「処理に名前をつける」しくみ",
+      "body": "<p>関数は「定義」と「呼び出し」を分けて考えます。まず名前をつけて処理をまとめ、あとでその名前を呼び出すと中の処理が動きます。</p><pre>def greet():\n    print(\"Hello!\")\ngreet()</pre><p>最後の <code>greet()</code> が「呼び出し」です。定義しただけでは、まだ中の処理は動きません。</p>"
+    },
+    {
+      "title": "手順1：関数を定義するブロックを置く",
+      "body": "<p>「関数」カテゴリから <b>関数〜を定義する</b> ブロックを取り出し、下の図のように置きましょう。中に <b>「Hello!」を表示する</b> を入れ、関数名を <code>greet</code> にします。</p><p>関数を定義するブロックが1つ置けたらクリアです。</p>",
+      "hint": "関数名はブロックのプルダウンから変更できます。図では greet にしています。",
+      "check": {
+        "blocksRequired": [
+          "py_def_noarg"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/0-14_def_greet.png",
+        "alt": "Hello!を表示するgreet関数を定義するブロック"
+      }
+    },
+    {
+      "title": "手順2：定義した関数を呼び出す",
+      "body": "<p>定義しただけでは動きません。呼び出しを加えましょう。下の図のように組み立てます。</p><ol><li><code>greet</code> 関数を定義し、中で <b>「Hello!」を表示する</b></li><li>その下に <b>関数 greet を呼び出す</b> を置く</li></ol><p>「▶ 実行」を押して <code>Hello!</code> と出れば成功です。</p><pre>Hello!</pre>",
+      "hint": "呼び出しブロックの関数名も greet にそろえます。引数は空のままでかまいません。",
+      "run": true,
+      "check": {
+        "outputEquals": "Hello!"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-14_greet_call.png",
+        "alt": "greet関数を定義して呼び出す組み合わせ"
+      }
+    },
+    {
+      "title": "引数で値を渡す・returnで結果を返す",
+      "body": "<p>関数には外から値を渡せます。この値を <b>引数</b> と呼びます。また、計算した結果を呼び出し元に返すには <b>return</b> を使います。</p><pre>def add(a, b):\n    return a + b\nprint(add(3, 5))</pre><p><code>add(3, 5)</code> は関数の中で <code>3 + 5</code> を計算し、<code>return</code> で <code>8</code> を返します。返ってきた値を表示すると <code>8</code> になります。</p>"
+    },
+    {
+      "title": "手順3：2つの数を足す関数を作る",
+      "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>関数〜（引数: a, b）を定義する</b> を置き、名前を <code>add</code> にする</li><li>中に <b>a + b を返す（return）</b> を入れる</li><li>その下で <b>関数 add（引数1: 3, 引数2: 5）の結果</b> を表示する</li></ol><p>「▶ 実行」を押して <code>8</code> と出れば成功です。</p><pre>8</pre>",
+      "hint": "返す値には「計算」カテゴリの算術演算ブロックを使い、左右に引数 a・b を入れます。",
+      "run": true,
+      "check": {
+        "outputEquals": "8"
+      },
+      "image": {
+        "src": "lessons/img/0-14_add.png",
+        "alt": "引数2つの関数addでa+bを返して表示する組み合わせ"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p>関数を「定義しただけ」で、中の処理は実行されるでしょうか？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "いいえ。呼び出して初めて実行される",
+            "はい。定義すると自動で実行される",
+            "定義するとエラーになる"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p><b>return</b> の役割はどれでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "計算した結果を呼び出し元へ返す",
+            "画面に文字を表示する",
+            "変数を消す"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：2つの数を使う関数を作ろう",
+      "body": "<p>2つの数を受け取って、その合計や差などを <b>return</b> する自分の関数を作ってみましょう。<b>引数2つの関数</b> と <b>return</b> をどちらも使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-14-functions/</code></p>",
+      "hint": "引数2つの関数を定義し、中で算術演算した結果を return します。呼び出して結果を表示してみましょう。",
+      "check": {
+        "blocksRequired": [
+          "py_def_args2",
+          "py_return"
+        ]
+      },
+      "image": {
+        "src": "lessons/img/0-14_add.png",
+        "alt": "引数2つの関数で計算結果を返す例"
+      }
+    }
+  ]
+};

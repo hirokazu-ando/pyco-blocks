@@ -1,0 +1,134 @@
+// このファイルは tools/build_lessons.py が lessons/0-21.json から自動生成したものです。
+// 直接編集しないでください（正本は JSON）。再生成: python3 tools/build_lessons.py
+window.PYCO_LESSONS = window.PYCO_LESSONS || {};
+window.PYCO_LESSONS["0-21"] = {
+  "id": "0-21",
+  "group": "part0-advanced",
+  "title": "便利な組み込み関数",
+  "subtitle": "Python × 入門 #21",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-21-builtins/",
+  "toolbox": [
+    "py_enumerate_for",
+    "py_enumerate_start_for",
+    "py_zip_for",
+    "py_sorted_call",
+    "py_sum_call",
+    "py_map_call",
+    "py_min_call",
+    "py_max_call",
+    "py_list_literal",
+    "val_number",
+    "val_str",
+    "val_var",
+    "var_set",
+    "py_print",
+    "py_print2"
+  ],
+  "steps": [
+    {
+      "title": "最初から使える便利な関数",
+      "body": "<p>Python には、最初から用意されている便利な <b>組み込み関数</b> があります。今回はよく使うものを学びます。</p><ul><li><b>番号付きで繰り返す</b>（enumerate）：番号と値を同時に取り出す</li><li><b>同時に繰り返す</b>（zip）：2つのリストを横に並べて一緒に回す</li><li><b>一括変換</b>（map）：各要素をまとめて変換する</li><li><b>並び替え</b>（sorted）：新しく並べ替えたリストを返す</li></ul>",
+      "hint": "「組み込み関数」カテゴリにこれらのブロックがそろっています。"
+    },
+    {
+      "title": "手順1：番号付きの繰り返しブロックを置く",
+      "body": "<p>「組み込み関数」カテゴリから <b>番号 … と値 … でリスト … を順に繰り返す</b> のブロックを取り出し、下の図のように置きましょう。</p><p>1つ置けたらクリアです。</p>",
+      "hint": "番号の変数と値の変数の2つを、繰り返しのたびに受け取れるブロックです。",
+      "check": {
+        "blocksRequired": [
+          "py_enumerate_for"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/0-21_enum_block.png",
+        "alt": "番号と値を同時に取り出す繰り返しブロック"
+      }
+    },
+    {
+      "title": "手順2：番号付きで表示する",
+      "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 fruits</b> に <b>リスト</b> <code>[\"apple\", \"banana\", \"cherry\"]</code> を入れる</li><li><b>番号 i と値 f でリスト fruits を順に繰り返す</b> を置く</li><li>中に <b>変数 i と f を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して、番号付きで3行出れば成功です。</p><pre>0 apple\n1 banana\n2 cherry</pre>",
+      "hint": "番号は 0 から始まります。番号と値がセットで取り出せるのが enumerate の便利なところです。",
+      "run": true,
+      "check": {
+        "outputEquals": "0 apple\n1 banana\n2 cherry"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-21_enum.png",
+        "alt": "リストを番号付きで繰り返して表示する組み合わせ"
+      }
+    },
+    {
+      "title": "2つのリストを一緒に回す",
+      "body": "<p><b>同時に繰り返す</b>（zip）を使うと、2つのリストを横に並べて一緒にループできます。名前のリストと点数のリストのように、対応するデータを組にして扱えます。</p><p>ほかにも、文字列のリストを数値に変える <b>一括変換</b>（map）、合計を求める <b>合計</b>（sum）、並べ替える <b>並び替え</b>（sorted）などがあります。次で zip を試しましょう。</p>"
+    },
+    {
+      "title": "手順3：2つのリストを組にして表示する",
+      "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 names</b> に <code>[\"田中\", \"鈴木\"]</code>、<b>変数 scores</b> に <code>[85, 92]</code> を入れる</li><li><b>変数 name と score でリスト names と scores を同時に繰り返す</b> を置く</li><li>中に <b>変数 name と score を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して、名前と点数が組になって出れば成功です。</p><pre>田中 85\n鈴木 92</pre>",
+      "hint": "2つのリストは長さをそろえておきます。対応する要素どうしが同時に取り出されます。",
+      "run": true,
+      "check": {
+        "outputEquals": "田中 85\n鈴木 92"
+      },
+      "image": {
+        "src": "lessons/img/0-21_zip.png",
+        "alt": "名前と点数の2つのリストを組にして表示する組み合わせ"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p>文字列のリスト <code>[\"5\", \"3\", \"8\"]</code> を <b>一括変換</b>（map）で整数にして、<b>合計</b>（sum）を求めると、いくつになるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "16",
+            "538",
+            "文字はたし算できずエラー"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p><code>[3, 1, 2]</code> を <b>並び替え</b>（sorted）で昇順に並べると、どうなるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "[1, 2, 3]",
+            "[3, 1, 2]",
+            "[3, 2, 1]"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：リストを並べ替えよう",
+      "body": "<p>好きな数を並べたリストを作り、<b>並び替え</b>（sorted）で昇順や降順に並べて表示するプログラムを作ってみましょう。並び替えブロックを使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-21-builtins/</code></p>",
+      "hint": "並び替えブロックのプルダウンで「昇順」「降順」を切りかえられます。",
+      "check": {
+        "blocksRequired": [
+          "py_sorted_call"
+        ]
+      },
+      "image": {
+        "src": "lessons/img/0-21_sorted.png",
+        "alt": "リストを並び替えて表示する組み合わせの例"
+      }
+    }
+  ]
+};

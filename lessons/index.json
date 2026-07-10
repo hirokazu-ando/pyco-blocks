@@ -6,6 +6,18 @@
       "title": "Python × 入門 パート0：はじめの一歩",
       "certificateTitle": "PycoBlocks Python入門 パート0「はじめの一歩」修了証",
       "lessons": ["0-00", "0-01", "0-02", "0-03", "0-04"]
+    },
+    {
+      "id": "part0-control",
+      "title": "Python × 入門 パート0：制御とデータ",
+      "certificateTitle": "PycoBlocks Python入門 パート0「制御とデータ」修了証",
+      "lessons": ["0-05", "0-06", "0-07", "0-08", "0-09", "0-10", "0-11", "0-12", "0-13"]
+    },
+    {
+      "id": "part0-advanced",
+      "title": "Python × 入門 パート0：関数と応用",
+      "certificateTitle": "PycoBlocks Python入門 パート0「関数と応用」修了証",
+      "lessons": ["0-14", "0-15", "0-16", "0-17", "0-18", "0-19", "0-20", "0-21", "0-22"]
     }
   ],
   "lessons": {
@@ -13,6 +25,24 @@
     "0-01": { "title": "printで文字を表示しよう", "subtitle": "#01", "status": "ready" },
     "0-02": { "title": "変数に値を入れよう", "subtitle": "#02", "status": "ready" },
     "0-03": { "title": "計算してみよう", "subtitle": "#03", "status": "ready" },
-    "0-04": { "title": "文字列を組み立てよう", "subtitle": "#04", "status": "ready" }
+    "0-04": { "title": "文字列を組み立てよう", "subtitle": "#04", "status": "ready" },
+    "0-05": { "title": "キーボードから入力しよう", "subtitle": "#05", "status": "ready" },
+    "0-06": { "title": "正しい？間違い？（真偽値）", "subtitle": "#06", "status": "ready" },
+    "0-07": { "title": "もし〜なら（if文）", "subtitle": "#07", "status": "ready" },
+    "0-08": { "title": "and・or・not（論理演算）", "subtitle": "#08", "status": "ready" },
+    "0-09": { "title": "決まった回数くり返そう（for文）", "subtitle": "#09", "status": "ready" },
+    "0-10": { "title": "自由にくり返そう（for応用）", "subtitle": "#10", "status": "ready" },
+    "0-11": { "title": "whileで繰り返そう", "subtitle": "#11", "status": "ready" },
+    "0-12": { "title": "リストを使おう", "subtitle": "#12", "status": "ready" },
+    "0-13": { "title": "辞書を使おう", "subtitle": "#13", "status": "ready" },
+    "0-14": { "title": "関数を作ろう", "subtitle": "#14", "status": "ready" },
+    "0-15": { "title": "戻り値とスコープを理解しよう", "subtitle": "#15", "status": "ready" },
+    "0-16": { "title": "クラスを使ってみよう", "subtitle": "#16", "status": "ready" },
+    "0-17": { "title": "エラーをつかまえよう", "subtitle": "#17", "status": "ready" },
+    "0-18": { "title": "文字列を自在に操ろう", "subtitle": "#18", "status": "ready" },
+    "0-19": { "title": "タプルとセットを使おう", "subtitle": "#19", "status": "ready" },
+    "0-20": { "title": "リスト内包表記を使おう", "subtitle": "#20", "status": "ready" },
+    "0-21": { "title": "便利な組み込み関数", "subtitle": "#21", "status": "ready" },
+    "0-22": { "title": "ファイルを読み書きしよう", "subtitle": "#22", "status": "ready" }
   }
 }

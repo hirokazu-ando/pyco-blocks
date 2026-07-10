@@ -1,0 +1,4 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="var_set" id="b1" x="20" y="20"><field name="VAR">s</field><value name="VALUE"><block type="val_str" id="b2"><field name="TEXT">hello</field></block></value>
+<next><block type="py_print" id="b3"><value name="VALUE"><block type="py_str_replace" id="b4"><field name="VAR">s</field><field name="OLD">l</field><field name="NEW">r</field></block></value></block></next></block>
+</xml>

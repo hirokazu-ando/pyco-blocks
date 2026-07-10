@@ -1,0 +1,3 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="var_set" id="l1" x="20" y="20"><field name="VAR">fruits</field><value name="VALUE"><block type="py_list_empty" id="l2"></block></value></block>
+</xml>

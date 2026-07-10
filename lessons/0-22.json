@@ -1,0 +1,128 @@
+{
+  "id": "0-22",
+  "group": "part0-advanced",
+  "title": "ファイルを読み書きしよう",
+  "subtitle": "Python × 入門 #22",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-22-file-io/",
+  "toolbox": [
+    "py_file_write",
+    "py_file_append",
+    "py_file_read",
+    "py_file_readlines",
+    "val_str",
+    "val_var",
+    "var_set",
+    "py_print",
+    "print_text"
+  ],
+  "steps": [
+    {
+      "title": "ファイルにデータを残す",
+      "body": "<p>プログラムの外にある <b>ファイル</b> に読み書きすると、プログラムを閉じてもデータを残せます。開き方には3つのモードがあります。</p><ul><li><b>書き込み</b>（w）：内容をまるごと上書きする（ファイルが無ければ新しく作る）</li><li><b>追記</b>（a）：今ある内容の末尾に付け足す</li><li><b>読み込み</b>（r）：内容を読み出す（ファイルが無いとエラー）</li></ul><p>PycoBlocks はブラウザで動くので、画面のファイルタブを使った <b>仮想ファイルシステム</b> に読み書きします。</p>",
+      "hint": "書き込むと画面左上にファイルのタブが作られ、そこに内容が保存されます。"
+    },
+    {
+      "title": "手順1：書き込みブロックを置く",
+      "body": "<p>「ファイル」カテゴリから <b>ファイル書き込み</b> のブロックを取り出し、下の図のように置きましょう。ファイル名と書き込む内容を指定します。</p><p>1つ置けたらクリアです。</p>",
+      "hint": "ファイル名の欄に保存名（例：greeting.txt）、内容の欄に文字列を入れます。",
+      "check": {
+        "blocksRequired": [
+          "py_file_write"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/0-22_write_block.png",
+        "alt": "ファイル書き込みブロック"
+      }
+    },
+    {
+      "title": "手順2：書いてから読んで表示する",
+      "body": "<p>下の図のように、書き込み → 読み込み → 表示の順につなぎましょう。</p><ol><li><b>ファイル書き込み</b> で <code>greeting.txt</code> に <code>こんにちは！</code> を書く</li><li><b>ファイル読み込み</b> で <code>greeting.txt</code> を <b>変数 content</b> に読み込む</li><li><b>値を表示する</b> で <code>content</code> を表示する</li></ol><p>「▶ 実行」を押して <code>こんにちは！</code> と出れば成功です。</p><pre>こんにちは！</pre>",
+      "hint": "先に書き込むとタブが作られるので、その後すぐに読み込めます。",
+      "run": true,
+      "check": {
+        "outputEquals": "こんにちは！"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-22_write_read.png",
+        "alt": "ファイルに書き込んでから読み込んで表示する組み合わせ"
+      }
+    },
+    {
+      "title": "追記と行ごとの読み込み",
+      "body": "<p><b>ファイル追記</b> のブロックは、今ある内容を消さずに末尾へ付け足します。ログ（記録）をためていくときに便利です。</p><p>また <b>ファイルを行ごとに読む</b> のブロックを使うと、1行ずつのリストとして読み込めます。すでに用意されているファイルを読むときは、画面の「＋」ボタンでタブを作り、中身を書いておいてから読み込みます。</p><p>Python では、これらは <code>open(\"ファイル名\", \"w\")</code> のように書き、<code>with</code> を使って安全に開くのが基本の形です。</p>"
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p><b>書き込み</b>（w）モードで、まだ無いファイル名を指定するとどうなるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "新しいファイルが作られる",
+            "エラーになる",
+            "何も起こらない"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p><b>読み込み</b>（r）モードで、存在しないファイルを開こうとするとどうなるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "エラーになる",
+            "空のファイルが作られる",
+            "自動でおすすめの内容が入る"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ③",
+      "body": "<p><b>追記</b>（a）モードのはたらきはどれでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "今ある内容の末尾に付け足す",
+            "内容をまるごと消して書き直す",
+            "ファイルを削除する"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：メモを保存して読み出そう",
+      "body": "<p><b>ファイル書き込み</b> で好きなメッセージを保存し、<b>ファイル読み込み</b> で読み出して表示するプログラムを作ってみましょう。2つのブロックを使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-22-file-io/</code></p>",
+      "hint": "書き込みで作ったファイル名と、読み込みで指定するファイル名を同じにそろえます。",
+      "check": {
+        "blocksRequired": [
+          "py_file_write",
+          "py_file_read"
+        ]
+      },
+      "image": {
+        "src": "lessons/img/0-22_write_read.png",
+        "alt": "ファイルに書き込んで読み込んで表示する組み合わせの例"
+      }
+    }
+  ]
+}

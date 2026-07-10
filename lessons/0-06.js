@@ -1,0 +1,122 @@
+// このファイルは tools/build_lessons.py が lessons/0-06.json から自動生成したものです。
+// 直接編集しないでください（正本は JSON）。再生成: python3 tools/build_lessons.py
+window.PYCO_LESSONS = window.PYCO_LESSONS || {};
+window.PYCO_LESSONS["0-06"] = {
+  "id": "0-06",
+  "group": "part0-control",
+  "title": "正しい？間違い？（真偽値）",
+  "subtitle": "Python × 入門 #06",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-06-bool-2/",
+  "toolbox": [
+    "cond_compare",
+    "py_print",
+    "var_set",
+    "val_number",
+    "val_var",
+    "val_bool"
+  ],
+  "steps": [
+    {
+      "title": "真偽値とは何か",
+      "body": "<p>プログラムは「正しいか、間違いか」を判断しながら動きます。この2つだけの値を <b>真偽値</b> といいます。</p><ul><li><b>True（真）</b>：正しい</li><li><b>False（偽）</b>：間違い</li></ul><p><code>5 &lt; 10</code> のように2つの値をくらべると、答えは <code>True</code> か <code>False</code> になります。次回の「もし〜なら」で、この真偽値を使って処理を分けます。</p>",
+      "hint": "「値」カテゴリの True/False ブロックが真偽値そのものです。"
+    },
+    {
+      "title": "手順1：比較ブロックを置く",
+      "body": "<p>「分岐」カテゴリから <b>比較</b> ブロック（<code>&gt;</code> や <code>&lt;</code> を選ぶもの）を取り出し、下の図のように置きましょう。左に <code>5</code>、真ん中で <code>&lt;</code>、右に <code>10</code> を入れます。</p><p>1つ置けたらクリアです。</p>",
+      "hint": "左右のあなには「値」カテゴリの数値ブロックが入ります。真ん中のプルダウンで比較の種類を選びます。",
+      "check": {
+        "blocksRequired": [
+          "cond_compare"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/0-06_compare_place.png",
+        "alt": "5 と 10 を比較するブロック"
+      }
+    },
+    {
+      "title": "手順2：5 < 10 を表示する",
+      "body": "<p><b>値を表示する</b> に <b>比較</b> ブロックをはめ、<code>5 &lt; 10</code>（5は10より小さい？）を作ります。下の図のように組みましょう。</p><p>「▶ 実行」を押すと、答えの真偽値が表示されます。</p><pre>print(5 &lt; 10)</pre>",
+      "hint": "比べた結果が正しければ True、間違いなら False が出ます。",
+      "run": true,
+      "check": {
+        "outputEquals": "True"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-06_lt.png",
+        "alt": "5 < 10 を表示する組み合わせ"
+      }
+    },
+    {
+      "title": "6つの比べ方",
+      "body": "<p>比較には6つの種類があります。</p><ul><li><code>&gt;</code> より大きい ／ <code>&gt;=</code> 以上</li><li><code>&lt;</code> より小さい ／ <code>&lt;=</code> 以下</li><li><code>==</code> 等しい ／ <code>!=</code> 等しくない</li></ul><p>「等しい」は <code>=</code> ではなく <code>==</code>（イコール2つ）を使います。<code>=</code> は変数に値を入れる代入なので、区別が大切です。</p>"
+    },
+    {
+      "title": "手順3：変数と比べる",
+      "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 a を 7 にする</b></li><li><b>値を表示する</b> に <b>比較</b> をはめ、<code>a == 7</code>（aは7と等しい？）を作る</li></ol><p>「▶ 実行」を押して <code>True</code> と出れば成功です。</p><pre>a = 7\nprint(a == 7)</pre>",
+      "hint": "比較の左に変数ブロック a、真ん中で ==、右に数値 7 を入れます。",
+      "run": true,
+      "check": {
+        "outputEquals": "True"
+      },
+      "image": {
+        "src": "lessons/img/0-06_eq.png",
+        "alt": "a == 7 を表示する組み合わせ"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p><code>10 &lt; 5</code>（10は5より小さい？）を表示すると何が出るでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "False",
+            "True",
+            "5"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p>「aは7と等しい」を調べるとき、正しい書き方はどれでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "a == 7",
+            "a = 7",
+            "a != 7"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：比べてみよう",
+      "body": "<p><b>比較</b> ブロックを <b>値を表示する</b> にはめて、好きな2つの値をくらべた結果を表示してみましょう。比較ブロックを1つ使えばクリアです。</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-06-bool-2/</code></p>",
+      "hint": "数値どうしでも、変数と数値でもかまいません。プルダウンで比べ方を変えて試しましょう。",
+      "check": {
+        "blocksRequired": [
+          "cond_compare",
+          "py_print"
+        ]
+      }
+    }
+  ]
+};

@@ -1,0 +1,5 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="var_set" id="b1" x="20" y="20"><field name="VAR">fruits</field><value name="VALUE"><block type="py_list_literal" id="b2"><mutation items="3"/><value name="ITEM0"><block type="val_str" id="b3"><field name="TEXT">apple</field></block></value><value name="ITEM1"><block type="val_str" id="b4"><field name="TEXT">banana</field></block></value><value name="ITEM2"><block type="val_str" id="b5"><field name="TEXT">cherry</field></block></value></block></value>
+<next><block type="py_enumerate_for" id="b6"><field name="IDX">i</field><field name="VAL">f</field><field name="LIST">fruits</field>
+<statement name="DO"><block type="py_print2" id="b7"><field name="VAR_A">i</field><field name="VAR_B">f</field></block></statement></block></next></block>
+</xml>

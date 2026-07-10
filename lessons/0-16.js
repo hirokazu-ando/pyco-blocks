@@ -1,0 +1,146 @@
+// このファイルは tools/build_lessons.py が lessons/0-16.json から自動生成したものです。
+// 直接編集しないでください（正本は JSON）。再生成: python3 tools/build_lessons.py
+window.PYCO_LESSONS = window.PYCO_LESSONS || {};
+window.PYCO_LESSONS["0-16"] = {
+  "id": "0-16",
+  "group": "part0-advanced",
+  "title": "クラスを使ってみよう",
+  "subtitle": "Python × 入門 #16",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-16-class/",
+  "toolbox": [
+    "py_class_def",
+    "py_class_init",
+    "py_class_method",
+    "py_self_set",
+    "py_self_get",
+    "py_new_instance",
+    "py_method_call_stmt",
+    "py_str_concat",
+    "val_str",
+    "val_var",
+    "val_number",
+    "py_print",
+    "print_text"
+  ],
+  "steps": [
+    {
+      "title": "まず用語を整理しよう",
+      "body": "<p>今回のテーマ「クラス」は用語が多いので、まず「犬のキャラクター」にたとえて整理します。今は「なんとなくそういうものか」で大丈夫です。</p><ul><li><b>クラス</b>：データと処理をまとめた「設計図」（犬の設計図）</li><li><b>インスタンス</b>：設計図から作った「実体」（ポチ、バディなど本物の犬）</li><li><b>属性</b>：インスタンスが持つデータ。<code>self.名前</code> と書く（その犬の名前や年齢）</li><li><b>メソッド</b>：クラスの中に定義する「関数」（あいさつする、走る）</li><li><b>self</b>：「自分自身のインスタンス」を指す特別な変数（「ぼく」にあたる）</li></ul><p>準備ができたら「次へ ▶」を押してください。</p>",
+      "hint": "設計図（クラス）は1枚でも、そこから何匹でも犬（インスタンス）を作れます。"
+    },
+    {
+      "title": "Dogクラスのブロックを読んでみよう",
+      "body": "<p>下の図が、名前を持ちあいさつができる犬の設計図（Dogクラス）です。大きく分けて次の3つでできています。</p><ol><li><b>クラス Dog を定義する</b>：設計図全体の入れ物</li><li><b>初期化（self, 引数: name）</b>：犬を作るときに自動で呼ばれ、渡した名前を <code>self.name</code> という属性として保存する</li><li><b>メソッド greet</b>：<code>self.name</code> を使ってあいさつを表示する「できること」</li></ol><p><code>self.name</code> の <code>self</code> は「この犬自身」を指します。ポチなら「ポチ」、バディなら「バディ」と、インスタンスごとに別々の値を持ちます。</p>",
+      "hint": "「初期化」は __init__ という特別なメソッドで、インスタンスを作る瞬間に自動で呼ばれます。",
+      "image": {
+        "src": "lessons/img/0-16_dog_class.png",
+        "alt": "名前を保存しあいさつするDogクラスの設計図ブロック"
+      }
+    },
+    {
+      "title": "手順1：クラスの設計図を組む",
+      "body": "<p>「クラス」カテゴリのブロックを使って、下の図のように <b>Dog クラスの設計図</b> を組みましょう。</p><ol><li><b>クラス Dog を定義する</b> の中に、<b>初期化（self, 引数: name）</b> を入れ、<b>self.name に name を入れる</b></li><li>続けて <b>メソッド greet（引数なし）</b> を入れ、中であいさつを表示する</li></ol><p>クラス・初期化・メソッドの3つのブロックが置けたらクリアです。</p>",
+      "hint": "あいさつは「計算」カテゴリの文字列連結でつなげます。self. の中身は「クラス」カテゴリの self.〜 ブロックです。",
+      "check": {
+        "blocksRequired": [
+          "py_class_def",
+          "py_class_init",
+          "py_class_method"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/0-16_dog_class.png",
+        "alt": "Dogクラスの設計図（初期化とgreetメソッド）を組んだブロック"
+      }
+    },
+    {
+      "title": "手順2：インスタンスを作ってあいさつさせる",
+      "body": "<p>設計図から実体（インスタンス）を作り、メソッドを呼び出しましょう。下の図のように、設計図の下に2つのブロックを足します。</p><ol><li><b>変数 dog を クラス Dog（引数: \"ポチ\"）で作る</b>：ポチという犬を作る</li><li><b>dog . greet を呼ぶ</b>：ポチにあいさつさせる</li></ol><p>「▶ 実行」を押して、次のように出れば成功です。</p><pre>こんにちは！ぼくの名前はね、ポチ！</pre>",
+      "hint": "作るブロックの引数に \"ポチ\" を入れ、呼ぶブロックのインスタンスを dog にそろえます。",
+      "run": true,
+      "check": {
+        "outputEquals": "こんにちは！ぼくの名前はね、ポチ！"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-16_dog_full.png",
+        "alt": "Dogクラスからポチを作ってgreetを呼ぶ組み合わせ全体"
+      }
+    },
+    {
+      "title": "インスタンスはそれぞれ独立している",
+      "body": "<p>同じクラスから複数のインスタンスを作ると、それぞれが <b>独立した属性</b> を持ちます。設計図は1枚でも、作った犬はお互いに干渉しません。</p><p>また、属性はメソッドをまたいで <b>保存され続けます</b>。たとえばカウンターのクラスを作ると、増やした値が次の呼び出しにも引き継がれます。ポチが何かをしてもバディには関係ない——インスタンスはそれと同じです。</p>"
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p><b>self</b> が指しているのはどれでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "そのメソッドを呼び出したインスタンス自身",
+            "クラスの設計図そのもの",
+            "画面に表示する文字"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p><b>初期化（__init__）</b> はいつ呼ばれるでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "インスタンスを作る瞬間に自動で呼ばれる",
+            "プログラムの最後に呼ばれる",
+            "一度も呼ばれない"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ③",
+      "body": "<p><b>メソッド</b> とは何でしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "クラスの中に定義する関数",
+            "インスタンスが持つデータ",
+            "画面に表示する命令"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：別の名前で犬を作ろう",
+      "body": "<p>設計図（クラス Dog）はそのままで、<code>\"バディ\"</code> という名前のインスタンスを作り、あいさつを呼び出してみましょう。<b>インスタンスを作る</b> と <b>メソッドを呼ぶ</b> をどちらも使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-16-class/</code></p>",
+      "hint": "作るブロックの引数を \"バディ\" にし、呼ぶブロックのインスタンスを buddy にそろえます。設計図は変えなくて大丈夫です。",
+      "check": {
+        "blocksRequired": [
+          "py_new_instance",
+          "py_method_call_stmt"
+        ]
+      },
+      "image": {
+        "src": "lessons/img/0-16_buddy.png",
+        "alt": "Dogクラスからバディを作ってあいさつさせる例"
+      }
+    }
+  ]
+};

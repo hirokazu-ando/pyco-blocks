@@ -1,0 +1,4 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="var_set" id="b1" x="20" y="20"><field name="VAR">scores</field><value name="VALUE"><block type="py_list_literal" id="b2"><mutation items="4"/><value name="ITEM0"><block type="val_number" id="b3"><field name="NUM">80</field></block></value><value name="ITEM1"><block type="val_number" id="b4"><field name="NUM">90</field></block></value><value name="ITEM2"><block type="val_number" id="b5"><field name="NUM">80</field></block></value><value name="ITEM3"><block type="val_number" id="b6"><field name="NUM">70</field></block></value></block></value>
+<next><block type="py_print" id="b7"><value name="VALUE"><block type="py_sorted_set" id="b8"><field name="LIST">scores</field></block></value></block></next></block>
+</xml>

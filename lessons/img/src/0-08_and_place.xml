@@ -1,0 +1,3 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block id="a1" type="cond_and" x="20" y="20"><value name="A"><block type="cond_compare" id="c1"><value name="LEFT"><block type="val_var" id="cl1"><field name="VAR">x</field></block></value><field name="OP">&gt;=</field><value name="RIGHT"><block type="val_number" id="cr1"><field name="NUM">80</field></block></value></block></value><value name="B"><block type="cond_compare" id="c2"><value name="LEFT"><block type="val_var" id="cl2"><field name="VAR">x</field></block></value><field name="OP">&lt;=</field><value name="RIGHT"><block type="val_number" id="cr2"><field name="NUM">100</field></block></value></block></value></block>
+</xml>

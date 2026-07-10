@@ -1,0 +1,128 @@
+{
+  "id": "0-17",
+  "group": "part0-advanced",
+  "title": "エラーをつかまえよう",
+  "subtitle": "Python × 入門 #17",
+  "mode": "python",
+  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-17-exception/",
+  "toolbox": [
+    "py_try_except",
+    "py_try_except_as",
+    "py_raise",
+    "py_math_op",
+    "py_type_cast",
+    "py_str_concat",
+    "val_number",
+    "val_str",
+    "val_var",
+    "var_set",
+    "py_print",
+    "print_text"
+  ],
+  "steps": [
+    {
+      "title": "エラーと例外処理",
+      "body": "<p>プログラムを動かしていると、予想しないエラーが起きてそのまま止まってしまうことがあります。<b>例外処理</b> を使うと、エラーをつかまえて止まらずに続けられます。</p><ul><li><b>例外</b>：実行中に発生するエラーのこと</li><li><b>試す</b>（try）：エラーが起きるかもしれないコードを囲む</li><li><b>エラーのとき</b>（except）：エラーが起きたときだけ動く部分</li></ul><p>たとえば <code>10 / 0</code>（0で割る）は <code>ZeroDivisionError</code>、<code>int(\"abc\")</code> は <code>ValueError</code> というエラーになります。</p>",
+      "hint": "エラーの種類には ValueError（変換できない）・ZeroDivisionError（0で割った）などがあります。"
+    },
+    {
+      "title": "手順1：エラー処理ブロックを置く",
+      "body": "<p>「例外処理」カテゴリから <b>試す：／エラー（…）のとき：</b> のブロックを取り出し、下の図のようにワークスペースへ置きましょう。</p><p>1つ置けたらクリアです。</p>",
+      "hint": "赤色のブロックです。上が「試す：」、下が「エラー（…）のとき：」に分かれています。",
+      "check": {
+        "blocksRequired": [
+          "py_try_except"
+        ]
+      },
+      "callout": {
+        "target": "toolbox",
+        "text": "ここからブロックを取り出します",
+        "placement": "right"
+      },
+      "image": {
+        "src": "lessons/img/0-17_try_block.png",
+        "alt": "試す・エラーのときに分かれた例外処理ブロック"
+      }
+    },
+    {
+      "title": "手順2：0で割るエラーをつかまえる",
+      "body": "<p>下の図のように組み立てましょう。</p><ol><li>エラーの種類のプルダウンで <code>ZeroDivisionError</code> を選ぶ</li><li><b>試す：</b> の中に <b>値を表示する</b>＋<b>算術演算</b> で <code>10 ÷ 0</code> を入れる</li><li><b>エラーのとき：</b> の中に <b>「0では割れません」を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して <code>0では割れません</code> と出れば成功です。</p><pre>try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre>",
+      "hint": "0で割るとエラーが起きるので、表示はスキップされて「エラーのとき：」の中に飛びます。",
+      "run": true,
+      "check": {
+        "outputEquals": "0では割れません"
+      },
+      "callout": {
+        "target": "run",
+        "text": "組めたらこのボタンで実行",
+        "placement": "bottom"
+      },
+      "image": {
+        "src": "lessons/img/0-17_zerodiv.png",
+        "alt": "0で割るエラーをつかまえて0では割れませんと表示する組み合わせ"
+      }
+    },
+    {
+      "title": "エラーを自分で起こす",
+      "body": "<p><b>エラーを e として受け取る：</b> のブロックを使うと、どんなエラーもつかまえて、その内容を変数 <code>e</code> に受け取れます。<code>str(e)</code> でエラーの説明文を文字列にできます。</p><p>また <b>エラーを発生させる</b>（raise）のブロックを使うと、条件に合わないときに <b>自分でわざとエラーを起こす</b> ことができます。次で、起こしたエラーをその場でつかまえてみましょう。</p>"
+    },
+    {
+      "title": "手順3：起こしたエラーをつかまえる",
+      "body": "<p>下の図のように組み立てましょう。</p><ol><li>エラーの種類は <code>ValueError</code> を選ぶ</li><li><b>試す：</b> の中に <b>エラーを発生させる</b> ブロックを入れ、種類を <code>ValueError</code>、メッセージを <code>だめ</code> にする</li><li><b>エラーのとき：</b> の中に <b>「エラーをつかまえた」を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して <code>エラーをつかまえた</code> と出れば成功です。</p><pre>try:\n    raise ValueError(\"だめ\")\nexcept ValueError:\n    print(\"エラーをつかまえた\")</pre>",
+      "hint": "自分で起こしたエラーも、except でつかまえれば止まりません。",
+      "run": true,
+      "check": {
+        "outputEquals": "エラーをつかまえた"
+      },
+      "image": {
+        "src": "lessons/img/0-17_raise_catch.png",
+        "alt": "自分で起こしたValueErrorをつかまえてエラーをつかまえたと表示する組み合わせ"
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ①",
+      "body": "<p>例外処理（try / except）を使う一番の目的はどれでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "エラーが起きてもプログラムを止めずに続けられるようにする",
+            "プログラムの動きを速くする",
+            "画面の色を変える"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "確認クイズ②",
+      "body": "<p><code>int(\"abc\")</code> のように、文字を数値に変換できないときに起きるエラーはどれでしょう？</p>",
+      "check": {
+        "choice": {
+          "options": [
+            "ValueError",
+            "ZeroDivisionError",
+            "エラーは起きない"
+          ],
+          "answer": 0
+        }
+      }
+    },
+    {
+      "quiz": true,
+      "title": "課題：エラーに強いプログラムを作ろう",
+      "body": "<p><b>試す：／エラー（…）のとき：</b> のブロックを使って、エラーが起きても止まらないプログラムを作ってみましょう。ブロックを1つ置いて中身を組めばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-17-exception/</code></p>",
+      "hint": "「試す：」にエラーが起きそうな処理を、「エラーのとき：」に対処の表示を入れます。",
+      "check": {
+        "blocksRequired": [
+          "py_try_except"
+        ]
+      },
+      "image": {
+        "src": "lessons/img/0-17_zerodiv.png",
+        "alt": "例外処理でエラーをつかまえる組み合わせの例"
+      }
+    }
+  ]
+}

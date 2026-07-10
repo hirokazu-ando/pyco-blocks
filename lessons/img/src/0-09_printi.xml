@@ -1,0 +1,3 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="pico_for_range" id="b1" x="20" y="20"><field name="VAR">i</field><value name="N"><block type="val_number" id="n1"><field name="NUM">3</field></block></value><statement name="DO"><block type="py_print" id="p1"><value name="VALUE"><block type="val_var" id="v1"><field name="VAR">i</field></block></value></block></statement></block>
+</xml>

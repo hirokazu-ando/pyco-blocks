@@ -1,0 +1,6 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="var_set" id="b1" x="20" y="20"><field name="VAR">nums</field><value name="VALUE"><block type="py_list_literal" id="b2"><mutation items="4"/><value name="ITEM0"><block type="val_number" id="b3"><field name="NUM">1</field></block></value><value name="ITEM1"><block type="val_number" id="b4"><field name="NUM">2</field></block></value><value name="ITEM2"><block type="val_number" id="b5"><field name="NUM">3</field></block></value><value name="ITEM3"><block type="val_number" id="b6"><field name="NUM">4</field></block></value></block></value>
+<next><block type="py_print" id="b7"><value name="VALUE"><block type="py_list_comp" id="b8"><field name="VAR">n</field>
+<value name="EXPR"><block type="py_math_op" id="b9"><value name="LEFT"><block type="val_var" id="b10"><field name="VAR">n</field></block></value><field name="OP">*</field><value name="RIGHT"><block type="val_var" id="b11"><field name="VAR">n</field></block></value></block></value>
+<value name="LIST"><block type="val_var" id="b12"><field name="VAR">nums</field></block></value></block></value></block></next></block>
+</xml>

@@ -1,0 +1,6 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="py_try_except" id="b1" x="20" y="20"><field name="ETYPE">ValueError</field>
+<statement name="BODY"><block type="py_raise" id="b2"><field name="ETYPE">ValueError</field><value name="MSG"><block type="val_str" id="b3"><field name="TEXT">だめ</field></block></value></block></statement>
+<statement name="HANDLER"><block type="print_text" id="b4"><field name="TEXT">エラーをつかまえた</field></block></statement>
+</block>
+</xml>

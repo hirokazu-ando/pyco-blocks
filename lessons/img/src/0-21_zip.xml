@@ -1,0 +1,6 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="var_set" id="b1" x="20" y="20"><field name="VAR">names</field><value name="VALUE"><block type="py_list_literal" id="b2"><mutation items="2"/><value name="ITEM0"><block type="val_str" id="b3"><field name="TEXT">田中</field></block></value><value name="ITEM1"><block type="val_str" id="b4"><field name="TEXT">鈴木</field></block></value></block></value>
+<next><block type="var_set" id="b5"><field name="VAR">scores</field><value name="VALUE"><block type="py_list_literal" id="b6"><mutation items="2"/><value name="ITEM0"><block type="val_number" id="b7"><field name="NUM">85</field></block></value><value name="ITEM1"><block type="val_number" id="b8"><field name="NUM">92</field></block></value></block></value>
+<next><block type="py_zip_for" id="b9"><field name="VAR_A">name</field><field name="VAR_B">score</field><field name="LIST_A">names</field><field name="LIST_B">scores</field>
+<statement name="DO"><block type="py_print2" id="b10"><field name="VAR_A">name</field><field name="VAR_B">score</field></block></statement></block></next></block></next></block>
+</xml>

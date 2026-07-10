@@ -1,0 +1,6 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+<block type="py_try_except" id="b1" x="20" y="20"><field name="ETYPE">ZeroDivisionError</field>
+<statement name="BODY"><block type="py_print" id="b2"><value name="VALUE"><block type="py_math_op" id="b3"><value name="LEFT"><block type="val_number" id="b4"><field name="NUM">10</field></block></value><field name="OP">/</field><value name="RIGHT"><block type="val_number" id="b5"><field name="NUM">0</field></block></value></block></value></block></statement>
+<statement name="HANDLER"><block type="print_text" id="b6"><field name="TEXT">0では割れません</field></block></statement>
+</block>
+</xml>
