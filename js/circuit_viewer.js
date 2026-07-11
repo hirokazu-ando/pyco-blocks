@@ -308,6 +308,32 @@
       }
     },
 
+    // ── CdS 光センサ（光抵抗 / photoresistor module）──
+    // POT と同じ 3 ピン (GND/SIG/VCC) 構成。基板上の CdS セル＋光線で「光センサ」と分かるよう自前SVGで描画。
+    // wokwi-photoresistor-sensor (MIT © 2020 Uri Shaked) を参考にした独自実装。
+    CDS: {
+      pins: { GND: { dx: -32, dy: -9 }, SIG: { dx: -32, dy: 1 }, VCC: { dx: -32, dy: 11 } },
+      draw(cx, cy, side = 'right') {
+        const dys = side === 'right' ? [-9, 1, 11] : [9, -1, -11];
+        const bx = cx - 26, by = cy - 22;        // 基板左上
+        const ccx = cx + 5, ccy = cy - 1;        // CdS セル中心
+        return `<g>
+  <rect x="${bx}" y="${by}" width="52" height="44" rx="5" fill="#1b5e20" stroke="#0d3b11" stroke-width="1"/>
+  <circle cx="${ccx}" cy="${ccy}" r="12" fill="#f3e7c4" stroke="#7a6a3a" stroke-width="1"/>
+  <path d="M ${ccx-8} ${ccy-7} H ${ccx+8} M ${ccx-8} ${ccy-3} H ${ccx+8} M ${ccx-8} ${ccy+1} H ${ccx+8} M ${ccx-8} ${ccy+5} H ${ccx+8}" stroke="#9a5a2a" stroke-width="1.3" fill="none"/>
+  <path d="M ${ccx-8} ${ccy-7} V ${ccy-3} M ${ccx+8} ${ccy-3} V ${ccy+1} M ${ccx-8} ${ccy+1} V ${ccy+5}" stroke="#9a5a2a" stroke-width="1.3" fill="none"/>
+  <g stroke="#fbc02d" stroke-width="2" fill="none" stroke-linecap="round">
+    <line x1="${ccx-24}" y1="${ccy-21}" x2="${ccx-11}" y2="${ccy-9}"/>
+    <polyline points="${ccx-15},${ccy-9} ${ccx-11},${ccy-9} ${ccx-11},${ccy-13}"/>
+    <line x1="${ccx-13}" y1="${ccy-25}" x2="${ccx-3}" y2="${ccy-14}"/>
+    <polyline points="${ccx-7},${ccy-14} ${ccx-3},${ccy-14} ${ccx-3},${ccy-18}"/>
+  </g>
+  ${sideStubs(cx, cy, side, 32, dys, ['GND', 'SIG', 'VCC'])}
+  <text x="${cx}" y="${cy + 40}" text-anchor="middle" class="cv-lbl">光センサ (CdS)</text>
+</g>`;
+      }
+    },
+
     // ── パッシブブザー (Wokwi wokwi-buzzer, MIT © 2020 Uri Shaked) ──
     // 90°回転で端子を横向きに。SVGを56×66に縮小
     BUZZ: {
@@ -962,7 +988,15 @@
 
         } else if (['pico_analog_read','pico_analog_read_val'].includes(t)) {
           const p = gf('PIN');
-          add('pot'+p, 'POT', { SIG:{gp:p}, VCC:{v3v3:true}, GND:{gnd:true} });
+          // 既定は可変抵抗(POT)。URL に ?sensor=cds が付くと CdS 光センサで描画する
+          // （ブロックは共通の「アナログ入力 ADCピン」のまま、配線図の部品だけ切り替える）。
+          const sensor = (typeof location !== 'undefined'
+            ? new URLSearchParams(location.search).get('sensor') : '') || '';
+          if (sensor === 'cds') {
+            add('cds'+p, 'CDS', { SIG:{gp:p}, VCC:{v3v3:true}, GND:{gnd:true} });
+          } else {
+            add('pot'+p, 'POT', { SIG:{gp:p}, VCC:{v3v3:true}, GND:{gnd:true} });
+          }
 
         } else if (['pico_buzzer_tone','pico_buzzer_stop'].includes(t)) {
           const p = gf('PIN');
