@@ -1296,7 +1296,7 @@
     return SIGNAL_COLORS[parseInt(s.gp || 0) % SIGNAL_COLORS.length];
   }
 
-  // ===== Pico SVG (Wokwi Pi Pico ボード, MIT © wokwi-boards) =====
+  // ===== Pico SVG（自作・簡易版／旧レンダラ用） =====
   function buildPicoSVG(onboardLedOn) {
     const p = [];
     // ピンパッド (基板外, 銅色)
