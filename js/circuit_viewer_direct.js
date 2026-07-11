@@ -1,4 +1,4 @@
-// ===== 直結スタイル 実体配線図レンダラ (Phase 3) =====
+// ===== 直結スタイル 実体配線図レンダラ (Phase 4・縦置きPico＋直交格子配線) =====
 //
 // window.generateCircuitSVG(workspace, {overrides, wireOverrides})
 //   → { svg, compCount, wireCount }   （circuit_viewer.js と同一契約）
@@ -9,11 +9,14 @@
 //   ?cv=legacy = 旧レンダラ（circuit_viewer.js）
 // 読み込み順は app.html で legacy → bb → direct。後勝ちで direct が既定になる。
 //
-// 設計要点:
-//   - Pico(自作SVG)を中央に水平配置。上辺ピン列(row c)=VBUS/3V3/GP16.. 下辺(row h)=GP0..GP15。
-//   - 部品は接続先GPピンの在る側(上/下)へ、実寸(SVG境界)を反映したスロットに重なりゼロで配置。
-//   - ピン→ピンの直接ジャンパー線(軽い弧)。3V3/VBUS=赤・GND=黒・信号=部品ごと識別色。
-//   - GNDは最寄りのGNDピンへ。Pico本体を横切る配線はPicoの端を回って外側最短で迂回。
+// Phase 4 設計要点（先生フィードバック反映）:
+//   - Pico(自作SVG)を縦置き(USB上向き)で中央に配置。左列=GP0..GP15 / 右列=VBUS..GP16。
+//   - 接続中のPicoピンは基板の外側(左列→左・右列→右)に水平テキストでピン名を明記。
+//   - 部品は接続先ピンの高さに合わせ左右へ縦整列（実寸bbox反映・重なりゼロ）。
+//   - 配線は直交(90°)格子ルーティング。弧は廃止し水平/垂直セグメントのみ。
+//     レーン割当(区間グラフ貪欲彩色)で縦セグメントの重なり・密着を防ぐ。
+//   - 反対側の列へ届く線(3V3など)は基板の上下を回る(wrap)ので本体を横切らない。
+//   - 3V3/VBUS=赤・GND=黒・信号=部品ごと識別色。T字分岐のみドット。
 //   - 部品アートは js/circuit_parts_data.js（wokwi MIT + 自作Pico）。
 //
 (function () {
@@ -30,10 +33,13 @@
   // ============================================================
   //  幾何定数
   // ============================================================
-  var PITCH = 18;                 // Picoピン間隔
+  var PITCH = 18;                 // Picoピン間隔（縦）
   var SCL = PITCH / 9.6;          // Pico自作アートの格子整合スケール ≒1.875
-  var LEAD = 34;                  // Picoピン列と部品ピン列の間隙
-  var GAP = 30;                   // 同一バンド内の部品間隙
+  var CH_STEP = 13;               // 配線レーン間隔（格子・12〜16px）
+  var LBLW = 34;                  // 基板端〜ピン名ラベル帯の幅
+  var CIN = 128;                  // 基板端〜部品接続ピン列の間隙（ラベル帯＋レーン＋余白）
+  var VGAP = 20;                  // 同一サイド内の部品縦間隙
+  var STUB = 20;                  // wrap配線のピン側スタブ長
   var LBL = '#3a3f47';
 
   function r2(v) { return Math.round(v * 100) / 100; }
@@ -64,14 +70,26 @@
       '"' + weight + ' fill="' + fill + '" stroke="#fbfaf7" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round">' +
       esc(text) + '</text>';
   }
+  // ピン名の呼び出しチップ（不透明背景で配線を隠し確実に読める）
+  function pinChip(x, y, text, side) {
+    var fs = 8.6, padX = 3.2, w = text.length * fs * 0.62 + padX * 2, h = 13;
+    var rx = (side === 'left') ? x - w : x;
+    var tx = (side === 'left') ? x - padX : x + padX;
+    var anchor = (side === 'left') ? 'end' : 'start';
+    return '<g class="cv-pinlbl">' +
+      '<rect x="' + r2(rx) + '" y="' + r2(y - h / 2) + '" width="' + r2(w) + '" height="' + h +
+      '" rx="2.5" fill="#fbfaf7" stroke="#c9c3b4" stroke-width="0.8"/>' +
+      '<text x="' + r2(tx) + '" y="' + r2(y + 3) + '" text-anchor="' + anchor + '" font-size="' + fs +
+      '" font-weight="bold" fill="#4a4f57">' + esc(text) + '</text></g>';
+  }
 
   // ============================================================
-  //  Pico ピン配列の正（実機準拠・機械照合用）
+  //  Pico ピン配列の正（実機準拠・機械照合用）縦置き 上→下
   // ============================================================
-  var PICO_TOP = ['VBUS', 'VSYS', 'GND', '3V3_EN', '3V3', 'ADC_VREF', 'GP28', 'AGND',
-    'GP27', 'GP26', 'RUN', 'GP22', 'GND', 'GP21', 'GP20', 'GP19', 'GP18', 'GND', 'GP17', 'GP16'];
-  var PICO_BOT = ['GP0', 'GP1', 'GND', 'GP2', 'GP3', 'GP4', 'GP5', 'GND', 'GP6', 'GP7',
+  var PICO_LEFT = ['GP0', 'GP1', 'GND', 'GP2', 'GP3', 'GP4', 'GP5', 'GND', 'GP6', 'GP7',
     'GP8', 'GP9', 'GND', 'GP10', 'GP11', 'GP12', 'GP13', 'GND', 'GP14', 'GP15'];
+  var PICO_RIGHT = ['VBUS', 'VSYS', 'GND', '3V3_EN', '3V3', 'ADC_VREF', 'GP28', 'AGND',
+    'GP27', 'GP26', 'RUN', 'GP22', 'GND', 'GP21', 'GP20', 'GP19', 'GP18', 'GND', 'GP17', 'GP16'];
   function wokwiPinName(n) {
     if (n === 'GND.7') return 'AGND';
     if (/^GND\.\d+$/.test(n)) return 'GND';
@@ -148,7 +166,6 @@
 
   // ============================================================
   //  ネットグラフ（union-find・電気検証）
-  //  net key: 'gp:N' / '3v3' / 'vbus' / 'gnd' / 'vext' / '<compId>.<pin>'
   // ============================================================
   function NetGraph() {
     var parent = {};
@@ -166,55 +183,42 @@
   }
 
   // ============================================================
-  //  Pico 水平配置（自作SVG・上辺=row c / 下辺=row h）
+  //  Pico 縦置き配置（自作SVG・USB上向き・左列/右列）
   // ============================================================
   function placePico(cx, cy) {
     var art = PARTS['pi-pico'];
     if (!art) return null;
-    var gp0 = art.pins['GP0'], gp15 = art.pins['GP15'], vbus = art.pins['VBUS'];
-    // 目標: GP0→(pinX(1),botY), GP15→(pinX(20),botY), VBUS→(pinX(1),topY)
-    var span = 19 * PITCH;
-    var x1 = cx - span / 2;                 // pinX(1)
-    var sx = span / (gp15.y - gp0.y);       // ≒ SCL
-    var rowGap = sx * (vbus.x - gp0.x);      // 上下ピン列の距離（等方）
-    var topY = cy - rowGap / 2, botY = cy + rowGap / 2;
-    var sy = rowGap / ((art.w - gp0.x) - (art.w - vbus.x)); // = sx（等方）
-    var ox = x1 - sx * gp0.y;
-    var oy = topY - sy * (art.w - vbus.x);
-    // 変換: (x,y) → (ox + sx*y, oy + sy*(W - x))  … 反時計回り90°
+    var s = SCL;
+    var W = art.w * s, H = art.h * s;
+    var ox = cx - W / 2, oy = cy - H / 2;
     var prefix = 'pico' + (_uid++) + '_';
-    var tf = 'translate(' + r2(ox) + ',' + r2(oy) + ') matrix(0,' + r4(-sy) + ',' + r4(sx) + ',0,0,' + r4(sy * art.w) + ')';
+    var tf = 'translate(' + r2(ox) + ',' + r2(oy) + ') scale(' + r4(s) + ')';
     var svg = '<g class="cv-comp" data-comp-id="__pico__" transform="' + tf + '">' + nsIds(art.inner, prefix) + '</g>';
 
-    var pinPos = {}, gndTop = [], gndBot = [], table = { top: [], bot: [] };
+    var leftX = ox, rightX = ox + W;
+    var pinPos = {}, gndLeft = [], gndRight = [], table = { left: [], right: [] };
     Object.keys(art.pins).forEach(function (nm) {
       var q = art.pins[nm];
-      var X = ox + sx * q.y, Y = oy + sy * (art.w - q.x);
-      var row = (Y < cy) ? 'c' : 'h';
-      var col = Math.round((X - x1) / PITCH) + 1;
+      var X = ox + s * q.x, Y = oy + s * q.y;
+      var side = (X < cx) ? 'left' : 'right';
+      var edgeX = side === 'left' ? leftX : rightX;
       var canon = wokwiPinName(nm);
-      if (canon === 'GND') (row === 'c' ? gndTop : gndBot).push({ x: X, y: Y, col: col });
-      else pinPos[canon] = { x: X, y: Y, row: row, col: col };
-      table[row === 'c' ? 'top' : 'bot'].push({ col: col, name: canon });
+      if (canon === 'GND') (side === 'left' ? gndLeft : gndRight).push({ x: edgeX, y: Y, side: side });
+      else pinPos[canon] = { x: edgeX, y: Y, side: side };
+      table[side].push({ y: Y, name: canon });
     });
-    table.top.sort(function (a, b) { return a.col - b.col; });
-    table.bot.sort(function (a, b) { return a.col - b.col; });
-    var topOk = table.top.map(function (e) { return e.name; }).join(',') === PICO_TOP.join(',');
-    var botOk = table.bot.map(function (e) { return e.name; }).join(',') === PICO_BOT.join(',');
-    gndTop.sort(function (a, b) { return a.col - b.col; });
-    gndBot.sort(function (a, b) { return a.col - b.col; });
+    table.left.sort(function (a, b) { return a.y - b.y; });
+    table.right.sort(function (a, b) { return a.y - b.y; });
+    var leftOk = table.left.map(function (e) { return e.name; }).join(',') === PICO_LEFT.join(',');
+    var rightOk = table.right.map(function (e) { return e.name; }).join(',') === PICO_RIGHT.join(',');
+    gndLeft.sort(function (a, b) { return a.y - b.y; });
+    gndRight.sort(function (a, b) { return a.y - b.y; });
 
-    // 本体 bbox（4隅を変換）
-    var corners = [[0, 0], [art.w, 0], [0, art.h], [art.w, art.h]].map(function (p) {
-      return { x: ox + sx * p[1], y: oy + sy * (art.w - p[0]) };
-    });
-    var xs = corners.map(function (c) { return c.x; }), ysv = corners.map(function (c) { return c.y; });
-    var box = { x0: Math.min.apply(0, xs), y0: Math.min.apply(0, ysv), x1: Math.max.apply(0, xs), y1: Math.max.apply(0, ysv) };
-
+    var box = { x0: ox, y0: oy, x1: ox + W, y1: oy + H };
     return {
-      svg: svg, pinPos: pinPos, gndTop: gndTop, gndBot: gndBot,
-      topY: topY, botY: botY, x1: x1, cx: cx, box: box,
-      table: table, pinTableOk: topOk && botOk
+      svg: svg, pinPos: pinPos, gndLeft: gndLeft, gndRight: gndRight, box: box,
+      leftX: leftX, rightX: rightX, topY: oy, botY: oy + H, cx: cx, cy: cy,
+      table: table, pinTableOk: leftOk && rightOk
     };
   }
 
@@ -261,21 +265,6 @@
       bbox: bboxOfAligned(data, t0, pin0, s, ang)
     };
   }
-  // 水平2ピンをピンライン上に載せる。top=正立(本体は上)・bottom=180°反転(本体は下・ピンは上向き)。
-  // 部品ごとの sign 混乱を避けるため、自然な左右順を判定して目標順を決める。
-  function placeLine(tag, id, pinA, pinB, band, cx, pinY, scale, POINTS) {
-    var data = PARTS[tag];
-    if (!data) return { ok: false, svg: '' };
-    var a = data.pins[pinA], b = data.pins[pinB];
-    if (!a || !b) return { ok: false, svg: '' };
-    var leftName = a.x <= b.x ? pinA : pinB, rightName = a.x <= b.x ? pinB : pinA;
-    var d = Math.abs(a.x - b.x) * scale;
-    var xl = cx - d / 2, xr = cx + d / 2;
-    var targets = (band === 't')
-      ? [[leftName, { x: xl, y: pinY }], [rightName, { x: xr, y: pinY }]]   // 正立
-      : [[leftName, { x: xr, y: pinY }], [rightName, { x: xl, y: pinY }]];  // 180°反転
-    return placeAligned(tag, id, targets, POINTS);
-  }
   // 左上基準・任意スケール（モジュール類）
   function placeAt(tag, id, tx, ty, s, POINTS) {
     var data = PARTS[tag];
@@ -292,9 +281,44 @@
       bbox: { x0: tx, y0: ty, x1: tx + s * data.w, y1: ty + s * data.h }
     };
   }
+  // 部品のピン列を縦向きにして基板側サイドへ配置（本体は外側＝基板と反対へ自動整向）
+  //   innerX  = 部品の接続ピン列の x（基板端から CIN 離れた位置）
+  //   cyC     = 縦方向の中心 y
+  function placeSideStack(tag, id, side, innerX, cyC, scale, POINTS, axisPair) {
+    var data = PARTS[tag];
+    if (!data) return { ok: false, svg: '' };
+    var names = Object.keys(data.pins);
+    var first, last;
+    if (axisPair && data.pins[axisPair[0]] && data.pins[axisPair[1]]) {
+      // 明示軸（部品を90°の整った向きに保つ・斜め回転を避ける）
+      first = axisPair[0]; last = axisPair[1];
+    } else {
+      // 最遠ピン2点を軸に採用
+      first = names[0]; last = names[0];
+      var maxd = -1;
+      for (var i = 0; i < names.length; i++)
+        for (var j = i + 1; j < names.length; j++) {
+          var d = Math.hypot(data.pins[names[i]].x - data.pins[names[j]].x, data.pins[names[i]].y - data.pins[names[j]].y);
+          if (d > maxd) { maxd = d; first = names[i]; last = names[j]; }
+        }
+    }
+    var axisLen = Math.hypot(data.pins[first].x - data.pins[last].x, data.pins[first].y - data.pins[last].y) * scale;
+    function build(topN, botN, dry) {
+      var yTop = cyC - axisLen / 2, yBot = cyC + axisLen / 2;
+      return placeAligned(tag, id, [[topN, { x: innerX, y: yTop }], [botN, { x: innerX, y: yBot }]], dry ? {} : POINTS);
+    }
+    var a = build(first, last, true), b = build(last, first, true);
+    // 本体が基板側（内側）へはみ出さない向きを選ぶ
+    function score(r) {
+      if (!r.ok) return 1e9;
+      return side === 'left' ? (r.bbox.x1 - innerX) : (innerX - r.bbox.x0);
+    }
+    var pick = score(a) <= score(b) ? [first, last] : [last, first];
+    return build(pick[0], pick[1], false);
+  }
 
   // ============================================================
-  //  自作モジュール（ボード外・bb からの移植/簡略）
+  //  自作モジュール（ボード外）
   // ============================================================
   function drawBattery(x, y, id, txt, POINTS) {
     var w = 104, h = 62, svg = [];
@@ -361,34 +385,27 @@
     for (var i = 0; i < 8; i++) {
       var px = x + PITCH / 2 + i * PITCH;
       svg.push('<rect x="' + (px - 3) + '" y="' + (y - 7) + '" width="6" height="7" rx="1" fill="#c9cdd3"/>');
-      svg.push('<rect x="' + (px - 3) + '" y="' + y_bot() + '" width="6" height="7" rx="1" fill="#c9cdd3"/>');
+      svg.push('<rect x="' + (px - 3) + '" y="' + (y + ph) + '" width="6" height="7" rx="1" fill="#c9cdd3"/>');
       if (keyTop[i]) POINTS[id + '.' + keyTop[i]] = { x: px, y: y - 6 };
       if (keyBot[i]) POINTS[id + '.' + keyBot[i]] = { x: px, y: y + ph + 6 };
       svg.push('<text x="' + px + '" y="' + (y + 11) + '" fill="#9aa3ad" font-size="5" text-anchor="middle">' + topN[i] + '</text>');
       svg.push('<text x="' + px + '" y="' + (y + ph - 4) + '" fill="#9aa3ad" font-size="4.6" text-anchor="middle">' + botN[i] + '</text>');
     }
-    function y_bot() { return y + ph; }
     return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x, y0: y - 8, x1: x + pw, y1: y + ph + 8 } };
   }
 
   // ============================================================
-  //  配線マネージャ（直結・弧＋Pico端の外回り迂回）
+  //  色規則
   // ============================================================
   var COLPAL = {
     v: '#d24a4a', vext: '#e07b2f', gnd: '#33363c',
     sig: ['#2f7de0', '#e0a52f', '#8e44ad', '#159a72', '#c0392b', '#0e7490', '#a3559d', '#2f9e44']
   };
+
+  // ============================================================
+  //  配線マネージャ（直交・格子レーン割当・上下wrap）
+  // ============================================================
   function ptInBox(p, box) { return p.x >= box.x0 && p.x <= box.x1 && p.y >= box.y0 && p.y <= box.y1; }
-  // 直線が本体内側帯(inner)を横切るか（端点=ピンは inner の外側にある想定）
-  function segHitsInner(a, b, inner) {
-    var n = 28;
-    for (var i = 0; i <= n; i++) {
-      var t = i / n, p = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-      if (ptInBox(p, inner)) return true;
-    }
-    return false;
-  }
-  // 折れ線を samples 個でサンプルして inner を横切るか
   function polyHitsInner(pts, inner) {
     for (var s = 0; s < pts.length - 1; s++) {
       var p = pts[s], q = pts[s + 1], n = 16;
@@ -399,9 +416,10 @@
     }
     return false;
   }
-  // 角を丸めた折れ線パス
-  function roundedPoly(pts, r) {
-    if (pts.length < 3) return 'M' + r2(pts[0].x) + ',' + r2(pts[0].y) + ' L' + r2(pts[pts.length - 1].x) + ',' + r2(pts[pts.length - 1].y);
+  // 角を丸めた直交折れ線パス（半径 r の角丸）
+  function orthoPath(pts, r) {
+    if (pts.length < 2) return '';
+    if (pts.length === 2) return 'M' + r2(pts[0].x) + ',' + r2(pts[0].y) + ' L' + r2(pts[1].x) + ',' + r2(pts[1].y);
     var d = 'M' + r2(pts[0].x) + ',' + r2(pts[0].y);
     for (var i = 1; i < pts.length - 1; i++) {
       var p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
@@ -416,77 +434,199 @@
     d += ' L' + r2(last.x) + ',' + r2(last.y);
     return d;
   }
-  function WireMgr(picoBox, inner, rows) {
+
+  // 区間グラフ貪欲彩色（縦セグメントのレーン割当）。
+  // 同一Picoピン(トランク)は同じレーンを共有。y範囲が重ならない群はレーン再利用。
+  function assignChannels(list) {
+    if (!list.length) return 0;
+    var GAP = 6;
+    var groupMap = {};
+    list.forEach(function (w) {
+      var key = w.side + ':' + r2(w.px) + ':' + r2(w.py);
+      (groupMap[key] || (groupMap[key] = [])).push(w);
+    });
+    var groups = [];
+    Object.keys(groupMap).forEach(function (k) {
+      var ws = groupMap[k], lo = Infinity, hi = -Infinity;
+      ws.forEach(function (w) { lo = Math.min(lo, w.py, w.cy); hi = Math.max(hi, w.py, w.cy); });
+      groups.push({ wires: ws, lo: lo, hi: hi });
+    });
+    groups.sort(function (a, b) { return a.lo - b.lo; });
+    var ends = [];
+    groups.forEach(function (g) {
+      var c = -1;
+      for (var i = 0; i < ends.length; i++) { if (ends[i] + GAP <= g.lo) { c = i; break; } }
+      if (c === -1) c = ends.length;
+      ends[c] = g.hi;
+      g.wires.forEach(function (w) { w.channelIdx = c + 1; });
+    });
+    return ends.length;
+  }
+
+  function WireMgr(pico) {
     var list = [];
-    var center = { x: (picoBox.x0 + picoBox.x1) / 2, y: (picoBox.y0 + picoBox.y1) / 2 };
-    var crossCount = 0, crossIds = [];
+    var innerBox = { x0: pico.leftX + 4, x1: pico.rightX - 4, y0: pico.topY + 6, y1: pico.botY - 6 };
+    var crossCount = 0, crossIds = [], segs = [];
     return {
+      // a,b の一方に pico:true が付いていれば Pico 配線、無ければ自由配線（部品間）
       add: function (a, b, color, id, opt) {
         if (!a || !b) return false;
-        list.push({ a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y }, color: color, id: id, sag: opt && opt.sag != null ? opt.sag : null });
+        list.push({ a: a, b: b, color: color, id: id, opt: opt || {} });
         return true;
       },
       count: function () { return list.length; },
       crossings: function () { return crossCount; },
       crossIds: function () { return crossIds; },
-      render: function () {
-        // 束分散
-        var cl = {};
-        function ck(p) { return Math.round(p.x / 22) + ':' + Math.round(p.y / 22); }
-        list.forEach(function (w) { [ck(w.a), ck(w.b)].forEach(function (k) { (cl[k] || (cl[k] = [])).push(w); }); });
-        list.forEach(function (w) { w.avoid = 0; });
-        Object.keys(cl).forEach(function (k) {
-          var ws = cl[k]; if (ws.length < 2) return;
-          ws.sort(function (p, q) { return Math.hypot(p.b.x - p.a.x, p.b.y - p.a.y) - Math.hypot(q.b.x - q.a.x, q.b.y - q.a.y); });
-          ws.forEach(function (w, i) { w.avoid = Math.max(w.avoid, i); });
-        });
-        function isPicoPin(p) {
-          var onRow = (rows && (Math.abs(p.y - rows.topY) < 3 || Math.abs(p.y - rows.botY) < 3));
-          return onRow && p.x >= picoBox.x0 - 2 && p.x <= picoBox.x1 + 2;
-        }
-        return list.map(function (w) {
-          var a = w.a, b = w.b, d, hitPts;
-          if (segHitsInner(a, b, inner)) {
-            // Pico本体を横切る → 端を回り、対象ピンの在る辺の外側から着地（直交ルート）
-            var P = isPicoPin(b) ? b : (isPicoPin(a) ? a : null);
-            var Q = (P === b) ? a : b;
-            var goLeft = (Q.x < center.x);
-            var endX = goLeft ? (picoBox.x0 - 22 - w.avoid * 9) : (picoBox.x1 + 22 + w.avoid * 9);
-            var pts;
-            if (P) {
-              var topPin = Math.abs(P.y - rows.topY) < Math.abs(P.y - rows.botY);
-              var yOuter = topPin ? (picoBox.y0 - 20 - w.avoid * 8) : (picoBox.y1 + 20 + w.avoid * 8);
-              pts = [Q, { x: endX, y: Q.y }, { x: endX, y: yOuter }, { x: P.x, y: yOuter }, P];
-            } else {
-              // モジュール間の横断（稀）: 本体の上/下の外側を回す（両端点より外へ）
-              var below = (a.y + b.y) / 2 >= center.y;
-              var yOut2 = below ? (Math.max(picoBox.y1, a.y, b.y) + 22 + w.avoid * 8)
-                                : (Math.min(picoBox.y0, a.y, b.y) - 22 - w.avoid * 8);
-              pts = [a, { x: a.x, y: yOut2 }, { x: b.x, y: yOut2 }, b];
-            }
-            d = roundedPoly(pts, 10);
-            hitPts = pts;
+      segs: function () { return segs; },
+      render: function (wireOverrides) {
+        wireOverrides = wireOverrides || {};
+        var picoWires = [], freeWires = [];
+        list.forEach(function (w) {
+          var P = (w.a && w.a.pico) ? w.a : ((w.b && w.b.pico) ? w.b : null);
+          if (P) {
+            var C = (P === w.a) ? w.b : w.a;
+            var compSide = (C.x < pico.cx) ? 'left' : 'right';
+            w._P = P; w._C = C; w._side = P.side; w._compSide = compSide;
+            w._wrap = (P.side !== compSide);
+            // 基板より下に来るピンは基板下で処理する（横切り回避）。
+            // 水平ピン列(L293D等)はバス帯で段状に、縦ピン列/孤立は水平着地。
+            w._under = (C.y > pico.botY + 6);
+            if (w._under) w._wrap = false;
+            w.px = P.x; w.py = P.y; w.cx = C.y; // cy alias for interval (y of comp)
+            picoWires.push(w);
           } else {
-            var dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 1;
-            var sag = (w.sag != null ? w.sag : Math.min(24, 7 + dist * 0.09)) + w.avoid * 8;
-            var mx0 = (a.x + b.x) / 2, my0 = (a.y + b.y) / 2;
-            var nx = -dy / dist, ny = dx / dist;
-            var away = (mx0 - center.x) * nx + (my0 - center.y) * ny;
-            if (away < 0) { nx = -nx; ny = -ny; }
-            var cp = { x: mx0 + nx * sag, y: my0 + ny * sag };
-            d = 'M' + r2(a.x) + ',' + r2(a.y) + ' Q' + r2(cp.x) + ',' + r2(cp.y) + ' ' + r2(b.x) + ',' + r2(b.y);
-            hitPts = null;
-            // 二次ベジェのサンプル（凸包内）
-            var n = 24, prev = a, sampHit = false;
-            for (var si = 1; si <= n; si++) { var t = si / n, u = 1 - t; var pp = { x: u * u * a.x + 2 * u * t * cp.x + t * t * b.x, y: u * u * a.y + 2 * u * t * cp.y + t * t * b.y }; if (ptInBox(pp, inner)) { sampHit = true; break; } }
-            if (sampHit) { crossCount++; crossIds.push(w.id); }
+            freeWires.push(w);
           }
-          if (hitPts && polyHitsInner(hitPts, inner)) { crossCount++; crossIds.push(w.id); }
-          return '<g class="cv-wire-arc" data-wire-id="' + w.id + '">' +
-            '<path d="' + d + '" fill="none" stroke="' + w.color + '" stroke-width="3.4" stroke-linecap="round"/>' +
-            '<circle cx="' + r2(a.x) + '" cy="' + r2(a.y) + '" r="3.1" fill="' + w.color + '"/>' +
-            '<circle cx="' + r2(b.x) + '" cy="' + r2(b.y) + '" r="3.1" fill="' + w.color + '"/></g>';
-        }).join('\n');
+        });
+        function chanX(side, idx) {
+          return side === 'left' ? (pico.leftX - LBLW - idx * CH_STEP) : (pico.rightX + LBLW + idx * CH_STEP);
+        }
+        // ---- レーン割当（wrapしない・基板下でない Pico配線をサイド別に彩色）----
+        var normL = picoWires.filter(function (w) { return !w._wrap && !w._under && w._side === 'left'; });
+        var normR = picoWires.filter(function (w) { return !w._wrap && !w._under && w._side === 'right'; });
+        var nL = assignChannels(normL), nR = assignChannels(normR);
+        var laneNext = { left: nL + 1, right: nR + 1 };  // 通常レーンの外側から採番
+        // ---- 基板下モジュール配線 ----
+        // 同じ高さ(C.y)を共有する水平ピン列は段状バスで縦着地、
+        // それ以外(縦ピン列/孤立)は通常どおり水平着地する。
+        var unders = picoWires.filter(function (w) { return w._under; });
+        var yCount = {};
+        unders.forEach(function (w) { var k = Math.round(w._C.y / 3); yCount[k] = (yCount[k] || 0) + 1; });
+        var underRow = unders.filter(function (w) { return yCount[Math.round(w._C.y / 3)] > 1; });
+        var underCol = unders.filter(function (w) { return yCount[Math.round(w._C.y / 3)] <= 1; });
+        underRow.sort(function (a, b) { return a._C.x - b._C.x; });
+        underRow.forEach(function (w, i) {
+          w._underCh = chanX(w._side, laneNext[w._side]++);
+          w._busY = pico.botY + 16 + i * 7;
+        });
+        underCol.forEach(function (w) { w._underCh = chanX(w._side, laneNext[w._side]++); });
+        // ---- wrap配線：上回り/下回りに分けトラックy ----
+        var midY = pico.cy;
+        var wraps = picoWires.filter(function (w) { return w._wrap; });
+        var topW = [], botW = [];
+        wraps.forEach(function (w) { (w.py < midY ? topW : botW).push(w); });
+        topW.sort(function (a, b) { return Math.min(a.py, a._C.y) - Math.min(b.py, b._C.y); });
+        botW.sort(function (a, b) { return Math.max(b.py, b._C.y) - Math.max(a.py, a._C.y); });
+        topW.forEach(function (w, i) { w._trackY = pico.topY - 14 - i * 11; });
+        botW.forEach(function (w, i) { w._trackY = pico.botY + 14 + i * 11; });
+        // 部品側 dest レーン（compSide・トランク共有）
+        var wg = {};
+        wraps.forEach(function (w) {
+          var key = r2(w.px) + ':' + r2(w.py) + ':' + w._compSide;
+          (wg[key] || (wg[key] = [])).push(w);
+        });
+        var wgL = [], wgR = [];
+        Object.keys(wg).forEach(function (k) {
+          var ws = wg[k], minY = Math.min.apply(0, ws.map(function (w) { return w._C.y; }));
+          (ws[0]._compSide === 'left' ? wgL : wgR).push({ ws: ws, minY: minY });
+        });
+        wgL.sort(function (a, b) { return a.minY - b.minY; });
+        wgR.sort(function (a, b) { return a.minY - b.minY; });
+        wgL.forEach(function (g) { var x = chanX('left', laneNext.left++); g.ws.forEach(function (w) { w._destCh = x; }); });
+        wgR.forEach(function (g) { var x = chanX('right', laneNext.right++); g.ws.forEach(function (w) { w._destCh = x; }); });
+        // 近側(ピン側)スタブレーン（pinSide・ピントランク共有）
+        var sg = {};
+        wraps.forEach(function (w) {
+          var key = w._side + ':' + r2(w.px) + ':' + r2(w.py);
+          (sg[key] || (sg[key] = [])).push(w);
+        });
+        Object.keys(sg).forEach(function (k) {
+          var ws = sg[k], side = ws[0]._side, x = chanX(side, laneNext[side]++);
+          ws.forEach(function (w) { w._stubX = x; });
+        });
+
+        // ---- 描画 ----
+        var out = [];
+        function emit(w, pts) {
+          // セグメント記録（重複判定用）。同一ネットの共有を許容。
+          // 電源(GND/VEXT/3V3)は単一ネットなので色でまとめる。信号はPicoピン=一意ネット。
+          var trunk = (w.color === COLPAL.gnd) ? 'gnd' : (w.color === COLPAL.vext) ? 'vext' :
+            (w.color === COLPAL.v) ? '3v3' : (w._P ? (r2(w.px) + ':' + r2(w.py)) : ('free:' + w.id));
+          segs.push({ id: w.id, trunk: trunk, pts: pts.map(function (p) { return { x: r2(p.x), y: r2(p.y) }; }) });
+          if (polyHitsInner(pts, innerBox)) { crossCount++; crossIds.push(w.id); }
+          var d = orthoPath(pts, 3);
+          var da = w._P ? (' data-x1="' + r2(w.px) + '" data-y1="' + r2(w.py) + '" data-x2="' + r2(w._C.x) + '" data-y2="' + r2(w._C.y) +
+            '" data-wrap="' + (w._wrap ? 1 : 0) + '" data-ch="' + r2(w._chForData != null ? w._chForData : w.px) + '"' + (w._wrap ? ' data-track-y="' + r2(w._trackY) + '"' : '')) : '';
+          out.push('<g class="cv-wire" data-wire-id="' + w.id + '"' + da + '>' +
+            '<path class="cv-wire-hit" d="' + d + '" fill="none" stroke="transparent" stroke-width="13" pointer-events="stroke"/>' +
+            '<path class="cv-wire-line" d="' + d + '" fill="none" stroke="' + w.color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<circle cx="' + r2(pts[0].x) + '" cy="' + r2(pts[0].y) + '" r="2.9" fill="' + w.color + '"/>' +
+            '<circle cx="' + r2(pts[pts.length - 1].x) + '" cy="' + r2(pts[pts.length - 1].y) + '" r="2.9" fill="' + w.color + '"/></g>');
+        }
+        picoWires.forEach(function (w) {
+          var wov = wireOverrides[w.id];
+          var chDx = (wov && typeof wov.chDx === 'number') ? wov.chDx : 0;
+          var P = w._P, C = w._C, pts;
+          if (w._under) {
+            var uch = w._underCh + chDx;
+            w._chForData = uch;
+            if (w._busY != null) {
+              // 水平ピン列：バス帯で縦着地
+              pts = [{ x: P.x, y: P.y }, { x: uch, y: P.y }, { x: uch, y: w._busY },
+              { x: C.x, y: w._busY }, { x: C.x, y: C.y }];
+            } else {
+              // 縦ピン列/孤立：基板下で水平着地（基板を横切らない）
+              pts = [{ x: P.x, y: P.y }, { x: uch, y: P.y }, { x: uch, y: C.y }, { x: C.x, y: C.y }];
+            }
+          } else if (!w._wrap) {
+            if (Math.abs(P.y - C.y) < 1.5) {
+              pts = [{ x: P.x, y: P.y }, { x: C.x, y: C.y }];
+              w._chForData = P.x;
+            } else {
+              var ch = chanX(w._side, w.channelIdx) + chDx;
+              w._chForData = ch;
+              pts = [{ x: P.x, y: P.y }, { x: ch, y: P.y }, { x: ch, y: C.y }, { x: C.x, y: C.y }];
+            }
+          } else {
+            var stubX = w._stubX;
+            var destCh = w._destCh + chDx;
+            w._chForData = destCh;
+            pts = [{ x: P.x, y: P.y }, { x: stubX, y: P.y }, { x: stubX, y: w._trackY },
+            { x: destCh, y: w._trackY }, { x: destCh, y: C.y }, { x: C.x, y: C.y }];
+          }
+          emit(w, pts);
+        });
+        // 自由配線（部品間）の直交ルート。ピン列の向きに合わせて着地方向を選ぶ。
+        var yCntA = {}, yCntB = {};
+        freeWires.forEach(function (w) {
+          yCntA[Math.round(w.a.y / 3)] = (yCntA[Math.round(w.a.y / 3)] || 0) + 1;
+          yCntB[Math.round(w.b.y / 3)] = (yCntB[Math.round(w.b.y / 3)] || 0) + 1;
+        });
+        var busFN = 0;
+        freeWires.forEach(function (w) {
+          var a = w.a, b = w.b;
+          if (Math.abs(a.y - b.y) < 1.5 || Math.abs(a.x - b.x) < 1.5) { emit(w, [{ x: a.x, y: a.y }, { x: b.x, y: b.y }]); return; }
+          var V = [{ x: a.x, y: a.y }, { x: a.x, y: b.y }, { x: b.x, y: b.y }];  // 縦抜き→水平着地
+          var Lh = [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }]; // 水平→縦着地
+          if (yCntA[Math.round(a.y / 3)] > 1 && !polyHitsInner(V, innerBox)) { emit(w, V); return; }   // 送り側が横列
+          if (yCntB[Math.round(b.y / 3)] > 1 && !polyHitsInner(Lh, innerBox)) { emit(w, Lh); return; }  // 受け側が横列
+          if (!polyHitsInner(Lh, innerBox)) { emit(w, Lh); return; }
+          if (!polyHitsInner(V, innerBox)) { emit(w, V); return; }
+          // どちらも基板を横切る場合は基板下のバス帯を回る
+          var busYf = pico.botY + 46 + (busFN++) * 7;
+          emit(w, [{ x: a.x, y: a.y }, { x: a.x, y: busYf }, { x: b.x, y: busYf }, { x: b.x, y: b.y }]);
+        });
+        return out.join('\n');
       }
     };
   }
@@ -494,17 +634,13 @@
   // ============================================================
   //  メイン回路構築
   // ============================================================
-  function buildCircuit(pico, comps, overrides) {
+  function buildCircuit(pico, comps, overrides, wireOverrides) {
     var POINTS = {};
     var net = NetGraph();
-    // 本体内側帯（ピン列より十分内側）。ここを横切る配線だけを「Pico横断」とみなす。
-    // ピン直近(±14px)はピンへの正当な着地帯なので除外し、中央を貫く線だけ検出する。
-    var innerBox = { x0: pico.box.x0 + 6, x1: pico.box.x1 - 6, y0: pico.topY + 14, y1: pico.botY - 14 };
-    var wires = WireMgr(pico.box, innerBox, { topY: pico.topY, botY: pico.botY });
+    var wires = WireMgr(pico);
     var partsSvg = [], labelSvg = [];
-    // 重なり検証用（Pico本体も含める＝部品がPicoに被らないことを機械判定）
     var boxes = [{ id: '__pico__', bb: { x0: pico.box.x0, y0: pico.box.y0, x1: pico.box.x1, y1: pico.box.y1 } }];
-    var usedPins = {};     // 使用中Picoピン → ラベル用
+    var usedPins = {};
     var bounds = { x0: pico.box.x0, y0: pico.box.y0, x1: pico.box.x1, y1: pico.box.y1 };
     var checks = [];
     var sigIdx = 0;
@@ -517,21 +653,24 @@
     function addBox(id, bb) { boxes.push({ id: id, bb: bb }); grow(bb); }
     function chk(comp, rule, ok, detail) { checks.push({ comp: comp, rule: rule, ok: !!ok, detail: detail || '' }); }
 
-    // Picoピン点/キー
-    function gpPt(gp) { var p = pico.pinPos['GP' + parseInt(gp)]; if (p) usedPins['GP' + parseInt(gp)] = p; return p; }
-    function gpKey(gp) { return 'gp:' + parseInt(gp); }
-    function v3Pt() { usedPins['3V3'] = pico.pinPos['3V3']; return pico.pinPos['3V3']; }
-    function vbusPt() { usedPins['VBUS'] = pico.pinPos['VBUS']; return pico.pinPos['VBUS']; }
-    // 最寄りGND（部品の在るバンド優先）
-    function gndPt(x, band) {
-      var pool = band === 't' ? pico.gndTop : pico.gndBot;
-      if (!pool.length) pool = pico.gndTop.concat(pico.gndBot);
-      var best = pool[0], bd = Infinity;
-      pool.forEach(function (g) { var d = Math.abs(g.x - x); if (d < bd) { bd = d; best = g; } });
-      usedPins['GND@' + Math.round(best.x)] = { x: best.x, y: best.y, name: 'GND' };
-      return best;
+    // ---- Picoピン点/キー ----
+    function gpPt(gp) {
+      var p = pico.pinPos['GP' + parseInt(gp)];
+      if (p) usedPins['GP' + parseInt(gp)] = { x: p.x, y: p.y, side: p.side, name: 'GP' + parseInt(gp) };
+      return p ? { x: p.x, y: p.y, side: p.side, pico: true } : null;
     }
-    // 電源電位を静的に確定（Pico内部でGND/3V3/vextを結線）
+    function gpKey(gp) { return 'gp:' + parseInt(gp); }
+    function v3Pt() { var p = pico.pinPos['3V3']; usedPins['3V3'] = { x: p.x, y: p.y, side: p.side, name: '3V3' }; return { x: p.x, y: p.y, side: p.side, pico: true }; }
+    function vbusPt() { var p = pico.pinPos['VBUS']; usedPins['VBUS'] = { x: p.x, y: p.y, side: p.side, name: 'VBUS' }; return { x: p.x, y: p.y, side: p.side, pico: true }; }
+    // 最寄りGND（指定サイド優先）
+    function gndPt(y, side) {
+      var pool = side === 'left' ? pico.gndLeft : pico.gndRight;
+      if (!pool.length) pool = pico.gndLeft.concat(pico.gndRight);
+      var best = pool[0], bd = Infinity;
+      pool.forEach(function (g) { var d = Math.abs(g.y - y); if (d < bd) { bd = d; best = g; } });
+      usedPins['GND@' + best.side + Math.round(best.y)] = { x: best.x, y: best.y, side: best.side, name: 'GND' };
+      return { x: best.x, y: best.y, side: best.side, pico: true };
+    }
     net.union('gnd', 'gnd');
     var VEXT_PT = null;
 
@@ -539,375 +678,353 @@
     function isGnd(k) { return net.conn(k, 'gnd'); }
     function is3v3(k) { return net.conn(k, '3v3'); }
 
-    // ---- バンド割当（primary GP の行で上下決定）----
-    function primaryBand(c) {
-      var gps = [];
-      Object.keys(c.pins).forEach(function (k) { var pk = c.pins[k]; if (pk && pk.gp != null) gps.push(pk.gp); });
-      for (var i = 0; i < gps.length; i++) {
-        var p = pico.pinPos['GP' + parseInt(gps[i])];
-        if (p) return { band: p.row === 'c' ? 't' : 'h', anchorX: p.x };
+    // ---- サイド割当（primary GP の列で左右決定）----
+    function primarySide(c) {
+      var order = ['SIG', 'A', 'PWM', 'TRIG', 'IN1', 'SDA', 'ECHO'];
+      var cand = [];
+      Object.keys(c.pins).forEach(function (k) { var pk = c.pins[k]; if (pk && pk.gp != null) cand.push({ k: k, gp: pk.gp }); });
+      cand.sort(function (a, b) {
+        var ia = order.indexOf(a.k), ib = order.indexOf(b.k);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      });
+      for (var i = 0; i < cand.length; i++) {
+        var p = pico.pinPos['GP' + parseInt(cand[i].gp)];
+        if (p) return { side: p.side, anchorY: p.y };
       }
-      return { band: 'h', anchorX: pico.cx };
+      return { side: 'right', anchorY: pico.cy };
     }
 
-    // ---- スロット割当（実寸反映・重なりゼロ）----
-    // 上下バンドそれぞれ左→右に詰める。cursor で重なり回避。
-    var cursor = { t: -1e9, h: -1e9 };
-    function slot(band, w, anchorX, comp) {
+    // ---- 縦スロット割当（サイド別・上→下に詰める・重なりゼロ）----
+    var cursor = { left: null, right: null };
+    function slotV(side, h, anchorY, comp) {
       var ov = overrides && overrides[comp.compId];
-      var desired = anchorX - w / 2 + ((ov && ov.dx) || 0);
-      var left = Math.max(desired, cursor[band] + GAP);
-      cursor[band] = left + w;
-      return { left: left, cx: left + w / 2, dy: (ov && ov.dy) || 0 };
+      var top = (cursor[side] == null) ? (anchorY - h / 2) : Math.max(anchorY - h / 2, cursor[side] + VGAP);
+      cursor[side] = top + h;
+      return { cy: top + h / 2 + ((ov && ov.dy) || 0), dx: (ov && ov.dx) || 0 };
     }
-    // ボード外モジュール配置カーソル
-    var rightX = 0, rightY = 0;
+    function innerXOf(side, dx) { return (side === 'left' ? pico.leftX - CIN : pico.rightX + CIN) + (dx || 0); }
+    // ボード下モジュール配置カーソル
+    var belowX = pico.leftX, belowY = pico.botY + 70;
 
-    // ピンライン（部品ピンを載せる水平線）
-    function lineY(band, offset) { return band === 't' ? (pico.box.y0 - LEAD - (offset || 0)) : (pico.box.y1 + LEAD + (offset || 0)); }
-    // 部品ピン小ラベル（アートと反対＝Pico側へ寄せる）
-    function pinLabel(pt, text, band) {
-      labelSvg.push(label(pt.x, band === 't' ? pt.y - 6 : pt.y + 11, text, { fs: 7.5 }));
+    // 部品ピン小ラベル（接続点脇）
+    function pinLabelAt(pt, text, side) {
+      labelSvg.push(label(side === 'left' ? pt.x - 4 : pt.x + 4, pt.y - 6, text, { fs: 7.2, anchor: side === 'left' ? 'end' : 'start' }));
     }
-    // 部品名ラベル（アートの外側=Picoと反対側）
-    function nameLabel(cx, bb, band, text) {
-      var y = band === 't' ? bb.y0 - 5 : bb.y1 + 13;
+    // 部品名ラベル（本体の外側）
+    function nameLabel(cx, bb, text, below) {
+      var y = below ? bb.y1 + 13 : bb.y0 - 5;
       labelSvg.push(label(cx, y, text, { fs: 11, weight: 'bold' }));
     }
 
     // ====== 部品ハンドラ ======
     var H = {};
 
-    // LED + 直列抵抗（同一スロットに縦積み: Pico側=LED脚, 外側=抵抗→GND）
+    // LED + 直列抵抗（縦積み: A(上)→GP / C→抵抗→GND）
     H.LED = function (c) {
-      var pb = primaryBand(c), band = pb.band, dir = band === 't' ? -1 : 1;
-      var led = PARTS['wokwi-led'], res = PARTS['wokwi-resistor'];
-      var sL = 1.5, sR = 1.4;
-      var ledW = led.w * sL, ledH = led.h * sL, resW = res.w * sR;
-      var w = Math.max(ledW, resW);
-      var sl = slot(band, w, pb.anchorX, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      // LED: A/C を水平線に。上バンド=正立(脚下), 下バンド=180°(脚上)
-      var pr = placeLine('wokwi-led', c.compId, 'A', 'C', band, sl.cx, pinY, sL, POINTS);
+      var ps = primarySide(c), side = ps.side;
+      var sL = 1.4, sR = 1.1;
+      var slotH = 150;
+      var sl = slotV(side, slotH, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      var ledCy = sl.cy - 46, resCy = sl.cy + 42;
+      var pr = placeSideStack('wokwi-led', c.compId, side, innerX, ledCy, sL, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      // 抵抗: LEDの外側に水平配置（片脚をLED.C付近、他脚をGNDへ）
-      var resY = (band === 't' ? pr.bbox.y0 - 12 : pr.bbox.y1 + 12) + 0;
-      var rr = placeAligned('wokwi-resistor', 'res_' + c.compId,
-        [['1', { x: sl.cx - resW / 2, y: resY }], ['2', { x: sl.cx + resW / 2, y: resY }]], POINTS);
+      var rr = placeSideStack('wokwi-resistor', 'res_' + c.compId, side, innerX, resCy, sR, POINTS);
       partsSvg.push(rr.svg); addBox('res_' + c.compId, rr.bbox);
-      // 配線
-      var gp = c.pins.A.gp, gpp = gpPt(gp);
-      wires.add(gpp, POINTS[c.compId + '.A'], nextSig(), c.compId + ':A');
+      var gp = c.pins.A.gp;
+      wires.add(gpPt(gp), POINTS[c.compId + '.A'], nextSig(), c.compId + ':A');
       net.union(gpKey(gp), c.compId + '.A');
-      wires.add(POINTS[c.compId + '.C'], POINTS['res_' + c.compId + '.1'], nextSig(), c.compId + ':C', { sag: 6 });
-      net.union(c.compId + '.C', 'res_' + c.compId + '.1');
-      net.union('res_' + c.compId + '.1', 'res_' + c.compId + '.2');   // 抵抗体は導通
-      var g = gndPt(sl.cx, band);
-      wires.add(POINTS['res_' + c.compId + '.2'], g, COLPAL.gnd, c.compId + ':GND');
-      net.union('res_' + c.compId + '.2', 'gnd');
-      // ラベル
-      pinLabel(POINTS[c.compId + '.A'], '＋', band); pinLabel(POINTS[c.compId + '.C'], '−', band);
-      nameLabel(sl.cx, { x0: Math.min(pr.bbox.x0, rr.bbox.x0), y0: Math.min(pr.bbox.y0, rr.bbox.y0), x1: Math.max(pr.bbox.x1, rr.bbox.x1), y1: Math.max(pr.bbox.y1, rr.bbox.y1) }, band, 'LED + 抵抗');
+      // C→抵抗（近い脚どうし）
+      var rNear = (Math.abs(POINTS['res_' + c.compId + '.1'].y - POINTS[c.compId + '.C'].y) <
+        Math.abs(POINTS['res_' + c.compId + '.2'].y - POINTS[c.compId + '.C'].y)) ? '1' : '2';
+      var rFar = rNear === '1' ? '2' : '1';
+      wires.add(POINTS[c.compId + '.C'], POINTS['res_' + c.compId + '.' + rNear], nextSig(), c.compId + ':C');
+      net.union(c.compId + '.C', 'res_' + c.compId + '.' + rNear);
+      net.union('res_' + c.compId + '.1', 'res_' + c.compId + '.2');
+      var g = gndPt(POINTS['res_' + c.compId + '.' + rFar].y, side);
+      wires.add(POINTS['res_' + c.compId + '.' + rFar], g, COLPAL.gnd, c.compId + ':GND');
+      net.union('res_' + c.compId + '.' + rFar, 'gnd');
+      pinLabelAt(POINTS[c.compId + '.A'], '＋', side); pinLabelAt(POINTS[c.compId + '.C'], '−', side);
+      var full = { x0: Math.min(pr.bbox.x0, rr.bbox.x0), y0: Math.min(pr.bbox.y0, rr.bbox.y0), x1: Math.max(pr.bbox.x1, rr.bbox.x1), y1: Math.max(pr.bbox.y1, rr.bbox.y1) };
+      nameLabel((full.x0 + full.x1) / 2, full, 'LED + 抵抗', true);
       chk(c.compId, 'LED: GP→アノード', connected(gpKey(gp), c.compId + '.A'));
-      chk(c.compId, 'LED: カソード→抵抗→GND', connected(c.compId + '.C', 'res_' + c.compId + '.1') && isGnd(c.compId + '.C'));
+      chk(c.compId, 'LED: カソード→抵抗→GND', connected(c.compId + '.C', 'res_' + c.compId + '.' + rNear) && isGnd(c.compId + '.C'));
       chk(c.compId, 'LED: アノードとカソードは非短絡', !connected(c.compId + '.A', c.compId + '.C'));
     };
 
-    // タクトスイッチ（6mm・水平2端子を線に載せる）
+    // タクトスイッチ（6mm・2端子を縦線に載せる）
     H.BTN = function (c) {
-      var pb = primaryBand(c), band = pb.band;
-      var art = PARTS['wokwi-pushbutton-6mm']; var s = 1.9;
-      var w = art.w * s;
-      var sl = slot(band, w, pb.anchorX, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      // 本体をPicoから遠ざけるため、アート下辺ピン(2.*)を常にライン(Pico寄り)へ載せる。
-      // 上バンド=正立で本体は上へ / 下バンド=180°反転で本体は下へ（どちらも2.*をアンカー）。
-      var near = ['2.l', '2.r'], far = ['1.l', '1.r'];
-      var pr = placeLine('wokwi-pushbutton-6mm', c.compId, near[0], near[1], band, sl.cx, pinY, s, POINTS);
+      var ps = primarySide(c), side = ps.side, s = 1.9;
+      var sl = slotV(side, 60, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      // 半ピッチずらして端子がPicoピン格子と一致しないようにする（水平線の偶発重なり回避）
+      var pr = placeSideStack('wokwi-pushbutton-6mm', c.compId, side, innerX, sl.cy + PITCH / 2, s, POINTS, ['1.l', '2.l']);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      net.union(c.compId + '.1.l', c.compId + '.1.r'); // 端子1ペア常時導通
-      net.union(c.compId + '.2.l', c.compId + '.2.r'); // 端子2ペア常時導通
-      var nearK = c.compId + '.' + near[0], farK = c.compId + '.' + far[0];
-      // SIG=Pico寄り端子, 他方=対向端子
-      var gp = c.pins.SIG.gp, gpp = gpPt(gp);
-      wires.add(gpp, POINTS[nearK], nextSig(), c.compId + ':SIG');
-      net.union(gpKey(gp), nearK);
-      pinLabel(POINTS[nearK], 'GP' + parseInt(gp), band);
-      if (c.pins.VCC.gnd) {
-        var g = gndPt(sl.cx, band);
-        wires.add(POINTS[farK], g, COLPAL.gnd, c.compId + ':GND', { sag: 12 });
-        net.union(farK, 'gnd');
-        pinLabel(POINTS[farK], 'GND', band === 't' ? 'h' : 't');
-      } else if (c.pins.VCC.v3v3) {
-        wires.add(POINTS[farK], v3Pt(), COLPAL.v, c.compId + ':VCC', { sag: 12 });
-        net.union(farK, '3v3');
-        pinLabel(POINTS[farK], '3V3', band === 't' ? 'h' : 't');
+      net.union(c.compId + '.1.l', c.compId + '.1.r');
+      net.union(c.compId + '.2.l', c.compId + '.2.r');
+      // 端子1(=1.l/1.r) と 端子2(=2.l/2.r) の代表点。基板側(内側=innerX)寄りの脚を SIG に。
+      function inner(term) {
+        var l = POINTS[c.compId + '.' + term + '.l'], r = POINTS[c.compId + '.' + term + '.r'];
+        return (side === 'left' ? (l.x > r.x ? l : r) : (l.x < r.x ? l : r));
       }
-      nameLabel(sl.cx, pr.bbox, band, 'ボタン' + (c.pull === 'PULLUP_INT' ? '（内部PU）' : ''));
+      var sig = inner('2'), sigK = c.compId + '.2.l';
+      var far = inner('1'), farK = c.compId + '.1.l';
+      var gp = c.pins.SIG.gp;
+      wires.add(gpPt(gp), sig, nextSig(), c.compId + ':SIG');
+      net.union(gpKey(gp), sigK);
+      pinLabelAt(sig, 'GP' + parseInt(gp), side);
+      if (c.pins.VCC.gnd) {
+        var g = gndPt(far.y, side);
+        wires.add(far, g, COLPAL.gnd, c.compId + ':GND');
+        net.union(farK, 'gnd'); pinLabelAt(far, 'GND', side);
+      } else if (c.pins.VCC.v3v3) {
+        wires.add(far, v3Pt(), COLPAL.v, c.compId + ':VCC');
+        net.union(farK, '3v3'); pinLabelAt(far, '3V3', side);
+      }
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 'ボタン' + (c.pull === 'PULLUP_INT' ? '（内部PU）' : ''), true);
       chk(c.compId, 'タクトSW: 端子1↔端子2は非短絡', !connected(c.compId + '.1.l', c.compId + '.2.l'));
-      chk(c.compId, 'タクトSW: GP→押下側端子', connected(gpKey(gp), nearK));
+      chk(c.compId, 'タクトSW: GP→押下側端子', connected(gpKey(gp), sigK));
       if (c.pins.VCC.gnd) chk(c.compId, 'タクトSW: 対端子→GND', isGnd(farK));
       if (c.pins.VCC.v3v3) chk(c.compId, 'タクトSW: 対端子→3V3', is3v3(farK));
     };
 
-    // 外付け抵抗（プルアップ/ダウン・水平配置）
+    // 外付け抵抗（プルアップ/ダウン・縦配置）
     H.RES = function (c) {
       var gpSpec = c.pins.A.gp != null ? c.pins.A : c.pins.B;
       var railSpec = c.pins.A.gp != null ? c.pins.B : c.pins.A;
       var pgp = pico.pinPos['GP' + parseInt(gpSpec.gp)];
-      var band = pgp && pgp.row === 'c' ? 't' : 'h';
-      var art = PARTS['wokwi-resistor'], s = 1.4;
-      var w = art.w * s;
-      var sl = slot(band, w, pgp ? pgp.x : pico.cx, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      // GP脚をPico寄り(内側)、電源脚を外側 … 水平なので両脚を線に載せ、GP脚をanchor寄せ
-      var pr = placeAligned('wokwi-resistor', c.compId, [['1', { x: sl.cx - w / 2, y: pinY }], ['2', { x: sl.cx + w / 2, y: pinY }]], POINTS);
+      var side = pgp ? pgp.side : 'right';
+      var sl = slotV(side, 60, pgp ? pgp.y : pico.cy, c);
+      var innerX = innerXOf(side, sl.dx);
+      var pr = placeSideStack('wokwi-resistor', c.compId, side, innerX, sl.cy, 1.35, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      net.union(c.compId + '.1', c.compId + '.2');   // 抵抗体は導通
-      var gpp = gpPt(gpSpec.gp);
-      wires.add(gpp, POINTS[c.compId + '.1'], nextSig(), c.compId + ':GP');
-      net.union(gpKey(gpSpec.gp), c.compId + '.1');
-      pinLabel(POINTS[c.compId + '.1'], 'GP' + parseInt(gpSpec.gp), band);
+      net.union(c.compId + '.1', c.compId + '.2');
+      // GP脚=基板寄り(内側)を採用
+      var p1 = POINTS[c.compId + '.1'], p2 = POINTS[c.compId + '.2'];
+      var gpPin = (side === 'left' ? (p1.x > p2.x ? '1' : '2') : (p1.x < p2.x ? '1' : '2'));
+      var railPin = gpPin === '1' ? '2' : '1';
+      wires.add(gpPt(gpSpec.gp), POINTS[c.compId + '.' + gpPin], nextSig(), c.compId + ':GP');
+      net.union(gpKey(gpSpec.gp), c.compId + '.' + gpPin);
+      pinLabelAt(POINTS[c.compId + '.' + gpPin], 'GP' + parseInt(gpSpec.gp), side);
       if (railSpec.v3v3) {
-        wires.add(POINTS[c.compId + '.2'], v3Pt(), COLPAL.v, c.compId + ':V', { sag: 14 });
-        net.union(c.compId + '.2', '3v3'); pinLabel(POINTS[c.compId + '.2'], '3V3', band);
+        wires.add(POINTS[c.compId + '.' + railPin], v3Pt(), COLPAL.v, c.compId + ':V');
+        net.union(c.compId + '.' + railPin, '3v3'); pinLabelAt(POINTS[c.compId + '.' + railPin], '3V3', side);
       } else {
-        var g = gndPt(sl.cx, band);
-        wires.add(POINTS[c.compId + '.2'], g, COLPAL.gnd, c.compId + ':G', { sag: 14 });
-        net.union(c.compId + '.2', 'gnd'); pinLabel(POINTS[c.compId + '.2'], 'GND', band);
+        var g = gndPt(POINTS[c.compId + '.' + railPin].y, side);
+        wires.add(POINTS[c.compId + '.' + railPin], g, COLPAL.gnd, c.compId + ':G');
+        net.union(c.compId + '.' + railPin, 'gnd'); pinLabelAt(POINTS[c.compId + '.' + railPin], 'GND', side);
       }
-      nameLabel(sl.cx, pr.bbox, band, '抵抗' + (c.pull === 'PULLUP_EXT' ? '（プルアップ）' : c.pull === 'PULLDOWN_EXT' ? '（プルダウン）' : ''));
-      chk(c.compId, '抵抗(' + (c.pull || '') + '): GP側接続', connected(gpKey(gpSpec.gp), c.compId + '.1'));
-      chk(c.compId, '抵抗(' + (c.pull || '') + '): ' + (railSpec.v3v3 ? '3V3' : 'GND') + '側接続', railSpec.v3v3 ? is3v3(c.compId + '.2') : isGnd(c.compId + '.2'));
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '抵抗' + (c.pull === 'PULLUP_EXT' ? '（プルアップ）' : c.pull === 'PULLDOWN_EXT' ? '（プルダウン）' : ''), true);
+      chk(c.compId, '抵抗(' + (c.pull || '') + '): GP側接続', connected(gpKey(gpSpec.gp), c.compId + '.' + gpPin));
+      chk(c.compId, '抵抗(' + (c.pull || '') + '): ' + (railSpec.v3v3 ? '3V3' : 'GND') + '側接続', railSpec.v3v3 ? is3v3(c.compId + '.' + railPin) : isGnd(c.compId + '.' + railPin));
     };
 
-    // 可変抵抗（3ピン水平）
+    // 可変抵抗（3ピン縦）
     H.POT = function (c) {
-      var pb = primaryBand(c), band = pb.band, dir = band === 't' ? -1 : 1;
-      var art = PARTS['wokwi-potentiometer'], s = 0.72;
-      var w = art.w * s;
-      var sl = slot(band, w, pb.anchorX, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      var pr = placeLine('wokwi-potentiometer', c.compId, 'GND', 'VCC', band, sl.cx, pinY, s, POINTS);
+      var ps = primarySide(c), side = ps.side, s = 0.72;
+      var sl = slotV(side, 90, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      var pr = placeSideStack('wokwi-potentiometer', c.compId, side, innerX, sl.cy, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC', { sag: 12 });
+      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
-      var g = gndPt(sl.cx, band);
-      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 12 });
+      var g = gndPt(POINTS[c.compId + '.GND'].y, side);
+      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
-      var gpp = gpPt(c.pins.SIG.gp);
-      wires.add(POINTS[c.compId + '.SIG'], gpp, nextSig(), c.compId + ':SIG');
+      wires.add(POINTS[c.compId + '.SIG'], gpPt(c.pins.SIG.gp), nextSig(), c.compId + ':SIG');
       net.union(c.compId + '.SIG', gpKey(c.pins.SIG.gp));
-      pinLabel(POINTS[c.compId + '.SIG'], 'GP' + parseInt(c.pins.SIG.gp), band);
-      pinLabel(POINTS[c.compId + '.VCC'], '3V3', band); pinLabel(POINTS[c.compId + '.GND'], 'GND', band);
-      nameLabel(sl.cx, pr.bbox, band, '可変抵抗');
+      pinLabelAt(POINTS[c.compId + '.SIG'], 'GP' + parseInt(c.pins.SIG.gp), side);
+      pinLabelAt(POINTS[c.compId + '.VCC'], '3V3', side); pinLabelAt(POINTS[c.compId + '.GND'], 'GND', side);
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '可変抵抗', true);
       chk(c.compId, 'POT: SIG→ADCピン', connected(c.compId + '.SIG', gpKey(c.pins.SIG.gp)));
       chk(c.compId, 'POT: VCC→3V3', is3v3(c.compId + '.VCC'));
       chk(c.compId, 'POT: GND→GND', isGnd(c.compId + '.GND'));
     };
 
-    // 圧電ブザー（2ピン水平）
+    // 圧電ブザー（2ピン縦）
     H.BUZZ = function (c) {
-      var pb = primaryBand(c), band = pb.band, dir = band === 't' ? -1 : 1;
-      var art = PARTS['wokwi-buzzer'], s = 0.62;
-      var w = art.w * s;
-      var sl = slot(band, w, pb.anchorX, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      var pr = placeLine('wokwi-buzzer', c.compId, '1', '2', band, sl.cx, pinY, s, POINTS);
+      var ps = primarySide(c), side = ps.side, s = 0.62;
+      var sl = slotV(side, 70, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      var pr = placeSideStack('wokwi-buzzer', c.compId, side, innerX, sl.cy, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      var g = gndPt(sl.cx, band);
-      wires.add(POINTS[c.compId + '.1'], g, COLPAL.gnd, c.compId + ':GND', { sag: 10 });
+      var g = gndPt(POINTS[c.compId + '.1'].y, side);
+      wires.add(POINTS[c.compId + '.1'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.1', 'gnd');
-      var gpp = gpPt(c.pins.SIG.gp);
-      wires.add(POINTS[c.compId + '.2'], gpp, nextSig(), c.compId + ':SIG');
+      wires.add(POINTS[c.compId + '.2'], gpPt(c.pins.SIG.gp), nextSig(), c.compId + ':SIG');
       net.union(c.compId + '.2', gpKey(c.pins.SIG.gp));
-      pinLabel(POINTS[c.compId + '.1'], '−', band); pinLabel(POINTS[c.compId + '.2'], '＋GP' + parseInt(c.pins.SIG.gp), band);
-      nameLabel(sl.cx, pr.bbox, band, 'ブザー');
+      pinLabelAt(POINTS[c.compId + '.1'], '−', side); pinLabelAt(POINTS[c.compId + '.2'], '＋GP' + parseInt(c.pins.SIG.gp), side);
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 'ブザー', true);
       chk(c.compId, 'ブザー: GP→＋端子', connected(gpKey(c.pins.SIG.gp), c.compId + '.2'));
       chk(c.compId, 'ブザー: −端子→GND', isGnd(c.compId + '.1'));
     };
 
-    // 超音波センサ HC-SR04（4ピン水平・下辺）
+    // 超音波センサ HC-SR04（4ピン縦）
     H.HCSR04 = function (c) {
-      var pb = primaryBand(c), band = pb.band, dir = band === 't' ? -1 : 1;
-      var art = PARTS['wokwi-hc-sr04'], s = 0.82;
-      var w = art.w * s;
-      var sl = slot(band, w, pb.anchorX, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      var pr = placeLine('wokwi-hc-sr04', c.compId, 'VCC', 'GND', band, sl.cx, pinY, s, POINTS);
+      var ps = primarySide(c), side = ps.side, s = 0.82;
+      var sl = slotV(side, 110, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      var pr = placeSideStack('wokwi-hc-sr04', c.compId, side, innerX, sl.cy, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC', { sag: 12 });
+      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
-      var g = gndPt(POINTS[c.compId + '.GND'].x, band);
-      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 12 });
+      var g = gndPt(POINTS[c.compId + '.GND'].y, side);
+      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
-      var tp = gpPt(c.pins.TRIG.gp), ep = gpPt(c.pins.ECHO.gp);
-      wires.add(POINTS[c.compId + '.TRIG'], tp, nextSig(), c.compId + ':TRIG');
+      wires.add(POINTS[c.compId + '.TRIG'], gpPt(c.pins.TRIG.gp), nextSig(), c.compId + ':TRIG');
       net.union(c.compId + '.TRIG', gpKey(c.pins.TRIG.gp));
-      wires.add(POINTS[c.compId + '.ECHO'], ep, nextSig(), c.compId + ':ECHO');
+      wires.add(POINTS[c.compId + '.ECHO'], gpPt(c.pins.ECHO.gp), nextSig(), c.compId + ':ECHO');
       net.union(c.compId + '.ECHO', gpKey(c.pins.ECHO.gp));
-      pinLabel(POINTS[c.compId + '.VCC'], 'VCC', band); pinLabel(POINTS[c.compId + '.TRIG'], 'TRIG', band);
-      pinLabel(POINTS[c.compId + '.ECHO'], 'ECHO', band); pinLabel(POINTS[c.compId + '.GND'], 'GND', band);
-      nameLabel(sl.cx, pr.bbox, band, '超音波センサ HC-SR04');
+      pinLabelAt(POINTS[c.compId + '.VCC'], 'VCC', side); pinLabelAt(POINTS[c.compId + '.TRIG'], 'TRIG', side);
+      pinLabelAt(POINTS[c.compId + '.ECHO'], 'ECHO', side); pinLabelAt(POINTS[c.compId + '.GND'], 'GND', side);
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '超音波センサ HC-SR04', true);
       chk(c.compId, 'HC-SR04: TRIG→GP' + c.pins.TRIG.gp, connected(c.compId + '.TRIG', gpKey(c.pins.TRIG.gp)));
       chk(c.compId, 'HC-SR04: ECHO→GP' + c.pins.ECHO.gp, connected(c.compId + '.ECHO', gpKey(c.pins.ECHO.gp)));
       chk(c.compId, 'HC-SR04: VCC→3V3/GND→GND', is3v3(c.compId + '.VCC') && isGnd(c.compId + '.GND'));
     };
 
-    // 温湿度センサ DHT22（4ピン水平・NC未接続）
+    // 温湿度センサ DHT22（4ピン縦・NC未接続）
     H.DHT22 = function (c) {
-      var pb = primaryBand(c), band = pb.band, dir = band === 't' ? -1 : 1;
-      var art = PARTS['wokwi-dht22'], s = 0.62;
-      var w = art.w * s;
-      var sl = slot(band, w, pb.anchorX, c);
-      var pinY = lineY(band, 0) + sl.dy;
-      var pr = placeLine('wokwi-dht22', c.compId, 'VCC', 'GND', band, sl.cx, pinY, s, POINTS);
+      var ps = primarySide(c), side = ps.side, s = 0.62;
+      var sl = slotV(side, 96, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      var pr = placeSideStack('wokwi-dht22', c.compId, side, innerX, sl.cy, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC', { sag: 12 });
+      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
-      var g = gndPt(POINTS[c.compId + '.GND'].x, band);
-      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 12 });
+      var g = gndPt(POINTS[c.compId + '.GND'].y, side);
+      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
-      var gpp = gpPt(c.pins.SIG.gp);
-      wires.add(POINTS[c.compId + '.SDA'], gpp, nextSig(), c.compId + ':SIG');
+      wires.add(POINTS[c.compId + '.SDA'], gpPt(c.pins.SIG.gp), nextSig(), c.compId + ':SIG');
       net.union(c.compId + '.SDA', gpKey(c.pins.SIG.gp));
-      pinLabel(POINTS[c.compId + '.VCC'], 'VCC', band); pinLabel(POINTS[c.compId + '.SDA'], 'DATA', band); pinLabel(POINTS[c.compId + '.GND'], 'GND', band);
-      nameLabel(sl.cx, pr.bbox, band, '温湿度センサ DHT22');
+      pinLabelAt(POINTS[c.compId + '.VCC'], 'VCC', side); pinLabelAt(POINTS[c.compId + '.SDA'], 'DATA', side); pinLabelAt(POINTS[c.compId + '.GND'], 'GND', side);
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '温湿度センサ DHT22', true);
       chk(c.compId, 'DHT22: DATA→GP' + c.pins.SIG.gp, connected(c.compId + '.SDA', gpKey(c.pins.SIG.gp)));
       chk(c.compId, 'DHT22: VCC→3V3/GND→GND', is3v3(c.compId + '.VCC') && isGnd(c.compId + '.GND'));
       chk(c.compId, 'DHT22: NC未接続', !isGnd(c.compId + '.NC') && !is3v3(c.compId + '.NC'));
     };
 
-    // 7セグLED（正立配置・上下ピンを直結）
+    // 7セグLED（サイド・縦向き＝各ピンが異なる高さで格子配線に載る）
     H.SEG7 = function (c) {
-      // 下バンドに正立配置（数字は正立のまま）。上辺ピン=Pico寄り。
-      var band = 'h';
-      var art = PARTS['wokwi-7segment'], s = 1.3;
-      var w = art.w * s, h = art.h * s;
-      // anchor: A-G のうち最初のGPの列付近
-      var pb = primaryBand(c);
-      var sl = slot(band, w, pb.anchorX, c);
-      var tx = sl.left, ty = pico.box.y1 + LEAD + 6 + sl.dy;
-      var pr = placeAt('wokwi-7segment', c.compId, tx, ty, s, POINTS);
+      var ps = primarySide(c), side = ps.side, s = 1.5;
+      var sl = slotV(side, 150, ps.anchorY, c);
+      var innerX = innerXOf(side, sl.dx);
+      var pr = placeSideStack('wokwi-7segment', c.compId, side, innerX, sl.cy, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
       net.union(c.compId + '.COM.1', c.compId + '.COM.2');
-      var g = gndPt(POINTS[c.compId + '.COM.1'].x, band);
-      wires.add(POINTS[c.compId + '.COM.1'], g, COLPAL.gnd, c.compId + ':COM', { sag: 14 });
-      net.union(c.compId + '.COM.1', 'gnd');
-      pinLabel(POINTS[c.compId + '.COM.1'], 'COM', band);
+      var g = gndPt(POINTS[c.compId + '.COM.2'].y, side);
+      wires.add(POINTS[c.compId + '.COM.2'], g, COLPAL.gnd, c.compId + ':COM');
+      net.union(c.compId + '.COM.2', 'gnd');
+      pinLabelAt(POINTS[c.compId + '.COM.2'], 'COM', side);
       ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(function (sname) {
         if (!c.pins[sname]) return;
-        var gpp = gpPt(c.pins[sname].gp);
-        wires.add(POINTS[c.compId + '.' + sname], gpp, nextSig(), c.compId + ':' + sname, { sag: 10 });
+        wires.add(POINTS[c.compId + '.' + sname], gpPt(c.pins[sname].gp), nextSig(), c.compId + ':' + sname);
         net.union(c.compId + '.' + sname, gpKey(c.pins[sname].gp));
+        pinLabelAt(POINTS[c.compId + '.' + sname], sname, side);
         chk(c.compId, '7セグ: ' + sname + '→GP' + c.pins[sname].gp, connected(c.compId + '.' + sname, gpKey(c.pins[sname].gp)));
       });
-      nameLabel(sl.cx, pr.bbox, band, '7セグメントLED');
-      chk(c.compId, '7セグ: COM→GND', isGnd(c.compId + '.COM.1'));
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '7セグメントLED', true);
+      chk(c.compId, '7セグ: COM→GND', isGnd(c.compId + '.COM.2'));
     };
 
-    // I2C LCD1602（ボード外・下段中央寄り）
+    // I2C LCD1602（右サイド・ピンは左端＝基板向き）
     H.LCD = function (c) {
       var s = 0.72;
       var art = PARTS['wokwi-lcd1602'];
-      var w = art.w * s;
       var ov = overrides && overrides[c.compId];
-      var tx = pico.box.x0 + (rightX) + ((ov && ov.dx) || 0);
-      var ty = pico.box.y1 + LEAD + 118 + ((ov && ov.dy) || 0);
-      rightX += w + 30;
+      var tx = pico.rightX + CIN + ((ov && ov.dx) || 0);
+      var ty = pico.topY + 6 + ((ov && ov.dy) || 0);
       var pr = placeAt('wokwi-lcd1602', c.compId, tx, ty, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      var g = gndPt(POINTS[c.compId + '.GND'].x, 'h');
-      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 20 });
+      var g = gndPt(POINTS[c.compId + '.GND'].y, 'right');
+      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
-      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC', { sag: 26 });
+      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
-      wires.add(POINTS[c.compId + '.SDA'], gpPt(c.pins.SDA.gp), nextSig(), c.compId + ':SDA', { sag: 30 });
+      wires.add(POINTS[c.compId + '.SDA'], gpPt(c.pins.SDA.gp), nextSig(), c.compId + ':SDA');
       net.union(c.compId + '.SDA', gpKey(c.pins.SDA.gp));
-      wires.add(POINTS[c.compId + '.SCL'], gpPt(c.pins.SCL.gp), nextSig(), c.compId + ':SCL', { sag: 36 });
+      wires.add(POINTS[c.compId + '.SCL'], gpPt(c.pins.SCL.gp), nextSig(), c.compId + ':SCL');
       net.union(c.compId + '.SCL', gpKey(c.pins.SCL.gp));
-      ['GND', 'VCC', 'SDA', 'SCL'].forEach(function (pn) { pinLabel(POINTS[c.compId + '.' + pn], pn, 't'); });
-      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 'h', 'LCD1602 (I2C)');
+      ['GND', 'VCC', 'SDA', 'SCL'].forEach(function (pn) { pinLabelAt(POINTS[c.compId + '.' + pn], pn, 'left'); });
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 'LCD1602 (I2C)', true);
       chk(c.compId, 'LCD: SDA→GP' + c.pins.SDA.gp, connected(c.compId + '.SDA', gpKey(c.pins.SDA.gp)));
       chk(c.compId, 'LCD: SCL→GP' + c.pins.SCL.gp, connected(c.compId + '.SCL', gpKey(c.pins.SCL.gp)));
       chk(c.compId, 'LCD: VCC→3V3/GND→GND', is3v3(c.compId + '.VCC') && isGnd(c.compId + '.GND'));
     };
 
-    // CdS光センサモジュール（ボード外・下段）
+    // CdS光センサモジュール（左サイド・ピンは右端＝基板向き）
     H.CDS = function (c) {
       var s = 0.8;
       var art = PARTS['wokwi-photoresistor-sensor'];
-      var w = art.w * s;
       var ov = overrides && overrides[c.compId];
-      var tx = pico.box.x0 + rightX + ((ov && ov.dx) || 0);
-      var ty = pico.box.y0 - LEAD - art.h * s - 30 + ((ov && ov.dy) || 0);
-      rightX += w + 30;
+      var tx = pico.leftX - CIN - art.w * s + ((ov && ov.dx) || 0);
+      var ty = pico.topY + 6 + ((ov && ov.dy) || 0);
       var pr = placeAt('wokwi-photoresistor-sensor', c.compId, tx, ty, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC', { sag: 18 });
+      wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
-      var g = gndPt(POINTS[c.compId + '.GND'].x, 't');
-      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 24 });
+      var g = gndPt(POINTS[c.compId + '.GND'].y, 'left');
+      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
-      wires.add(POINTS[c.compId + '.AO'], gpPt(c.pins.SIG.gp), nextSig(), c.compId + ':SIG', { sag: 30 });
+      wires.add(POINTS[c.compId + '.AO'], gpPt(c.pins.SIG.gp), nextSig(), c.compId + ':SIG');
       net.union(c.compId + '.AO', gpKey(c.pins.SIG.gp));
-      ['VCC', 'GND', 'AO'].forEach(function (pn) { pinLabel(POINTS[c.compId + '.' + pn], pn, 'h'); });
-      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 't', '光センサ (CdS)');
+      ['VCC', 'GND', 'AO'].forEach(function (pn) { pinLabelAt(POINTS[c.compId + '.' + pn], pn, 'right'); });
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '光センサ (CdS)', true);
       chk(c.compId, 'CDS: AO→ADCピン', connected(c.compId + '.AO', gpKey(c.pins.SIG.gp)));
       chk(c.compId, 'CDS: VCC→3V3', is3v3(c.compId + '.VCC'));
       chk(c.compId, 'CDS: GND→GND', isGnd(c.compId + '.GND'));
     };
 
-    // サーボ（ボード外・右）
+    // サーボ（右サイド・ピンは左端＝基板向き）
     H.SERVO = function (c) {
       var s = 0.8;
       var art = PARTS['wokwi-servo'];
       var ov = overrides && overrides[c.compId];
-      var tx = pico.box.x1 + 60 + ((ov && ov.dx) || 0);
-      var ty = rightY + pico.box.y0 + ((ov && ov.dy) || 0);
-      rightY += art.h * s + 26;
+      var tx = pico.rightX + CIN + ((ov && ov.dx) || 0);
+      var ty = (cursor.right != null ? cursor.right + VGAP : pico.topY + 6) + ((ov && ov.dy) || 0);
+      cursor.right = ty + art.h * s;
       var pr = placeAt('wokwi-servo', c.compId, tx, ty, s, POINTS);
       partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
-      wires.add(POINTS[c.compId + '.PWM'], gpPt(c.pins.PWM.gp), nextSig(), c.compId + ':PWM', { sag: 26 });
+      wires.add(POINTS[c.compId + '.PWM'], gpPt(c.pins.PWM.gp), nextSig(), c.compId + ':PWM');
       net.union(c.compId + '.PWM', gpKey(c.pins.PWM.gp));
-      if (VEXT_PT) { wires.add(POINTS[c.compId + '.V+'], VEXT_PT, COLPAL.vext, c.compId + ':V+', { sag: 18 }); net.union(c.compId + '.V+', 'vext'); }
-      var g = gndPt(POINTS[c.compId + '.GND'].x, 'h');
-      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 22 });
+      if (VEXT_PT) { wires.add(POINTS[c.compId + '.V+'], VEXT_PT, COLPAL.vext, c.compId + ':V+'); net.union(c.compId + '.V+', 'vext'); }
+      var g = gndPt(POINTS[c.compId + '.GND'].y, 'right');
+      wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
-      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 'h', 'サーボモーター');
+      ['PWM', 'V+', 'GND'].forEach(function (pn) { pinLabelAt(POINTS[c.compId + '.' + pn], pn === 'PWM' ? 'PWM(GP' + parseInt(c.pins.PWM.gp) + ')' : pn, 'left'); });
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, 'サーボモーター', true);
       chk(c.compId, 'サーボ: PWM→GP' + c.pins.PWM.gp, connected(c.compId + '.PWM', gpKey(c.pins.PWM.gp)));
       chk(c.compId, 'サーボ: V+→外部電源', connected(c.compId + '.V+', 'vext'));
       chk(c.compId, 'サーボ: GND→GND', isGnd(c.compId + '.GND'));
     };
 
-    // L293D + DCモーター（ボード外・下段）
+    // L293D + DCモーター（ボード下）
     H.L293D = function (c) {
       var ov = overrides && overrides[c.compId];
-      var tx = pico.box.x0 + rightX + ((ov && ov.dx) || 0);
-      var ty = pico.box.y1 + LEAD + 110 + ((ov && ov.dy) || 0);
+      var tx = belowX + ((ov && ov.dx) || 0);
+      var ty = belowY + 20 + ((ov && ov.dy) || 0);
       var dip = drawL293D(tx, ty, c.compId, POINTS);
       partsSvg.push(dip.svg); addBox(c.compId, dip.bbox);
       var mot = drawMotor(tx + 8 * PITCH + 60, ty - 8, 'motor_' + c.compId, 'DCモーター', POINTS);
       partsSvg.push(mot.svg); addBox('motor_' + c.compId, mot.bbox);
-      rightX += 8 * PITCH + 200;
-      // 電源
+      belowX += 8 * PITCH + 220;
       if (VEXT_PT) {
-        wires.add(POINTS[c.compId + '.VS'], VEXT_PT, COLPAL.vext, c.compId + ':VS', { sag: 14 }); net.union(c.compId + '.VS', 'vext');
-        wires.add(POINTS[c.compId + '.VSS'], VEXT_PT, COLPAL.vext, c.compId + ':VSS', { sag: 20 }); net.union(c.compId + '.VSS', 'vext');
+        wires.add(POINTS[c.compId + '.VS'], VEXT_PT, COLPAL.vext, c.compId + ':VS'); net.union(c.compId + '.VS', 'vext');
+        wires.add(POINTS[c.compId + '.VSS'], VEXT_PT, COLPAL.vext, c.compId + ':VSS'); net.union(c.compId + '.VSS', 'vext');
       }
-      var g = gndPt(POINTS[c.compId + '.GNDb1'].x, 'h');
-      wires.add(POINTS[c.compId + '.GNDb1'], g, COLPAL.gnd, c.compId + ':GND', { sag: 14 }); net.union(c.compId + '.GNDb1', 'gnd');
+      var g = gndPt(pico.botY, POINTS[c.compId + '.GNDb1'].x < pico.cx ? 'left' : 'right');
+      wires.add(POINTS[c.compId + '.GNDb1'], g, COLPAL.gnd, c.compId + ':GND'); net.union(c.compId + '.GNDb1', 'gnd');
       net.union(c.compId + '.GNDb1', c.compId + '.GNDb2'); net.union(c.compId + '.GNDb1', c.compId + '.GNDt1'); net.union(c.compId + '.GNDt1', c.compId + '.GNDt2');
       if (c.pins.EN && c.pins.EN.gp != null) {
         wires.add(POINTS[c.compId + '.EN1'], gpPt(c.pins.EN.gp), nextSig(), c.compId + ':EN'); net.union(c.compId + '.EN1', gpKey(c.pins.EN.gp));
       } else if (VEXT_PT) {
-        wires.add(POINTS[c.compId + '.EN1'], VEXT_PT, COLPAL.vext, c.compId + ':EN', { sag: 26 }); net.union(c.compId + '.EN1', 'vext');
+        wires.add(POINTS[c.compId + '.EN1'], VEXT_PT, COLPAL.vext, c.compId + ':EN'); net.union(c.compId + '.EN1', 'vext');
       }
       wires.add(POINTS[c.compId + '.IN1'], gpPt(c.pins.IN1.gp), nextSig(), c.compId + ':IN1'); net.union(c.compId + '.IN1', gpKey(c.pins.IN1.gp));
       wires.add(POINTS[c.compId + '.IN2'], gpPt(c.pins.IN2.gp), nextSig(), c.compId + ':IN2'); net.union(c.compId + '.IN2', gpKey(c.pins.IN2.gp));
-      wires.add(POINTS[c.compId + '.OUT1'], POINTS['motor_' + c.compId + '.a'], nextSig(), c.compId + ':OUT1', { sag: 24 }); net.union(c.compId + '.OUT1', 'motor_' + c.compId + '.a');
-      wires.add(POINTS[c.compId + '.OUT2'], POINTS['motor_' + c.compId + '.b'], nextSig(), c.compId + ':OUT2', { sag: 30 }); net.union(c.compId + '.OUT2', 'motor_' + c.compId + '.b');
-      nameLabel((dip.bbox.x0 + dip.bbox.x1) / 2, dip.bbox, 'h', 'モータードライバ L293D');
+      wires.add(POINTS[c.compId + '.OUT1'], POINTS['motor_' + c.compId + '.a'], nextSig(), c.compId + ':OUT1', { midX: (POINTS[c.compId + '.OUT1'].x + POINTS['motor_' + c.compId + '.a'].x) / 2 }); net.union(c.compId + '.OUT1', 'motor_' + c.compId + '.a');
+      wires.add(POINTS[c.compId + '.OUT2'], POINTS['motor_' + c.compId + '.b'], nextSig(), c.compId + ':OUT2'); net.union(c.compId + '.OUT2', 'motor_' + c.compId + '.b');
+      nameLabel((dip.bbox.x0 + dip.bbox.x1) / 2, dip.bbox, 'モータードライバ L293D', true);
       chk(c.compId, 'L293D: IN1→GP' + c.pins.IN1.gp, connected(c.compId + '.IN1', gpKey(c.pins.IN1.gp)));
       chk(c.compId, 'L293D: IN2→GP' + c.pins.IN2.gp, connected(c.compId + '.IN2', gpKey(c.pins.IN2.gp)));
       chk(c.compId, 'L293D: OUT1/OUT2→モーター', connected(c.compId + '.OUT1', 'motor_' + c.compId + '.a') && connected(c.compId + '.OUT2', 'motor_' + c.compId + '.b'));
@@ -917,31 +1034,31 @@
       else chk(c.compId, 'L293D: EN→＋(常時有効)', connected(c.compId + '.EN1', 'vext'));
     };
 
-    // ステッピングモーター 28BYJ-48 + ULN2003（ボード外・下段）
+    // ステッピングモーター 28BYJ-48 + ULN2003（ボード下）
     H.STEPPER = function (c) {
       var ov = overrides && overrides[c.compId];
-      var ux = pico.box.x0 + rightX + ((ov && ov.dx) || 0);
-      var uy = pico.box.y1 + LEAD + 110 + ((ov && ov.dy) || 0);
+      var ux = belowX + ((ov && ov.dx) || 0);
+      var uy = belowY + 20 + ((ov && ov.dy) || 0);
       var uln = drawUln(ux, uy, 'uln_' + c.compId, POINTS);
       partsSvg.push(uln.svg); addBox('uln_' + c.compId, uln.bbox);
       var ms = 0.62, marT = PARTS['wokwi-stepper-motor'];
       var mx = ux + 156 + 60, my = uy - 30;
       var pr = placeAt('wokwi-stepper-motor', 'stp_' + c.compId, mx, my, ms, POINTS);
       partsSvg.push(pr.svg); addBox('stp_' + c.compId, pr.bbox);
-      rightX += 156 + marT.w * ms + 160;
-      ['IN1', 'IN2', 'IN3', 'IN4'].forEach(function (k, i) {
-        wires.add(POINTS['uln_' + c.compId + '.' + k], gpPt(c.pins[k].gp), nextSig(), c.compId + ':' + k, { sag: 18 + i * 6 });
+      belowX += 156 + marT.w * ms + 180;
+      ['IN1', 'IN2', 'IN3', 'IN4'].forEach(function (k) {
+        wires.add(POINTS['uln_' + c.compId + '.' + k], gpPt(c.pins[k].gp), nextSig(), c.compId + ':' + k);
         net.union('uln_' + c.compId + '.' + k, gpKey(c.pins[k].gp));
       });
-      if (VEXT_PT) { wires.add(POINTS['uln_' + c.compId + '.VCC'], VEXT_PT, COLPAL.vext, c.compId + ':VCC', { sag: 14 }); net.union('uln_' + c.compId + '.VCC', 'vext'); }
-      var g = gndPt(POINTS['uln_' + c.compId + '.GND'].x, 'h');
-      wires.add(POINTS['uln_' + c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND', { sag: 20 });
+      if (VEXT_PT) { wires.add(POINTS['uln_' + c.compId + '.VCC'], VEXT_PT, COLPAL.vext, c.compId + ':VCC'); net.union('uln_' + c.compId + '.VCC', 'vext'); }
+      var g = gndPt(pico.botY, POINTS['uln_' + c.compId + '.GND'].x < pico.cx ? 'left' : 'right');
+      wires.add(POINTS['uln_' + c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union('uln_' + c.compId + '.GND', 'gnd');
       ['A-', 'A+', 'B+', 'B-'].forEach(function (m, i) {
-        wires.add(POINTS['uln_' + c.compId + '.M' + m], POINTS['stp_' + c.compId + '.' + m], ['#2f7de0', '#e0a52f', '#8e44ad', '#159a72'][i], c.compId + ':M' + m, { sag: 14 + i * 6 });
+        wires.add(POINTS['uln_' + c.compId + '.M' + m], POINTS['stp_' + c.compId + '.' + m], ['#2f7de0', '#e0a52f', '#8e44ad', '#159a72'][i], c.compId + ':M' + m);
         net.union('uln_' + c.compId + '.M' + m, 'stp_' + c.compId + '.' + m);
       });
-      nameLabel((uln.bbox.x0 + uln.bbox.x1) / 2, uln.bbox, 'h', 'ステッピングモーター 28BYJ-48');
+      nameLabel((uln.bbox.x0 + uln.bbox.x1) / 2, uln.bbox, 'ステッピングモーター 28BYJ-48', true);
       ['IN1', 'IN2', 'IN3', 'IN4'].forEach(function (k) {
         chk(c.compId, 'ステッピング: ' + k + '→GP' + c.pins[k].gp, connected('uln_' + c.compId + '.' + k, gpKey(c.pins[k].gp)));
       });
@@ -949,62 +1066,60 @@
       chk(c.compId, 'ステッピング: モーター4線', connected('uln_' + c.compId + '.MA-', 'stp_' + c.compId + '.A-') && connected('uln_' + c.compId + '.MB-', 'stp_' + c.compId + '.B-'));
     };
 
-    // 外部電源（電池ボックス・左下）
+    // 外部電源（電池ボックス・ボード下左）
     H.EXTPWR = function (c) {
       var ov = overrides && overrides[c.compId];
-      var x = pico.box.x0 - 20 + ((ov && ov.dx) || 0);
-      var y = pico.box.y1 + LEAD + 110 + ((ov && ov.dy) || 0);
+      var x = pico.leftX - 20 + ((ov && ov.dx) || 0);
+      var y = pico.botY + 70 + ((ov && ov.dy) || 0);
       var bat = drawBattery(x, y, c.compId, '外部電源（モーター用 単3×2）', POINTS);
       partsSvg.push(bat.svg); addBox(c.compId, bat.bbox);
-      rightX = Math.max(rightX, bat.bbox.x1 - pico.box.x0 + 34);   // 後続モジュールを電池ボックスの右へ
+      belowX = Math.max(belowX, bat.bbox.x1 + 40);
+      belowY = Math.max(belowY, bat.bbox.y1 + 20);
       VEXT_PT = POINTS[c.compId + '.+'];
       net.union(c.compId + '.+', 'vext');
-      var g = gndPt(POINTS[c.compId + '.-'].x, 'h');
-      wires.add(POINTS[c.compId + '.-'], g, COLPAL.gnd, c.compId + ':-', { sag: 18 });
+      var g = gndPt(pico.botY, 'left');
+      wires.add(POINTS[c.compId + '.-'], g, COLPAL.gnd, c.compId + ':-');
       net.union(c.compId + '.-', 'gnd');
-      pinLabel(POINTS[c.compId + '.+'], '＋', 't'); pinLabel(POINTS[c.compId + '.-'], '−', 'h');
+      pinLabelAt(POINTS[c.compId + '.+'], '＋', 'right'); pinLabelAt(POINTS[c.compId + '.-'], '−', 'right');
       chk(c.compId, '外部電源: −→GND共通', isGnd(c.compId + '.-'));
       chk(c.compId, '外部電源: +→VEXT', connected(c.compId + '.+', 'vext'));
     };
 
     function placeholder(c) {
-      var pb = primaryBand(c), band = pb.band;
-      var sl = slot(band, 80, pb.anchorX, c);
-      var y = lineY(band, 0) + (band === 't' ? -30 : 30);
-      partsSvg.push('<g class="cv-comp" data-comp-id="' + c.compId + '"><rect x="' + (sl.cx - 40) + '" y="' + (y - 20) + '" width="80" height="40" rx="6" fill="#eceae3" stroke="#b9b3a6" stroke-width="1.5" stroke-dasharray="4 3"/>' +
-        '<text x="' + sl.cx + '" y="' + (y + 4) + '" text-anchor="middle" font-size="11" fill="#7a7566">' + c.type + '</text></g>');
-      addBox(c.compId, { x0: sl.cx - 40, y0: y - 20, x1: sl.cx + 40, y1: y + 20 });
+      var ps = primarySide(c), side = ps.side;
+      var sl = slotV(side, 50, ps.anchorY, c);
+      var x = innerXOf(side, sl.dx) - (side === 'left' ? 80 : 0);
+      partsSvg.push('<g class="cv-comp" data-comp-id="' + c.compId + '"><rect x="' + (x) + '" y="' + (sl.cy - 20) + '" width="80" height="40" rx="6" fill="#eceae3" stroke="#b9b3a6" stroke-width="1.5" stroke-dasharray="4 3"/>' +
+        '<text x="' + (x + 40) + '" y="' + (sl.cy + 4) + '" text-anchor="middle" font-size="11" fill="#7a7566">' + c.type + '</text></g>');
+      addBox(c.compId, { x0: x, y0: sl.cy - 20, x1: x + 80, y1: sl.cy + 20 });
       chk(c.compId, 'プレースホルダ（アート未取得）', false);
     }
 
-    // ---- 実行順: 外部電源(VEXT確定) → 直挿し部品(バンド内はanchorX昇順) → ボード外モジュール ----
-    var moduleType = { LCD: 1, SERVO: 1, L293D: 1, STEPPER: 1, CDS: 1 };
+    // ---- 実行順: 外部電源(VEXT確定) → 直挿し部品(サイド内はanchorY昇順) → ボード下/大型モジュール ----
+    var moduleType = { LCD: 1, SERVO: 1, L293D: 1, STEPPER: 1, CDS: 1, SEG7: 1 };
     function bucket(c) { return c.type === 'EXTPWR' ? 0 : (moduleType[c.type] ? 2 : 1); }
     var order = comps.slice().sort(function (a, b) {
       var ba = bucket(a), bb2 = bucket(b);
       if (ba !== bb2) return ba - bb2;
       if (ba === 1) {
-        var pa = primaryBand(a), pq = primaryBand(b);
-        if (pa.band !== pq.band) return pa.band < pq.band ? -1 : 1;   // 上(t)→下(h)
-        return pa.anchorX - pq.anchorX;                               // 接続ピンに近い順
+        var pa = primarySide(a), pq = primarySide(b);
+        if (pa.side !== pq.side) return pa.side < pq.side ? -1 : 1;
+        return pa.anchorY - pq.anchorY;
       }
       return 0;
     });
     order.forEach(function (c) { (H[c.type] || placeholder)(c); });
 
-    // ---- Picoピンラベル（使用ピンのみ）----
+    // ---- Picoピン名ラベル（使用ピンのみ・基板外側に水平テキスト）----
     Object.keys(usedPins).forEach(function (k) {
       var p = usedPins[k]; if (!p) return;
-      var nm = p.name || k;
-      var y = p.row === 'c' ? p.y - 7 : p.y + 12;
-      // 部品ピンラベルと干渉しにくいようPico側に小さく
-      labelSvg.push(label(p.x, y, nm, { fs: 8, fill: '#5b6066' }));
+      labelSvg.push(pinChip(p.x, p.y, p.name, p.side));
     });
 
     return {
-      partsSvg: partsSvg.join('\n'), wiresSvg: wires.render(), labelSvg: labelSvg.join('\n'),
+      partsSvg: partsSvg.join('\n'), wiresSvg: wires.render(wireOverrides), labelSvg: labelSvg.join('\n'),
       wireCount: wires.count(), checks: checks, bounds: bounds, boxes: boxes,
-      picoCross: wires.crossings(), crossIds: wires.crossIds()
+      picoCross: wires.crossings(), crossIds: wires.crossIds(), wireSegs: wires.segs()
     };
   }
 
@@ -1014,10 +1129,13 @@
   window.generateCircuitSVG = function (workspace, options) {
     options = options || {};
     var overrides = options.overrides || {};
+    var wireOverrides = options.wireOverrides || {};
+    // Pico本体のドラッグは overrides['__pico__'] で中心をずらす
+    var picoOv = overrides['__pico__'] || { dx: 0, dy: 0 };
     var parsed = parseBlocks(workspace);
     var comps = parsed.comps;
 
-    var pico = placePico(0, 0);
+    var pico = placePico(picoOv.dx || 0, picoOv.dy || 0);
     if (!pico) {
       return {
         svg: '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120"><text x="20" y="60" fill="#c0392b" font-size="14">circuit_parts_data.js が読み込まれていません</text></svg>',
@@ -1025,9 +1143,9 @@
       };
     }
 
-    var circuit = buildCircuit(pico, comps, overrides);
+    var circuit = buildCircuit(pico, comps, overrides, wireOverrides);
 
-    var b = circuit.bounds, pad = 28;
+    var b = circuit.bounds, pad = 30;
     var vx = b.x0 - pad, vy = b.y0 - pad, vx1 = b.x1 + pad, vy1 = b.y1 + pad;
 
     var overlay = [];
@@ -1046,14 +1164,15 @@
     }
 
     var vw = vx1 - vx, vh = vy1 - vy;
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + r2(vw) + '" height="' + r2(vh) +
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + r2(vw) + '" height="' + r2(vh) +
       '" viewBox="' + r2(vx) + ' ' + r2(vy) + ' ' + r2(vw) + ' ' + r2(vh) + '" font-family="sans-serif">\n' +
       '<rect x="' + r2(vx) + '" y="' + r2(vy) + '" width="' + r2(vw) + '" height="' + r2(vh) + '" fill="#fbfaf7"/>\n' +
       circuit.wiresSvg + '\n' + pico.svg + '\n' + circuit.partsSvg + '\n' + circuit.labelSvg + '\n' + overlay.join('\n') + '\n</svg>';
 
     window.__PYCO_DIRECT_DEBUG = {
-      picoTop: PICO_TOP, picoBot: PICO_BOT, picoTable: pico.table, picoPinTableOk: pico.pinTableOk,
-      checks: circuit.checks, boxes: circuit.boxes, picoCross: circuit.picoCross, crossIds: circuit.crossIds
+      picoLeft: PICO_LEFT, picoRight: PICO_RIGHT, picoTable: pico.table, picoPinTableOk: pico.pinTableOk,
+      checks: circuit.checks, boxes: circuit.boxes, picoCross: circuit.picoCross, crossIds: circuit.crossIds,
+      wireSegs: circuit.wireSegs
     };
     return { svg: svg, compCount: comps.length, wireCount: circuit.wireCount };
   };
