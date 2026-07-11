@@ -84,6 +84,156 @@
   }
 
   // ============================================================
+  //  テキスト衝突管理（文字ラベルの重なり完全排除）
+  //  全ラベル（ピン名チップ・部品側ピンラベル・部品名・極性±）の bbox を収集し、
+  //  テキスト同士 / テキスト×配線 の交差を解消するレイアウトパス。
+  //  解消手段の優先順: ①原位置 ②列に沿う微小オフセット ③外側/反対へ退避
+  //                    ④密集限界では白不透明背景チップ化（許容箇所は数えて報告）
+  // ============================================================
+  var SEG_PAD = 1.8;   // 配線ストローク(3px)半分＋余白。harness2.js と一致させること。
+  // 文字幅の近似（全角=fs / 半角=0.6fs）。＋(FF0B)・−(2212)・●(25CF)は全角扱い。
+  function textWidth(text, fs) {
+    var w = 0;
+    for (var i = 0; i < text.length; i++) {
+      var cc = text.charCodeAt(i);
+      var full = (cc >= 0x1100 && cc <= 0x115F) || (cc >= 0x2E80 && cc <= 0xA4CF) ||
+        (cc >= 0xAC00 && cc <= 0xD7A3) || (cc >= 0xF900 && cc <= 0xFAFF) ||
+        (cc >= 0xFE30 && cc <= 0xFE4F) || (cc >= 0xFF00 && cc <= 0xFF60) ||
+        (cc >= 0xFFE0 && cc <= 0xFFE6) || cc === 0x2212 || cc === 0x25CF;
+      w += full ? fs * 1.0 : fs * 0.6;
+    }
+    return w;
+  }
+  function textBBox(x, y, w, anchor, fs) {
+    var x0, x1;
+    if (anchor === 'end') { x1 = x; x0 = x - w; }
+    else if (anchor === 'start') { x0 = x; x1 = x + w; }
+    else { x0 = x - w / 2; x1 = x + w / 2; }
+    return { x0: x0 - 0.6, x1: x1 + 0.6, y0: y - fs * 0.80, y1: y + fs * 0.24 };
+  }
+  function rOv(a, b) { var e = 0.4; return a.x0 < b.x1 - e && b.x0 < a.x1 - e && a.y0 < b.y1 - e && b.y0 < a.y1 - e; }
+  // 配線折れ線を軸平行の細矩形群へ（テキスト×配線交差判定用）
+  function segRectsFrom(wireSegs, pad) {
+    var out = [];
+    for (var s = 0; s < wireSegs.length; s++) {
+      var pts = wireSegs[s].pts;
+      for (var i = 0; i < pts.length - 1; i++) {
+        var a = pts[i], b = pts[i + 1];
+        var x0 = Math.min(a.x, b.x), x1 = Math.max(a.x, b.x), y0 = Math.min(a.y, b.y), y1 = Math.max(a.y, b.y);
+        if (x1 - x0 < 0.6 && y1 - y0 < 0.6) continue;
+        out.push({ x0: x0 - pad, x1: x1 + pad, y0: y0 - pad, y1: y1 + pad });
+      }
+    }
+    return out;
+  }
+  // 通常テキスト描画（白ハロー）。bg=true で白不透明背景チップを裏に敷く。
+  function renderPlain(x, y, text, fs, anchor, weight, fill, bg) {
+    var t = label(x, y, text, { fs: fs, anchor: anchor, weight: weight, fill: fill });
+    if (!bg) return t;
+    var bb = textBBox(x, y, textWidth(text, fs), anchor, fs);
+    var rect = '<rect x="' + r2(bb.x0) + '" y="' + r2(bb.y0) + '" width="' + r2(bb.x1 - bb.x0) +
+      '" height="' + r2(bb.y1 - bb.y0) + '" rx="2" fill="#fbfaf7" fill-opacity="0.95" stroke="#d8d2c4" stroke-width="0.7"/>';
+    return '<g class="cv-txtbg">' + rect + t + '</g>';
+  }
+  // ピン名チップ（outGap>0 で外側へ退避＋リーダー線）。outGap=0 は従来 pinChip と同一。
+  function renderChip(px, py, text, side, outGap) {
+    var fs = 8.6, padX = 3.2, w = text.length * fs * 0.62 + padX * 2, h = 13;
+    var left = (side === 'left');
+    var ex = left ? px - outGap : px + outGap;
+    var rx = left ? ex - w : ex;
+    var tx = left ? ex - padX : ex + padX;
+    var anchor = left ? 'end' : 'start';
+    var lead = outGap > 0.5 ? '<line x1="' + r2(px) + '" y1="' + r2(py) + '" x2="' + r2(ex) + '" y2="' + r2(py) +
+      '" stroke="#c9c3b4" stroke-width="1"/>' : '';
+    return '<g class="cv-pinlbl">' + lead +
+      '<rect x="' + r2(rx) + '" y="' + r2(py - h / 2) + '" width="' + r2(w) + '" height="' + h +
+      '" rx="2.5" fill="#fbfaf7" stroke="#c9c3b4" stroke-width="0.8"/>' +
+      '<text x="' + r2(tx) + '" y="' + r2(py + 3) + '" text-anchor="' + anchor + '" font-size="' + fs +
+      '" font-weight="bold" fill="#4a4f57">' + esc(text) + '</text></g>';
+  }
+  function chipBBox(px, py, text, side, outGap) {
+    var fs = 8.6, padX = 3.2, w = text.length * fs * 0.62 + padX * 2, h = 13;
+    var left = (side === 'left');
+    var ex = left ? px - outGap : px + outGap;
+    var rx = left ? ex - w : ex;
+    return { x0: rx - 0.5, x1: rx + w + 0.5, y0: py - h / 2 - 0.5, y1: py + h / 2 + 0.5 };
+  }
+  // ラベル候補生成（優先順に並べる。末尾は必ず bg フォールバック）
+  function candidatesFor(d) {
+    var list = [];
+    if (d.kind === 'chip') {
+      [0, 14, 28, 44].forEach(function (g) {
+        list.push({ bbox: chipBBox(d.px, d.py, d.text, d.side, g), bg: true, isChip: true,
+          render: (function (g2) { return function () { return renderChip(d.px, d.py, d.text, d.side, g2); }; })(g) });
+      });
+      return list;
+    }
+    if (d.kind === 'pinlbl') {
+      var s = d.out, anchor = s < 0 ? 'end' : 'start', w = textWidth(d.text, d.fs);
+      var offs = [[0, 0], [0, -7], [0, 7], [0, -14], [0, 14], [0, -21], [0, 21],
+        [s * 7, 0], [s * 7, -7], [s * 7, 7], [s * 14, 0], [s * 14, -8], [s * 14, 8], [s * 22, -9], [s * 22, 9]];
+      offs.forEach(function (o) {
+        var x = d.bx + o[0], y = d.by + o[1];
+        list.push({ bbox: textBBox(x, y, w, anchor, d.fs), bg: false,
+          render: function () { return renderPlain(x, y, d.text, d.fs, anchor, null, LBL, false); } });
+      });
+      list.push({ bbox: textBBox(d.bx, d.by, w, anchor, d.fs), bg: true,
+        render: function () { return renderPlain(d.bx, d.by, d.text, d.fs, anchor, null, LBL, true); } });
+      return list;
+    }
+    // name（部品名）: 既定方向へ段階退避 → 反対方向 → 横ずらし → bg
+    var w2 = textWidth(d.text, d.fs);
+    var yo = d.below ? [0, 13, 26, 39, -18, -31, 52] : [0, -13, -26, 18, -39, 31];
+    yo.forEach(function (o) {
+      var y = d.by + o;
+      list.push({ bbox: textBBox(d.bx, y, w2, 'middle', d.fs), bg: false,
+        render: (function (yy) { return function () { return renderPlain(d.bx, yy, d.text, d.fs, 'middle', 'bold', LBL, false); }; })(y) });
+    });
+    [-46, 46].forEach(function (xo) {
+      var x = d.bx + xo, y = d.by + (d.below ? 13 : -13);
+      list.push({ bbox: textBBox(x, y, w2, 'middle', d.fs), bg: false,
+        render: (function (xx, yy) { return function () { return renderPlain(xx, yy, d.text, d.fs, 'middle', 'bold', LBL, false); }; })(x, y) });
+    });
+    list.push({ bbox: textBBox(d.bx, d.by, w2, 'middle', d.fs), bg: true,
+      render: function () { return renderPlain(d.bx, d.by, d.text, d.fs, 'middle', 'bold', LBL, true); } });
+    return list;
+  }
+  // レイアウト本体：登録ラベルを衝突なしに配置。part 箱は name の soft 障害物。
+  function layoutLabels(reg, partBoxes, segRects) {
+    var ord = { pinlbl: 0, chip: 1, name: 2 };
+    var items = reg.slice().sort(function (a, b) { return ord[a.kind] - ord[b.kind]; });
+    var placed = [], svg = [], finalLabels = [], bgCount = 0, bgList = [];
+    function textClear(bb) { for (var i = 0; i < placed.length; i++) if (rOv(bb, placed[i])) return false; return true; }
+    function wireClear(bb) { for (var i = 0; i < segRects.length; i++) if (rOv(bb, segRects[i])) return false; return true; }
+    function partClear(bb) { for (var i = 0; i < partBoxes.length; i++) if (rOv(bb, partBoxes[i].bb)) return false; return true; }
+    var noOpt = (typeof window !== 'undefined' && window.__PYCO_NO_LABELOPT);
+    items.forEach(function (d) {
+      var cands = candidatesFor(d), chosen = null;
+      if (noOpt) {   // 検証用：原位置固定（衝突解消を無効化）。既定では通らない。
+        chosen = cands[0]; placed.push(chosen.bbox);
+        finalLabels.push({ bbox: chosen.bbox, bg: false, chip: !!chosen.isChip, kind: d.kind });
+        svg.push(chosen.render()); return;
+      }
+      var partCheck = (d.kind === 'name');
+      for (var pass = 0; pass < 2 && !chosen; pass++) {
+        for (var ci = 0; ci < cands.length; ci++) {
+          var c = cands[ci];
+          if (!textClear(c.bbox)) continue;
+          if (!c.bg && !wireClear(c.bbox)) continue;
+          if (pass === 0 && partCheck && !partClear(c.bbox)) continue;
+          chosen = c; break;
+        }
+      }
+      if (!chosen) chosen = cands[cands.length - 1];   // bg フォールバック
+      placed.push(chosen.bbox);
+      if (chosen.bg && !chosen.isChip) { bgCount++; bgList.push(d.kind + ':' + d.text); }
+      finalLabels.push({ bbox: chosen.bbox, bg: !!chosen.bg, chip: !!chosen.isChip, kind: d.kind });
+      svg.push(chosen.render());
+    });
+    return { svg: svg.join('\n'), labels: finalLabels, bgCount: bgCount, bgList: bgList };
+  }
+
+  // ============================================================
   //  Pico ピン配列の正（実機準拠・機械照合用）縦置き 上→下
   // ============================================================
   var PICO_LEFT = ['GP0', 'GP1', 'GND', 'GP2', 'GP3', 'GP4', 'GP5', 'GND', 'GP6', 'GP7',
@@ -638,7 +788,7 @@
     var POINTS = {};
     var net = NetGraph();
     var wires = WireMgr(pico);
-    var partsSvg = [], labelSvg = [];
+    var partsSvg = [], labelReg = [];
     var boxes = [{ id: '__pico__', bb: { x0: pico.box.x0, y0: pico.box.y0, x1: pico.box.x1, y1: pico.box.y1 } }];
     var usedPins = {};
     var bounds = { x0: pico.box.x0, y0: pico.box.y0, x1: pico.box.x1, y1: pico.box.y1 };
@@ -706,14 +856,15 @@
     // ボード下モジュール配置カーソル
     var belowX = pico.leftX, belowY = pico.botY + 70;
 
-    // 部品ピン小ラベル（接続点脇）
+    // 部品ピン小ラベル（接続点脇）→ 衝突管理レジストリへ登録
     function pinLabelAt(pt, text, side) {
-      labelSvg.push(label(side === 'left' ? pt.x - 4 : pt.x + 4, pt.y - 6, text, { fs: 7.2, anchor: side === 'left' ? 'end' : 'start' }));
+      labelReg.push({ kind: 'pinlbl', text: text, fs: 7.2, out: (side === 'left' ? -1 : 1),
+        bx: (side === 'left' ? pt.x - 4 : pt.x + 4), by: pt.y - 6 });
     }
-    // 部品名ラベル（本体の外側）
+    // 部品名ラベル（本体の外側）→ 衝突管理レジストリへ登録
     function nameLabel(cx, bb, text, below) {
       var y = below ? bb.y1 + 13 : bb.y0 - 5;
-      labelSvg.push(label(cx, y, text, { fs: 11, weight: 'bold' }));
+      labelReg.push({ kind: 'name', text: text, fs: 11, weight: 'bold', bx: cx, by: y, below: !!below });
     }
 
     // ====== 部品ハンドラ ======
@@ -1113,13 +1264,20 @@
     // ---- Picoピン名ラベル（使用ピンのみ・基板外側に水平テキスト）----
     Object.keys(usedPins).forEach(function (k) {
       var p = usedPins[k]; if (!p) return;
-      labelSvg.push(pinChip(p.x, p.y, p.name, p.side));
+      labelReg.push({ kind: 'chip', text: p.name, px: p.x, py: p.y, side: p.side });
     });
 
+    // ---- 配線を先に確定 → その配線を障害物として全テキストの衝突を解消 ----
+    var wiresSvg = wires.render(wireOverrides);
+    var segRects = segRectsFrom(wires.segs(), SEG_PAD);
+    var lay = layoutLabels(labelReg, boxes, segRects);
+    lay.labels.forEach(function (L) { grow(L.bbox); });   // 退避で外へ出た文字も描画域に含める
+
     return {
-      partsSvg: partsSvg.join('\n'), wiresSvg: wires.render(wireOverrides), labelSvg: labelSvg.join('\n'),
+      partsSvg: partsSvg.join('\n'), wiresSvg: wiresSvg, labelSvg: lay.svg,
       wireCount: wires.count(), checks: checks, bounds: bounds, boxes: boxes,
-      picoCross: wires.crossings(), crossIds: wires.crossIds(), wireSegs: wires.segs()
+      picoCross: wires.crossings(), crossIds: wires.crossIds(), wireSegs: wires.segs(),
+      labelBoxes: lay.labels, labelBgCount: lay.bgCount, labelBgList: lay.bgList
     };
   }
 
@@ -1172,7 +1330,8 @@
     window.__PYCO_DIRECT_DEBUG = {
       picoLeft: PICO_LEFT, picoRight: PICO_RIGHT, picoTable: pico.table, picoPinTableOk: pico.pinTableOk,
       checks: circuit.checks, boxes: circuit.boxes, picoCross: circuit.picoCross, crossIds: circuit.crossIds,
-      wireSegs: circuit.wireSegs
+      wireSegs: circuit.wireSegs,
+      labelBoxes: circuit.labelBoxes, labelBgCount: circuit.labelBgCount, labelBgList: circuit.labelBgList
     };
     return { svg: svg, compCount: comps.length, wireCount: circuit.wireCount };
   };
