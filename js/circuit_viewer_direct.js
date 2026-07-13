@@ -471,20 +471,25 @@
   //  自作モジュール（ボード外）
   // ============================================================
   function drawBattery(x, y, id, txt, POINTS) {
-    var w = 104, h = 62, svg = [];
+    var w = 104, h = 62, LEAD = 16, svg = [];
     svg.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8" fill="#2e3440" stroke="#1c2128" stroke-width="2"/>');
     for (var i = 0; i < 2; i++) {
       var cyy = y + 16 + i * 28;
       svg.push('<rect x="' + (x + 14) + '" y="' + (cyy - 9) + '" width="76" height="18" rx="4" fill="#cfa54a" stroke="#8d6f2f"/>');
     }
-    svg.push('<text x="' + (x + 12) + '" y="' + (y + 14) + '" fill="#ff8d8d" font-size="13" font-weight="bold">+</text>');
-    svg.push('<text x="' + (x + 12) + '" y="' + (y + h - 6) + '" fill="#9fc3ff" font-size="14" font-weight="bold">−</text>');
-    POINTS[id + '.+'] = { x: x + w - 8, y: y + 12 };
-    POINTS[id + '.-'] = { x: x + w - 8, y: y + h - 12 };
-    svg.push('<circle cx="' + (x + w - 8) + '" cy="' + (y + 12) + '" r="3.2" fill="#d24a4a"/>');
-    svg.push('<circle cx="' + (x + w - 8) + '" cy="' + (y + h - 12) + '" r="3.2" fill="#33363c"/>');
+    // 端子＝本体外へ引き出したリード線（+ は右／− は左）。配線は本体を横切らない。
+    var pyP = y + 16, pyM = y + h - 16;
+    var pxP = x + w + LEAD, pxM = x - LEAD;
+    POINTS[id + '.+'] = { x: pxP, y: pyP };
+    POINTS[id + '.-'] = { x: pxM, y: pyM };
+    svg.push('<line x1="' + (x + w) + '" y1="' + pyP + '" x2="' + pxP + '" y2="' + pyP + '" stroke="#d24a4a" stroke-width="2.4"/>');
+    svg.push('<line x1="' + x + '" y1="' + pyM + '" x2="' + pxM + '" y2="' + pyM + '" stroke="#33363c" stroke-width="2.4"/>');
+    svg.push('<circle cx="' + pxP + '" cy="' + pyP + '" r="3.2" fill="#d24a4a"/>');
+    svg.push('<circle cx="' + pxM + '" cy="' + pyM + '" r="3.2" fill="#33363c"/>');
+    svg.push('<text x="' + (x + w + 4) + '" y="' + (pyP - 6) + '" fill="#ff8d8d" font-size="13" font-weight="bold" text-anchor="middle">+</text>');
+    svg.push('<text x="' + (x - 4) + '" y="' + (pyM + 16) + '" fill="#9fc3ff" font-size="14" font-weight="bold" text-anchor="middle">−</text>');
     if (txt) svg.push(label(x + w / 2, y + h + 16, txt, { fs: 11, weight: 'bold' }));
-    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x, y0: y, x1: x + w, y1: y + h + 22 } };
+    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: pxM - 4, y0: y, x1: pxP + 4, y1: y + h + 22 }, body: { x0: x, y0: y, x1: x + w, y1: y + h } };
   }
   function drawMotor(x, y, id, txt, POINTS) {
     var w = 104, h = 58, svg = [];
@@ -497,7 +502,7 @@
     POINTS[id + '.a'] = { x: tex - 4, y: tya };
     POINTS[id + '.b'] = { x: tex - 4, y: tyb };
     if (txt) svg.push(label(x + w / 2, y + h + 15, txt, { fs: 11, weight: 'bold' }));
-    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: tex - 6, y0: y, x1: x + w + 12, y1: y + h + 20 } };
+    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: tex - 6, y0: y, x1: x + w + 12, y1: y + h + 20 }, body: { x0: x, y0: y, x1: x + w, y1: y + h } };
   }
   function drawUln(x, y, id, POINTS) {
     var w = 156, h = 84, svg = [];
@@ -519,7 +524,7 @@
       POINTS[id + '.M' + motNames[j]] = { x: x + w - 7, y: my };
     }
     svg.push('<text x="' + (x + w / 2) + '" y="' + (y + h - 8) + '" fill="#dce7ff" font-size="9" text-anchor="middle">28BYJ-48 用</text>');
-    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x - 8, y0: y, x1: x + w + 4, y1: y + h + 4 } };
+    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x - 8, y0: y, x1: x + w + 4, y1: y + h + 4 }, body: { x0: x, y0: y, x1: x + w, y1: y + h } };
   }
   // L293D DIP-16 スタンドアロン（上下8ピン・ピン座標を返す）
   function drawL293D(x, y, id, POINTS) {
@@ -541,7 +546,7 @@
       svg.push('<text x="' + px + '" y="' + (y + 11) + '" fill="#9aa3ad" font-size="5" text-anchor="middle">' + topN[i] + '</text>');
       svg.push('<text x="' + px + '" y="' + (y + ph - 4) + '" fill="#9aa3ad" font-size="4.6" text-anchor="middle">' + botN[i] + '</text>');
     }
-    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x, y0: y - 8, x1: x + pw, y1: y + ph + 8 } };
+    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x, y0: y - 8, x1: x + pw, y1: y + ph + 8 }, body: { x0: x, y0: y, x1: x + pw, y1: y + ph } };
   }
 
   // ============================================================
@@ -630,8 +635,9 @@
       segs: function () { return segs; },
       render: function (wireOverrides) {
         wireOverrides = wireOverrides || {};
-        var picoWires = [], freeWires = [];
+        var picoWires = [], freeWires = [], explicitWires = [];
         list.forEach(function (w) {
+          if (w.opt && w.opt.pts) { explicitWires.push(w); return; }   // 明示ルート（本体回避・手動配線）
           var P = (w.a && w.a.pico) ? w.a : ((w.b && w.b.pico) ? w.b : null);
           if (P) {
             var C = (P === w.a) ? w.b : w.a;
@@ -773,9 +779,11 @@
           if (!polyHitsInner(Lh, innerBox)) { emit(w, Lh); return; }
           if (!polyHitsInner(V, innerBox)) { emit(w, V); return; }
           // どちらも基板を横切る場合は基板下のバス帯を回る
-          var busYf = pico.botY + 46 + (busFN++) * 7;
+          var busYf = pico.botY + 46 + (busFN++) * 11;
           emit(w, [{ x: a.x, y: a.y }, { x: a.x, y: busYf }, { x: b.x, y: busYf }, { x: b.x, y: b.y }]);
         });
+        // 明示ルート（手動計算済み折れ線）をそのまま描画
+        explicitWires.forEach(function (w) { emit(w, w.opt.pts); });
         return out.join('\n');
       }
     };
@@ -800,7 +808,8 @@
       bounds.x0 = Math.min(bounds.x0, bb.x0); bounds.y0 = Math.min(bounds.y0, bb.y0);
       bounds.x1 = Math.max(bounds.x1, bb.x1); bounds.y1 = Math.max(bounds.y1, bb.y1);
     }
-    function addBox(id, bb) { boxes.push({ id: id, bb: bb }); grow(bb); }
+    // body: 配線交差判定に使う「実体（塗り）矩形」。省略時は交差判定から除外（リード外向き部品）。
+    function addBox(id, bb, body) { boxes.push({ id: id, bb: bb, body: body || null }); grow(bb); }
     function chk(comp, rule, ok, detail) { checks.push({ comp: comp, rule: rule, ok: !!ok, detail: detail || '' }); }
 
     // ---- Picoピン点/キー ----
@@ -1086,7 +1095,7 @@
       var tx = pico.rightX + CIN + ((ov && ov.dx) || 0);
       var ty = pico.topY + 6 + ((ov && ov.dy) || 0);
       var pr = placeAt('wokwi-lcd1602', c.compId, tx, ty, s, POINTS);
-      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
+      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox, pr.bbox);
       var g = gndPt(POINTS[c.compId + '.GND'].y, 'right');
       wires.add(POINTS[c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union(c.compId + '.GND', 'gnd');
@@ -1111,7 +1120,7 @@
       var tx = pico.leftX - CIN - art.w * s + ((ov && ov.dx) || 0);
       var ty = pico.topY + 6 + ((ov && ov.dy) || 0);
       var pr = placeAt('wokwi-photoresistor-sensor', c.compId, tx, ty, s, POINTS);
-      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
+      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox, pr.bbox);
       wires.add(POINTS[c.compId + '.VCC'], v3Pt(), COLPAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
       var g = gndPt(POINTS[c.compId + '.GND'].y, 'left');
@@ -1135,7 +1144,7 @@
       var ty = (cursor.right != null ? cursor.right + VGAP : pico.topY + 6) + ((ov && ov.dy) || 0);
       cursor.right = ty + art.h * s;
       var pr = placeAt('wokwi-servo', c.compId, tx, ty, s, POINTS);
-      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
+      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox, pr.bbox);
       wires.add(POINTS[c.compId + '.PWM'], gpPt(c.pins.PWM.gp), nextSig(), c.compId + ':PWM');
       net.union(c.compId + '.PWM', gpKey(c.pins.PWM.gp));
       if (VEXT_PT) { wires.add(POINTS[c.compId + '.V+'], VEXT_PT, COLPAL.vext, c.compId + ':V+'); net.union(c.compId + '.V+', 'vext'); }
@@ -1155,26 +1164,57 @@
       var tx = belowX + ((ov && ov.dx) || 0);
       var ty = belowY + 20 + ((ov && ov.dy) || 0);
       var dip = drawL293D(tx, ty, c.compId, POINTS);
-      partsSvg.push(dip.svg); addBox(c.compId, dip.bbox);
+      partsSvg.push(dip.svg); addBox(c.compId, dip.bbox, dip.body);
       var mot = drawMotor(tx + 8 * PITCH + 60, ty - 8, 'motor_' + c.compId, 'DCモーター', POINTS);
-      partsSvg.push(mot.svg); addBox('motor_' + c.compId, mot.bbox);
-      belowX += 8 * PITCH + 220;
-      if (VEXT_PT) {
-        wires.add(POINTS[c.compId + '.VS'], VEXT_PT, COLPAL.vext, c.compId + ':VS'); net.union(c.compId + '.VS', 'vext');
-        wires.add(POINTS[c.compId + '.VSS'], VEXT_PT, COLPAL.vext, c.compId + ':VSS'); net.union(c.compId + '.VSS', 'vext');
+      partsSvg.push(mot.svg); addBox('motor_' + c.compId, mot.bbox, mot.body);
+      belowX += 8 * PITCH + 240;
+      // ---- L293D 明示配線（DIP本体を横切らない・下辺ピンは一旦下へ退避してから回す）----
+      var pw = 8 * PITCH, solidBot = ty + 74;   // 74 = drawL293D の DIP 高さ ph
+      var bIdx = 0, lIdx = 0, rIdx = 0, mIdx = 0;
+      function busBelow() { return solidBot + 16 + (bIdx++) * 11; }
+      function chOut(P) {
+        return (P.side === 'left')
+          ? pico.leftX - LBLW - (3 + lIdx++) * CH_STEP
+          : Math.max(pico.rightX + LBLW, tx + pw + 14) + (rIdx++) * CH_STEP;
       }
-      var g = gndPt(pico.botY, POINTS[c.compId + '.GNDb1'].x < pico.cx ? 'left' : 'right');
-      wires.add(POINTS[c.compId + '.GNDb1'], g, COLPAL.gnd, c.compId + ':GND'); net.union(c.compId + '.GNDb1', 'gnd');
+      // 下辺ピン → Pico（下へ退避 → 外側チャンネル → Pico ピンへ）
+      function toPico(Ckey, P, color, id) {
+        var C = POINTS[Ckey], bus = busBelow(), ch = chOut(P);
+        wires.add(P, C, color, id, { pts: [
+          { x: P.x, y: P.y }, { x: ch, y: P.y }, { x: ch, y: bus },
+          { x: C.x, y: bus }, { x: C.x, y: C.y } ] });
+      }
+      // 下辺ピン → 外部電源＋（下へ退避 → 電池左まで水平 → 電池リードへ上がる）
+      function toBatDown(Ckey, id) {
+        var C = POINTS[Ckey], bus = busBelow(), bat = VEXT_PT;
+        wires.add(C, bat, COLPAL.vext, id, { pts: [
+          { x: C.x, y: C.y }, { x: C.x, y: bus }, { x: bat.x, y: bus }, { x: bat.x, y: bat.y } ] });
+      }
+      // 下辺ピン → モーター端子（下へ退避 → チップとモーターの間を上がる）
+      function toMotor(Ckey, Mkey, color, id) {
+        var C = POINTS[Ckey], M = POINTS[Mkey], bus = busBelow(), riser = tx + pw + 10 + (mIdx++) * 12;
+        wires.add(C, M, color, id, { pts: [
+          { x: C.x, y: C.y }, { x: C.x, y: bus }, { x: riser, y: bus }, { x: riser, y: M.y }, { x: M.x, y: M.y } ] });
+      }
       net.union(c.compId + '.GNDb1', c.compId + '.GNDb2'); net.union(c.compId + '.GNDb1', c.compId + '.GNDt1'); net.union(c.compId + '.GNDt1', c.compId + '.GNDt2');
+      toPico(c.compId + '.IN1', gpPt(c.pins.IN1.gp), nextSig(), c.compId + ':IN1'); net.union(c.compId + '.IN1', gpKey(c.pins.IN1.gp));
+      toPico(c.compId + '.IN2', gpPt(c.pins.IN2.gp), nextSig(), c.compId + ':IN2'); net.union(c.compId + '.IN2', gpKey(c.pins.IN2.gp));
+      toPico(c.compId + '.GNDb1', gndPt(pico.botY, 'left'), COLPAL.gnd, c.compId + ':GND'); net.union(c.compId + '.GNDb1', 'gnd');
       if (c.pins.EN && c.pins.EN.gp != null) {
-        wires.add(POINTS[c.compId + '.EN1'], gpPt(c.pins.EN.gp), nextSig(), c.compId + ':EN'); net.union(c.compId + '.EN1', gpKey(c.pins.EN.gp));
+        toPico(c.compId + '.EN1', gpPt(c.pins.EN.gp), nextSig(), c.compId + ':EN'); net.union(c.compId + '.EN1', gpKey(c.pins.EN.gp));
       } else if (VEXT_PT) {
-        wires.add(POINTS[c.compId + '.EN1'], VEXT_PT, COLPAL.vext, c.compId + ':EN'); net.union(c.compId + '.EN1', 'vext');
+        toBatDown(c.compId + '.EN1', c.compId + ':EN'); net.union(c.compId + '.EN1', 'vext');
       }
-      wires.add(POINTS[c.compId + '.IN1'], gpPt(c.pins.IN1.gp), nextSig(), c.compId + ':IN1'); net.union(c.compId + '.IN1', gpKey(c.pins.IN1.gp));
-      wires.add(POINTS[c.compId + '.IN2'], gpPt(c.pins.IN2.gp), nextSig(), c.compId + ':IN2'); net.union(c.compId + '.IN2', gpKey(c.pins.IN2.gp));
-      wires.add(POINTS[c.compId + '.OUT1'], POINTS['motor_' + c.compId + '.a'], nextSig(), c.compId + ':OUT1', { midX: (POINTS[c.compId + '.OUT1'].x + POINTS['motor_' + c.compId + '.a'].x) / 2 }); net.union(c.compId + '.OUT1', 'motor_' + c.compId + '.a');
-      wires.add(POINTS[c.compId + '.OUT2'], POINTS['motor_' + c.compId + '.b'], nextSig(), c.compId + ':OUT2'); net.union(c.compId + '.OUT2', 'motor_' + c.compId + '.b');
+      if (VEXT_PT) {
+        toBatDown(c.compId + '.VS', c.compId + ':VS'); net.union(c.compId + '.VS', 'vext');
+        // VSS は上辺ピン＝そのまま上へ（本体の上を通らない）
+        wires.add(POINTS[c.compId + '.VSS'], VEXT_PT, COLPAL.vext, c.compId + ':VSS', { pts: [
+          { x: POINTS[c.compId + '.VSS'].x, y: POINTS[c.compId + '.VSS'].y },
+          { x: POINTS[c.compId + '.VSS'].x, y: VEXT_PT.y }, { x: VEXT_PT.x, y: VEXT_PT.y } ] });
+        net.union(c.compId + '.VSS', 'vext');
+      }
+      toMotor(c.compId + '.OUT1', 'motor_' + c.compId + '.a', nextSig(), c.compId + ':OUT1'); net.union(c.compId + '.OUT1', 'motor_' + c.compId + '.a');
+      toMotor(c.compId + '.OUT2', 'motor_' + c.compId + '.b', nextSig(), c.compId + ':OUT2'); net.union(c.compId + '.OUT2', 'motor_' + c.compId + '.b');
       nameLabel((dip.bbox.x0 + dip.bbox.x1) / 2, dip.bbox, 'モータードライバ L293D', true);
       chk(c.compId, 'L293D: IN1→GP' + c.pins.IN1.gp, connected(c.compId + '.IN1', gpKey(c.pins.IN1.gp)));
       chk(c.compId, 'L293D: IN2→GP' + c.pins.IN2.gp, connected(c.compId + '.IN2', gpKey(c.pins.IN2.gp)));
@@ -1191,8 +1231,8 @@
       var ux = belowX + ((ov && ov.dx) || 0);
       var uy = belowY + 20 + ((ov && ov.dy) || 0);
       var uln = drawUln(ux, uy, 'uln_' + c.compId, POINTS);
-      partsSvg.push(uln.svg); addBox('uln_' + c.compId, uln.bbox);
-      var ms = 0.62, marT = PARTS['wokwi-stepper-motor'];
+      partsSvg.push(uln.svg); addBox('uln_' + c.compId, uln.bbox, uln.body);
+      var ms = 0.72, marT = PARTS['wokwi-stepper-motor'];
       var mx = ux + 156 + 60, my = uy - 30;
       var pr = placeAt('wokwi-stepper-motor', 'stp_' + c.compId, mx, my, ms, POINTS);
       partsSvg.push(pr.svg); addBox('stp_' + c.compId, pr.bbox);
@@ -1202,11 +1242,15 @@
         net.union('uln_' + c.compId + '.' + k, gpKey(c.pins[k].gp));
       });
       if (VEXT_PT) { wires.add(POINTS['uln_' + c.compId + '.VCC'], VEXT_PT, COLPAL.vext, c.compId + ':VCC'); net.union('uln_' + c.compId + '.VCC', 'vext'); }
-      var g = gndPt(pico.botY, POINTS['uln_' + c.compId + '.GND'].x < pico.cx ? 'left' : 'right');
+      // GND/VCC は ULN 左辺の外向きリード端子 → 必ず左サイドから寄せて本体を横切らせない
+      var g = gndPt(pico.botY, 'left');
       wires.add(POINTS['uln_' + c.compId + '.GND'], g, COLPAL.gnd, c.compId + ':GND');
       net.union('uln_' + c.compId + '.GND', 'gnd');
+      // モーター4線：ULN 右辺端子 → 必ず右へ出してからステッピングへ（本体を横切らない・水平先行L字）
       ['A-', 'A+', 'B+', 'B-'].forEach(function (m, i) {
-        wires.add(POINTS['uln_' + c.compId + '.M' + m], POINTS['stp_' + c.compId + '.' + m], ['#2f7de0', '#e0a52f', '#8e44ad', '#159a72'][i], c.compId + ':M' + m);
+        var A = POINTS['uln_' + c.compId + '.M' + m], B = POINTS['stp_' + c.compId + '.' + m];
+        wires.add(A, B, ['#2f7de0', '#e0a52f', '#8e44ad', '#159a72'][i], c.compId + ':M' + m,
+          { pts: [{ x: A.x, y: A.y }, { x: B.x, y: A.y }, { x: B.x, y: B.y }] });
         net.union('uln_' + c.compId + '.M' + m, 'stp_' + c.compId + '.' + m);
       });
       nameLabel((uln.bbox.x0 + uln.bbox.x1) / 2, uln.bbox, 'ステッピングモーター 28BYJ-48', true);
@@ -1223,7 +1267,7 @@
       var x = pico.leftX - 20 + ((ov && ov.dx) || 0);
       var y = pico.botY + 70 + ((ov && ov.dy) || 0);
       var bat = drawBattery(x, y, c.compId, '外部電源（モーター用 単3×2）', POINTS);
-      partsSvg.push(bat.svg); addBox(c.compId, bat.bbox);
+      partsSvg.push(bat.svg); addBox(c.compId, bat.bbox, bat.body);
       belowX = Math.max(belowX, bat.bbox.x1 + 40);
       belowY = Math.max(belowY, bat.bbox.y1 + 20);
       VEXT_PT = POINTS[c.compId + '.+'];
@@ -1231,7 +1275,7 @@
       var g = gndPt(pico.botY, 'left');
       wires.add(POINTS[c.compId + '.-'], g, COLPAL.gnd, c.compId + ':-');
       net.union(c.compId + '.-', 'gnd');
-      pinLabelAt(POINTS[c.compId + '.+'], '＋', 'right'); pinLabelAt(POINTS[c.compId + '.-'], '−', 'right');
+      // ＋/− 記号は drawBattery がリード端子脇に描画済み（重複ラベルは付けない）
       chk(c.compId, '外部電源: −→GND共通', isGnd(c.compId + '.-'));
       chk(c.compId, '外部電源: +→VEXT', connected(c.compId + '.+', 'vext'));
     };
@@ -1269,14 +1313,38 @@
 
     // ---- 配線を先に確定 → その配線を障害物として全テキストの衝突を解消 ----
     var wiresSvg = wires.render(wireOverrides);
-    var segRects = segRectsFrom(wires.segs(), SEG_PAD);
+    var wsegs = wires.segs();
+    // 配線端まで描画域に含める（チャンネル外周・本体回避ルートの見切れ防止）
+    wsegs.forEach(function (w) { w.pts.forEach(function (p) { grow({ x0: p.x, y0: p.y, x1: p.x, y1: p.y }); }); });
+    // ---- モジュール本体×配線 交差判定（body 指定の塗り矩形のみ・Pico横断とは別集計）----
+    var bodyCross = 0, bodyCrossIds = [];
+    var solidBodies = boxes.filter(function (bx) { return bx.body; });
+    wsegs.forEach(function (w) {
+      for (var i = 0; i < w.pts.length - 1; i++) {
+        var a = w.pts[i], b = w.pts[i + 1];
+        var horiz = Math.abs(a.y - b.y) < 0.6, vert = Math.abs(a.x - b.x) < 0.6;
+        if (!horiz && !vert) continue;
+        var sx0 = Math.min(a.x, b.x), sx1 = Math.max(a.x, b.x), sy0 = Math.min(a.y, b.y), sy1 = Math.max(a.y, b.y);
+        for (var j = 0; j < solidBodies.length; j++) {
+          var bb = solidBodies[j].body, IN = 3, TH = 10;
+          var bx0 = bb.x0 + IN, bx1 = bb.x1 - IN, by0 = bb.y0 + IN, by1 = bb.y1 - IN;
+          if (bx1 <= bx0 || by1 <= by0) continue;
+          var pen;
+          if (horiz) { if (!(sy0 > by0 && sy0 < by1)) continue; pen = Math.min(sx1, bx1) - Math.max(sx0, bx0); }
+          else { if (!(sx0 > bx0 && sx0 < bx1)) continue; pen = Math.min(sy1, by1) - Math.max(sy0, by0); }
+          if (pen > TH) { bodyCross++; if (bodyCrossIds.length < 8) bodyCrossIds.push(w.id + '×' + solidBodies[j].id); }
+        }
+      }
+    });
+    var segRects = segRectsFrom(wsegs, SEG_PAD);
     var lay = layoutLabels(labelReg, boxes, segRects);
     lay.labels.forEach(function (L) { grow(L.bbox); });   // 退避で外へ出た文字も描画域に含める
 
     return {
       partsSvg: partsSvg.join('\n'), wiresSvg: wiresSvg, labelSvg: lay.svg,
       wireCount: wires.count(), checks: checks, bounds: bounds, boxes: boxes,
-      picoCross: wires.crossings(), crossIds: wires.crossIds(), wireSegs: wires.segs(),
+      picoCross: wires.crossings(), crossIds: wires.crossIds(), wireSegs: wsegs,
+      bodyCross: bodyCross, bodyCrossIds: bodyCrossIds,
       labelBoxes: lay.labels, labelBgCount: lay.bgCount, labelBgList: lay.bgList
     };
   }
@@ -1330,7 +1398,7 @@
     window.__PYCO_DIRECT_DEBUG = {
       picoLeft: PICO_LEFT, picoRight: PICO_RIGHT, picoTable: pico.table, picoPinTableOk: pico.pinTableOk,
       checks: circuit.checks, boxes: circuit.boxes, picoCross: circuit.picoCross, crossIds: circuit.crossIds,
-      wireSegs: circuit.wireSegs,
+      wireSegs: circuit.wireSegs, bodyCross: circuit.bodyCross, bodyCrossIds: circuit.bodyCrossIds,
       labelBoxes: circuit.labelBoxes, labelBgCount: circuit.labelBgCount, labelBgList: circuit.labelBgList
     };
     return { svg: svg, compCount: comps.length, wireCount: circuit.wireCount };
