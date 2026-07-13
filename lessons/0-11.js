@@ -7,7 +7,7 @@ window.PYCO_LESSONS["0-11"] = {
   "title": "whileで繰り返そう",
   "subtitle": "Python × 入門 #11",
   "mode": "python",
-  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-11-while/",
+  "article": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-11-while/",
   "toolbox": [
     "var_set",
     "var_change",
@@ -20,15 +20,18 @@ window.PYCO_LESSONS["0-11"] = {
   ],
   "steps": [
     {
+      "track": "block",
       "title": "前回のおさらい",
       "body": "<p>0-9・0-10では <b>for</b> を使って「回数や範囲が決まっている繰り返し」を書きました。今回学ぶ <b>while</b> は、回数ではなく <b>条件</b> で繰り返しを決めます。</p><ul><li>「合計が100をこえるまで」「正しい合言葉が入るまで」のように、いつ終わるか実行するまで分からない繰り返しに向いています</li><li>条件が成り立っている間だけ、中の処理をずっと繰り返します</li></ul><p>準備ができたら「次へ ▶」を押してください。</p>",
       "hint": "このパネルは右上のボタンで折りたたみ、「✕」で学習をやめられます。"
     },
     {
+      "track": "block",
       "title": "whileは「条件が成り立つ間」繰り返す",
       "body": "<p><b>while</b> は「条件が成り立っている間、中の処理を繰り返す」しくみです。条件が成り立たなくなった時点で、ループの外へ進みます。</p><pre>x = 1\nwhile x <= 5:\n    print(x)\n    x = x + 1</pre><p>最初に <code>x</code> を <code>1</code> にしておきます。<code>x <= 5</code> が成り立つ間は表示をくり返し、そのたびに <code>x</code> を1増やします。<code>x</code> が6になると条件が成り立たなくなり、ループが止まります。</p>"
     },
     {
+      "track": "block",
       "title": "手順1：繰り返しブロックを置く",
       "body": "<p>「繰り返し」カテゴリから <b>ずっと〜の間 繰り返す</b> ブロックを取り出し、下の図のように置きましょう。条件のあなには「分岐」カテゴリの <b>比較</b> ブロックを、その左右には「値」カテゴリの <b>変数</b> と <b>数値</b> を入れます。</p><p>while ブロックが1つ置けたらクリアです。</p>",
       "hint": "比較ブロックの真ん中のプルダウンで、<= や >= などを選べます。",
@@ -48,6 +51,7 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "block",
       "title": "手順2：1から5まで表示する",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 x を 1 にする</b>（初期化）</li><li><b>x <= 5 の間 繰り返す</b> の中に、<b>x を表示する</b>→<b>x を 1 だけ増やす</b> を入れる</li></ol><p>「▶ 実行」を押して、<code>1</code>〜<code>5</code> が1行ずつ出れば成功です。</p><pre>1\n2\n3\n4\n5</pre>",
       "hint": "更新（x を 1 だけ増やす）を忘れると、条件がずっと成り立ったままになり止まりません。",
@@ -66,10 +70,12 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "block",
       "title": "「値を変える処理」を忘れない",
       "body": "<p>while でいちばん多い失敗は、<b>条件に使っている値を変え忘れる</b>ことです。値が変わらないと、条件がいつまでも成り立ったままになり、ループが終わりません。これを <b>無限ループ</b> と呼びます。</p><p>PycoBlocksでは実行できる回数に上限があり、終わらないループは途中で止まります。これはブラウザを守るためのしくみです。while を書くときは「いつ条件が成り立たなくなるのか」を必ず確かめましょう。</p>"
     },
     {
+      "track": "block",
       "title": "手順3：10からのカウントダウン",
       "body": "<p>今度は数を <b>減らしながら</b> くり返します。下の図のように組み立てましょう。</p><ol><li><b>変数 x を 10 にする</b></li><li><b>x >= 1 の間 繰り返す</b> の中で、<b>x を表示する</b>→<b>x を -1 だけ増やす</b>（1ずつ減らす）</li><li>ループの外（下）に <b>「発射！」を表示する</b> を置く</li></ol><p>「▶ 実行」を押して、<code>10</code>から<code>1</code>のあとに <code>発射！</code> と出れば成功です。</p>",
       "hint": "増やすブロックの数値を -1 にすると、1ずつ減らせます。「発射！」はループの外に置きます。",
@@ -83,6 +89,7 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "code",
       "title": "コードを読もう：whileとインデント",
       "body": "<p>手順2で組んだコードを読んでみましょう。<b>初期化・条件・更新</b> の3つがそろっているかに注目します。</p><pre class=\"code-lines\">x = 1\nwhile x &lt;= 5:\n    print(x)\n    x = x + 1</pre><ul><li><b>1行目</b> <code>x = 1</code>：くり返しの前に <code>x</code> を <code>1</code> にしておきます（<b>初期化</b>）。</li><li><b>2行目</b> <code>while x &lt;= 5:</code>「<code>x</code> が 5 以下の <b>間</b> くり返す」という <b>条件</b> です。行末の <b>:</b>（コロン）で中身が始まります。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>while</code> の中」を表します。<code>x</code> を表示します。</li><li><b>4行目</b>：同じ4つの空白なので、これも中の処理です。<code>x</code> を1増やします（<b>更新</b>）。これがあるから、<code>x</code> はいつか 6 になって条件が成り立たなくなり、ループが止まります。</li></ul><p>更新（4行目）を書き忘れると条件がずっと成り立ったままになり、終わらなくなります。for と同じく、くり返す処理はインデントで「中」に入れます。</p>",
       "callout": {
@@ -91,6 +98,7 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード読解テスト（記述式）",
       "body": "<p>次のコードを実行すると、数が何行か表示されます。<b>最後（いちばん下）</b>に表示される数はいくつでしょう？</p><pre class=\"code-lines\">x = 1\nwhile x &lt;= 3:\n    print(x)\n    x = x + 1</pre>",
@@ -105,6 +113,7 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>while</b> を使って、<code>1</code>・<code>2</code>・<code>3</code> を1行ずつ表示するコードを書いて実行しましょう。必ず止まるように、くり返しの中で数を <b>1ずつ増やす</b> ことを忘れないでください。</p><pre class=\"code-lines\">1\n2\n3</pre>",
@@ -128,6 +137,7 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>while が「終わらないループ（無限ループ）」になってしまう、いちばんの原因はどれでしょう？</p>",
@@ -143,6 +153,7 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p>次のうち、for よりも while が向いているのはどれでしょう？</p>",
@@ -158,9 +169,10 @@ window.PYCO_LESSONS["0-11"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "課題：好きな回数だけくり返そう",
-      "body": "<p>while を使って、好きな数を表示するプログラムを作ってみましょう。「初期化」「条件」「更新」の3つをそろえるのがコツです。while ブロックを1つ使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-11-while/</code></p>",
+      "body": "<p>while を使って、好きな数を表示するプログラムを作ってみましょう。「初期化」「条件」「更新」の3つをそろえるのがコツです。while ブロックを1つ使えばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "変数を初期化し、比較ブロックで条件を作り、ループの中で値を増やす（または減らす）ようにします。",
       "check": {
         "blocksRequired": [

@@ -7,7 +7,7 @@ window.PYCO_LESSONS["0-20"] = {
   "title": "リスト内包表記を使おう",
   "subtitle": "Python × 入門 #20",
   "mode": "python",
-  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-20-list-comprehension/",
+  "article": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-20-list-comprehension/",
   "toolbox": [
     "py_list_comp",
     "py_list_comp_if",
@@ -24,11 +24,13 @@ window.PYCO_LESSONS["0-20"] = {
   ],
   "steps": [
     {
+      "track": "block",
       "title": "短く書けるリストの作り方",
       "body": "<p>くり返しでリストを作るコードを、<b>1行で短く</b> 書ける書き方が <b>リスト内包表記</b> です。</p><p>ふつうのくり返しだと、こう書きます。</p><pre>squares = []\nfor i in range(1, 6):\n    squares.append(i * i)</pre><p>これをリスト内包表記にすると、次のように書けます。</p><pre>squares = [i * i for i in range(1, 6)]</pre><p><code>[ 式 for 変数 in リスト ]</code> の形で、各要素に式を当てはめた新しいリストができます。</p>",
       "hint": "「式 → for → 変数 → in → もとのリスト」の順で読むと意味がわかりやすいです。"
     },
     {
+      "track": "block",
       "title": "手順1：内包表記ブロックを置く",
       "body": "<p>「リスト」カテゴリから <b>[ 式 for 変数 in リスト ]</b> のブロックを取り出し、下の図のように置きましょう。</p><p>1つ置けたらクリアです。</p>",
       "hint": "左のあなに式、まん中に変数名、右のあなにもとのリストを入れます。",
@@ -48,6 +50,7 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "block",
       "title": "手順2：2乗のリストを作る",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 nums</b> に <b>リスト</b> <code>[1, 2, 3, 4]</code> を入れる</li><li>内包表記の式を <code>n × n</code>、変数を <code>n</code>、もとのリストを <code>nums</code> にする</li><li><b>値を表示する</b> で結果を表示する</li></ol><p>「▶ 実行」を押して、各要素を2乗したリストが出れば成功です。</p><pre>[1, 4, 9, 16]</pre>",
       "hint": "式の部分に算術演算ブロックで n × n を入れます。",
@@ -66,10 +69,12 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "block",
       "title": "条件でしぼり込む",
       "body": "<p>末尾に <b>if 条件</b> を加えると、条件を満たす要素だけを取り出せます。<b>[ 式 for 変数 in リスト if 条件 ]</b> のブロックを使います。</p><pre>[n for n in nums if n % 2 == 0]  →  偶数だけ</pre><p>同じ考え方で、<b>辞書内包表記</b> <code>{キー: 値 for …}</code> や <b>セット内包表記</b> <code>{式 for …}</code> も作れます。次で条件付きを試しましょう。</p>"
     },
     {
+      "track": "block",
       "title": "手順3：偶数だけ取り出す",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 nums</b> に <b>リスト</b> <code>[1, 2, 3, 4, 5, 6]</code> を入れる</li><li>条件付きの内包表記で、式を <code>n</code>、変数を <code>n</code>、もとのリストを <code>nums</code>、条件を <code>n % 2 == 0</code> にする</li><li><b>値を表示する</b> で結果を表示する</li></ol><p>「▶ 実行」を押して、偶数だけのリストが出れば成功です。</p><pre>[2, 4, 6]</pre>",
       "hint": "条件には比較ブロックを使い、n を 2 で割った余り（%）が 0 と等しいかを調べます。",
@@ -83,6 +88,7 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "code",
       "title": "コードを読もう：内包表記を後ろから読む",
       "body": "<p>ブロックが作った Python コードを読んでみましょう。</p><pre class=\"code-lines\">nums = [1, 2, 3, 4, 5, 6]\nevens = [n for n in nums if n % 2 == 0]\nprint(evens)</pre><p>内包表記は<b>後ろから読む</b>と分かりやすいです。</p><ol><li>まず <code>for n in nums</code> で、リストから <code>n</code> を1つずつ取り出します。</li><li>次に <code>if n % 2 == 0</code> で、2で割った余りが0のもの（偶数）だけ残します。</li><li>最後に先頭の <code>n</code>（式）を並べて、新しいリストを作ります。</li></ol><p><b>for → if → 式</b> の順に読むのがコツです。</p>",
       "hint": "先頭の式は最後に考えます。まず for、次に if の順で読みましょう。",
@@ -92,6 +98,7 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">nums = [1, 2, 3, 4]\nresult = [n * n for n in nums]\nprint(result[2])</pre>",
@@ -107,6 +114,7 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p>リスト <code>[1, 2, 3, 4, 5, 6]</code> から、<b>リスト内包表記</b>を使って偶数だけを取り出して表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">[2, 4, 6]</pre>",
@@ -134,6 +142,7 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>[n * 2 for n in [1, 2, 3]]</code> を実行すると、どんなリストになるでしょう？</p>",
@@ -149,6 +158,7 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><code>[n for n in [1, 2, 3, 4] if n &gt; 2]</code> を実行すると、どんなリストになるでしょう？</p>",
@@ -164,9 +174,10 @@ window.PYCO_LESSONS["0-20"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "課題：自分だけのリストを作ろう",
-      "body": "<p>リスト内包表記を使って、好きな計算をした新しいリストを作って表示してみましょう。内包表記ブロックを1つ使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-20-list-comprehension/</code></p>",
+      "body": "<p>リスト内包表記を使って、好きな計算をした新しいリストを作って表示してみましょう。内包表記ブロックを1つ使えばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "式の部分を変えると、2乗・3倍・文字の変換など、いろいろなリストが作れます。",
       "check": {
         "blocksRequired": [

@@ -7,7 +7,7 @@ window.PYCO_LESSONS["0-04"] = {
   "title": "文字列を組み立てよう",
   "subtitle": "Python × 入門 #04",
   "mode": "python",
-  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-04-strings/",
+  "article": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-04-strings/",
   "toolbox": [
     "val_str",
     "py_str_concat",
@@ -19,11 +19,13 @@ window.PYCO_LESSONS["0-04"] = {
   ],
   "steps": [
     {
+      "track": "block",
       "title": "文字列とは何か",
       "body": "<p>Pythonでは、<code>\"</code> か <code>'</code> で囲んだテキストを <b>文字列</b> と呼びます。数値の <code>80</code> と文字列の <code>\"80\"</code> は、見た目は似ていても別ものです。</p><ul><li><b>結合</b>：<code>+</code> で文字列をつなげる（例：<code>\"A\" + \"B\"</code> → <code>AB</code>）</li><li><b>f文字列</b>：<code>f\"...{変数}...\"</code> で変数を文字列に埋め込む</li></ul>",
       "hint": "「値」カテゴリの文字列ブロックが \"...\" にあたります。"
     },
     {
+      "track": "block",
       "title": "手順1：文字列を表示する",
       "body": "<p><b>値を表示する</b> ブロックに、「値」カテゴリの <b>文字列</b> ブロックをはめ込み、文字を <code>Hello, Python!</code> にします。下の図のように組みましょう。</p><p>「▶ 実行」を押して同じ文字が出れば成功です。</p><pre>print(\"Hello, Python!\")</pre>",
       "hint": "文字列ブロックの白いボックスに Hello, Python! と入力して実行します。",
@@ -42,10 +44,12 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "block",
       "title": "文字列をつなげる",
       "body": "<p>文字列どうしは <code>+</code> でつなげられます。「計算」カテゴリの <b>文字列連結</b> ブロック（<code>py_str_concat</code>）を使うと、2つの文字列をくっつけられます。</p><pre>\"こんにちは\" + \"世界\"  →  こんにちは世界</pre><p>このブロックは数値も自動で文字に変えてつなげてくれます。</p>"
     },
     {
+      "track": "block",
       "title": "手順2：2つの文字をつなげる",
       "body": "<p><b>値を表示する</b> に <b>文字列連結</b> ブロックをはめ、左に <code>こんにちは</code>、右に <code>世界</code> の文字列ブロックを入れます。下の図のように組みましょう。</p><p>「▶ 実行」を押して <code>こんにちは世界</code> と出れば成功です。</p>",
       "hint": "文字列ブロックを2つ用意し、連結ブロックの左右にはめます。",
@@ -59,10 +63,12 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "block",
       "title": "f文字列で埋め込む",
       "body": "<p>変数や数値を文字にまぜたいときは <b>f文字列</b> が便利です。「値」カテゴリの <b>f文字列</b> ブロック（<code>py_fstring</code>）は、前の文・<code>{ }</code>に入れる値・後ろの文、の3つを組み合わせます。</p><pre>f\"得点は{85}点\"  →  得点は85点</pre><p><code>{ }</code> の中には数値・変数・計算式を入れられます。</p>"
     },
     {
+      "track": "block",
       "title": "手順3：f文字列を表示する",
       "body": "<p><b>値を表示する</b> に <b>f文字列</b> ブロックをはめ、前の文を <code>得点は</code>、{ } に <b>数値</b> の <code>85</code>、後ろの文を <code>点</code> にします。下の図のように組みましょう。</p><p>「▶ 実行」を押して <code>得点は85点</code> と出れば成功です。</p>",
       "hint": "f文字列ブロックの前後のボックスに文字を入れ、真ん中のあなに数値ブロック（85）をはめます。",
@@ -76,6 +82,7 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "code",
       "title": "コードを読もう",
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の1行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">print(f\"得点は{85}点\")</pre><ul><li><b>1行目</b>：文字列の前に付いた <code>f</code> は <b>f文字列</b> の目印です。<code>{ }</code> の中身だけが計算・置きかえされ、<code>{85}</code> は <code>85</code> になります。全体で <code>得点は85点</code> という1つの文字列ができ、<code>print</code> で表示します。<code>{ }</code> の外の <code>得点は</code> や <code>点</code> はそのままの文字です。</li></ul>",
       "callout": {
@@ -85,6 +92,7 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>\"A\" + \"B\"</code> を表示すると何が出るでしょう？</p>",
@@ -100,6 +108,7 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><code>name</code> に <code>\"山田\"</code> が入っているとき、<code>f\"{name}さん\"</code> は何になるでしょう？</p>",
@@ -115,9 +124,10 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "課題：f文字列で自己紹介",
-      "body": "<p><b>f文字列</b> ブロックを使って、名前や年齢を埋め込んだ自己紹介文を表示してみましょう。f文字列ブロックを1つ使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-04-strings/</code></p>",
+      "body": "<p><b>f文字列</b> ブロックを使って、名前や年齢を埋め込んだ自己紹介文を表示してみましょう。f文字列ブロックを1つ使えばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "「値を表示する」にf文字列ブロックをはめ、変数や数値を{ }に入れます。",
       "check": {
         "blocksRequired": [
@@ -130,6 +140,7 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう。</p><pre class=\"code-lines\">a = \"Py\"\nb = \"thon\"\nprint(a + b)</pre>",
@@ -144,6 +155,7 @@ window.PYCO_LESSONS["0-04"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>点数は90点</code> と表示しましょう。ただし <code>点数は90点</code> という文字列をそのまま書かず、<b>f文字列</b> か <b>文字列の連結</b> で組み立ててください。</p><pre class=\"code-lines\">点数は90点</pre>",

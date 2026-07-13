@@ -3,7 +3,13 @@
 //
 //   責務:
 //   - localStorage `pyco-tutorial-progress` を唯一の真実として読み書き
-//     （形: { lessons: { "0-00": { completed, completedAt, quizScore } }, name } ）
+//     形: { lessons: { "0-00": {
+//              block: { completed, completedAt, score },
+//              code:  { completed, completedAt, score }
+//          } }, name }
+//     ※ ブロック課題／コード課題を独立して記録する2トラック構造。
+//        旧形式 { completed, completedAt, quizScore } は読み込み時に
+//        block.completed へ移行する（code は未完扱い）。
 //   - Google ログイン中なら Firestore `users/{uid}/tutorial/progress` に
 //     マージ同期する。cloud.js が初期化済みの Firebase アプリを getApps() で
 //     再利用するため cloud.js には一切触らない（config 無効なら同期しない）。
@@ -58,6 +64,39 @@
     return fb.fsMod.doc(fb.db, 'users', currentUid, 'tutorial', 'progress');
   }
 
+  // ---- 2トラック構造への正規化 / 旧形式からの移行 ----
+  function blankTrack() { return { completed: false, completedAt: null, score: 0 }; }
+  function normTrack(t) {
+    t = t || {};
+    return {
+      completed: !!t.completed,
+      completedAt: t.completedAt || null,
+      score: Math.max(0, t.score || 0)
+    };
+  }
+  // レッスン1件を { block, code } 構造へ正規化。
+  //   旧形式（トップレベルに completed / quizScore）は block 完了として引き継ぐ。
+  function normLesson(entry) {
+    entry = entry || {};
+    if (entry.block || entry.code) {
+      return { block: normTrack(entry.block), code: normTrack(entry.code) };
+    }
+    // ---- 旧形式からの移行 ----
+    if (entry.completed) {
+      return {
+        block: { completed: true, completedAt: entry.completedAt || null, score: Math.max(0, entry.quizScore || 0) },
+        code: blankTrack()
+      };
+    }
+    return { block: blankTrack(), code: blankTrack() };
+  }
+  function normProgress(o) {
+    var out = { lessons: {}, name: (o && o.name) || '' };
+    var lessons = (o && o.lessons) || {};
+    Object.keys(lessons).forEach(function(id) { out.lessons[id] = normLesson(lessons[id]); });
+    return out;
+  }
+
   // ---- localStorage ----
   function readLocal() {
     try {
@@ -65,25 +104,32 @@
       if (!raw) return { lessons: {} };
       var o = JSON.parse(raw);
       if (!o || typeof o !== 'object') return { lessons: {} };
-      if (!o.lessons) o.lessons = {};
-      return o;
+      return normProgress(o);
     } catch (e) { return { lessons: {} }; }
   }
   function writeLocal(o) {
     try { window.localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch (e) { /* noop */ }
   }
 
-  // 2つの進捗を合成（completed は OR、completedAt は最古、quizScore は最大）
+  // 2つのトラック進捗を合成（completed は OR、completedAt は最古、score は最大）
+  function mergeTrack(x, y) {
+    x = normTrack(x); y = normTrack(y);
+    return {
+      completed: !!(x.completed || y.completed),
+      completedAt: [x.completedAt, y.completedAt].filter(Boolean).sort()[0] || null,
+      score: Math.max(x.score || 0, y.score || 0)
+    };
+  }
+  // 2つの進捗を合成（トラックごとに合成。旧形式は normLesson で吸収）
   function mergeProgress(a, b) {
+    a = normProgress(a); b = normProgress(b);
     var out = { lessons: {}, name: a.name || b.name || '' };
-    var ids = new Set(Object.keys(a.lessons || {}).concat(Object.keys(b.lessons || {})));
+    var ids = new Set(Object.keys(a.lessons).concat(Object.keys(b.lessons)));
     ids.forEach(function(id) {
-      var x = (a.lessons || {})[id] || {};
-      var y = (b.lessons || {})[id] || {};
+      var x = a.lessons[id] || {}; var y = b.lessons[id] || {};
       out.lessons[id] = {
-        completed: !!(x.completed || y.completed),
-        completedAt: [x.completedAt, y.completedAt].filter(Boolean).sort()[0] || null,
-        quizScore: Math.max(x.quizScore || 0, y.quizScore || 0)
+        block: mergeTrack(x.block, y.block),
+        code: mergeTrack(x.code, y.code)
       };
     });
     return out;
@@ -123,23 +169,34 @@
   // 公開 API
   // =============================================================
   function get() { return readLocal(); }
-  function isCompleted(id) {
+  function trackKey(track) { return track === 'code' ? 'code' : 'block'; }
+  // isCompleted(id) … いずれかのトラック完了 / isCompleted(id, 'block'|'code') … 指定トラック
+  function isCompleted(id, track) {
     var p = readLocal();
-    return !!(p.lessons[id] && p.lessons[id].completed);
+    var l = p.lessons[id];
+    if (!l) return false;
+    if (track) return !!(l[trackKey(track)] && l[trackKey(track)].completed);
+    return !!((l.block && l.block.completed) || (l.code && l.code.completed));
   }
-  function markCompleted(id, info) {
+  // markCompleted(id, track, {score}) … 指定トラックを完了として記録
+  function markCompleted(id, track, info) {
+    // 後方互換: markCompleted(id, {score}) は block 扱い
+    if (track && typeof track === 'object') { info = track; track = 'block'; }
     info = info || {};
+    var k = trackKey(track);
     var p = readLocal();
-    var prev = p.lessons[id] || {};
-    p.lessons[id] = {
+    var lesson = p.lessons[id] || { block: blankTrack(), code: blankTrack() };
+    var prev = lesson[k] || blankTrack();
+    lesson[k] = {
       completed: true,
       completedAt: prev.completedAt || new Date().toISOString(),
-      quizScore: Math.max(prev.quizScore || 0, info.quizScore || 0)
+      score: Math.max(prev.score || 0, info.score || 0)
     };
+    p.lessons[id] = lesson;
     writeLocal(p);
     notify();
     pushToCloud();
-    return p.lessons[id];
+    return lesson[k];
   }
   function setName(name) {
     var p = readLocal();
@@ -148,10 +205,12 @@
     notify();
     pushToCloud();
   }
-  function groupComplete(lessonIds) {
+  // groupComplete(ids, 'block'|'code') … 指定トラックが全レッスン完了か（既定 block）
+  function groupComplete(lessonIds, track) {
+    var k = trackKey(track);
     var p = readLocal();
     return (lessonIds || []).every(function(id) {
-      return p.lessons[id] && p.lessons[id].completed;
+      return p.lessons[id] && p.lessons[id][k] && p.lessons[id][k].completed;
     });
   }
   function onChange(cb) { if (typeof cb === 'function') listeners.push(cb); }
@@ -171,11 +230,13 @@
     } catch (e) { return ''; }
   }
 
-  function showCertificate(group, idx) {
+  function showCertificate(group, idx, kind) {
+    kind = (kind === 'code') ? 'code' : 'block';
     var lessonIds = (group && group.lessons) || [];
     var progress = readLocal();
-    if (!groupComplete(lessonIds)) {
-      alert('このコースのすべてのレッスンを完了すると修了証を発行できます。');
+    if (!groupComplete(lessonIds, kind)) {
+      var need = (kind === 'code') ? 'コード課題' : 'ブロック課題';
+      alert('このコースのすべてのレッスンの' + need + 'を完了すると修了証を発行できます。');
       return;
     }
     var defaultName = progress.name || '';
@@ -184,15 +245,27 @@
     name = String(name).trim();
     if (name) setName(name);
 
-    // 完了日 = グループ内で最も新しい completedAt
+    // 完了日 = グループ内で最も新しい（該当トラックの）completedAt
     var lastDate = lessonIds.map(function(id) {
-      return (progress.lessons[id] && progress.lessons[id].completedAt) || '';
+      var l = progress.lessons[id];
+      return (l && l[kind] && l[kind].completedAt) || '';
     }).filter(Boolean).sort().pop();
+
+    // 修了証タイトル（certificates{block,code} を優先。旧 certificateTitle も許容）
+    var title = '';
+    if (group && group.certificates && group.certificates[kind]) title = group.certificates[kind];
+    else if (group && group.certificateTitle) title = group.certificateTitle;
+    else if (group) title = group.title || '';
+
+    var kindLabel = (kind === 'code')
+      ? 'コーディング修了証 · Certificate of Coding'
+      : 'ブロック修了証 · Certificate of Completion';
 
     var lessonsMeta = (idx && idx.lessons) || {};
     var rowsHtml = lessonIds.map(function(id) {
       var m = lessonsMeta[id] || {};
-      var score = progress.lessons[id] ? progress.lessons[id].quizScore : null;
+      var l = progress.lessons[id];
+      var score = (l && l[kind]) ? l[kind].score : null;
       return '<li>' + escapeHtml(m.subtitle ? (m.subtitle + ' ') : '') + escapeHtml(m.title || id)
         + (score != null ? ' <span class="cert-score">（' + score + '点）</span>' : '') + '</li>';
     }).join('');
@@ -202,12 +275,12 @@
     overlay.className = 'pyco-cert-overlay';
     overlay.innerHTML = ''
       + '<div class="pyco-cert-shell">'
-      +   '<div class="pyco-cert" id="pyco-cert">'
+      +   '<div class="pyco-cert' + (kind === 'code' ? ' pyco-cert-code' : '') + '" id="pyco-cert">'
       +     '<div class="cert-brand">◆ PycoBlocks</div>'
-      +     '<div class="cert-kind">修了証 · Certificate of Completion</div>'
+      +     '<div class="cert-kind">' + kindLabel + '</div>'
       +     '<div class="cert-name">' + escapeHtml(name || 'あなた') + ' 殿</div>'
       +     '<p class="cert-lead">あなたは下記のコースを修了したことを証します。</p>'
-      +     '<div class="cert-course">' + escapeHtml((group && (group.certificateTitle || group.title)) || '') + '</div>'
+      +     '<div class="cert-course">' + escapeHtml(title) + '</div>'
       +     '<ul class="cert-list">' + rowsHtml + '</ul>'
       +     '<div class="cert-date">修了日： ' + escapeHtml(fmtDate(lastDate)) + '</div>'
       +     '<div class="cert-sign">PycoBlocks 学習プログラム</div>'
@@ -249,6 +322,11 @@
     + '.cert-list{list-style:none;padding:0;margin:0 auto 20px;display:inline-block;text-align:left;font-size:.9rem;}'
     + '.cert-list li{padding:3px 0;} .cert-score{color:#0a7d34;font-size:.82em;}'
     + '.cert-date{font-size:.95rem;margin-top:12px;} .cert-sign{margin-top:16px;font-size:.85rem;color:#5a7a5a;}'
+    // コーディング修了証：アクセントを藍色に変える（現行デザイン踏襲＋色替え）
+    + '.pyco-cert.pyco-cert-code{border-color:#0a5a9e;box-shadow:0 0 0 8px #fdfdf8,0 0 0 10px #0a5a9e,0 10px 40px rgba(0,0,0,.5);}'
+    + '.pyco-cert.pyco-cert-code .cert-brand,.pyco-cert.pyco-cert-code .cert-course,'
+    + '.pyco-cert.pyco-cert-code .cert-score{color:#0a5a9e;}'
+    + '@media print{body.pyco-cert-printing .pyco-cert.pyco-cert-code{border-color:#0a5a9e;}}'
     + '.pyco-cert-actions{display:flex;gap:10px;}'
     + '.pyco-cert-actions button{background:#0a7d34;color:#fff;border:none;border-radius:6px;'
     + 'padding:9px 20px;font-size:.9rem;cursor:pointer;font-family:sans-serif;}'

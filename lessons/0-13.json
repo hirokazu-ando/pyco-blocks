@@ -4,7 +4,7 @@
   "title": "辞書を使おう",
   "subtitle": "Python × 入門 #13",
   "mode": "python",
-  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-13-dict/",
+  "article": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-13-dict/",
   "toolbox": [
     "var_set",
     "py_dict_new",
@@ -20,15 +20,18 @@
   ],
   "steps": [
     {
+      "track": "block",
       "title": "辞書とは何か",
       "body": "<p>0-12のリストは「0番目、1番目」のように <b>番号</b> でデータを取り出しました。今回学ぶ <b>辞書</b> は、番号ではなく <b>キー</b> と呼ぶ名前で値を取り出すデータです。</p><p>人のプロフィール、部品の在庫数、教科ごとの点数のように、「名前」と「値」をセットで管理したいときに役立ちます。</p><p>準備ができたら「次へ ▶」を押してください。</p>",
       "hint": "このパネルは右上のボタンで折りたたみ、「✕」で学習をやめられます。"
     },
     {
+      "track": "block",
       "title": "辞書は「キー」と「値」のセット",
       "body": "<p>辞書は、キーと値をセットで管理します。キーを指定すると、それに対応する値を取り出せます。あとからキーと値を追加することもできます。</p><pre>person = {}\nperson[\"name\"] = \"Taro\"\nprint(person[\"name\"])</pre><p><code>person[\"name\"]</code> は、キー <code>\"name\"</code> に対応する値を取り出します。この例では <code>Taro</code> が表示されます。</p>"
     },
     {
+      "track": "block",
       "title": "手順1：空の辞書を作る",
       "body": "<p>「変数」カテゴリの <b>変数〜を〜にする</b> に、「辞書」カテゴリの <b>空の辞書 { }</b> をはめ込み、下の図のように置きましょう。</p><p>2つのブロックが置けたらクリアです。</p>",
       "hint": "変数名は好きに決めてかまいません。図では person にしています。",
@@ -49,6 +52,7 @@
       }
     },
     {
+      "track": "block",
       "title": "手順2：キーと値を入れて取り出す",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li>空の辞書を変数 <code>person</code> に入れる</li><li><b>辞書 person の〜に〜を入れる</b> で、キー <code>name</code> に <code>Taro</code>、キー <code>age</code> に <code>16</code> を入れる</li><li><b>辞書 person の〜の値</b> を使って、キー <code>name</code> の値を表示する</li></ol><p>「▶ 実行」を押して <code>Taro</code> と出れば成功です。</p><pre>Taro</pre>",
       "hint": "キーには文字列ブロックを入れます。取り出しブロックのキーも同じ name にそろえます。",
@@ -67,10 +71,12 @@
       }
     },
     {
+      "track": "block",
       "title": "キー一覧を使って順に処理する",
       "body": "<p>辞書そのものは「キーで取り出す」データですが、<b>キー一覧</b> を作れば for と組み合わせて順番に処理できます。PycoBlocksでは、キー一覧をリストとして取り出してからループします。</p><pre>keys = list(scores.keys())\nfor name in keys:\n    print(scores[name])</pre><p><code>name</code> にはキーが順番に入り、<code>scores[name]</code> でそのキーの値を取り出せます。</p>"
     },
     {
+      "track": "block",
       "title": "手順3：教科ごとの点数を表示する",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li>空の辞書を変数 <code>scores</code> に入れる</li><li>キー <code>math</code> に <code>80</code>、キー <code>science</code> に <code>90</code> を入れる</li><li><b>辞書 scores のキー一覧</b> を変数 <code>keys</code> に入れる</li><li><b>keys を順に繰り返す</b> の中で、キー（name）の値を表示する</li></ol><p>「▶ 実行」を押して <code>80</code>・<code>90</code> が出れば成功です。</p><pre>80\n90</pre>",
       "hint": "取り出しブロックのキーには、繰り返しで取り出した name（変数）を入れます。",
@@ -84,19 +90,33 @@
       }
     },
     {
+      "track": "code",
       "title": "コードを読もう：辞書の { } とキー参照",
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。1行ずつ読んでみましょう。</p><pre class=\"code-lines\">person = {}\nperson[\"name\"] = \"Taro\"\nperson[\"age\"] = 16\nprint(person[\"name\"])</pre><ul><li>1行目：<code>{}</code> は空の辞書です。変数 <code>person</code> に空の辞書を入れています。</li><li>2〜3行目：<code>person[\"name\"] = \"Taro\"</code> は、<b>キー</b> <code>\"name\"</code> に値 <code>\"Taro\"</code> を対応づけます。同じように <code>\"age\"</code> に <code>16</code> を入れます。</li><li>4行目：<code>person[\"name\"]</code> は、キー <code>\"name\"</code> に対応する値を<b>取り出します</b>。ここでは <code>Taro</code> が表示されます。</li></ul><p>リストは <code>[ ]</code> の中に<b>番号</b>を書きましたが、辞書は <code>[ ]</code> の中に<b>キー（名前）</b>を書くのがちがいです。</p>",
       "hint": "辞書は { } で作り、person[\"キー\"] の形で値を出し入れします。",
-      "callout": { "target": "code", "text": "生成されたコードはここで確認できます" }
+      "callout": {
+        "target": "code",
+        "text": "生成されたコードはここで確認できます"
+      }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">stock = {}\nstock[\"pen\"] = 5\nstock[\"note\"] = 3\nprint(stock[\"note\"])</pre>",
       "hint": "print はキー \"note\" に対応する値を取り出しています。",
-      "check": { "answerText": { "accept": ["3", "\"3\""], "caseInsensitive": true } }
+      "check": {
+        "answerText": {
+          "accept": [
+            "3",
+            "\"3\""
+          ],
+          "caseInsensitive": true
+        }
+      }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>辞書</b>を作り、キー <code>math</code> に <code>80</code>、キー <code>science</code> に <code>90</code> を入れて、<b>2つの値を取り出して</b>表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">80\n90</pre>",
@@ -105,15 +125,22 @@
         "codeRun": {
           "outputEquals": "80\n90",
           "codeContains": [
-            { "pattern": "\\{", "message": "実行結果は合っていますが、辞書の { } を使って書いてみましょう" }
+            {
+              "pattern": "\\{",
+              "message": "実行結果は合っていますが、辞書の { } を使って書いてみましょう"
+            }
           ],
           "codeForbids": [
-            { "pattern": "print\\(\\s*(80|90)\\b", "message": "実行結果は合っていますが、数値を直接printせず、辞書のキーで値を取り出して表示しましょう" }
+            {
+              "pattern": "print\\(\\s*(80|90)\\b",
+              "message": "実行結果は合っていますが、数値を直接printせず、辞書のキーで値を取り出して表示しましょう"
+            }
           ]
         }
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>辞書 <code>scores</code> から <code>\"math\"</code> の点数を取り出す書き方はどれでしょう？</p>",
@@ -129,6 +156,7 @@
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p>辞書の <b>キー一覧</b> を取り出すと、返ってくるのはどれでしょう？</p>",
@@ -144,9 +172,10 @@
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "課題：自分の辞書を作ろう",
-      "body": "<p>自分の辞書を作って好きなキーに値を入れ、そのキーの値を取り出して表示してみましょう。<b>値を入れる</b> と <b>値を取り出す</b> をどちらも使えばクリアです。</p><p>組み合わせ例：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-13-dict/</code></p>",
+      "body": "<p>自分の辞書を作って好きなキーに値を入れ、そのキーの値を取り出して表示してみましょう。<b>値を入れる</b> と <b>値を取り出す</b> をどちらも使えばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "空の辞書を作り、キーと値を入れてから、同じキーで値を取り出して表示します。",
       "check": {
         "blocksRequired": [

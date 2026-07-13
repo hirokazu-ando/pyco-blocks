@@ -19,18 +19,20 @@
   var LESSON_BASE  = 'lessons/';                 // レッスン JSON の置き場所
   var BACKUP_KEY   = 'pyco-tutorial-backup-';    // レッスン開始前の作品退避キー（+mode）
   var HASH_RE      = /[#&]lesson=([0-9A-Za-z_-]+)/;
+  var TRACK_RE     = /[#&]track=(block|code)/;   // #lesson=0-05&track=code
 
   // ---- 状態 ----
   var io          = null;   // window.PycoWorkspaceIO
   var lesson      = null;   // 現在のレッスン定義（JSON）
-  var stepIndex   = 0;      // 現ステップ
+  var stepIndex   = 0;      // 現ステップ（現トラック内の相対位置）
+  var currentTrack = 'block'; // 進行中のトラック（'block' / 'code'）
   var isOpen      = false;
   var backupXml   = null;   // レッスン開始前の作品（復帰用）
   var savedMode   = null;   // 開始時のモード（ツールボックス復元用）
   var indexCache  = null;   // lessons/index.json
   var monObserver = null;   // #monitor-output の変化監視
-  var wrongCount  = 0;      // クイズの誤答数（スコア算出用）
-  var quizTotal   = 0;      // クイズステップ数
+  var wrongCount  = 0;      // クイズの誤答数（スコア算出用・トラックごとにリセット）
+  var quizTotal   = 0;      // クイズステップ数（現トラック内）
 
   // =============================================================
   // 汎用ユーティリティ
@@ -116,7 +118,16 @@
     + 'transform:translateX(100%);transition:transform .28s ease;font-family:var(--font-mono,monospace);'
     + 'color:var(--text-primary,#c8e6c8);}'
     + '#pyco-tut-panel.open{transform:translateX(0);}'
-    + '#pyco-tut-panel.collapsed{transform:translateX(calc(100% - 34px));}'
+    // 折りたたみ時：34pxの可視ストリップ。クリックで再展開できるよう手のカーソルを出す
+    + '#pyco-tut-panel.collapsed{transform:translateX(calc(100% - 34px));cursor:pointer;}'
+    + 'body:not(.mobile-mode) #pyco-tut-panel.collapsed::after{content:"◀";position:absolute;'
+    + 'top:12px;left:9px;color:var(--accent-green,#00ff41);font-size:.8rem;pointer-events:none;}'
+    // ---- デスクトップ：本体を左に詰めてパネルと重ねない ----
+    //   body.pyco-tut-open（非mobile-mode）のとき .main に右マージンを与え、
+    //   ワークスペース／コードエリアがパネルの左側に収まるようにする（かぶさらない）。
+    //   幅は JS が --pyco-tut-side-w を設定（開＝実パネル幅／折りたたみ＝34px）。
+    + 'body.pyco-tut-open:not(.mobile-mode) .main{'
+    + 'margin-right:var(--pyco-tut-side-w,360px);transition:margin-right .28s ease;}'
     + '.pyco-tut-head{display:flex;align-items:center;gap:8px;padding:10px 12px;'
     + 'border-bottom:1px solid var(--border-dim,#1a341a);flex-shrink:0;}'
     + '.pyco-tut-head .t{font-size:.82rem;font-weight:bold;color:var(--accent-green,#00ff41);'
@@ -178,6 +189,12 @@
     + '.pyco-tut-hint-body{display:none;margin-top:8px;font-size:.82rem;line-height:1.6;'
     + 'background:rgba(255,183,0,.08);border-left:3px solid var(--accent-amber,#ffb700);padding:8px 10px;'
     + 'border-radius:0 6px 6px 0;}'
+    // 解説記事ボタン（ヒントボタンと揃えた控えめなスタイル）
+    + '.pyco-tut-article{margin-top:8px;}'
+    + '.pyco-tut-article-btn{background:transparent;border:1px dashed var(--accent-cyan,#00d4ff);'
+    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;font-size:.76rem;padding:5px 10px;'
+    + 'border-radius:6px;width:100%;text-align:left;}'
+    + '.pyco-tut-article-btn:hover{background:rgba(0,212,255,.08);}'
     + '.pyco-tut-choices{margin-top:12px;display:flex;flex-direction:column;gap:8px;}'
     + '.pyco-tut-choice{text-align:left;background:var(--bg-surface,#0b150b);'
     + 'border:1px solid var(--border-dim,#1a341a);color:var(--text-primary,#c8e6c8);cursor:pointer;'
@@ -214,18 +231,33 @@
     + '.pyco-tut-modal-body{padding:14px 16px;overflow-y:auto;}'
     + '.pyco-tut-lessonrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;'
     + 'background:var(--bg-surface,#0b150b);border:1px solid var(--border-dim,#1a341a);'
-    + 'color:var(--text-primary,#c8e6c8);cursor:pointer;font:inherit;padding:11px 13px;border-radius:8px;'
+    + 'color:var(--text-primary,#c8e6c8);font:inherit;padding:11px 13px;border-radius:8px;'
     + 'margin-bottom:9px;transition:all .15s ease;}'
-    + '.pyco-tut-lessonrow:hover:not(:disabled){border-color:var(--accent-green,#00ff41);}'
-    + '.pyco-tut-lessonrow:disabled{opacity:.55;cursor:not-allowed;}'
+    + '.pyco-tut-lessonrow:hover:not(.is-disabled){border-color:var(--accent-green,#00ff41);}'
+    + '.pyco-tut-lessonrow.is-disabled{opacity:.55;}'
+    + '.pyco-tut-lessonrow .row-main{flex:1;display:flex;align-items:center;gap:10px;min-width:0;'
+    + 'background:transparent;border:none;color:inherit;font:inherit;text-align:left;padding:0;cursor:pointer;}'
+    + '.pyco-tut-lessonrow .row-main:disabled{cursor:not-allowed;}'
     + '.pyco-tut-lessonrow .num{color:var(--accent-cyan,#00d4ff);font-size:.78rem;font-weight:bold;'
     + 'min-width:38px;}'
-    + '.pyco-tut-lessonrow .nm{flex:1;font-size:.88rem;}'
+    + '.pyco-tut-lessonrow .nm{flex:1;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;}'
     + '.pyco-tut-lessonrow .st{font-size:.72rem;color:var(--text-dim,#5a8a5a);}'
     + '.pyco-tut-lessonrow .st.done{color:var(--accent-green,#00ff41);}'
+    // 2種の完了バッジ（ブロック／コード）
+    + '.pyco-tut-lessonrow .badges{display:flex;flex-direction:column;gap:3px;align-items:flex-end;min-width:74px;}'
+    + '.pyco-tut-badge{font-size:.62rem;padding:1px 7px;border-radius:9px;border:1px solid var(--border-dim,#1a341a);'
+    + 'color:var(--text-dim,#5a8a5a);white-space:nowrap;letter-spacing:.03em;}'
+    + '.pyco-tut-badge.on-block{border-color:var(--accent-green,#00ff41);color:var(--accent-green,#00ff41);'
+    + 'background:rgba(0,255,65,.1);}'
+    + '.pyco-tut-badge.on-code{border-color:var(--accent-cyan,#00d4ff);color:var(--accent-cyan,#00d4ff);'
+    + 'background:rgba(0,212,255,.1);}'
+    // コード課題の開始ボタン（行内の小さなリンク風）
+    + '.pyco-tut-codestart{background:transparent;border:none;color:var(--accent-cyan,#00d4ff);'
+    + 'cursor:pointer;font:inherit;font-size:.68rem;text-decoration:underline;padding:0;margin-top:2px;}'
     + '.pyco-tut-certbtn{width:100%;margin-top:6px;background:transparent;'
     + 'border:1px solid var(--accent-amber,#ffb700);color:var(--accent-amber,#ffb700);cursor:pointer;'
     + 'font:inherit;font-size:.86rem;padding:11px;border-radius:8px;font-weight:bold;}'
+    + '.pyco-tut-certbtn.code{border-color:var(--accent-cyan,#00d4ff);color:var(--accent-cyan,#00d4ff);}'
     + '.pyco-tut-certbtn:disabled{opacity:.4;cursor:not-allowed;}'
     // ヘッダーの学習ボタンの見た目（塗り・.tutorial-active反転）は css/style.css 側で定義
     // コールアウト：対象要素のハイライト枠（パルス）
@@ -316,6 +348,17 @@
 
     els.close.addEventListener('click', function() { endLesson(false); });
     els.collapse.addEventListener('click', toggleCollapse);
+    // デスクトップ：折りたたみ時の34px可視ストリップをクリックで再展開する。
+    //   ヘッダーの折りたたみボタンは畳むと画面外へ隠れて押せなくなるため、
+    //   パネル本体クリックで開き直せるようにする（開いている間は無効）。
+    panel.addEventListener('click', function(ev) {
+      if (isMobileLayout()) return;
+      if (!panel.classList.contains('collapsed')) return;
+      if (ev.target.closest('#pyco-tut-collapse')) return; // 折りたたみボタンは自前で処理
+      panel.classList.remove('collapsed');
+      syncCollapseGlyph();
+      resizeBlockly();
+    });
     // モバイル：ヘッダー行のタップでも最小化⇄展開（ボタン部分は除く）
     panel.querySelector('.pyco-tut-head').addEventListener('click', function(ev) {
       if (!isMobileLayout()) return;
@@ -357,11 +400,39 @@
       els.collapse.title = c ? 'ガイドを展開' : '折りたたむ';
     }
   }
-  function resizeBlockly() {
+  // デスクトップで本体（.main）を左に詰めるための幅変数を更新する。
+  //   開＝実パネル幅／折りたたみ＝34px／モバイル・閉時は解除（margin=0）。
+  //   CSS 側の margin-right:var(--pyco-tut-side-w) がこの値に追従する。
+  function updateSideLayoutVar() {
     try {
-      var ws = getWs();
-      if (ws && window.Blockly) setTimeout(function() {
-        window.Blockly.svgResize(ws);
+      var root = document.documentElement;
+      if (isOpen && !isMobileLayout() && panel) {
+        var w = panel.classList.contains('collapsed')
+          ? 34
+          : Math.round(panel.getBoundingClientRect().width);
+        root.style.setProperty('--pyco-tut-side-w', w + 'px');
+      } else {
+        root.style.removeProperty('--pyco-tut-side-w');
+      }
+    } catch (e) { /* noop */ }
+  }
+  // CodeMirror は横幅の変化を自動検知しないため明示 refresh（app.js 無編集）
+  function refreshEditor() {
+    try {
+      var el = document.querySelector('#code-editor .CodeMirror');
+      if (el && el.CodeMirror) el.CodeMirror.refresh();
+    } catch (e) { /* noop */ }
+  }
+  function resizeBlockly() {
+    updateSideLayoutVar(); // マージン変更を即時開始（CSS transition が追従）
+    try {
+      setTimeout(function() {
+        // 本体が詰まった後に各ビューを再レイアウトする。
+        // window resize を発火して app.js のゲームレイアウト再計算にも追従。
+        try { window.dispatchEvent(new Event('resize')); } catch (e) { /* noop */ }
+        var ws = getWs();
+        if (ws && window.Blockly) window.Blockly.svgResize(ws);
+        refreshEditor();
         positionCallout(); // パネル開閉でレイアウトが動いた後に追従
       }, 300);
     } catch (e) { /* noop */ }
@@ -721,7 +792,7 @@
   // =============================================================
   // レッスンの開始 / 終了
   // =============================================================
-  function startLesson(id) {
+  function startLesson(id, track) {
     io = window.PycoWorkspaceIO || io;
     var ws = getWs();
     if (!ws) { toast('ワークスペースの準備ができていません。少し待ってからお試しください。', 'error'); return; }
@@ -733,6 +804,8 @@
         toast('このレッスンは「' + def.mode + '」モード向けです。モードを切り替えてからお試しください。', 'error');
         return;
       }
+      // トラック確定（既定はブロック課題。code 指定でコード課題を直接開始）
+      var wantTrack = (track === 'code' && hasTrackSteps('code', def)) ? 'code' : 'block';
       // 進行中の作品を退避（完了/中断で戻す）
       try {
         backupXml = io && io.serialize ? io.serialize() : null;
@@ -741,9 +814,10 @@
       } catch (e) { backupXml = null; }
 
       lesson = def;
+      currentTrack = wantTrack;
       stepIndex = 0;
       wrongCount = 0;
-      quizTotal = (def.steps || []).filter(function(s) { return s.quiz; }).length;
+      recomputeQuizTotal();
 
       // コード編集モードが残っていたら解除（ブロック学習が基本状態）
       setCodingMode(false);
@@ -752,21 +826,42 @@
       applyLessonToolbox(def);
 
       openPanel();
+      // 前回のレッスンを完了画面（ナビ差し替え済み）のまま閉じた場合に備え、
+      // 既定の「もどる／次へ」ナビを復元してから描画する。
+      rebuildNav();
       els.lessonTitle.textContent = def.title || '学習モード';
       renderStep();
       startMonitorObserver();
-      // URL ハッシュを揃える（共有・リロード対応）
-      try {
-        if (HASH_RE.test(location.hash)) {
-          location.hash = location.hash.replace(HASH_RE, function(m, p, o) { return m[0] + 'lesson=' + id; });
-        } else {
-          history.replaceState(null, '', location.pathname + location.search + '#lesson=' + id);
-        }
-      } catch (e) { /* noop */ }
+      syncLessonHash(id, currentTrack);
     }).catch(function(err) {
       console.warn('PycoBlocks: レッスンの読み込みに失敗:', err);
       toast('レッスンを読み込めませんでした（' + id + '）。', 'error');
     });
+  }
+
+  // URL ハッシュを現在のレッスン・トラックに揃える（共有・リロード対応）
+  //   ブロック課題は #lesson=<id>、コード課題は #lesson=<id>&track=code。
+  function syncLessonHash(id, track) {
+    try {
+      var base = '#lesson=' + id + (track === 'code' ? '&track=code' : '');
+      history.replaceState(null, '', location.pathname + location.search + base);
+    } catch (e) { /* noop */ }
+  }
+
+  // 同一レッスン内でトラックを切り替えて続行する（ブロック課題→コード課題）。
+  //   作品の退避・ツールボックスは startLesson 時のものを流用し、
+  //   ステップ・スコアだけをそのトラック用にリセットして描画し直す。
+  function beginTrack(track) {
+    if (!lesson) return;
+    currentTrack = (track === 'code') ? 'code' : 'block';
+    stepIndex = 0;
+    wrongCount = 0;
+    recomputeQuizTotal();
+    rebuildNav();          // 完了画面で差し替えたナビを既定へ戻す
+    setCodingMode(false);  // コード課題も最初はブロック状態から（各ステップが誘導）
+    try { var ws = getWs(); if (ws) ws.clear(); } catch (e) { /* noop */ }
+    renderStep();
+    syncLessonHash(lesson.id, currentTrack);
   }
 
   // レッスンを終了して元の作品へ戻す
@@ -789,10 +884,11 @@
       try { window.localStorage.removeItem(BACKUP_KEY + mode); } catch (e) { /* noop */ }
     } catch (e) { console.warn('PycoBlocks: 作品の復元に失敗:', e); }
     backupXml = null; savedMode = null; lesson = null;
-    // ハッシュから lesson= を除去
+    // ハッシュから lesson= / track= を除去
     try {
-      if (HASH_RE.test(location.hash)) {
-        var h = location.hash.replace(HASH_RE, '').replace(/^#&/, '#').replace(/&&/, '&');
+      if (HASH_RE.test(location.hash) || TRACK_RE.test(location.hash)) {
+        var h = location.hash.replace(HASH_RE, '').replace(TRACK_RE, '')
+          .replace(/^#&/, '#').replace(/&&/, '&').replace(/&$/, '');
         history.replaceState(null, '', location.pathname + location.search + (h === '#' ? '' : h));
       }
     } catch (e) { /* noop */ }
@@ -901,7 +997,22 @@
   // =============================================================
   // ステップ描画
   // =============================================================
-  function steps() { return (lesson && lesson.steps) || []; }
+  // レッスンの全ステップ（トラック分類前）
+  function allSteps() { return (lesson && lesson.steps) || []; }
+  // ステップの所属トラック（未指定は 'block'）
+  function stepTrack(s) { return (s && s.track) === 'code' ? 'code' : 'block'; }
+  // 現在進行中トラックのステップだけを、元の順序を保って返す
+  function steps() {
+    return allSteps().filter(function(s) { return stepTrack(s) === currentTrack; });
+  }
+  // 指定トラックのステップが1つでもあるか
+  function hasTrackSteps(track, def) {
+    return ((def || lesson || {}).steps || []).some(function(s) { return stepTrack(s) === track; });
+  }
+  // 現トラックのクイズ数を数え直す（スコア算出の分母）
+  function recomputeQuizTotal() {
+    quizTotal = steps().filter(function(s) { return s.quiz; }).length;
+  }
 
   function renderStep() {
     var all = steps();
@@ -959,6 +1070,9 @@
         ht.textContent = shown ? 'ヒントを見る' : 'ヒントを隠す';
       });
     }
+
+    // 解説記事ボタン（ヒントの直下に常設。article を持つレッスンのみ）
+    renderArticleButton();
 
     // 進捗バー / ナビ
     els.pbar.style.width = ((stepIndex + 1) / total * 100) + '%';
@@ -1021,6 +1135,24 @@
       card.appendChild(img);
       els.body.appendChild(card);
     });
+  }
+
+  // 解説記事ボタン。lesson.article があれば別タブで記事を開くボタンを出す。
+  //   ヒントボタンと揃った控えめなスタイル。全ステップで常設表示する。
+  function renderArticleButton() {
+    var url = lesson && lesson.article;
+    if (!url || typeof url !== 'string' || !/^https?:\/\//.test(url)) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'pyco-tut-article';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pyco-tut-article-btn';
+    btn.textContent = '解説記事を見る';
+    btn.addEventListener('click', function() {
+      try { window.open(url, '_blank', 'noopener'); } catch (e) { /* noop */ }
+    });
+    wrap.appendChild(btn);
+    els.body.appendChild(wrap);
   }
 
   // 記述式（answerText）: 入力欄＋答え合わせボタン。正答は表示しない
@@ -1324,23 +1456,30 @@
   function completeLesson() {
     var id = lesson.id;
     var group = lesson.group || null;
+    var track = currentTrack;
+    var isBlock = (track === 'block');
+    var kindLabel = isBlock ? 'ブロック課題' : 'コード課題';
     var score = quizTotal > 0 ? Math.round(100 * quizTotal / (quizTotal + wrongCount)) : 100;
-    // 進捗を保存
+    // 進捗を保存（トラックごとに独立して記録）
     try {
       if (window.PycoTutorialProgress && window.PycoTutorialProgress.markCompleted) {
-        window.PycoTutorialProgress.markCompleted(id, { quizScore: score, group: group });
+        window.PycoTutorialProgress.markCompleted(id, track, { score: score, group: group });
       }
     } catch (e) { console.warn('PycoBlocks: 進捗保存に失敗:', e); }
 
-    // 完了画面（次のレッスン / 一覧へ）
+    // 完了画面
     els.pbar.style.width = '100%';
     var nextId = findNextLesson(id);
+    var hasCode = hasTrackSteps('code');
     var doneHtml = ''
       + '<div class="pyco-tut-done">'
       + '<div class="big">✓</div>'
-      + '<h4>レッスン完了！</h4>'
-      + '<p class="pyco-tut-text">「' + escapeHtml(lesson.title || '') + '」をクリアしました。</p>'
-      + (quizTotal > 0 ? '<p class="pyco-tut-text">クイズ得点: <b>' + score + '</b> 点</p>' : '')
+      + '<h4>' + escapeHtml(kindLabel) + ' 完了！</h4>'
+      + '<p class="pyco-tut-text">「' + escapeHtml(lesson.title || '') + '」の' + escapeHtml(kindLabel) + 'をクリアしました。</p>'
+      + (quizTotal > 0 ? '<p class="pyco-tut-text">得点: <b>' + score + '</b> 点</p>' : '')
+      + (isBlock && hasCode
+          ? '<p class="pyco-tut-text">つづけてコードを直接読み書きする<b>コード課題</b>に挑戦できます。</p>'
+          : '')
       + '</div>';
     els.body.innerHTML = doneHtml;
     els.check.textContent = '✓ 完了しました';
@@ -1353,9 +1492,19 @@
     if (els.prev.parentNode) els.prev.parentNode.removeChild(els.prev);
     if (els.next.parentNode) els.next.parentNode.removeChild(els.next);
     navwrap.innerHTML = '';
+
+    // ブロック課題完了 → 同じレッスンのコード課題へ進むボタン（最優先）
+    if (isBlock && hasCode) {
+      var cb = document.createElement('button');
+      cb.type = 'button'; cb.className = 'primary';
+      cb.textContent = 'コード課題に挑戦する ▶';
+      cb.addEventListener('click', function() { beginTrack('code'); });
+      navwrap.appendChild(cb);
+    }
     if (nextId) {
       var nb = document.createElement('button');
-      nb.type = 'button'; nb.className = 'primary';
+      nb.type = 'button';
+      if (!(isBlock && hasCode)) nb.className = 'primary';
       nb.textContent = '次のレッスンへ ▶';
       nb.addEventListener('click', function() {
         rebuildNav();
@@ -1374,7 +1523,7 @@
     navwrap.appendChild(lb);
 
     hideCallout();
-    toast('レッスン「' + (lesson.title || id) + '」を完了しました！', 'ok');
+    toast('「' + (lesson.title || id) + '」の' + kindLabel + 'を完了しました！', 'ok');
   }
   // 完了画面で差し替えたナビを既定の prev/next に戻す
   function rebuildNav() {
@@ -1446,37 +1595,70 @@
       var lessonIds = group.lessons || [];
       lessonIds.forEach(function(lid) {
         var meta = (idx.lessons || {})[lid] || {};
-        var done = !!(progress.lessons && progress.lessons[lid] && progress.lessons[lid].completed);
+        var lp = (progress.lessons && progress.lessons[lid]) || {};
+        var blockDone = !!(lp.block && lp.block.completed);
+        var codeDone = !!(lp.code && lp.code.completed);
         var ready = meta.status === 'ready';
-        var row = document.createElement('button');
-        row.type = 'button';
-        row.className = 'pyco-tut-lessonrow';
-        row.disabled = !ready;
-        row.innerHTML = '<span class="num">' + escapeHtml(meta.subtitle || lid) + '</span>'
-          + '<span class="nm">' + escapeHtml(meta.title || lid) + '</span>'
-          + '<span class="st ' + (done ? 'done' : '') + '">'
-          + (done ? '✓ 完了' : (ready ? '未受講' : '準備中')) + '</span>';
+        var lessonDef = window.PYCO_LESSONS && window.PYCO_LESSONS[lid];
+        // コード課題の有無（プリロード済み定義から判定。未読込なら「あり」とみなす）
+        var hasCode = lessonDef
+          ? (lessonDef.steps || []).some(function(s) { return s.track === 'code'; })
+          : true;
+
+        var row = document.createElement('div');
+        row.className = 'pyco-tut-lessonrow' + (ready ? '' : ' is-disabled');
+
+        var main = document.createElement('button');
+        main.type = 'button';
+        main.className = 'row-main';
+        main.disabled = !ready;
+        main.innerHTML = '<span class="num">' + escapeHtml(meta.subtitle || lid) + '</span>'
+          + '<span class="nm">' + escapeHtml(meta.title || lid) + '</span>';
         if (ready) {
-          row.addEventListener('click', function() { close(); startLesson(lid); });
+          main.addEventListener('click', function() { close(); startLesson(lid, 'block'); });
         }
+        row.appendChild(main);
+
+        // 完了バッジ（ブロック／コード）＋コード課題の直接開始
+        var badges = document.createElement('div');
+        badges.className = 'badges';
+        badges.innerHTML = '<span class="pyco-tut-badge ' + (blockDone ? 'on-block' : '') + '">'
+            + (blockDone ? '✓ ' : '') + 'ブロック</span>'
+          + (hasCode ? '<span class="pyco-tut-badge ' + (codeDone ? 'on-code' : '') + '">'
+            + (codeDone ? '✓ ' : '') + 'コード</span>' : '');
+        if (ready && hasCode) {
+          var csBtn = document.createElement('button');
+          csBtn.type = 'button';
+          csBtn.className = 'pyco-tut-codestart';
+          csBtn.textContent = codeDone ? 'コード課題を復習' : 'コード課題へ';
+          csBtn.addEventListener('click', function() { close(); startLesson(lid, 'code'); });
+          badges.appendChild(csBtn);
+        }
+        row.appendChild(badges);
         body.appendChild(row);
       });
 
-      // 修了証ボタン
-      var allDone = lessonIds.every(function(lid) {
-        return progress.lessons && progress.lessons[lid] && progress.lessons[lid].completed;
+      // 修了証ボタン（ブロック／コーディングの2種。トラックごとに独立判定）
+      [
+        { kind: 'block', label: 'ブロック修了証', cls: '' },
+        { kind: 'code',  label: 'コーディング修了証', cls: ' code' }
+      ].forEach(function(c) {
+        var allDone = lessonIds.every(function(lid) {
+          var lp = (progress.lessons && progress.lessons[lid]) || {};
+          return lp[c.kind] && lp[c.kind].completed;
+        });
+        var certBtn = document.createElement('button');
+        certBtn.type = 'button';
+        certBtn.className = 'pyco-tut-certbtn' + c.cls;
+        certBtn.textContent = allDone ? (c.label + 'を発行する') : (c.label + '（全レッスン完了で発行）');
+        certBtn.disabled = !allDone;
+        certBtn.addEventListener('click', function() {
+          if (window.PycoTutorialProgress && window.PycoTutorialProgress.showCertificate) {
+            window.PycoTutorialProgress.showCertificate(group, idx, c.kind);
+          }
+        });
+        body.appendChild(certBtn);
       });
-      var certBtn = document.createElement('button');
-      certBtn.type = 'button';
-      certBtn.className = 'pyco-tut-certbtn';
-      certBtn.textContent = allDone ? '修了証を発行する' : '修了証（全レッスン完了で発行）';
-      certBtn.disabled = !allDone;
-      certBtn.addEventListener('click', function() {
-        if (window.PycoTutorialProgress && window.PycoTutorialProgress.showCertificate) {
-          window.PycoTutorialProgress.showCertificate(group, idx);
-        }
-      });
-      body.appendChild(certBtn);
     });
 
     document.body.appendChild(overlay);
@@ -1505,8 +1687,10 @@
   function checkHashLaunch() {
     var m = HASH_RE.exec(location.hash || '');
     if (m && m[1]) {
+      var tm = TRACK_RE.exec(location.hash || '');
+      var track = (tm && tm[1]) || 'block';
       // ワークスペース初期化直後の自動復元と競合しないよう少し遅延
-      setTimeout(function() { startLesson(m[1]); }, 400);
+      setTimeout(function() { startLesson(m[1], track); }, 400);
     }
   }
 
@@ -1522,6 +1706,8 @@
     // コールアウトの位置追従（ウィンドウリサイズ・ページ内スクロール）
     window.addEventListener('resize', positionCallout);
     window.addEventListener('scroll', positionCallout, true);
+    // 詰め幅（--pyco-tut-side-w）もビューポート変化に追従させる
+    window.addEventListener('resize', updateSideLayoutVar);
     // モバイルのタブ切替（ペイン切替）でも再配置。対象が非表示になった
     // ハイライトはここで消える（レイアウト確定後に遅延実行）
     var tabbar = $('mobile-tabbar');

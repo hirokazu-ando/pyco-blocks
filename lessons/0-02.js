@@ -7,7 +7,7 @@ window.PYCO_LESSONS["0-02"] = {
   "title": "変数に値を入れよう",
   "subtitle": "Python × 入門 #02",
   "mode": "python",
-  "articleUrl": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-02-variables/",
+  "article": "https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-02-variables/",
   "toolbox": [
     "var_set",
     "var_change",
@@ -18,11 +18,13 @@ window.PYCO_LESSONS["0-02"] = {
   ],
   "steps": [
     {
+      "track": "block",
       "title": "変数とは何か",
       "body": "<p><b>変数</b> は、値に名前を付けて覚えておく「箱」のようなものです。</p><ul><li><b>代入</b>：変数に値を入れること（例：<code>score = 80</code>）</li><li><b>参照</b>：変数から値を取り出して使うこと（例：<code>print(score)</code>）</li></ul><p>同じ数を何度も使うときや、途中で値が変わるときに便利です。</p>",
       "hint": "変数はゲームの得点や持ち物の数など「変わっていく値」を覚えるのに役立ちます。"
     },
     {
+      "track": "block",
       "title": "手順1：変数を作る",
       "body": "<p>「変数」カテゴリから <b>変数〜を〜にする</b> ブロックを取り出し、下の図のように置きましょう。変数に値を入れる（代入する）ためのブロックです。</p><p>1つ置けたらクリアです。</p>",
       "hint": "値の部分には「値」カテゴリの数値ブロックをはめ込めます。",
@@ -42,6 +44,7 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "block",
       "title": "手順2：80を入れて表示する",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数〜を〜にする</b> に <b>数値</b> ブロックをはめて、値を <code>80</code> にする</li><li>その下に <b>値を表示する</b> を置き、「値」カテゴリの <b>変数</b> ブロックをはめる</li></ol><p>「▶ 実行」を押して <code>80</code> と表示されれば成功です。</p><pre>score = 80\nprint(score)</pre>",
       "hint": "「変数」ブロックと「値を表示」ブロックの変数名を同じにそろえます。実行結果に 80 と出ればOK。",
@@ -60,6 +63,7 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "code",
       "title": "コードを読もう",
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>score = 80</code> の <code>=</code> は「右の値を左の変数に入れる」という記号（代入）です。<code>score</code> という名前の箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、変数 <code>score</code> の中身（<code>80</code>）を取り出して表示します。<code>\"</code> で囲まないので、名前ではなく中身が出ます。</li></ul>",
       "callout": {
@@ -69,10 +73,12 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "block",
       "title": "値を更新できる",
       "body": "<p>変数のいいところは、途中で値を <b>更新</b> できることです。「変数」カテゴリの <b>変数〜を〜だけ増やす</b> ブロック（<code>var_change</code>）を使うと、今の値に足し算できます。</p><pre>score = score + 10</pre><p>これを繰り返すと、値がどんどん増えていくのが見えます。</p>"
     },
     {
+      "track": "block",
       "title": "手順3：10ずつ増やして表示する",
       "body": "<p>下の図のように並べて実行しましょう。</p><ol><li><b>変数を 0 にする</b></li><li><b>10だけ増やす</b>→<b>表示する</b> を3回くり返す</li></ol><p>実行結果が <code>10</code>・<code>20</code>・<code>30</code> と3行出れば成功です。</p>",
       "hint": "増やす→表示、増やす→表示、増やす→表示、の順に縦へ並べます。",
@@ -86,6 +92,7 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><b>代入</b> という言葉の意味はどれでしょう？</p>",
@@ -101,6 +108,7 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><code>score = 80</code> のあとに <code>score = score + 5</code> を実行しました。いま <code>score</code> の値はいくつでしょう？</p>",
@@ -116,9 +124,10 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "block",
       "quiz": true,
       "title": "課題：好きな数を表示しよう",
-      "body": "<p><code>my_number</code> という変数に好きな数を入れて、その値を表示するプログラムを作りましょう。<b>変数〜を〜にする</b> と <b>値を表示する</b> の2つを置けばクリアです。</p><p>組み合わせ例（数は好きな値でOK）：</p><p>もっとくわしく → 解説記事 <code>https://sakigake-robo.com/courses/pycoblocks/pycoblocks-part0-intro/pycoblocks-02-variables/</code></p>",
+      "body": "<p><code>my_number</code> という変数に好きな数を入れて、その値を表示するプログラムを作りましょう。<b>変数〜を〜にする</b> と <b>値を表示する</b> の2つを置けばクリアです。</p><p>組み合わせ例（数は好きな値でOK）：</p>",
       "hint": "変数ブロックに数値をはめ、その下の「値を表示」に同じ変数ブロックをはめます。",
       "check": {
         "blocksRequired": [
@@ -132,6 +141,7 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう。数字で答えてください。</p><pre class=\"code-lines\">x = 50\nx = x + 3\nprint(x)</pre>",
@@ -146,6 +156,7 @@ window.PYCO_LESSONS["0-02"] = {
       }
     },
     {
+      "track": "code",
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>7</code> と表示しましょう。ただし <code>7</code> を直接 <code>print</code> せず、<b>変数に入れてから</b> 表示してください。</p><pre class=\"code-lines\">7</pre>",

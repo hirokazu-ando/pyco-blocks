@@ -6,7 +6,10 @@ window.PYCO_LESSONS_INDEX = {
     {
       "id": "part0-basic",
       "title": "Python × 入門 パート0：はじめの一歩",
-      "certificateTitle": "PycoBlocks Python入門 パート0「はじめの一歩」修了証",
+      "certificates": {
+        "block": "PycoBlocks Python入門 パート0「はじめの一歩」ブロック修了証",
+        "code": "PycoBlocks Python入門 パート0「はじめの一歩」コーディング修了証"
+      },
       "lessons": [
         "0-00",
         "0-01",
@@ -18,7 +21,10 @@ window.PYCO_LESSONS_INDEX = {
     {
       "id": "part0-control",
       "title": "Python × 入門 パート0：制御とデータ",
-      "certificateTitle": "PycoBlocks Python入門 パート0「制御とデータ」修了証",
+      "certificates": {
+        "block": "PycoBlocks Python入門 パート0「制御とデータ」ブロック修了証",
+        "code": "PycoBlocks Python入門 パート0「制御とデータ」コーディング修了証"
+      },
       "lessons": [
         "0-05",
         "0-06",
@@ -34,7 +40,10 @@ window.PYCO_LESSONS_INDEX = {
     {
       "id": "part0-advanced",
       "title": "Python × 入門 パート0：関数と応用",
-      "certificateTitle": "PycoBlocks Python入門 パート0「関数と応用」修了証",
+      "certificates": {
+        "block": "PycoBlocks Python入門 パート0「関数と応用」ブロック修了証",
+        "code": "PycoBlocks Python入門 パート0「関数と応用」コーディング修了証"
+      },
       "lessons": [
         "0-14",
         "0-15",
