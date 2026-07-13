@@ -45,6 +45,37 @@
   function r2(v) { return Math.round(v * 100) / 100; }
   function r4(v) { return Math.round(v * 10000) / 10000; }
 
+  // 直交2セグメントの内部交差点（端点接触を除外）。折れ線の交差カウント共通部品。
+  function perpCrossPt(s, t) {
+    var H, V; if (s.horiz && !t.horiz) { H = s; V = t; } else if (!s.horiz && t.horiz) { H = t; V = s; } else return null;
+    var e = 0.6;
+    if (V.x0 > H.x0 + e && V.x0 < H.x1 - e && H.y0 > V.y0 + e && H.y0 < V.y1 - e) return { x: V.x0, y: H.y0 };
+    return null;
+  }
+  // polys: [{id, trunk, pts}] → 異ネットペアの交差点総数と「2回以上交差ペア」数。
+  function pairCrossStats(polys) {
+    var byId = {};
+    polys.forEach(function (w) {
+      if (!byId[w.id]) byId[w.id] = { trunk: w.trunk, segs: [] };
+      for (var i = 0; i < w.pts.length - 1; i++) {
+        var a = w.pts[i], b = w.pts[i + 1];
+        if (Math.abs(a.x - b.x) < 0.6 && Math.abs(a.y - b.y) < 0.6) continue;
+        byId[w.id].segs.push({ horiz: Math.abs(a.y - b.y) < 0.6, x0: Math.min(a.x, b.x), x1: Math.max(a.x, b.x), y0: Math.min(a.y, b.y), y1: Math.max(a.y, b.y) });
+      }
+    });
+    var ids = Object.keys(byId), total = 0, dbl = 0;
+    for (var i = 0; i < ids.length; i++) for (var j = i + 1; j < ids.length; j++) {
+      var A = byId[ids[i]], B = byId[ids[j]]; if (A.trunk === B.trunk) continue;
+      var cp = [];
+      for (var a2 = 0; a2 < A.segs.length; a2++) for (var b2 = 0; b2 < B.segs.length; b2++) {
+        var p = perpCrossPt(A.segs[a2], B.segs[b2]);
+        if (p && !cp.some(function (q) { return Math.abs(q.x - p.x) < 1 && Math.abs(q.y - p.y) < 1; })) cp.push(p);
+      }
+      total += cp.length; if (cp.length >= 2) dbl++;
+    }
+    return { total: total, dbl: dbl };
+  }
+
   var _uid = 0;
   function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function nsIds(inner, prefix) {
@@ -199,10 +230,11 @@
     return list;
   }
   // レイアウト本体：登録ラベルを衝突なしに配置。part 箱は name の soft 障害物。
-  function layoutLabels(reg, partBoxes, segRects) {
+  // fixedBoxes: 部品アート内の静的テキスト（電池の±等）の bbox。動かせない障害物として先置きする。
+  function layoutLabels(reg, partBoxes, segRects, fixedBoxes) {
     var ord = { pinlbl: 0, chip: 1, name: 2 };
     var items = reg.slice().sort(function (a, b) { return ord[a.kind] - ord[b.kind]; });
-    var placed = [], svg = [], finalLabels = [], bgCount = 0, bgList = [];
+    var placed = (fixedBoxes || []).slice(), svg = [], finalLabels = [], bgCount = 0, bgList = [];
     function textClear(bb) { for (var i = 0; i < placed.length; i++) if (rOv(bb, placed[i])) return false; return true; }
     function wireClear(bb) { for (var i = 0; i < segRects.length; i++) if (rOv(bb, segRects[i])) return false; return true; }
     function partClear(bb) { for (var i = 0; i < partBoxes.length; i++) if (rOv(bb, partBoxes[i].bb)) return false; return true; }
@@ -471,25 +503,38 @@
   //  自作モジュール（ボード外）
   // ============================================================
   function drawBattery(x, y, id, txt, POINTS) {
-    var w = 104, h = 62, LEAD = 16, svg = [];
+    var w = 104, h = 62, LEAD = 18, svg = [];
     svg.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8" fill="#2e3440" stroke="#1c2128" stroke-width="2"/>');
     for (var i = 0; i < 2; i++) {
       var cyy = y + 16 + i * 28;
       svg.push('<rect x="' + (x + 14) + '" y="' + (cyy - 9) + '" width="76" height="18" rx="4" fill="#cfa54a" stroke="#8d6f2f"/>');
     }
-    // 端子＝本体外へ引き出したリード線（+ は右／− は左）。配線は本体を横切らない。
-    var pyP = y + 16, pyM = y + h - 16;
-    var pxP = x + w + LEAD, pxM = x - LEAD;
+    // 実物の電池ボックス同様、赤(+)・黒(−) のリード線を本体の同じ側から一緒に引き出す。
+    // 外部電源(VEXT)を使う各モジュールは基板の右〜下側に配置されるため、リードは右側面から2本。
+    // ＋を上・−を下に離して平行配線（縦間隔 = h-32 ≒ 30px ≥ 8px・本体を貫通しない）。
+    // ＋(モジュール側・右へ)を長め、−(Pico GND側・左へ)を短めにし、端子xをずらして
+    // 2本の配線が同一縦線上で重ならないようにする。
+    var pyP = y + 16, pyM = y + h - 16;   // ＋ 上／− 下
+    var pxP = x + w + LEAD + 14, pxM = x + w + LEAD;
     POINTS[id + '.+'] = { x: pxP, y: pyP };
     POINTS[id + '.-'] = { x: pxM, y: pyM };
     svg.push('<line x1="' + (x + w) + '" y1="' + pyP + '" x2="' + pxP + '" y2="' + pyP + '" stroke="#d24a4a" stroke-width="2.4"/>');
-    svg.push('<line x1="' + x + '" y1="' + pyM + '" x2="' + pxM + '" y2="' + pyM + '" stroke="#33363c" stroke-width="2.4"/>');
+    svg.push('<line x1="' + (x + w) + '" y1="' + pyM + '" x2="' + pxM + '" y2="' + pyM + '" stroke="#33363c" stroke-width="2.4"/>');
     svg.push('<circle cx="' + pxP + '" cy="' + pyP + '" r="3.2" fill="#d24a4a"/>');
     svg.push('<circle cx="' + pxM + '" cy="' + pyM + '" r="3.2" fill="#33363c"/>');
-    svg.push('<text x="' + (x + w + 4) + '" y="' + (pyP - 6) + '" fill="#ff8d8d" font-size="13" font-weight="bold" text-anchor="middle">+</text>');
-    svg.push('<text x="' + (x - 4) + '" y="' + (pyM + 16) + '" fill="#9fc3ff" font-size="14" font-weight="bold" text-anchor="middle">−</text>');
-    if (txt) svg.push(label(x + w / 2, y + h + 16, txt, { fs: 11, weight: 'bold' }));
-    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: pxM - 4, y0: y, x1: pxP + 4, y1: y + h + 22 }, body: { x0: x, y0: y, x1: x + w, y1: y + h } };
+    // 極性マーク：配線の到達コリドー（＋端子= x:pxP の縦・y:pyP の水平、−端子= x:pxM の縦・
+    // y:pyM の水平@左側）を避けた象限に置く。＋は端子の右上、−はリード線の下（端子の左下）。
+    // bbox は staticLabels として返し、機械判定と layoutLabels の障害物に使う。
+    var plusX = pxP + 8, plusY = pyP - 7, minusX = pxM - 10, minusY = pyM + 14;
+    svg.push('<text x="' + plusX + '" y="' + plusY + '" fill="#ff8d8d" font-size="13" font-weight="bold" text-anchor="middle">+</text>');
+    svg.push('<text x="' + minusX + '" y="' + minusY + '" fill="#9fc3ff" font-size="14" font-weight="bold" text-anchor="middle">−</text>');
+    var statics = [
+      { kind: 'polarity', text: '+', bbox: textBBox(plusX, plusY, textWidth('+', 13), 'middle', 13) },
+      { kind: 'polarity', text: '−', bbox: textBBox(minusX, minusY, textWidth('−', 14), 'middle', 14) }
+    ];
+    // 部品名(txt)はここでは描かない：静的テキストはラベル衝突解消/機械判定をすり抜けるため、
+    // 呼び出し側(H.EXTPWR)が nameLabel で labelReg に登録する。
+    return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: x - 4, y0: y, x1: pxP + 12, y1: y + h + 22 }, body: { x0: x, y0: y, x1: x + w, y1: y + h }, staticLabels: statics };
   }
   function drawMotor(x, y, id, txt, POINTS) {
     var w = 104, h = 58, svg = [];
@@ -501,7 +546,7 @@
     [tya, tyb].forEach(function (ty) { svg.push('<rect x="' + (tex - 4) + '" y="' + (ty - 4) + '" width="16" height="8" fill="#c9963f" stroke="#8d6f2f" stroke-width="1"/>'); });
     POINTS[id + '.a'] = { x: tex - 4, y: tya };
     POINTS[id + '.b'] = { x: tex - 4, y: tyb };
-    if (txt) svg.push(label(x + w / 2, y + h + 15, txt, { fs: 11, weight: 'bold' }));
+    // 部品名(txt)は描かない（nameLabel 経由で衝突管理する。drawBattery と同じ理由）。
     return { svg: '<g class="cv-comp" data-comp-id="' + id + '">' + svg.join('') + '</g>', bbox: { x0: tex - 6, y0: y, x1: x + w + 12, y1: y + h + 20 }, body: { x0: x, y0: y, x1: x + w, y1: y + h } };
   }
   function drawUln(x, y, id, POINTS) {
@@ -633,8 +678,38 @@
       crossings: function () { return crossCount; },
       crossIds: function () { return crossIds; },
       segs: function () { return segs; },
-      render: function (wireOverrides) {
+      render: function (wireOverrides, bodies) {
         wireOverrides = wireOverrides || {};
+        bodies = bodies || [];
+        // 折れ線が実体（塗り）本体を貫通するか（端点接触は inset で許容）。
+        function segHitsBodies(a, b) {
+          var horiz = Math.abs(a.y - b.y) < 0.6, vert = Math.abs(a.x - b.x) < 0.6;
+          if (!horiz && !vert) return null;
+          var sx0 = Math.min(a.x, b.x), sx1 = Math.max(a.x, b.x), sy0 = Math.min(a.y, b.y), sy1 = Math.max(a.y, b.y), IN = 3;
+          for (var j = 0; j < bodies.length; j++) {
+            var B = bodies[j], bx0 = B.x0 + IN, bx1 = B.x1 - IN, by0 = B.y0 + IN, by1 = B.y1 - IN;
+            if (bx1 <= bx0 || by1 <= by0) continue;
+            if (horiz) { if (a.y > by0 && a.y < by1 && Math.min(sx1, bx1) - Math.max(sx0, bx0) > 1) return B; }
+            else { if (a.x > bx0 && a.x < bx1 && Math.min(sy1, by1) - Math.max(sy0, by0) > 1) return B; }
+          }
+          return null;
+        }
+        function polyHitsBodies(pts) {
+          for (var i = 0; i < pts.length - 1; i++) if (segHitsBodies(pts[i], pts[i + 1])) return true;
+          return false;
+        }
+        // pts が本体を貫通する箇所を、その本体の下側(最下辺+gap)へ迂回させる。
+        function detourBelow(P, laneX, C) {
+          var yb = -Infinity;
+          for (var j = 0; j < bodies.length; j++) {
+            var B = bodies[j];
+            var xlo = Math.min(laneX, C.x), xhi = Math.max(laneX, C.x);
+            if (B.x1 - 3 > xlo && B.x0 + 3 < xhi && B.y0 < C.y && B.y1 > Math.min(P.y, C.y)) yb = Math.max(yb, B.y1);
+          }
+          if (yb === -Infinity) return null;
+          var dy = yb + 10;
+          return [{ x: P.x, y: P.y }, { x: laneX, y: P.y }, { x: laneX, y: dy }, { x: C.x, y: dy }, { x: C.x, y: C.y }];
+        }
         var picoWires = [], freeWires = [], explicitWires = [];
         list.forEach(function (w) {
           if (w.opt && w.opt.pts) { explicitWires.push(w); return; }   // 明示ルート（本体回避・手動配線）
@@ -657,14 +732,20 @@
         function chanX(side, idx) {
           return side === 'left' ? (pico.leftX - LBLW - idx * CH_STEP) : (pico.rightX + LBLW + idx * CH_STEP);
         }
-        // ---- レーン割当（wrapしない・基板下でない Pico配線をサイド別に彩色）----
+        // ---- レーン割当（サイド別レーン x を算出しトランク共有でグループ化）----
+        // 各レーンは groups[side:x] オブジェクトで表し、後段の交差最小化で x を入れ替える。
+        var groups = {};
+        function grp(side, x) { var k = side + ':' + r2(x); return groups[k] || (groups[k] = { side: side, x: x }); }
         var normL = picoWires.filter(function (w) { return !w._wrap && !w._under && w._side === 'left'; });
         var normR = picoWires.filter(function (w) { return !w._wrap && !w._under && w._side === 'right'; });
         var nL = assignChannels(normL), nR = assignChannels(normR);
         var laneNext = { left: nL + 1, right: nR + 1 };  // 通常レーンの外側から採番
+        normL.concat(normR).forEach(function (w) {
+          if (Math.abs(w.py - w._C.y) < 1.5) { w._aligned = true; return; }  // 水平一直線（レーン不要）
+          w._laneG = grp(w._side, chanX(w._side, w.channelIdx));
+        });
         // ---- 基板下モジュール配線 ----
-        // 同じ高さ(C.y)を共有する水平ピン列は段状バスで縦着地、
-        // それ以外(縦ピン列/孤立)は通常どおり水平着地する。
+        // 同じ高さ(C.y)を共有する水平ピン列は段状バスで縦着地、それ以外(縦ピン列/孤立)は水平着地。
         var unders = picoWires.filter(function (w) { return w._under; });
         var yCount = {};
         unders.forEach(function (w) { var k = Math.round(w._C.y / 3); yCount[k] = (yCount[k] || 0) + 1; });
@@ -672,10 +753,10 @@
         var underCol = unders.filter(function (w) { return yCount[Math.round(w._C.y / 3)] <= 1; });
         underRow.sort(function (a, b) { return a._C.x - b._C.x; });
         underRow.forEach(function (w, i) {
-          w._underCh = chanX(w._side, laneNext[w._side]++);
+          w._laneG = grp(w._side, chanX(w._side, laneNext[w._side]++));
           w._busY = pico.botY + 16 + i * 7;
         });
-        underCol.forEach(function (w) { w._underCh = chanX(w._side, laneNext[w._side]++); });
+        underCol.forEach(function (w) { w._laneG = grp(w._side, chanX(w._side, laneNext[w._side]++)); });
         // ---- wrap配線：上回り/下回りに分けトラックy ----
         var midY = pico.cy;
         var wraps = picoWires.filter(function (w) { return w._wrap; });
@@ -698,8 +779,8 @@
         });
         wgL.sort(function (a, b) { return a.minY - b.minY; });
         wgR.sort(function (a, b) { return a.minY - b.minY; });
-        wgL.forEach(function (g) { var x = chanX('left', laneNext.left++); g.ws.forEach(function (w) { w._destCh = x; }); });
-        wgR.forEach(function (g) { var x = chanX('right', laneNext.right++); g.ws.forEach(function (w) { w._destCh = x; }); });
+        wgL.forEach(function (g) { var G = grp('left', chanX('left', laneNext.left++)); g.ws.forEach(function (w) { w._destG = G; }); });
+        wgR.forEach(function (g) { var G = grp('right', chanX('right', laneNext.right++)); g.ws.forEach(function (w) { w._destG = G; }); });
         // 近側(ピン側)スタブレーン（pinSide・ピントランク共有）
         var sg = {};
         wraps.forEach(function (w) {
@@ -707,17 +788,120 @@
           (sg[key] || (sg[key] = [])).push(w);
         });
         Object.keys(sg).forEach(function (k) {
-          var ws = sg[k], side = ws[0]._side, x = chanX(side, laneNext[side]++);
-          ws.forEach(function (w) { w._stubX = x; });
+          var ws = sg[k], side = ws[0]._side, G = grp(side, chanX(side, laneNext[side]++));
+          ws.forEach(function (w) { w._stubG = G; });
         });
+
+        // ---- 各Pico配線の折れ線＝割当レーンxの関数（最適化で x を差し替え再評価する）----
+        function chDxOf(w) { var wov = wireOverrides[w.id]; return (wov && typeof wov.chDx === 'number') ? wov.chDx : 0; }
+        function ptsOf(w) {
+          var P = w._P, C = w._C, dx = chDxOf(w);
+          if (w._aligned) return [{ x: P.x, y: P.y }, { x: C.x, y: C.y }];
+          if (w._under) {
+            var uch = w._laneG.x + dx;
+            if (w._busY != null) return [{ x: P.x, y: P.y }, { x: uch, y: P.y }, { x: uch, y: w._busY }, { x: C.x, y: w._busY }, { x: C.x, y: C.y }];
+            var simple = [{ x: P.x, y: P.y }, { x: uch, y: P.y }, { x: uch, y: C.y }, { x: C.x, y: C.y }];
+            if (polyHitsBodies(simple)) { var det = detourBelow(P, uch, C); if (det) return det; }
+            return simple;
+          }
+          if (!w._wrap) {
+            var ch = w._laneG.x + dx;
+            return [{ x: P.x, y: P.y }, { x: ch, y: P.y }, { x: ch, y: C.y }, { x: C.x, y: C.y }];
+          }
+          var stubX = w._stubG.x, destCh = w._destG.x + dx;
+          return [{ x: P.x, y: P.y }, { x: stubX, y: P.y }, { x: stubX, y: w._trackY }, { x: destCh, y: w._trackY }, { x: destCh, y: C.y }, { x: C.x, y: C.y }];
+        }
+        function trunkOf(w) {
+          return (w.color === COLPAL.gnd) ? 'gnd' : (w.color === COLPAL.vext) ? 'vext' :
+            (w.color === COLPAL.v) ? '3v3' : (w._P ? (r2(w.px) + ':' + r2(w.py)) : ('free:' + w.id));
+        }
+
+        // ---- 自由配線/明示ルートの折れ線を先に確定（レーン最適化の固定障害物として使う）----
+        var yCntA = {}, yCntB = {};
+        freeWires.forEach(function (w) {
+          yCntA[Math.round(w.a.y / 3)] = (yCntA[Math.round(w.a.y / 3)] || 0) + 1;
+          yCntB[Math.round(w.b.y / 3)] = (yCntB[Math.round(w.b.y / 3)] || 0) + 1;
+        });
+        var busFN = 0, resolved = [];
+        freeWires.forEach(function (w) {
+          var a = w.a, b = w.b, pts;
+          if (Math.abs(a.y - b.y) < 1.5 || Math.abs(a.x - b.x) < 1.5) pts = [{ x: a.x, y: a.y }, { x: b.x, y: b.y }];
+          else {
+            var V = [{ x: a.x, y: a.y }, { x: a.x, y: b.y }, { x: b.x, y: b.y }];  // 縦抜き→水平着地
+            var Lh = [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }]; // 水平→縦着地
+            var okV = !polyHitsInner(V, innerBox) && !polyHitsBodies(V);
+            var okL = !polyHitsInner(Lh, innerBox) && !polyHitsBodies(Lh);
+            if (yCntA[Math.round(a.y / 3)] > 1 && okV) pts = V;
+            else if (yCntB[Math.round(b.y / 3)] > 1 && okL) pts = Lh;
+            else if (okL) pts = Lh;
+            else if (okV) pts = V;
+            else { var busYf = pico.botY + 46 + (busFN++) * 11; pts = [{ x: a.x, y: a.y }, { x: a.x, y: busYf }, { x: b.x, y: busYf }, { x: b.x, y: b.y }]; }
+          }
+          resolved.push({ w: w, pts: pts });
+        });
+        explicitWires.forEach(function (w) { resolved.push({ w: w, pts: w.opt.pts }); });
+        var fixedPolys = resolved.map(function (r) { return { id: r.w.id, trunk: trunkOf(r.w), pts: r.pts }; });
+
+        // ---- レーン交差最小化：異ネット配線が同一ペアで2回以上交差しないよう、
+        //      サイド別にレーンxのスロット割当を局所探索で入れ替える。 ----
+        function perpX(s, t) {   // 直交2セグメントの内部交差点（端点接触は除外）
+          var H, V; if (s.horiz && !t.horiz) { H = s; V = t; } else if (!s.horiz && t.horiz) { H = t; V = s; } else return null;
+          var e = 0.6;
+          if (V.x0 > H.x0 + e && V.x0 < H.x1 - e && H.y0 > V.y0 + e && H.y0 < V.y1 - e) return { x: V.x0, y: H.y0 };
+          return null;
+        }
+        function crossCost(polys) {
+          var byId = {};
+          polys.forEach(function (w) {
+            if (!byId[w.id]) byId[w.id] = { trunk: w.trunk, segs: [] };
+            for (var i = 0; i < w.pts.length - 1; i++) {
+              var a = w.pts[i], b = w.pts[i + 1];
+              if (Math.abs(a.x - b.x) < 0.6 && Math.abs(a.y - b.y) < 0.6) continue;
+              byId[w.id].segs.push({ horiz: Math.abs(a.y - b.y) < 0.6, x0: Math.min(a.x, b.x), x1: Math.max(a.x, b.x), y0: Math.min(a.y, b.y), y1: Math.max(a.y, b.y) });
+            }
+          });
+          var ids = Object.keys(byId), total = 0, dbl = 0;
+          for (var i = 0; i < ids.length; i++) for (var j = i + 1; j < ids.length; j++) {
+            var A = byId[ids[i]], B = byId[ids[j]]; if (A.trunk === B.trunk) continue;
+            var cp = [];
+            for (var a2 = 0; a2 < A.segs.length; a2++) for (var b2 = 0; b2 < B.segs.length; b2++) {
+              var p = perpX(A.segs[a2], B.segs[b2]);
+              if (p && !cp.some(function (q) { return Math.abs(q.x - p.x) < 1 && Math.abs(q.y - p.y) < 1; })) cp.push(p);
+            }
+            total += cp.length; if (cp.length >= 2) dbl++;   // 2回以上=最優先で排除
+          }
+          return total + 1000 * dbl;
+        }
+        function buildPolys() {
+          var polys = fixedPolys.slice();
+          picoWires.forEach(function (w) { polys.push({ id: w.id, trunk: trunkOf(w), pts: ptsOf(w) }); });
+          return polys;
+        }
+        function optimizeSide(side) {
+          var gs = [];
+          Object.keys(groups).forEach(function (k) { if (groups[k].side === side) gs.push(groups[k]); });
+          if (gs.length < 2) return;
+          var cost = crossCost(buildPolys()), improved = true, guard = 0;
+          while (improved && guard++ < 40) {
+            improved = false;
+            for (var i = 0; i < gs.length; i++) for (var j = i + 1; j < gs.length; j++) {
+              var xi = gs[i].x, xj = gs[j].x;
+              gs[i].x = xj; gs[j].x = xi;
+              var c2 = crossCost(buildPolys());
+              if (c2 < cost - 1e-9) { cost = c2; improved = true; }
+              else { gs[i].x = xi; gs[j].x = xj; }
+            }
+          }
+        }
+        // wrap は両サイドのレーンを使うため、左右を交互に2周して収束させる。
+        optimizeSide('left'); optimizeSide('right'); optimizeSide('left'); optimizeSide('right');
 
         // ---- 描画 ----
         var out = [];
         function emit(w, pts) {
           // セグメント記録（重複判定用）。同一ネットの共有を許容。
           // 電源(GND/VEXT/3V3)は単一ネットなので色でまとめる。信号はPicoピン=一意ネット。
-          var trunk = (w.color === COLPAL.gnd) ? 'gnd' : (w.color === COLPAL.vext) ? 'vext' :
-            (w.color === COLPAL.v) ? '3v3' : (w._P ? (r2(w.px) + ':' + r2(w.py)) : ('free:' + w.id));
+          var trunk = trunkOf(w);
           segs.push({ id: w.id, trunk: trunk, pts: pts.map(function (p) { return { x: r2(p.x), y: r2(p.y) }; }) });
           if (polyHitsInner(pts, innerBox)) { crossCount++; crossIds.push(w.id); }
           var d = orthoPath(pts, 3);
@@ -730,60 +914,12 @@
             '<circle cx="' + r2(pts[pts.length - 1].x) + '" cy="' + r2(pts[pts.length - 1].y) + '" r="2.9" fill="' + w.color + '"/></g>');
         }
         picoWires.forEach(function (w) {
-          var wov = wireOverrides[w.id];
-          var chDx = (wov && typeof wov.chDx === 'number') ? wov.chDx : 0;
-          var P = w._P, C = w._C, pts;
-          if (w._under) {
-            var uch = w._underCh + chDx;
-            w._chForData = uch;
-            if (w._busY != null) {
-              // 水平ピン列：バス帯で縦着地
-              pts = [{ x: P.x, y: P.y }, { x: uch, y: P.y }, { x: uch, y: w._busY },
-              { x: C.x, y: w._busY }, { x: C.x, y: C.y }];
-            } else {
-              // 縦ピン列/孤立：基板下で水平着地（基板を横切らない）
-              pts = [{ x: P.x, y: P.y }, { x: uch, y: P.y }, { x: uch, y: C.y }, { x: C.x, y: C.y }];
-            }
-          } else if (!w._wrap) {
-            if (Math.abs(P.y - C.y) < 1.5) {
-              pts = [{ x: P.x, y: P.y }, { x: C.x, y: C.y }];
-              w._chForData = P.x;
-            } else {
-              var ch = chanX(w._side, w.channelIdx) + chDx;
-              w._chForData = ch;
-              pts = [{ x: P.x, y: P.y }, { x: ch, y: P.y }, { x: ch, y: C.y }, { x: C.x, y: C.y }];
-            }
-          } else {
-            var stubX = w._stubX;
-            var destCh = w._destCh + chDx;
-            w._chForData = destCh;
-            pts = [{ x: P.x, y: P.y }, { x: stubX, y: P.y }, { x: stubX, y: w._trackY },
-            { x: destCh, y: w._trackY }, { x: destCh, y: C.y }, { x: C.x, y: C.y }];
-          }
-          emit(w, pts);
+          if (w._aligned) w._chForData = w.px;
+          else if (w._wrap) w._chForData = w._destG.x + chDxOf(w);
+          else w._chForData = w._laneG.x + chDxOf(w);
+          emit(w, ptsOf(w));
         });
-        // 自由配線（部品間）の直交ルート。ピン列の向きに合わせて着地方向を選ぶ。
-        var yCntA = {}, yCntB = {};
-        freeWires.forEach(function (w) {
-          yCntA[Math.round(w.a.y / 3)] = (yCntA[Math.round(w.a.y / 3)] || 0) + 1;
-          yCntB[Math.round(w.b.y / 3)] = (yCntB[Math.round(w.b.y / 3)] || 0) + 1;
-        });
-        var busFN = 0;
-        freeWires.forEach(function (w) {
-          var a = w.a, b = w.b;
-          if (Math.abs(a.y - b.y) < 1.5 || Math.abs(a.x - b.x) < 1.5) { emit(w, [{ x: a.x, y: a.y }, { x: b.x, y: b.y }]); return; }
-          var V = [{ x: a.x, y: a.y }, { x: a.x, y: b.y }, { x: b.x, y: b.y }];  // 縦抜き→水平着地
-          var Lh = [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }]; // 水平→縦着地
-          if (yCntA[Math.round(a.y / 3)] > 1 && !polyHitsInner(V, innerBox)) { emit(w, V); return; }   // 送り側が横列
-          if (yCntB[Math.round(b.y / 3)] > 1 && !polyHitsInner(Lh, innerBox)) { emit(w, Lh); return; }  // 受け側が横列
-          if (!polyHitsInner(Lh, innerBox)) { emit(w, Lh); return; }
-          if (!polyHitsInner(V, innerBox)) { emit(w, V); return; }
-          // どちらも基板を横切る場合は基板下のバス帯を回る
-          var busYf = pico.botY + 46 + (busFN++) * 11;
-          emit(w, [{ x: a.x, y: a.y }, { x: a.x, y: busYf }, { x: b.x, y: busYf }, { x: b.x, y: b.y }]);
-        });
-        // 明示ルート（手動計算済み折れ線）をそのまま描画
-        explicitWires.forEach(function (w) { emit(w, w.opt.pts); });
+        resolved.forEach(function (r) { emit(r.w, r.pts); });
         return out.join('\n');
       }
     };
@@ -796,7 +932,7 @@
     var POINTS = {};
     var net = NetGraph();
     var wires = WireMgr(pico);
-    var partsSvg = [], labelReg = [];
+    var partsSvg = [], labelReg = [], staticLabels = [];
     var boxes = [{ id: '__pico__', bb: { x0: pico.box.x0, y0: pico.box.y0, x1: pico.box.x1, y1: pico.box.y1 } }];
     var usedPins = {};
     var bounds = { x0: pico.box.x0, y0: pico.box.y0, x1: pico.box.x1, y1: pico.box.y1 };
@@ -1165,36 +1301,20 @@
       var ty = belowY + 20 + ((ov && ov.dy) || 0);
       var dip = drawL293D(tx, ty, c.compId, POINTS);
       partsSvg.push(dip.svg); addBox(c.compId, dip.bbox, dip.body);
-      var mot = drawMotor(tx + 8 * PITCH + 60, ty - 8, 'motor_' + c.compId, 'DCモーター', POINTS);
+      var mot = drawMotor(tx + 8 * PITCH + 60, ty - 8, 'motor_' + c.compId, null, POINTS);
       partsSvg.push(mot.svg); addBox('motor_' + c.compId, mot.bbox, mot.body);
+      nameLabel((mot.body.x0 + mot.body.x1) / 2, mot.bbox, 'DCモーター', true);
       belowX += 8 * PITCH + 240;
       // ---- L293D 明示配線（DIP本体を横切らない・下辺ピンは一旦下へ退避してから回す）----
       var pw = 8 * PITCH, solidBot = ty + 74;   // 74 = drawL293D の DIP 高さ ph
-      var bIdx = 0, lIdx = 0, rIdx = 0, mIdx = 0;
-      function busBelow() { return solidBot + 16 + (bIdx++) * 11; }
-      function chOut(P) {
-        return (P.side === 'left')
-          ? pico.leftX - LBLW - (3 + lIdx++) * CH_STEP
-          : Math.max(pico.rightX + LBLW, tx + pw + 14) + (rIdx++) * CH_STEP;
-      }
-      // 下辺ピン → Pico（下へ退避 → 外側チャンネル → Pico ピンへ）
+      var mIdx = 0;
+      function busY(k) { return solidBot + 16 + k * 11; }
+      function trunkOfColor(color, id) { return color === COLPAL.gnd ? 'gnd' : color === COLPAL.vext ? 'vext' : color === COLPAL.v ? '3v3' : 'free:' + id; }
+      var obstPolys = [];   // toPico 以外の L293D 配線（交差カウントの固定障害物）
+      // 下辺ピン → Pico は仕様（レーン/バスの割当順）を集めてから交差最小化して確定する。
+      var pcSpecs = [];
       function toPico(Ckey, P, color, id) {
-        var C = POINTS[Ckey], bus = busBelow(), ch = chOut(P);
-        wires.add(P, C, color, id, { pts: [
-          { x: P.x, y: P.y }, { x: ch, y: P.y }, { x: ch, y: bus },
-          { x: C.x, y: bus }, { x: C.x, y: C.y } ] });
-      }
-      // 下辺ピン → 外部電源＋（下へ退避 → 電池左まで水平 → 電池リードへ上がる）
-      function toBatDown(Ckey, id) {
-        var C = POINTS[Ckey], bus = busBelow(), bat = VEXT_PT;
-        wires.add(C, bat, COLPAL.vext, id, { pts: [
-          { x: C.x, y: C.y }, { x: C.x, y: bus }, { x: bat.x, y: bus }, { x: bat.x, y: bat.y } ] });
-      }
-      // 下辺ピン → モーター端子（下へ退避 → チップとモーターの間を上がる）
-      function toMotor(Ckey, Mkey, color, id) {
-        var C = POINTS[Ckey], M = POINTS[Mkey], bus = busBelow(), riser = tx + pw + 10 + (mIdx++) * 12;
-        wires.add(C, M, color, id, { pts: [
-          { x: C.x, y: C.y }, { x: C.x, y: bus }, { x: riser, y: bus }, { x: riser, y: M.y }, { x: M.x, y: M.y } ] });
+        pcSpecs.push({ C: POINTS[Ckey], P: P, color: color, id: id, trunk: trunkOfColor(color, id), side: P.side });
       }
       net.union(c.compId + '.GNDb1', c.compId + '.GNDb2'); net.union(c.compId + '.GNDb1', c.compId + '.GNDt1'); net.union(c.compId + '.GNDt1', c.compId + '.GNDt2');
       toPico(c.compId + '.IN1', gpPt(c.pins.IN1.gp), nextSig(), c.compId + ':IN1'); net.union(c.compId + '.IN1', gpKey(c.pins.IN1.gp));
@@ -1202,19 +1322,72 @@
       toPico(c.compId + '.GNDb1', gndPt(pico.botY, 'left'), COLPAL.gnd, c.compId + ':GND'); net.union(c.compId + '.GNDb1', 'gnd');
       if (c.pins.EN && c.pins.EN.gp != null) {
         toPico(c.compId + '.EN1', gpPt(c.pins.EN.gp), nextSig(), c.compId + ':EN'); net.union(c.compId + '.EN1', gpKey(c.pins.EN.gp));
-      } else if (VEXT_PT) {
+      }
+      // toPico のバスは 0..N-1 を予約し、その他の下辺配線は N 以降のバスを使う。
+      var N = pcSpecs.length, nextBus = N;
+      // 下辺ピン → 外部電源＋（下へ退避 → 電池まで水平 → 電池リードへ上がる）
+      function toBatDown(Ckey, id) {
+        var C = POINTS[Ckey], bus = busY(nextBus++), bat = VEXT_PT;
+        var pts = [{ x: C.x, y: C.y }, { x: C.x, y: bus }, { x: bat.x, y: bus }, { x: bat.x, y: bat.y }];
+        wires.add(C, bat, COLPAL.vext, id, { pts: pts }); obstPolys.push({ id: id, trunk: 'vext', pts: pts });
+      }
+      // 下辺ピン → モーター端子（下へ退避 → チップとモーターの間を上がる）
+      function toMotor(Ckey, Mkey, color, id) {
+        var C = POINTS[Ckey], M = POINTS[Mkey], bus = busY(nextBus++), riser = tx + pw + 10 + (mIdx++) * 12;
+        var pts = [{ x: C.x, y: C.y }, { x: C.x, y: bus }, { x: riser, y: bus }, { x: riser, y: M.y }, { x: M.x, y: M.y }];
+        wires.add(C, M, color, id, { pts: pts }); obstPolys.push({ id: id, trunk: trunkOfColor(color, id), pts: pts });
+      }
+      if (!(c.pins.EN && c.pins.EN.gp != null) && VEXT_PT) {
         toBatDown(c.compId + '.EN1', c.compId + ':EN'); net.union(c.compId + '.EN1', 'vext');
       }
       if (VEXT_PT) {
         toBatDown(c.compId + '.VS', c.compId + ':VS'); net.union(c.compId + '.VS', 'vext');
         // VSS は上辺ピン＝そのまま上へ（本体の上を通らない）
-        wires.add(POINTS[c.compId + '.VSS'], VEXT_PT, COLPAL.vext, c.compId + ':VSS', { pts: [
-          { x: POINTS[c.compId + '.VSS'].x, y: POINTS[c.compId + '.VSS'].y },
-          { x: POINTS[c.compId + '.VSS'].x, y: VEXT_PT.y }, { x: VEXT_PT.x, y: VEXT_PT.y } ] });
+        var vssPts = [{ x: POINTS[c.compId + '.VSS'].x, y: POINTS[c.compId + '.VSS'].y },
+          { x: POINTS[c.compId + '.VSS'].x, y: VEXT_PT.y }, { x: VEXT_PT.x, y: VEXT_PT.y }];
+        wires.add(POINTS[c.compId + '.VSS'], VEXT_PT, COLPAL.vext, c.compId + ':VSS', { pts: vssPts });
+        obstPolys.push({ id: c.compId + ':VSS', trunk: 'vext', pts: vssPts });
         net.union(c.compId + '.VSS', 'vext');
       }
       toMotor(c.compId + '.OUT1', 'motor_' + c.compId + '.a', nextSig(), c.compId + ':OUT1'); net.union(c.compId + '.OUT1', 'motor_' + c.compId + '.a');
       toMotor(c.compId + '.OUT2', 'motor_' + c.compId + '.b', nextSig(), c.compId + ':OUT2'); net.union(c.compId + '.OUT2', 'motor_' + c.compId + '.b');
+      // ---- toPico のレーンx／バスy 割当を交差最小化（局所探索）----
+      (function optimizeToPico() {
+        if (!N) return;
+        var leftSpecs = pcSpecs.filter(function (s) { return s.side === 'left'; });
+        var rightSpecs = pcSpecs.filter(function (s) { return s.side !== 'left'; });
+        var laneL = leftSpecs.map(function (s, i) { return pico.leftX - LBLW - (3 + i) * CH_STEP; });
+        var laneR = rightSpecs.map(function (s, i) { return Math.max(pico.rightX + LBLW, tx + pw + 14) + i * CH_STEP; });
+        // 初期割当：宛先 C.x 昇順（左→内側レーン・浅いバス）
+        var byCx = pcSpecs.slice().sort(function (a, b) { return a.C.x - b.C.x; });
+        byCx.forEach(function (s, k) { s.busK = k; });
+        leftSpecs.slice().sort(function (a, b) { return a.C.x - b.C.x; }).forEach(function (s, i) { s.laneX = laneL[i]; });
+        rightSpecs.slice().sort(function (a, b) { return a.C.x - b.C.x; }).forEach(function (s, i) { s.laneX = laneR[i]; });
+        function ptsFor(s) { return [{ x: s.P.x, y: s.P.y }, { x: s.laneX, y: s.P.y }, { x: s.laneX, y: busY(s.busK) }, { x: s.C.x, y: busY(s.busK) }, { x: s.C.x, y: s.C.y }]; }
+        function cost() {
+          var polys = obstPolys.concat(pcSpecs.map(function (s) { return { id: s.id, trunk: s.trunk, pts: ptsFor(s) }; }));
+          var st = pairCrossStats(polys); return st.dbl * 1000 + st.total;
+        }
+        var cur = cost(), improved = true, guard = 0;
+        while (improved && guard++ < 40) {
+          improved = false;
+          // バス順の入替
+          for (var i = 0; i < pcSpecs.length; i++) for (var j = i + 1; j < pcSpecs.length; j++) {
+            var bi = pcSpecs[i].busK, bj = pcSpecs[j].busK;
+            pcSpecs[i].busK = bj; pcSpecs[j].busK = bi;
+            var c2 = cost(); if (c2 < cur - 1e-9) { cur = c2; improved = true; } else { pcSpecs[i].busK = bi; pcSpecs[j].busK = bj; }
+          }
+          // レーンxの入替（同一サイド内）
+          [leftSpecs, rightSpecs].forEach(function (grp) {
+            for (var a = 0; a < grp.length; a++) for (var b = a + 1; b < grp.length; b++) {
+              var xa = grp[a].laneX, xb = grp[b].laneX;
+              grp[a].laneX = xb; grp[b].laneX = xa;
+              var c3 = cost(); if (c3 < cur - 1e-9) { cur = c3; improved = true; } else { grp[a].laneX = xa; grp[b].laneX = xb; }
+            }
+          });
+        }
+        pcSpecs.forEach(function (s) { wires.add(s.P, s.C, s.color, s.id, { pts: ptsFor(s) }); });
+      })();
       nameLabel((dip.bbox.x0 + dip.bbox.x1) / 2, dip.bbox, 'モータードライバ L293D', true);
       chk(c.compId, 'L293D: IN1→GP' + c.pins.IN1.gp, connected(c.compId + '.IN1', gpKey(c.pins.IN1.gp)));
       chk(c.compId, 'L293D: IN2→GP' + c.pins.IN2.gp, connected(c.compId + '.IN2', gpKey(c.pins.IN2.gp)));
@@ -1266,8 +1439,11 @@
       var ov = overrides && overrides[c.compId];
       var x = pico.leftX - 20 + ((ov && ov.dx) || 0);
       var y = pico.botY + 70 + ((ov && ov.dy) || 0);
-      var bat = drawBattery(x, y, c.compId, '外部電源（モーター用 単3×2）', POINTS);
+      var bat = drawBattery(x, y, c.compId, null, POINTS);
       partsSvg.push(bat.svg); addBox(c.compId, bat.bbox, bat.body);
+      (bat.staticLabels || []).forEach(function (s) { staticLabels.push(s); });
+      // 部品名は labelReg 経由（配線・他テキストとの衝突を layoutLabels が解消する）
+      nameLabel((bat.body.x0 + bat.body.x1) / 2, bat.bbox, '外部電源（モーター用 単3×2）', true);
       belowX = Math.max(belowX, bat.bbox.x1 + 40);
       belowY = Math.max(belowY, bat.bbox.y1 + 20);
       VEXT_PT = POINTS[c.compId + '.+'];
@@ -1312,13 +1488,13 @@
     });
 
     // ---- 配線を先に確定 → その配線を障害物として全テキストの衝突を解消 ----
-    var wiresSvg = wires.render(wireOverrides);
+    var solidBodies = boxes.filter(function (bx) { return bx.body; });
+    var wiresSvg = wires.render(wireOverrides, solidBodies.map(function (bx) { return bx.body; }));
     var wsegs = wires.segs();
     // 配線端まで描画域に含める（チャンネル外周・本体回避ルートの見切れ防止）
     wsegs.forEach(function (w) { w.pts.forEach(function (p) { grow({ x0: p.x, y0: p.y, x1: p.x, y1: p.y }); }); });
     // ---- モジュール本体×配線 交差判定（body 指定の塗り矩形のみ・Pico横断とは別集計）----
     var bodyCross = 0, bodyCrossIds = [];
-    var solidBodies = boxes.filter(function (bx) { return bx.body; });
     wsegs.forEach(function (w) {
       for (var i = 0; i < w.pts.length - 1; i++) {
         var a = w.pts[i], b = w.pts[i + 1];
@@ -1337,7 +1513,7 @@
       }
     });
     var segRects = segRectsFrom(wsegs, SEG_PAD);
-    var lay = layoutLabels(labelReg, boxes, segRects);
+    var lay = layoutLabels(labelReg, boxes, segRects, staticLabels.map(function (s) { return s.bbox; }));
     lay.labels.forEach(function (L) { grow(L.bbox); });   // 退避で外へ出た文字も描画域に含める
 
     return {
@@ -1345,7 +1521,8 @@
       wireCount: wires.count(), checks: checks, bounds: bounds, boxes: boxes,
       picoCross: wires.crossings(), crossIds: wires.crossIds(), wireSegs: wsegs,
       bodyCross: bodyCross, bodyCrossIds: bodyCrossIds,
-      labelBoxes: lay.labels, labelBgCount: lay.bgCount, labelBgList: lay.bgList
+      labelBoxes: lay.labels, labelBgCount: lay.bgCount, labelBgList: lay.bgList,
+      staticLabelBoxes: staticLabels
     };
   }
 
@@ -1399,7 +1576,8 @@
       picoLeft: PICO_LEFT, picoRight: PICO_RIGHT, picoTable: pico.table, picoPinTableOk: pico.pinTableOk,
       checks: circuit.checks, boxes: circuit.boxes, picoCross: circuit.picoCross, crossIds: circuit.crossIds,
       wireSegs: circuit.wireSegs, bodyCross: circuit.bodyCross, bodyCrossIds: circuit.bodyCrossIds,
-      labelBoxes: circuit.labelBoxes, labelBgCount: circuit.labelBgCount, labelBgList: circuit.labelBgList
+      labelBoxes: circuit.labelBoxes, labelBgCount: circuit.labelBgCount, labelBgList: circuit.labelBgList,
+      staticLabelBoxes: circuit.staticLabelBoxes
     };
     return { svg: svg, compCount: comps.length, wireCount: circuit.wireCount };
   };
