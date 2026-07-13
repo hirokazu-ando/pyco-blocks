@@ -90,6 +90,7 @@ window.PYCO_LESSONS["0-04"] = {
     {
       "track": "code",
       "title": "コードを読もう",
+      "autoCode": true,
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の1行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">print(f\"得点は{85}点\")</pre><ul><li><b>1行目</b>：文字列の前に付いた <code>f</code> は <b>f文字列</b> の目印です。<code>{ }</code> の中身だけが計算・置きかえされ、<code>{85}</code> は <code>85</code> になります。全体で <code>得点は85点</code> という1つの文字列ができ、<code>print</code> で表示します。<code>{ }</code> の外の <code>得点は</code> や <code>点</code> はそのままの文字です。</li></ul>",
       "bodyEasy": "<p>コードエリア（スマホは「コード・実行」タブ）に、次の1行が出ています。</p><pre class=\"code-lines\">print(f\"得点は{85}点\")</pre><ul><li><b>1行目</b>：文字列の前の <code>f</code> は <b>f文字列</b> の目印です。<code>{ }</code> の中だけが置きかえられ、<code>{85}</code> は <code>85</code> になります。全体で <code>得点は85点</code> という文字列ができ、<code>print</code> で表示します。<code>{ }</code> の外の <code>得点は</code> や <code>点</code> はそのままの文字です。</li></ul>",
       "callout": {

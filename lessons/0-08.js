@@ -94,6 +94,7 @@ window.PYCO_LESSONS["0-08"] = {
     {
       "track": "code",
       "title": "コードを読もう：かつ（and）を使ったif",
+      "autoCode": true,
       "body": "<p>手順2で組んだコードを読んでみましょう。<code>if</code> の条件に <b>かつ（and）</b> を使っています。</p><pre class=\"code-lines\">x = 85\nif x &gt;= 80 and x &lt;= 100:\n    print(\"PASS\")</pre><ul><li><b>1行目</b>：変数 <code>x</code> に <code>85</code> を入れます。</li><li><b>2行目</b> <code>if x &gt;= 80 and x &lt;= 100:</code>「もし <code>x</code> が 80 以上 <b>かつ</b> 100 以下なら」。<code>and</code> は左右の両方が正しいときだけ全体が True になります。行末の <b>:</b>（コロン）で中の処理が始まります。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>if</code> の中」を表します。条件が正しいときだけ <code>PASS</code> が表示されます。<code>x</code> は <code>85</code> で両方の条件が正しいので実行されます。</li></ul><p>2つの条件を <code>and</code> や <code>or</code> でつなぐと、1つの <code>if</code> でまとめて判定できます。</p>",
       "bodyEasy": "<p>手順2のコードを読みます。<code>if</code> の条件に <b>かつ（and）</b> を使っています。</p><pre class=\"code-lines\">x = 85\nif x &gt;= 80 and x &lt;= 100:\n    print(\"PASS\")</pre><ul><li><b>2行目</b>「もし <code>x</code> が 80 以上 <b>かつ</b> 100 以下なら」。<code>and</code> は両方が正しいときだけ True です。行のおわりの <b>:</b>（コロン）で中身が始まります。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）＝「その中身」</b>。条件が正しいときだけ <code>PASS</code> が出ます。</li></ul><p>2つの条件を <code>and</code> や <code>or</code> でつなぐと、1つの <code>if</code> でまとめて調べられます。</p>",
       "callout": {

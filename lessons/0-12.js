@@ -101,6 +101,7 @@ window.PYCO_LESSONS["0-12"] = {
     {
       "track": "code",
       "title": "コードを読もう：リストの [ ] とインデックス",
+      "autoCode": true,
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。1行ずつ読んでみましょう。</p><pre class=\"code-lines\">fruits = []\nfruits.append(\"apple\")\nfruits.append(\"orange\")\nfruits.append(\"grape\")\nprint(fruits[0])</pre><ul><li>1行目：<code>[]</code> は空のリストです。変数 <code>fruits</code> に空のリストを入れています。</li><li>2〜4行目：<code>append</code> はリストの<b>最後に値を足す</b>命令です。上から順に apple・orange・grape が並びます。</li><li>5行目：<code>fruits[0]</code> の <code>[ ]</code> は<b>インデックス（何番目か）</b>を表します。番号は <b>0から</b>始まるので、<code>fruits[0]</code> は先頭の <code>apple</code> です。</li></ul><p>この <code>[ ]</code> が、リストを作るときと、要素を取り出すときの両方で出てくることに注目しましょう。</p>",
       "bodyEasy": "<p>手順2のブロックは、次のコードになります。1行ずつ読みましょう。</p><pre class=\"code-lines\">fruits = []\nfruits.append(\"apple\")\nfruits.append(\"orange\")\nfruits.append(\"grape\")\nprint(fruits[0])</pre><ul><li>1行目：<code>[]</code> は空のリスト。<code>fruits</code> に入れます。</li><li>2〜4行目：<code>append</code> は<b>うしろに値を足す</b>命令。順に apple・orange・grape がならびます。</li><li>5行目：<code>fruits[0]</code> の <code>[ ]</code> は<b>何番目か</b>。<b>0から</b>なので先頭の <code>apple</code> です。</li></ul>",
       "hint": "インデックスは0から数えます。先頭が0番目、次が1番目です。",

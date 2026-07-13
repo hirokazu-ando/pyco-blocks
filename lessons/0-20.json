@@ -92,6 +92,7 @@
     {
       "track": "code",
       "title": "コードを読もう：内包表記を後ろから読む",
+      "autoCode": true,
       "body": "<p>ブロックが作った Python コードを読んでみましょう。</p><pre class=\"code-lines\">nums = [1, 2, 3, 4, 5, 6]\nevens = [n for n in nums if n % 2 == 0]\nprint(evens)</pre><p>内包表記は<b>後ろから読む</b>と分かりやすいです。</p><ol><li>まず <code>for n in nums</code> で、リストから <code>n</code> を1つずつ取り出します。</li><li>次に <code>if n % 2 == 0</code> で、2で割った余りが0のもの（偶数）だけ残します。</li><li>最後に先頭の <code>n</code>（式）を並べて、新しいリストを作ります。</li></ol><p><b>for → if → 式</b> の順に読むのがコツです。</p>",
       "bodyEasy": "<p>ブロックが作った Python のコードを読みましょう。</p><pre class=\"code-lines\">nums = [1, 2, 3, 4, 5, 6]\nevens = [n for n in nums if n % 2 == 0]\nprint(evens)</pre><p>内包表記は<b>うしろから読む</b>とわかりやすいです。</p><ol><li><code>for n in nums</code> で <code>n</code> を1つずつ取り出す。</li><li><code>if n % 2 == 0</code> で偶数だけ残す。</li><li>先頭の <code>n</code>（式）をならべて新しいリストにする。</li></ol><p><b>for → if → 式</b> のじゅんに読むのがコツです。</p>",
       "hint": "先頭の式は最後に考えます。まず for、次に if の順で読みましょう。",

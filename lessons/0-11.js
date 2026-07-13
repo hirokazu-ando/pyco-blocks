@@ -97,6 +97,7 @@ window.PYCO_LESSONS["0-11"] = {
     {
       "track": "code",
       "title": "コードを読もう：whileとインデント",
+      "autoCode": true,
       "body": "<p>手順2で組んだコードを読んでみましょう。<b>初期化・条件・更新</b> の3つがそろっているかに注目します。</p><pre class=\"code-lines\">x = 1\nwhile x &lt;= 5:\n    print(x)\n    x = x + 1</pre><ul><li><b>1行目</b> <code>x = 1</code>：くり返しの前に <code>x</code> を <code>1</code> にしておきます（<b>初期化</b>）。</li><li><b>2行目</b> <code>while x &lt;= 5:</code>「<code>x</code> が 5 以下の <b>間</b> くり返す」という <b>条件</b> です。行末の <b>:</b>（コロン）で中身が始まります。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>while</code> の中」を表します。<code>x</code> を表示します。</li><li><b>4行目</b>：同じ4つの空白なので、これも中の処理です。<code>x</code> を1増やします（<b>更新</b>）。これがあるから、<code>x</code> はいつか 6 になって条件が成り立たなくなり、ループが止まります。</li></ul><p>更新（4行目）を書き忘れると条件がずっと成り立ったままになり、終わらなくなります。for と同じく、くり返す処理はインデントで「中」に入れます。</p>",
       "bodyEasy": "<p>手順2のコードを読みます。<b>はじめの用意・条件・更新</b> の3つに注目します。</p><pre class=\"code-lines\">x = 1\nwhile x &lt;= 5:\n    print(x)\n    x = x + 1</pre><ul><li><b>1行目</b> <code>x = 1</code>：前に <code>x</code> を <code>1</code> にします（<b>はじめの用意</b>）。</li><li><b>2行目</b> <code>while x &lt;= 5:</code>「<code>x</code> が 5 以下の <b>間</b> くり返す」という <b>条件</b>。行のおわりの <b>:</b>（コロン）で中身が始まります。</li><li><b>3・4行目</b>：先頭の <b>4つの空白（インデント）＝「その中身」</b>。<code>x</code> を表示し、<code>x</code> を1増やします（<b>更新</b>）。これがあるから <code>x</code> はいつか6になり止まります。</li></ul><p>更新（4行目）を書きわすれると終わりません。</p>",
       "callout": {

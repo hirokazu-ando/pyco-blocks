@@ -91,6 +91,7 @@ window.PYCO_LESSONS["0-09"] = {
     {
       "track": "code",
       "title": "コードを読もう：forとインデント",
+      "autoCode": true,
       "body": "<p>手順3で組んだコードを読んでみましょう。ここでも <b>行末のコロン</b> と <b>インデント</b> が大切です。</p><pre class=\"code-lines\">for i in range(3):\n    print(i)</pre><ul><li><b>1行目</b> <code>for i in range(3):</code>「<code>i</code> を <code>0</code>・<code>1</code>・<code>2</code> と変えながら 3回くり返す」という意味です。行末の <b>:</b>（コロン）は「ここからくり返す中身が始まる」という合図です。</li><li><b>2行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>for</code> の中」を表します。この <code>print(i)</code> が回数ぶん、つまり 3回くり返されます。<code>i</code> は 1回ごとに <code>0 → 1 → 2</code> と変わります。</li></ul><p>くり返したい処理は、必ずインデントで下げて「中」に入れます。数え始めが <b>0</b> であることも覚えておきましょう。</p>",
       "bodyEasy": "<p>手順3のコードを読みます。<b>コロン</b> と <b>インデント</b> が大事です。</p><pre class=\"code-lines\">for i in range(3):\n    print(i)</pre><ul><li><b>1行目</b> <code>for i in range(3):</code>「<code>i</code> を 0・1・2 と変えながら3回くり返す」。行のおわりの <b>:</b>（コロン）で中身が始まります。</li><li><b>2行目</b>：先頭の <b>4つの空白（インデント）＝「その中身」</b>。<code>for</code> の中なので <code>print(i)</code> が3回くり返され、<code>i</code> は <code>0 → 1 → 2</code> と変わります。</li></ul><p>くり返す処理は字下げして「中」に入れます。数え始めは <b>0</b> です。</p>",
       "callout": {

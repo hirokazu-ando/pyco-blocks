@@ -90,6 +90,7 @@ window.PYCO_LESSONS["0-07"] = {
     {
       "track": "code",
       "title": "コードを読もう：if〜elseとインデント",
+      "autoCode": true,
       "body": "<p>手順3で組んだコードを読んでみましょう。ここで大切なのは <b>行末のコロン</b> と <b>インデント（行のはじめの空白）</b> です。</p><pre class=\"code-lines\">x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre><ul><li><b>1行目</b>：変数 <code>x</code> に <code>-5</code> を入れます。</li><li><b>2行目</b> <code>if x &gt; 0:</code>「もし <code>x</code> が 0 より大きいなら」。行末の <b>:</b>（コロン）は「ここから中の処理が始まる」という合図です。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>if</code> の中」を表します。条件が正しいときだけ実行されます。今回 <code>x</code> は <code>-5</code> なので実行されません。</li><li><b>4行目</b> <code>else:</code>「そうでなければ」。こちらもコロンで終わります。</li><li><b>5行目</b>：同じく4つの空白で下げられているので「<code>else</code> の中」です。今回はこちらが実行され <code>NG</code> と表示されます。</li></ul><p>インデントの <b>4つの空白＝「中」</b> という意味を、しっかり覚えておきましょう。</p>",
       "bodyEasy": "<p>手順3のコードを読みます。大事なのは <b>行のおわりのコロン</b> と <b>インデント（行はじめの空白）</b> です。</p><pre class=\"code-lines\">x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre><ul><li><b>2行目</b> <code>if x &gt; 0:</code>「もし <code>x</code> が 0 より大きいなら」。行のおわりの <b>:</b>（コロン）は「ここから中身が始まる」合図です。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）＝「その中身」</b>。<code>if</code> の中で、条件が正しいときだけ動きます。今回は動きません。</li><li><b>4・5行目</b> <code>else:</code>「そうでなければ」。同じく字下げした行が「中」で、今回はこちらが動き <code>NG</code> が出ます。</li></ul><p><b>コロン（:）のあとの字下げ＝「その中身」</b> と覚えましょう。</p>",
       "callout": {

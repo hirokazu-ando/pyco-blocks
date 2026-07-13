@@ -85,6 +85,7 @@
     {
       "track": "code",
       "title": "コードを読もう：range(始まり, 終わり, とびかた)",
+      "autoCode": true,
       "body": "<p>手順3で組んだカウントダウンのコードを読んでみましょう。<code>range</code> に <b>3つの数</b> を入れています。</p><pre class=\"code-lines\">for i in range(5, 0, -1):\n    print(i)</pre><ul><li><b>1行目</b> <code>for i in range(5, 0, -1):</code> の3つの数は、順に <b>始まり（5）</b>・<b>終わり（0）</b>・<b>とびかた（-1）</b> です。とびかたが <code>-1</code> なので 1 ずつ減り、<code>5 → 4 → 3 → 2 → 1</code> と変わります。<b>終わりの 0 は含まない</b> ので、0 は表示されません。行末の <b>:</b>（コロン）で中身が始まります。</li><li><b>2行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>for</code> の中」を表し、<code>print(i)</code> がくり返されます。</li></ul><p>始まり・終わり・とびかたを変えると、とびとびの数や逆順のくり返しが自由に作れます。</p>",
       "bodyEasy": "<p>手順3のコードを読みます。<code>range</code> に <b>3つの数</b> を入れています。</p><pre class=\"code-lines\">for i in range(5, 0, -1):\n    print(i)</pre><ul><li><b>1行目</b>：3つの数は順に <b>始まり（5）</b>・<b>終わり（0）</b>・<b>とびかた（-1）</b>。<code>-1</code> なので1ずつ減り <code>5 → 4 → 3 → 2 → 1</code> と変わります。<b>終わりの 0 は入りません</b>。行のおわりの <b>:</b>（コロン）で中身が始まります。</li><li><b>2行目</b>：先頭の <b>4つの空白（インデント）＝「その中身」</b>。<code>print(i)</code> がくり返されます。</li></ul>",
       "callout": {

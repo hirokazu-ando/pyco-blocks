@@ -95,6 +95,7 @@ window.PYCO_LESSONS["0-17"] = {
     {
       "track": "code",
       "title": "コードを読もう：try / except の流れ",
+      "autoCode": true,
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。エラーが起きたとき、実行の流れがどう動くかに注目しましょう。</p><pre class=\"code-lines\">try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre><ul><li>1〜2行目：<code>try:</code> の中は「エラーが起きるかもしれない処理」です。ここで <code>10 / 0</code>（0で割る）を計算しようとします。</li><li>ここで <code>ZeroDivisionError</code> というエラーが発生します。すると <code>print(10 / 0)</code> は<b>最後まで実行されず</b>、流れは <code>except</code> へ<b>飛びます</b>。</li><li>3〜4行目：<code>except ZeroDivisionError:</code> の中が動き、<code>0では割れません</code> が表示されます。</li></ul><p>エラーが起きた行で処理が中断し、<code>except</code> に飛んで続きが動く——これが例外処理の流れです。</p>",
       "bodyEasy": "<p>手順2のブロックは、次のコードになります。エラーが起きたとき流れがどう動くかに注目しましょう。</p><pre class=\"code-lines\">try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre><ul><li>1〜2行目：<code>try:</code> の中は「エラーが起きるかもしれない処理」。ここで <code>10 / 0</code> を計算しようとします。</li><li><code>ZeroDivisionError</code> が発生。<code>print(10 / 0)</code> は<b>最後まで動かず</b>、流れは <code>except</code> へ<b>飛びます</b>。</li><li>3〜4行目：<code>except</code> の中が動き、<code>0では割れません</code> が出ます。</li></ul><p>エラーの行で止まり、<code>except</code> に飛んで続きが動く——これが例外処理の流れです。</p>",
       "hint": "try の中でエラーが出ると、その先はスキップされて except の中に飛びます。",

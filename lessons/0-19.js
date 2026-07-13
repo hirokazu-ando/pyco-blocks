@@ -96,6 +96,7 @@ window.PYCO_LESSONS["0-19"] = {
     {
       "track": "code",
       "title": "コードを読もう：タプルのアンパック",
+      "autoCode": true,
       "body": "<p>ブロックが作った Python コードを1行ずつ読んでみましょう。</p><pre class=\"code-lines\">point = (3, 7)\nx, y = point\nprint(x)\nprint(y)</pre><ol><li><b>1行目</b>：<code>( )</code> で2つの数をまとめた<b>タプル</b>を作り、<code>point</code> に入れます。</li><li><b>2行目</b>：左に変数を2つ、右にタプルを置くと、中身が順に <code>x</code> と <code>y</code> に入ります。これを<b>アンパック</b>といいます。</li><li><b>3・4行目</b>：<code>x</code> と <code>y</code> をそれぞれ表示します。</li></ol>",
       "bodyEasy": "<p>ブロックが作った Python のコードを読みましょう。</p><pre class=\"code-lines\">point = (3, 7)\nx, y = point\nprint(x)\nprint(y)</pre><ol><li><b>1行目</b>：<code>( )</code> で2つの数をまとめた<b>タプル</b>を <code>point</code> に入れます。</li><li><b>2行目</b>：左に変数2つ、右にタプルを置くと、中身がじゅんに <code>x</code>・<code>y</code> に入ります（<b>アンパック</b>）。</li><li><b>3・4行目</b>：<code>x</code> と <code>y</code> を表示します。</li></ol>",
       "hint": "左辺の変数の数と、タプルの中身の数をそろえるのがポイントです。",

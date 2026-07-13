@@ -1092,6 +1092,7 @@
     step._failMsg = null;
     step._countedOut = null;
     step._paneSwitched = false;
+    step._autoCodeApplied = false;
     if (step.check && step.check.choice) {
       renderChoices(step);
     }
@@ -1131,6 +1132,10 @@
     els.check.dataset.run = (step.check && (step.check.outputEquals != null || step.check.codeRun || step.run)) ? '1' : '';
 
     evaluateCurrent();
+
+    // autoCode: 「コードを読もう」ステップでコード編集モードをONにし、
+    //   解説のコードを実エディタへ入力する（学習者が「▶ 実行」で試せる状態に）。
+    maybeAutoCode(step);
 
     // コールアウト（吹き出し）。パネル開閉アニメ後にも再配置する。
     // codeRun ステップで未指定なら「コード編集」ボタンへの誘導を既定表示
@@ -1283,6 +1288,63 @@
       });
       wrap.appendChild(btn);
     }
+  }
+
+  // =============================================================
+  // autoCode: 「コードを読もう」ステップの自動セットアップ
+  //   step.autoCode === true のとき、そのステップ表示時に:
+  //     (1) コード編集モードを ON（既存機構を流用・モバイルはコードタブへ）
+  //     (2) 本文の最初の <pre class="code-lines"> のコードをエディタへ入力
+  //   これで学習者は読みながら実エディタで同じコードを見て「▶ 実行」で試せる。
+  //   実行は強制しない。1ステップ表示につき1回だけ（level 切替では再入力しない）。
+  //   注意: app.js は編集モードを ON にしてもコードを再生成しない
+  //   （generateCode は OFF 時のみ）。よって ON 直後の setValue は上書きされない。
+  // =============================================================
+  // 現在表示中の本文 HTML（level に応じて body / bodyEasy）
+  function currentBodyHtml(step) {
+    var lvl = getLevel();
+    var useEasy = (lvl === 'easy') && step && step.bodyEasy;
+    return (useEasy ? step.bodyEasy : (step && step.body)) || '';
+  }
+  // HTML 文字列から最初の <pre class="code-lines"> のテキスト（＝入力すべきコード）
+  function extractFirstCodeLines(htmlStr) {
+    try {
+      var raw = String(htmlStr == null ? '' : htmlStr);
+      if (!raw) return '';
+      var doc = new DOMParser().parseFromString('<div>' + raw + '</div>', 'text/html');
+      var pre = doc.querySelector('pre.code-lines');
+      if (!pre) return '';
+      return (pre.textContent || '').replace(/\n$/, '');
+    } catch (e) { return ''; }
+  }
+  function setEditorCode(code) {
+    try {
+      var el = document.querySelector('#code-editor .CodeMirror');
+      if (el && el.CodeMirror) {
+        el.CodeMirror.setValue(code);
+        el.CodeMirror.refresh();
+        return true;
+      }
+    } catch (e) { /* noop */ }
+    return false;
+  }
+  function maybeAutoCode(step) {
+    if (!step || !step.autoCode || step._autoCodeApplied) return;
+    var code = extractFirstCodeLines(currentBodyHtml(step));
+    if (!code) return;               // 入力すべきコードが無ければ何もしない
+    step._autoCodeApplied = true;    // 同一表示中の二重入力を防止（level 切替では再入力しない）
+    // モバイル: コード編集の見える「コード・実行」タブへ
+    if (isMobileLayout()) switchPane('code');
+    setCodingMode(true);             // 既存機構（btn-coding-mode.click 経由）
+    // ON 直後はエディタが再生成されないので即入力できるが、
+    // タブ切替・readOnly 解除の反映を待って確実に入れる。
+    if (!setEditorCode(code)) {
+      setTimeout(function() { setEditorCode(code); }, 60);
+    }
+    // 保険（描画遅延対策）。すでに同一内容なら再セットしない＝二重入力防止。
+    setTimeout(function() {
+      if (getEditorCode() !== code) setEditorCode(code);
+    }, 240);
   }
 
   function renderChoices(step) {

@@ -101,6 +101,7 @@ window.PYCO_LESSONS["0-13"] = {
     {
       "track": "code",
       "title": "コードを読もう：辞書の { } とキー参照",
+      "autoCode": true,
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。1行ずつ読んでみましょう。</p><pre class=\"code-lines\">person = {}\nperson[\"name\"] = \"Taro\"\nperson[\"age\"] = 16\nprint(person[\"name\"])</pre><ul><li>1行目：<code>{}</code> は空の辞書です。変数 <code>person</code> に空の辞書を入れています。</li><li>2〜3行目：<code>person[\"name\"] = \"Taro\"</code> は、<b>キー</b> <code>\"name\"</code> に値 <code>\"Taro\"</code> を対応づけます。同じように <code>\"age\"</code> に <code>16</code> を入れます。</li><li>4行目：<code>person[\"name\"]</code> は、キー <code>\"name\"</code> に対応する値を<b>取り出します</b>。ここでは <code>Taro</code> が表示されます。</li></ul><p>リストは <code>[ ]</code> の中に<b>番号</b>を書きましたが、辞書は <code>[ ]</code> の中に<b>キー（名前）</b>を書くのがちがいです。</p>",
       "bodyEasy": "<p>手順2のブロックは、次のコードになります。1行ずつ読みましょう。</p><pre class=\"code-lines\">person = {}\nperson[\"name\"] = \"Taro\"\nperson[\"age\"] = 16\nprint(person[\"name\"])</pre><ul><li>1行目：<code>{}</code> は空の辞書。<code>person</code> に入れます。</li><li>2〜3行目：<code>person[\"name\"] = \"Taro\"</code> は<b>キー</b> <code>\"name\"</code> に値 <code>\"Taro\"</code> を対応づけます。同じく <code>\"age\"</code> に <code>16</code> を入れます。</li><li>4行目：<code>person[\"name\"]</code> はキー <code>\"name\"</code> の値を<b>取り出し</b>、<code>Taro</code> が出ます。</li></ul><p>リストは <code>[ ]</code> に<b>番号</b>、辞書は <code>[ ]</code> に<b>キー（名前）</b>を書くのがちがいです。</p>",
       "hint": "辞書は { } で作り、person[\"キー\"] の形で値を出し入れします。",

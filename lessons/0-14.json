@@ -99,6 +99,7 @@
     {
       "track": "code",
       "title": "コードを読もう：defと呼び出しの2部構成",
+      "autoCode": true,
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。関数は<b>「定義する」部分</b>と<b>「呼び出す」部分</b>の2つに分かれています。</p><pre class=\"code-lines\">def greet():\n    print(\"Hello!\")\ngreet()</pre><ul><li>1〜2行目：<b>定義</b>です。<code>def greet():</code> で <code>greet</code> という名前をつけ、<b>1段下げた（インデントした）</b>行がその中身です。ここではまだ実行されません。</li><li>3行目：<b>呼び出し</b>です。<code>greet()</code> と書くと、定義した中身（<code>print(\"Hello!\")</code>）が実行され、<code>Hello!</code> が表示されます。</li></ul><p><code>def</code> で作っただけでは動かず、<code>名前()</code> で呼び出して初めて動く——この2部構成が関数の基本です。</p>",
       "bodyEasy": "<p>手順2のブロックは、次のコードになります。関数は<b>「定義」</b>と<b>「呼び出し」</b>の2つに分かれます。</p><pre class=\"code-lines\">def greet():\n    print(\"Hello!\")\ngreet()</pre><ul><li>1〜2行目：<b>定義</b>。<code>def greet():</code> で名前をつけ、<b>1段下げた</b>行が中身。まだ動きません。</li><li>3行目：<b>呼び出し</b>。<code>greet()</code> で中身が動き、<code>Hello!</code> が出ます。</li></ul><p><code>def</code> で作るだけでは動かず、<code>名前()</code> で呼んで初めて動きます。</p>",
       "hint": "def は定義、名前() は呼び出しです。呼び出さないと中身は動きません。",

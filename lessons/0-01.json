@@ -84,6 +84,7 @@
     {
       "track": "code",
       "title": "コードを読もう",
+      "autoCode": true,
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の1行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">print(16)</pre><ul><li><b>1行目</b>：<code>print</code> で <code>( )</code> の中身を表示します。ここでは <code>16</code> を <code>\"</code> で囲んでいません。<code>\"</code> で囲まない数字は <b>数値</b> としてあつかわれ、計算に使えます。文字列の <code>\"16\"</code> とは別ものです。</li></ul>",
       "bodyEasy": "<p>コードエリア（スマホは「コード・実行」タブ）に、次の1行が出ています。</p><pre class=\"code-lines\">print(16)</pre><ul><li><b>1行目</b>：<code>print</code> で <code>( )</code> の中を表示します。<code>16</code> は <code>\"</code> で囲んでいません。囲まない数字は <b>数値</b> になり、計算に使えます。文字列の <code>\"16\"</code> とは別ものです。</li></ul>",
       "callout": {

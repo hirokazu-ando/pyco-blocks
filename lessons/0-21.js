@@ -98,6 +98,7 @@ window.PYCO_LESSONS["0-21"] = {
     {
       "track": "code",
       "title": "コードを読もう：enumerate が返すもの",
+      "autoCode": true,
       "body": "<p>ブロックが作った Python コードを読んでみましょう。</p><pre class=\"code-lines\">fruits = [\"apple\", \"banana\", \"cherry\"]\nfor i, f in enumerate(fruits):\n    print(i, f)</pre><ol><li><b>1行目</b>：リストを用意します。</li><li><b>2行目</b>：<code>enumerate</code> は「（番号, 値）」という<b>組</b>を順に返します。<code>for i, f in ...</code> で、番号を <code>i</code>、値を <code>f</code> に分けて受け取ります。番号は0から始まります。</li><li><b>3行目</b>：番号と値を並べて表示します。</li></ol><p><code>zip</code> も同じように「（値, 値）」の組を返し、2つのリストを一緒に回せます。</p>",
       "bodyEasy": "<p>ブロックが作った Python のコードを読みましょう。</p><pre class=\"code-lines\">fruits = [\"apple\", \"banana\", \"cherry\"]\nfor i, f in enumerate(fruits):\n    print(i, f)</pre><ol><li><b>1行目</b>：リストを用意します。</li><li><b>2行目</b>：<code>enumerate</code> は「（番号, 値）」の<b>組</b>を返します。<code>for i, f in ...</code> で番号を <code>i</code>、値を <code>f</code> に受け取ります。番号は0から。</li><li><b>3行目</b>：番号と値を表示します。</li></ol><p><code>zip</code> も同じように組を返します。</p>",
       "hint": "enumerate も zip も、複数の値をまとめた組を1つずつ返します。",

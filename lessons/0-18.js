@@ -94,6 +94,7 @@ window.PYCO_LESSONS["0-18"] = {
     {
       "track": "code",
       "title": "コードを読もう：メソッドの呼び出し",
+      "autoCode": true,
       "body": "<p>ブロックが作った Python コードを1行ずつ読んでみましょう。</p><pre class=\"code-lines\">text = \"apple,banana,cherry\"\nwords = text.split(\",\")\nprint(words)</pre><ol><li><b>1行目</b>：変数 <code>text</code> に文字列を入れます。</li><li><b>2行目</b>：<code>text.split(\",\")</code> のドット「.」は「<code>text</code> に対して <code>split</code> という操作をする」という意味です。カッコの中の <code>\",\"</code> が区切り文字で、結果はリストになります。</li><li><b>3行目</b>：できたリストを表示します。</li></ol><p>「変数.メソッド(...)」の形は、これからよく出てきます。</p>",
       "bodyEasy": "<p>ブロックが作った Python のコードを読みましょう。</p><pre class=\"code-lines\">text = \"apple,banana,cherry\"\nwords = text.split(\",\")\nprint(words)</pre><ol><li><b>1行目</b>：<code>text</code> に文字列を入れます。</li><li><b>2行目</b>：<code>text.split(\",\")</code> のドット「.」は「<code>text</code> に <code>split</code> をする」という意味です。<code>\",\"</code> がくぎり文字で、けっかはリストです。</li><li><b>3行目</b>：リストを表示します。</li></ol><p>「変数.メソッド(...)」の形はこれからよく出ます。</p>",
       "hint": "ドットの左が操作される文字列、右が操作の名前（メソッド）です。",

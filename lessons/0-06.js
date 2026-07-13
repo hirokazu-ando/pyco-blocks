@@ -89,6 +89,7 @@ window.PYCO_LESSONS["0-06"] = {
     {
       "track": "code",
       "title": "コードを読もう：比較の結果を表示",
+      "autoCode": true,
       "body": "<p>ブロックから作られた Python コードを読んでみましょう。手順3で組んだのは次の2行です。</p><pre class=\"code-lines\">a = 7\nprint(a == 7)</pre><ul><li><b>1行目</b> <code>a = 7</code>：変数 <code>a</code> に <code>7</code> を入れます。<code>=</code>（イコール1つ）は「入れる」という意味の代入です。</li><li><b>2行目</b> <code>print(a == 7)</code>：<code>a == 7</code>（<code>a</code> は <code>7</code> と等しい？）を調べ、その結果である <code>True</code> を表示します。<code>==</code>（イコール2つ）は「等しいか」を調べる比較で、代入の <code>=</code> とは役割がちがいます。</li></ul><p>比較の結果は、いつも <code>True</code> か <code>False</code> のどちらかになります。</p>",
       "bodyEasy": "<p>手順3のコードを読みます。</p><pre class=\"code-lines\">a = 7\nprint(a == 7)</pre><ul><li><b>1行目</b>：<code>a</code> に <code>7</code> を入れます。<code>=</code>（1つ）は「入れる」合図です。</li><li><b>2行目</b>：<code>a == 7</code>（aは7と等しい？）を調べて答えの <code>True</code> を表示します。<code>==</code>（2つ）は「等しいか」を調べるしるしです。</li></ul><p>くらべた答えは、いつも <code>True</code> か <code>False</code> です。</p>",
       "callout": {

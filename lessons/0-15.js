@@ -102,6 +102,7 @@ window.PYCO_LESSONS["0-15"] = {
     {
       "track": "code",
       "title": "コードを読もう：returnとスコープ",
+      "autoCode": true,
       "body": "<p>次のコードは、関数が計算した結果を <b>return</b> で呼び出し元へ返し、変数に受け取って表示する例です。</p><pre class=\"code-lines\">def add(a, b):\n    return a + b\nresult = add(3, 5)\nprint(result)</pre><ul><li>1〜2行目：関数の定義です。引数 <code>a</code>・<code>b</code> は<b>関数の中だけ</b>で使える変数（スコープ）です。<code>return a + b</code> で計算結果を外へ返します。</li><li>3行目：<code>add(3, 5)</code> を呼ぶと、その場所に返ってきた <code>8</code> が入り、変数 <code>result</code> に保存されます。</li><li>4行目：<code>result</code> を表示すると <code>8</code> が出ます。</li></ul><p><code>return</code> があると、結果を変数に入れて次の処理に使えます。ただ表示するだけの命令とのちがいを意識しましょう。</p>",
       "bodyEasy": "<p>次のコードは、計算結果を <b>return</b> で呼び出し元へ返し、変数で受け取って表示する例です。</p><pre class=\"code-lines\">def add(a, b):\n    return a + b\nresult = add(3, 5)\nprint(result)</pre><ul><li>1〜2行目：定義。引数 <code>a</code>・<code>b</code> は<b>関数の中だけ</b>の変数（スコープ）。<code>return a + b</code> で結果を外へ返します。</li><li>3行目：<code>add(3, 5)</code> を呼ぶと <code>8</code> が入り、<code>result</code> に入ります。</li><li>4行目：<code>result</code> を表示すると <code>8</code> が出ます。</li></ul><p><code>return</code> があると結果を変数に入れて次に使えます。</p>",
       "hint": "return は値を呼び出し元へ返します。返ってきた値は変数に入れて使えます。",
