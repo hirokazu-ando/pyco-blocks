@@ -28,17 +28,20 @@ window.PYCO_LESSONS["0-14"] = {
       "track": "block",
       "title": "関数とは何か",
       "body": "<p>プログラムが長くなると、同じような処理を何度も書きたくなります。<b>関数</b> は、処理のまとまりに <b>名前をつけて</b>、必要なときに <b>呼び出す</b> しくみです。</p><ul><li>あいさつを表示する、合計を計算する、判定するといった処理を、部品のように再利用できます</li><li>関数は「定義する」だけでは動かず、「呼び出し」て初めて実行されます</li></ul><p>準備ができたら「次へ ▶」を押してください。</p>",
+      "bodyEasy": "<p>プログラムが長くなると、同じ処理を何度も書きたくなります。<b>関数</b>（かんすう）＝よく使う手順に <b>名前をつけて</b>、必要なとき <b>呼び出す</b> しくみです。</p><ul><li>あいさつ表示や合計計算を、部品のように何度も使えます</li><li>関数は「定義」だけでは動かず、「呼び出し」て初めて動きます</li></ul><p>「次へ ▶」を押してください。</p>",
       "hint": "このパネルは右上のボタンで折りたたみ、「✕」で学習をやめられます。"
     },
     {
       "track": "block",
       "title": "関数は「処理に名前をつける」しくみ",
-      "body": "<p>関数は「定義」と「呼び出し」を分けて考えます。まず名前をつけて処理をまとめ、あとでその名前を呼び出すと中の処理が動きます。</p><pre>def greet():\n    print(\"Hello!\")\ngreet()</pre><p>最後の <code>greet()</code> が「呼び出し」です。定義しただけでは、まだ中の処理は動きません。</p>"
+      "body": "<p>関数は「定義」と「呼び出し」を分けて考えます。まず名前をつけて処理をまとめ、あとでその名前を呼び出すと中の処理が動きます。</p><pre>def greet():\n    print(\"Hello!\")\ngreet()</pre><p>最後の <code>greet()</code> が「呼び出し」です。定義しただけでは、まだ中の処理は動きません。</p>",
+      "bodyEasy": "<p>関数は「定義」と「呼び出し」に分けて考えます。名前をつけて処理をまとめ、あとで名前を呼ぶと中身が動きます。</p><pre>def greet():\n    print(\"Hello!\")\ngreet()</pre><p>最後の <code>greet()</code> が「呼び出し」。定義だけでは中身は動きません。</p>"
     },
     {
       "track": "block",
       "title": "手順1：関数を定義するブロックを置く",
       "body": "<p>「関数」カテゴリから <b>関数〜を定義する</b> ブロックを取り出し、下の図のように置きましょう。中に <b>「Hello!」を表示する</b> を入れ、関数名を <code>greet</code> にします。</p><p>関数を定義するブロックが1つ置けたらクリアです。</p>",
+      "bodyEasy": "<p>「関数」カテゴリから <b>関数〜を定義する</b> ブロックを取り出し、下の図のように置きましょう。中に <b>「Hello!」を表示する</b> を入れ、関数名を <code>greet</code> にします。</p><p>定義するブロックが1つ置けたらクリアです。</p>",
       "hint": "関数名はブロックのプルダウンから変更できます。図では greet にしています。",
       "check": {
         "blocksRequired": [
@@ -59,6 +62,7 @@ window.PYCO_LESSONS["0-14"] = {
       "track": "block",
       "title": "手順2：定義した関数を呼び出す",
       "body": "<p>定義しただけでは動きません。呼び出しを加えましょう。下の図のように組み立てます。</p><ol><li><code>greet</code> 関数を定義し、中で <b>「Hello!」を表示する</b></li><li>その下に <b>関数 greet を呼び出す</b> を置く</li></ol><p>「▶ 実行」を押して <code>Hello!</code> と出れば成功です。</p><pre>Hello!</pre>",
+      "bodyEasy": "<p>定義しただけでは動きません。呼び出しを足しましょう。下の図のように組み立てます。</p><ol><li><code>greet</code> 関数を定義し、中で <b>「Hello!」を表示する</b></li><li>その下に <b>関数 greet を呼び出す</b> を置く</li></ol><p>「▶ 実行」を押して <code>Hello!</code> と出れば成功です。</p><pre>Hello!</pre>",
       "hint": "呼び出しブロックの関数名も greet にそろえます。引数は空のままでかまいません。",
       "run": true,
       "check": {
@@ -77,12 +81,14 @@ window.PYCO_LESSONS["0-14"] = {
     {
       "track": "block",
       "title": "引数で値を渡す・returnで結果を返す",
-      "body": "<p>関数には外から値を渡せます。この値を <b>引数</b> と呼びます。また、計算した結果を呼び出し元に返すには <b>return</b> を使います。</p><pre>def add(a, b):\n    return a + b\nprint(add(3, 5))</pre><p><code>add(3, 5)</code> は関数の中で <code>3 + 5</code> を計算し、<code>return</code> で <code>8</code> を返します。返ってきた値を表示すると <code>8</code> になります。</p>"
+      "body": "<p>関数には外から値を渡せます。この値を <b>引数</b> と呼びます。また、計算した結果を呼び出し元に返すには <b>return</b> を使います。</p><pre>def add(a, b):\n    return a + b\nprint(add(3, 5))</pre><p><code>add(3, 5)</code> は関数の中で <code>3 + 5</code> を計算し、<code>return</code> で <code>8</code> を返します。返ってきた値を表示すると <code>8</code> になります。</p>",
+      "bodyEasy": "<p>関数には外から値を渡せます。この値を <b>引数</b>（ひきすう）とよびます。結果を呼び出したところへ返すには <b>return</b> を使います。</p><pre>def add(a, b):\n    return a + b\nprint(add(3, 5))</pre><p><code>add(3, 5)</code> は <code>3 + 5</code> を計算し、<code>return</code> で <code>8</code> を返します。</p>"
     },
     {
       "track": "block",
       "title": "手順3：2つの数を足す関数を作る",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>関数〜（引数: a, b）を定義する</b> を置き、名前を <code>add</code> にする</li><li>中に <b>a + b を返す（return）</b> を入れる</li><li>その下で <b>関数 add（引数1: 3, 引数2: 5）の結果</b> を表示する</li></ol><p>「▶ 実行」を押して <code>8</code> と出れば成功です。</p><pre>8</pre>",
+      "bodyEasy": "<p>下の図のように組み立てましょう。</p><ol><li><b>関数〜（引数: a, b）を定義する</b> を置き、名前を <code>add</code> にする</li><li>中に <b>a + b を返す（return）</b> を入れる</li><li>その下で <b>関数 add（引数1: 3, 引数2: 5）の結果</b> を表示する</li></ol><p>「▶ 実行」を押して <code>8</code> と出れば成功です。</p><pre>8</pre>",
       "hint": "返す値には「計算」カテゴリの算術演算ブロックを使い、左右に引数 a・b を入れます。",
       "run": true,
       "check": {
@@ -97,6 +103,7 @@ window.PYCO_LESSONS["0-14"] = {
       "track": "code",
       "title": "コードを読もう：defと呼び出しの2部構成",
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。関数は<b>「定義する」部分</b>と<b>「呼び出す」部分</b>の2つに分かれています。</p><pre class=\"code-lines\">def greet():\n    print(\"Hello!\")\ngreet()</pre><ul><li>1〜2行目：<b>定義</b>です。<code>def greet():</code> で <code>greet</code> という名前をつけ、<b>1段下げた（インデントした）</b>行がその中身です。ここではまだ実行されません。</li><li>3行目：<b>呼び出し</b>です。<code>greet()</code> と書くと、定義した中身（<code>print(\"Hello!\")</code>）が実行され、<code>Hello!</code> が表示されます。</li></ul><p><code>def</code> で作っただけでは動かず、<code>名前()</code> で呼び出して初めて動く——この2部構成が関数の基本です。</p>",
+      "bodyEasy": "<p>手順2のブロックは、次のコードになります。関数は<b>「定義」</b>と<b>「呼び出し」</b>の2つに分かれます。</p><pre class=\"code-lines\">def greet():\n    print(\"Hello!\")\ngreet()</pre><ul><li>1〜2行目：<b>定義</b>。<code>def greet():</code> で名前をつけ、<b>1段下げた</b>行が中身。まだ動きません。</li><li>3行目：<b>呼び出し</b>。<code>greet()</code> で中身が動き、<code>Hello!</code> が出ます。</li></ul><p><code>def</code> で作るだけでは動かず、<code>名前()</code> で呼んで初めて動きます。</p>",
       "hint": "def は定義、名前() は呼び出しです。呼び出さないと中身は動きません。",
       "callout": {
         "target": "code",
@@ -108,6 +115,7 @@ window.PYCO_LESSONS["0-14"] = {
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">def add(a, b):\n    return a + b\nprint(add(4, 6))</pre>",
+      "bodyEasy": "<p>次のコードを実行すると、何が表示されるでしょう？表示される値を答えてください。</p><pre class=\"code-lines\">def add(a, b):\n    return a + b\nprint(add(4, 6))</pre>",
       "hint": "add(4, 6) は関数の中で 4 + 6 を計算し、その結果を返します。",
       "check": {
         "answerText": {
@@ -124,6 +132,7 @@ window.PYCO_LESSONS["0-14"] = {
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>関数</b>を1つ<b>定義して</b>、それを<b>呼び出して</b> <code>Hello!</code> と表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">Hello!</pre>",
+      "bodyEasy": "<p><b>関数</b>を1つ<b>定義して</b>、それを<b>呼び出して</b> <code>Hello!</code> と表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">Hello!</pre>",
       "hint": "def greet(): の下の行に print(\"Hello!\") を書き、最後に greet() で呼び出します。",
       "check": {
         "codeRun": {
@@ -142,6 +151,7 @@ window.PYCO_LESSONS["0-14"] = {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>関数を「定義しただけ」で、中の処理は実行されるでしょうか？</p>",
+      "bodyEasy": "<p>関数を「定義しただけ」で、中の処理は動くでしょうか？</p>",
       "check": {
         "choice": {
           "options": [
@@ -158,6 +168,7 @@ window.PYCO_LESSONS["0-14"] = {
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><b>return</b> の役割はどれでしょう？</p>",
+      "bodyEasy": "<p><b>return</b> の役割はどれでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -174,6 +185,7 @@ window.PYCO_LESSONS["0-14"] = {
       "quiz": true,
       "title": "課題：2つの数を使う関数を作ろう",
       "body": "<p>2つの数を受け取って、その合計や差などを <b>return</b> する自分の関数を作ってみましょう。<b>引数2つの関数</b> と <b>return</b> をどちらも使えばクリアです。</p><p>組み合わせ例：</p>",
+      "bodyEasy": "<p>2つの数を受け取って、その合計や差などを <b>return</b> する自分の関数を作ってみましょう。<b>引数2つの関数</b> と <b>return</b> をどちらも使えばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "引数2つの関数を定義し、中で算術演算した結果を return します。呼び出して結果を表示してみましょう。",
       "check": {
         "blocksRequired": [

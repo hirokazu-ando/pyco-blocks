@@ -18,6 +18,7 @@
   // ---- 定数 ----
   var LESSON_BASE  = 'lessons/';                 // レッスン JSON の置き場所
   var BACKUP_KEY   = 'pyco-tutorial-backup-';    // レッスン開始前の作品退避キー（+mode）
+  var LEVEL_KEY    = 'pyco-tutorial-level';      // 解説レベル（'easy' / 'detailed'）。全レッスン共通・既定=くわしい
   var HASH_RE      = /[#&]lesson=([0-9A-Za-z_-]+)/;
   var TRACK_RE     = /[#&]track=(block|code)/;   // #lesson=0-05&track=code
 
@@ -105,6 +106,19 @@
     targetEl.replaceChildren(frag);
   }
 
+  // 解説レベル（やさしい / くわしい）。localStorage に保存し全レッスン共通。既定=くわしい。
+  function getLevel() {
+    try {
+      var v = window.localStorage.getItem(LEVEL_KEY);
+      return (v === 'easy') ? 'easy' : 'detailed';
+    } catch (e) { return 'detailed'; }
+  }
+  function setLevel(v) {
+    var lvl = (v === 'easy') ? 'easy' : 'detailed';
+    try { window.localStorage.setItem(LEVEL_KEY, lvl); } catch (e) { /* noop */ }
+    return lvl;
+  }
+
   // =============================================================
   // スタイル注入（既存の端末風・緑テーマを踏襲）
   // =============================================================
@@ -145,6 +159,16 @@
     + '.pyco-tut-quizbadge{display:inline-block;font-size:.62rem;background:var(--accent-amber,#ffb700);'
     + 'color:#111;font-weight:bold;padding:1px 7px;border-radius:10px;margin-right:6px;vertical-align:middle;'
     + 'letter-spacing:.05em;}'
+    // 解説レベル切替（やさしい ⇄ くわしい）：控えめなセグメント型トグル
+    + '.pyco-tut-level{display:inline-flex;border:1px solid var(--border-dim,#1a341a);'
+    + 'border-radius:6px;overflow:hidden;margin:0 0 10px;}'
+    + '.pyco-tut-level-btn{background:transparent;border:none;color:var(--text-dim,#5a8a5a);'
+    + 'cursor:pointer;font:inherit;font-size:.72rem;padding:4px 12px;letter-spacing:.04em;'
+    + '-webkit-appearance:none;appearance:none;}'
+    + '.pyco-tut-level-btn + .pyco-tut-level-btn{border-left:1px solid var(--border-dim,#1a341a);}'
+    + '.pyco-tut-level-btn:hover{color:var(--accent-green,#00ff41);}'
+    + '.pyco-tut-level-btn.active{background:var(--accent-green,#00ff41);color:#04120a;font-weight:bold;}'
+    + 'body.mobile-mode .pyco-tut-level-btn{padding:6px 14px;font-size:.76rem;}'
     + '.pyco-tut-text{font-size:.86rem;line-height:1.7;}'
     + '.pyco-tut-text p{margin:0 0 .7em;} .pyco-tut-text ul,.pyco-tut-text ol{margin:.3em 0 .8em 1.2em;}'
     + '.pyco-tut-text code{background:var(--bg-surface,#0b150b);color:var(--accent-green,#00ff41);'
@@ -1029,12 +1053,35 @@
     html += '<h3 class="pyco-tut-step-title">'
           + (step.quiz ? '<span class="pyco-tut-quizbadge">クイズ</span>' : '')
           + escapeHtml(step.title || ('ステップ ' + (stepIndex + 1))) + '</h3>';
+    // 解説レベル切替トグル（本文の直上）。全ステップに常設し、選択は全レッスン共通で保存。
+    html += '<div class="pyco-tut-level" role="group" aria-label="解説レベルの切替">'
+          + '<button type="button" class="pyco-tut-level-btn" data-level="easy" aria-pressed="false">やさしい</button>'
+          + '<button type="button" class="pyco-tut-level-btn" data-level="detailed" aria-pressed="false">くわしい</button>'
+          + '</div>';
     html += '<div class="pyco-tut-text" id="pyco-tut-text"></div>';
     els.body.innerHTML = html;
-    setSafeRichText($('pyco-tut-text'), step.body || '');
 
-    // 行番号つきコード表示（<pre class="code-lines">）を装飾
-    decorateCodeLines($('pyco-tut-text'));
+    // レベルに応じて本文を差し替える（bodyEasy が無ければ静かに通常 body へフォールバック）。
+    function paintLevelText() {
+      var lvl = getLevel();
+      var useEasy = (lvl === 'easy') && step.bodyEasy;
+      setSafeRichText($('pyco-tut-text'), (useEasy ? step.bodyEasy : step.body) || '');
+      // 行番号つきコード表示（<pre class="code-lines">）を装飾
+      decorateCodeLines($('pyco-tut-text'));
+      var btns = els.body.querySelectorAll('.pyco-tut-level-btn');
+      Array.prototype.forEach.call(btns, function(b) {
+        var on = (b.getAttribute('data-level') === lvl);
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    Array.prototype.forEach.call(els.body.querySelectorAll('.pyco-tut-level-btn'), function(b) {
+      b.addEventListener('click', function() {
+        setLevel(b.getAttribute('data-level'));
+        paintLevelText();
+      });
+    });
+    paintLevelText();
 
     // ステップ画像（ブロック図）。サニタイザに <img> は許さず専用フィールドで扱う。
     // step.image = "パス" | {src, alt} | それらの配列。パスは app.html からの相対。

@@ -19,12 +19,14 @@
       "track": "block",
       "title": "条件分岐とは何か",
       "body": "<p><b>もし〜なら</b>（<code>if文</code>）を使うと、条件が正しいときだけ処理を実行できます。前回の <b>真偽値</b>（True／False）がここで役に立ちます。</p><ul><li>条件が <b>True</b> のとき → 中の処理を実行する</li><li>条件が <b>False</b> のとき → 何もしない（またはelseの処理へ）</li></ul><p>準備ができたら「次へ ▶」を押してください。</p>",
+      "bodyEasy": "<p><b>もし〜なら</b>（<code>if文</code>）を使うと、条件が正しいときだけ処理が動きます。前回の <b>真偽値</b> がここで役立ちます。</p><ul><li>条件が <b>True</b> → 中の処理をする</li><li>条件が <b>False</b> → 何もしない（または else へ）</li></ul>",
       "hint": "「もし雨なら傘を持つ」のように、条件で行動を分けるのが if文です。"
     },
     {
       "track": "block",
       "title": "手順1：もしブロックを置く",
       "body": "<p>「分岐」カテゴリから <b>もし〜だったら</b> ブロックを取り出し、下の図のように組み立てましょう。</p><ol><li>条件のあなに <b>比較</b> <code>x &gt; 0</code> をはめる</li><li>中に <b>「OK」を表示する</b> を入れる</li></ol><p>ここまで組めたらクリアです。</p>",
+      "bodyEasy": "<p>「分岐」カテゴリから <b>もし〜だったら</b> ブロックを出して組みます。</p><ol><li>条件のあなに <b>比較</b> <code>x &gt; 0</code> をはめる</li><li>中に <b>「OK」を表示する</b> を入れる</li></ol><p>組めたらクリアです。</p>",
       "hint": "条件のあなは六角形。ここに比較ブロックがぴったり入ります。",
       "check": {
         "blocksRequired": [
@@ -45,6 +47,7 @@
       "track": "block",
       "title": "手順2：正の数のとき表示する",
       "body": "<p>下の図のように、上に <b>変数 x を 3 にする</b> を足しましょう。<code>x</code> は <code>3</code> なので条件 <code>x &gt; 0</code> は正しく（True）、中の処理が実行されます。</p><p>「▶ 実行」を押して <code>OK</code> と出れば成功です。</p><pre>x = 3\nif x &gt; 0:\n    print(\"OK\")</pre>",
+      "bodyEasy": "<p>上に <b>変数 x を 3 にする</b> を足します。<code>x</code> は <code>3</code> なので条件 <code>x &gt; 0</code> は正しく（True）、中が動きます。</p><p>「▶ 実行」で <code>OK</code> と出れば成功です。</p><pre>x = 3\nif x &gt; 0:\n    print(\"OK\")</pre>",
       "hint": "変数ブロックの下に、さっき作った「もし」ブロックをつなげます。",
       "run": true,
       "check": {
@@ -63,12 +66,14 @@
     {
       "track": "block",
       "title": "elseで2択にする",
-      "body": "<p>「もし〜だったら」ブロックの左下の <b>＋ボタン</b> を押すと、<b>そうでなければ</b>（<code>else</code>）が追加されます。</p><ul><li>条件が <b>True</b> → 上の処理</li><li>条件が <b>False</b> → <b>そうでなければ</b> の処理</li></ul><p>これで「どちらか一方」を必ず実行できます。さらに＋を押すと <b>そうでなくもし</b>（<code>elif</code>）も追加でき、3段階以上に分けられます。</p>"
+      "body": "<p>「もし〜だったら」ブロックの左下の <b>＋ボタン</b> を押すと、<b>そうでなければ</b>（<code>else</code>）が追加されます。</p><ul><li>条件が <b>True</b> → 上の処理</li><li>条件が <b>False</b> → <b>そうでなければ</b> の処理</li></ul><p>これで「どちらか一方」を必ず実行できます。さらに＋を押すと <b>そうでなくもし</b>（<code>elif</code>）も追加でき、3段階以上に分けられます。</p>",
+      "bodyEasy": "<p>ブロック左下の <b>＋ボタン</b> を押すと <b>そうでなければ</b>（<code>else</code>）が出ます。</p><ul><li>条件が <b>True</b> → 上の処理</li><li>条件が <b>False</b> → <b>そうでなければ</b> の処理</li></ul><p>さらに＋を押すと <b>そうでなくもし</b>（<code>elif</code>）も出て、3つ以上に分けられます。</p>"
     },
     {
       "track": "block",
       "title": "手順3：elseで2択にする",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 x を -5 にする</b></li><li>＋ボタンで <b>そうでなければ</b> を追加する</li><li>上に <b>「OK」を表示する</b>、そうでなければに <b>「NG」を表示する</b></li></ol><p><code>x</code> は <code>-5</code> なので条件は間違い（False）。「▶ 実行」して <code>NG</code> と出れば成功です。</p><pre>x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre>",
+      "bodyEasy": "<p>下の図のように組みます。</p><ol><li><b>変数 x を -5 にする</b></li><li>＋ボタンで <b>そうでなければ</b> を足す</li><li>上に <b>「OK」を表示する</b>、そうでなければに <b>「NG」を表示する</b></li></ol><p><code>x</code> は <code>-5</code> なので条件はまちがい（False）。「▶ 実行」で <code>NG</code> と出れば成功です。</p><pre>x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre>",
       "hint": "＋ボタンを1回押すと「そうでなければ」が出ます。表示ブロックの文字を OK と NG にします。",
       "run": true,
       "check": {
@@ -83,6 +88,7 @@
       "track": "code",
       "title": "コードを読もう：if〜elseとインデント",
       "body": "<p>手順3で組んだコードを読んでみましょう。ここで大切なのは <b>行末のコロン</b> と <b>インデント（行のはじめの空白）</b> です。</p><pre class=\"code-lines\">x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre><ul><li><b>1行目</b>：変数 <code>x</code> に <code>-5</code> を入れます。</li><li><b>2行目</b> <code>if x &gt; 0:</code>「もし <code>x</code> が 0 より大きいなら」。行末の <b>:</b>（コロン）は「ここから中の処理が始まる」という合図です。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）</b> が「<code>if</code> の中」を表します。条件が正しいときだけ実行されます。今回 <code>x</code> は <code>-5</code> なので実行されません。</li><li><b>4行目</b> <code>else:</code>「そうでなければ」。こちらもコロンで終わります。</li><li><b>5行目</b>：同じく4つの空白で下げられているので「<code>else</code> の中」です。今回はこちらが実行され <code>NG</code> と表示されます。</li></ul><p>インデントの <b>4つの空白＝「中」</b> という意味を、しっかり覚えておきましょう。</p>",
+      "bodyEasy": "<p>手順3のコードを読みます。大事なのは <b>行のおわりのコロン</b> と <b>インデント（行はじめの空白）</b> です。</p><pre class=\"code-lines\">x = -5\nif x &gt; 0:\n    print(\"OK\")\nelse:\n    print(\"NG\")</pre><ul><li><b>2行目</b> <code>if x &gt; 0:</code>「もし <code>x</code> が 0 より大きいなら」。行のおわりの <b>:</b>（コロン）は「ここから中身が始まる」合図です。</li><li><b>3行目</b>：先頭の <b>4つの空白（インデント）＝「その中身」</b>。<code>if</code> の中で、条件が正しいときだけ動きます。今回は動きません。</li><li><b>4・5行目</b> <code>else:</code>「そうでなければ」。同じく字下げした行が「中」で、今回はこちらが動き <code>NG</code> が出ます。</li></ul><p><b>コロン（:）のあとの字下げ＝「その中身」</b> と覚えましょう。</p>",
       "callout": {
         "target": "code",
         "text": "生成されたコードはここで見られます"
@@ -93,6 +99,7 @@
       "quiz": true,
       "title": "コード読解テスト（記述式）",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう？</p><pre class=\"code-lines\">y = 20\nif y &gt; 10:\n    print(\"大きい\")\nelse:\n    print(\"小さい\")</pre>",
+      "bodyEasy": "<p>次を実行すると、何が出るでしょう？</p><pre class=\"code-lines\">y = 20\nif y &gt; 10:\n    print(\"大きい\")\nelse:\n    print(\"小さい\")</pre>",
       "hint": "y は 20 です。20 は 10 より大きいので、if の中が実行されます。",
       "check": {
         "answerText": {
@@ -108,6 +115,7 @@
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>変数 x を 8 にして</b>、<code>x</code> が <code>5</code> より大きければ <code>OK</code> を、そうでなければ <code>NG</code> を表示する <b>if〜else</b> を書いて実行しましょう。<code>OK</code> と表示されれば成功です。</p>",
+      "bodyEasy": "<p><b>変数 x を 8 にして</b>、<code>x</code> が <code>5</code> より大きければ <code>OK</code>、そうでなければ <code>NG</code> を表示する <b>if〜else</b> を書きましょう。<code>OK</code> と出れば成功です。</p>",
       "hint": "1行目で x を作り、if の条件のあとにコロンを付け、中の行は4つの空白で下げます。else も忘れずに。",
       "check": {
         "codeRun": {
@@ -140,6 +148,7 @@
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>x</code> が <code>3</code> のとき、<code>if x &gt; 0:</code> の中の処理はどうなるでしょう？</p>",
+      "bodyEasy": "<p><code>x</code> が <code>3</code> のとき、<code>if x &gt; 0:</code> の中の処理はどうなるでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -156,6 +165,7 @@
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><code>s = 75</code> のとき、次のプログラムは何を表示するでしょう？</p><pre>if s &gt;= 90:\n    print(\"A\")\nelif s &gt;= 70:\n    print(\"B\")\nelse:\n    print(\"C\")</pre>",
+      "bodyEasy": "<p><code>s = 75</code> のとき、次のプログラムは何を表示するでしょう？</p><pre>if s &gt;= 90:\n    print(\"A\")\nelif s &gt;= 70:\n    print(\"B\")\nelse:\n    print(\"C\")</pre>",
       "check": {
         "choice": {
           "options": [
@@ -172,6 +182,7 @@
       "quiz": true,
       "title": "課題：条件で分けよう",
       "body": "<p><b>もし〜だったら</b> ブロックを使って、条件によって表示を分けるプログラムを作りましょう。もしブロックを1つ使えばクリアです。</p>",
+      "bodyEasy": "<p><b>もし〜だったら</b> を使って、条件で表示を分けるプログラムを作りましょう。もしブロックを1つ使えばクリアです。</p>",
       "hint": "＋ボタンで else や elif を足すと、より細かく分けられます。",
       "check": {
         "blocksRequired": [

@@ -26,12 +26,14 @@ window.PYCO_LESSONS["0-18"] = {
       "track": "block",
       "title": "文字列を加工するメソッド",
       "body": "<p>文字列には、テキストを思い通りに加工する道具（メソッド）がそろっています。今回はよく使う5つを学びます。</p><ul><li><b>分割</b>（split）：区切り文字でリストに分ける</li><li><b>結合</b>（join）：リストを1つの文字列につなぐ</li><li><b>前後の空白を取り除く</b>（strip）</li><li><b>置換</b>（replace）：文字を別の文字に置きかえる</li><li><b>検索</b>（find）：文字の位置を調べる（無ければ -1）</li></ul>",
+      "bodyEasy": "<p>文字列（もじれつ）には、テキストを変える<b>べんりワザ</b>（メソッド）が用意されています。よく使う5つはこれです。</p><ul><li><b>分割</b>（split）：くぎり文字でリストに分ける</li><li><b>結合</b>（join）：リストを1つの文字列につなぐ</li><li><b>空白を取りのぞく</b>（strip）</li><li><b>置換</b>（replace）：文字を入れかえる</li><li><b>検索</b>（find）：文字のいちを調べる（無いと -1）</li></ul>",
       "hint": "「文字列メソッド」カテゴリにこれらのブロックがそろっています。"
     },
     {
       "track": "block",
       "title": "手順1：分割ブロックを置く",
       "body": "<p>「文字列メソッド」カテゴリから <b>文字列〜を〜で分割</b> のブロックを取り出し、下の図のように置きましょう。区切り文字で文字列をリストに分けるブロックです。</p><p>1つ置けたらクリアです。</p>",
+      "bodyEasy": "<p>「文字列メソッド」カテゴリから <b>文字列〜を〜で分割</b> のブロックを取り出して、下の図のように置きましょう。文字列をくぎり文字でリストに分けるブロックです。</p><p>1つ置けたらクリアです。</p>",
       "hint": "変数の部分に分けたい文字列の入った変数を、区切りの欄に区切り文字（例：カンマ）を入れます。",
       "check": {
         "blocksRequired": [
@@ -52,6 +54,7 @@ window.PYCO_LESSONS["0-18"] = {
       "track": "block",
       "title": "手順2：カンマで分割する",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 text</b> に文字列 <code>apple,banana,cherry</code> を入れる</li><li><b>変数 words</b> に <b>text をカンマで分割</b> した結果を入れる</li><li><b>値を表示する</b> で <code>words</code> を表示する</li></ol><p>「▶ 実行」を押して、3つの要素のリストが出れば成功です。</p><pre>['apple', 'banana', 'cherry']</pre>",
+      "bodyEasy": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 text</b> に <code>apple,banana,cherry</code> を入れる</li><li><b>変数 words</b> に <b>text をカンマで分割</b> した結果を入れる</li><li><b>値を表示する</b> で <code>words</code> を表示する</li></ol><p>「▶ 実行」を押して、3つに分かれたリストが出れば成功です。</p><pre>['apple', 'banana', 'cherry']</pre>",
       "hint": "分割の区切りの欄にはカンマ「,」を入れます。結果はリストになります。",
       "run": true,
       "check": {
@@ -70,12 +73,14 @@ window.PYCO_LESSONS["0-18"] = {
     {
       "track": "block",
       "title": "置換・結合・空白の除去",
-      "body": "<p>ほかにも便利なメソッドがあります。</p><ul><li><b>置換</b>（replace）：<code>\"hello\"</code> の <code>l</code> を <code>r</code> に置きかえると <code>herro</code></li><li><b>結合</b>（join）：<code>-</code> でリスト <code>[\"a\",\"b\",\"c\"]</code> をつなぐと <code>a-b-c</code>（分割の逆）</li><li><b>前後の空白を取り除く</b>（strip）：<code>\" hi \"</code> → <code>hi</code>。入力の前処理によく使います</li></ul><p>次で置換を試してみましょう。</p>"
+      "body": "<p>ほかにも便利なメソッドがあります。</p><ul><li><b>置換</b>（replace）：<code>\"hello\"</code> の <code>l</code> を <code>r</code> に置きかえると <code>herro</code></li><li><b>結合</b>（join）：<code>-</code> でリスト <code>[\"a\",\"b\",\"c\"]</code> をつなぐと <code>a-b-c</code>（分割の逆）</li><li><b>前後の空白を取り除く</b>（strip）：<code>\" hi \"</code> → <code>hi</code>。入力の前処理によく使います</li></ul><p>次で置換を試してみましょう。</p>",
+      "bodyEasy": "<p>ほかにもワザがあります。</p><ul><li><b>置換</b>（replace）：<code>\"hello\"</code> の <code>l</code> を <code>r</code> にすると <code>herro</code></li><li><b>結合</b>（join）：<code>-</code> で <code>[\"a\",\"b\",\"c\"]</code> をつなぐと <code>a-b-c</code></li><li><b>空白を取りのぞく</b>（strip）：<code>\" hi \"</code> → <code>hi</code></li></ul><p>次は置換をためします。</p>"
     },
     {
       "track": "block",
       "title": "手順3：文字を置きかえる",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 s</b> に文字列 <code>hello</code> を入れる</li><li><b>値を表示する</b> に <b>s の l を r に置換</b> をはめる</li></ol><p>「▶ 実行」を押して <code>herro</code> と出れば成功です。</p><pre>s = \"hello\"\nprint(s.replace(\"l\", \"r\"))</pre>",
+      "bodyEasy": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 s</b> に <code>hello</code> を入れる</li><li><b>値を表示する</b> に <b>s の l を r に置換</b> をはめる</li></ol><p>「▶ 実行」を押して <code>herro</code> と出れば成功です。</p><pre>s = \"hello\"\nprint(s.replace(\"l\", \"r\"))</pre>",
       "hint": "置換ブロックの「old」に l、「new」に r を入れます。2つの l が両方 r になります。",
       "run": true,
       "check": {
@@ -90,6 +95,7 @@ window.PYCO_LESSONS["0-18"] = {
       "track": "code",
       "title": "コードを読もう：メソッドの呼び出し",
       "body": "<p>ブロックが作った Python コードを1行ずつ読んでみましょう。</p><pre class=\"code-lines\">text = \"apple,banana,cherry\"\nwords = text.split(\",\")\nprint(words)</pre><ol><li><b>1行目</b>：変数 <code>text</code> に文字列を入れます。</li><li><b>2行目</b>：<code>text.split(\",\")</code> のドット「.」は「<code>text</code> に対して <code>split</code> という操作をする」という意味です。カッコの中の <code>\",\"</code> が区切り文字で、結果はリストになります。</li><li><b>3行目</b>：できたリストを表示します。</li></ol><p>「変数.メソッド(...)」の形は、これからよく出てきます。</p>",
+      "bodyEasy": "<p>ブロックが作った Python のコードを読みましょう。</p><pre class=\"code-lines\">text = \"apple,banana,cherry\"\nwords = text.split(\",\")\nprint(words)</pre><ol><li><b>1行目</b>：<code>text</code> に文字列を入れます。</li><li><b>2行目</b>：<code>text.split(\",\")</code> のドット「.」は「<code>text</code> に <code>split</code> をする」という意味です。<code>\",\"</code> がくぎり文字で、けっかはリストです。</li><li><b>3行目</b>：リストを表示します。</li></ol><p>「変数.メソッド(...)」の形はこれからよく出ます。</p>",
       "hint": "ドットの左が操作される文字列、右が操作の名前（メソッド）です。",
       "callout": {
         "target": "code",
@@ -101,6 +107,7 @@ window.PYCO_LESSONS["0-18"] = {
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">s = \"red,green,blue\"\nparts = s.split(\",\")\nprint(len(parts))</pre>",
+      "bodyEasy": "<p>次のコードを実行すると、何が表示されるでしょう？数字で答えてください。</p><pre class=\"code-lines\">s = \"red,green,blue\"\nparts = s.split(\",\")\nprint(len(parts))</pre>",
       "hint": "split はカンマで区切ってリストにします。要素がいくつになるか数えましょう。",
       "check": {
         "answerText": {
@@ -117,6 +124,7 @@ window.PYCO_LESSONS["0-18"] = {
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p>変数 <code>s</code> に <code>2024-01-15</code> を入れ、<b>replace</b> を使って <code>-</code>（ハイフン）を <code>/</code>（スラッシュ）に置きかえて表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">2024/01/15</pre>",
+      "bodyEasy": "<p><b>変数 s</b> に <code>2024-01-15</code> を入れ、<b>replace</b> を使って <code>-</code>（ハイフン）を <code>/</code>（スラッシュ）に入れかえて表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">2024/01/15</pre>",
       "hint": "s.replace(\"-\", \"/\") のように書きます。",
       "check": {
         "codeRun": {
@@ -141,6 +149,7 @@ window.PYCO_LESSONS["0-18"] = {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>検索（find）で、探す文字が <b>見つからなかった</b> ときに返る値はどれでしょう？</p>",
+      "bodyEasy": "<p>検索（find）で、探す文字が <b>見つからなかった</b> とき、返ってくる値はどれでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -157,6 +166,7 @@ window.PYCO_LESSONS["0-18"] = {
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><code>\" hi \"</code>（前後に空白）を <b>前後の空白を取り除く</b>（strip）と、何になるでしょう？</p>",
+      "bodyEasy": "<p><code>\" hi \"</code>（前後に空白）を <b>空白を取りのぞく</b>（strip）と、何になるでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -173,6 +183,7 @@ window.PYCO_LESSONS["0-18"] = {
       "quiz": true,
       "title": "確認クイズ③",
       "body": "<p><code>-</code> でリスト <code>[\"a\", \"b\", \"c\"]</code> を <b>結合</b>（join）すると、何になるでしょう？</p>",
+      "bodyEasy": "<p><code>-</code> で <code>[\"a\", \"b\", \"c\"]</code> を <b>結合</b>（join）すると、何になるでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -189,6 +200,7 @@ window.PYCO_LESSONS["0-18"] = {
       "quiz": true,
       "title": "課題：CSVを分解しよう",
       "body": "<p><code>田中,25,東京</code> のような文字列を <b>分割</b> して、名前・年齢・都市に分けるプログラムを作ってみましょう。<b>分割</b> ブロックを使えばクリアです。</p><p>組み合わせ例：</p>",
+      "bodyEasy": "<p><code>田中,25,東京</code> のような文字列を <b>分割</b> して、名前・年齢・都市に分けるプログラムを作りましょう。<b>分割</b> ブロックを使えばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "分割した結果はリストになるので、番号（0・1・2）で1つずつ取り出せます。",
       "check": {
         "blocksRequired": [

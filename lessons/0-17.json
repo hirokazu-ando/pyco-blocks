@@ -24,12 +24,14 @@
       "track": "block",
       "title": "エラーと例外処理",
       "body": "<p>プログラムを動かしていると、予想しないエラーが起きてそのまま止まってしまうことがあります。<b>例外処理</b> を使うと、エラーをつかまえて止まらずに続けられます。</p><ul><li><b>例外</b>：実行中に発生するエラーのこと</li><li><b>試す</b>（try）：エラーが起きるかもしれないコードを囲む</li><li><b>エラーのとき</b>（except）：エラーが起きたときだけ動く部分</li></ul><p>たとえば <code>10 / 0</code>（0で割る）は <code>ZeroDivisionError</code>、<code>int(\"abc\")</code> は <code>ValueError</code> というエラーになります。</p>",
+      "bodyEasy": "<p>プログラムを動かすと、思わぬエラーで途中で止まることがあります。<b>例外処理</b> を使うと、エラーをつかまえて止まらずに続けられます。</p><ul><li><b>例外</b>：実行中に起きるエラー</li><li><b>試す</b>（try）：エラーが起きるかもしれないコードを囲む</li><li><b>エラーのとき</b>（except）：エラーが起きたときだけ動く部分</li></ul><p><code>10 / 0</code> は <code>ZeroDivisionError</code>、<code>int(\"abc\")</code> は <code>ValueError</code> というエラーになります。</p>",
       "hint": "エラーの種類には ValueError（変換できない）・ZeroDivisionError（0で割った）などがあります。"
     },
     {
       "track": "block",
       "title": "手順1：エラー処理ブロックを置く",
       "body": "<p>「例外処理」カテゴリから <b>試す：／エラー（…）のとき：</b> のブロックを取り出し、下の図のようにワークスペースへ置きましょう。</p><p>1つ置けたらクリアです。</p>",
+      "bodyEasy": "<p>「例外処理」カテゴリから <b>試す：／エラー（…）のとき：</b> のブロックを取り出し、下の図のようにワークスペースへ置きましょう。</p><p>1つ置けたらクリアです。</p>",
       "hint": "赤色のブロックです。上が「試す：」、下が「エラー（…）のとき：」に分かれています。",
       "check": {
         "blocksRequired": [
@@ -50,6 +52,7 @@
       "track": "block",
       "title": "手順2：0で割るエラーをつかまえる",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li>エラーの種類のプルダウンで <code>ZeroDivisionError</code> を選ぶ</li><li><b>試す：</b> の中に <b>値を表示する</b>＋<b>算術演算</b> で <code>10 ÷ 0</code> を入れる</li><li><b>エラーのとき：</b> の中に <b>「0では割れません」を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して <code>0では割れません</code> と出れば成功です。</p><pre>try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre>",
+      "bodyEasy": "<p>下の図のように組み立てましょう。</p><ol><li>エラーの種類のプルダウンで <code>ZeroDivisionError</code> を選ぶ</li><li><b>試す：</b> の中に <b>値を表示する</b>＋<b>算術演算</b> で <code>10 ÷ 0</code> を入れる</li><li><b>エラーのとき：</b> の中に <b>「0では割れません」を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して <code>0では割れません</code> と出れば成功です。</p><pre>try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre>",
       "hint": "0で割るとエラーが起きるので、表示はスキップされて「エラーのとき：」の中に飛びます。",
       "run": true,
       "check": {
@@ -68,12 +71,14 @@
     {
       "track": "block",
       "title": "エラーを自分で起こす",
-      "body": "<p><b>エラーを e として受け取る：</b> のブロックを使うと、どんなエラーもつかまえて、その内容を変数 <code>e</code> に受け取れます。<code>str(e)</code> でエラーの説明文を文字列にできます。</p><p>また <b>エラーを発生させる</b>（raise）のブロックを使うと、条件に合わないときに <b>自分でわざとエラーを起こす</b> ことができます。次で、起こしたエラーをその場でつかまえてみましょう。</p>"
+      "body": "<p><b>エラーを e として受け取る：</b> のブロックを使うと、どんなエラーもつかまえて、その内容を変数 <code>e</code> に受け取れます。<code>str(e)</code> でエラーの説明文を文字列にできます。</p><p>また <b>エラーを発生させる</b>（raise）のブロックを使うと、条件に合わないときに <b>自分でわざとエラーを起こす</b> ことができます。次で、起こしたエラーをその場でつかまえてみましょう。</p>",
+      "bodyEasy": "<p><b>エラーを e として受け取る：</b> のブロックを使うと、どんなエラーもつかまえて、その中身を <code>e</code> に受け取れます。<code>str(e)</code> で説明を文字列にできます。</p><p>また <b>エラーを発生させる</b>（raise）を使うと、条件に合わないとき <b>自分でわざとエラーを起こせます</b>。次で、起こしたエラーをつかまえてみましょう。</p>"
     },
     {
       "track": "block",
       "title": "手順3：起こしたエラーをつかまえる",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li>エラーの種類は <code>ValueError</code> を選ぶ</li><li><b>試す：</b> の中に <b>エラーを発生させる</b> ブロックを入れ、種類を <code>ValueError</code>、メッセージを <code>だめ</code> にする</li><li><b>エラーのとき：</b> の中に <b>「エラーをつかまえた」を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して <code>エラーをつかまえた</code> と出れば成功です。</p><pre>try:\n    raise ValueError(\"だめ\")\nexcept ValueError:\n    print(\"エラーをつかまえた\")</pre>",
+      "bodyEasy": "<p>下の図のように組み立てましょう。</p><ol><li>エラーの種類は <code>ValueError</code> を選ぶ</li><li><b>試す：</b> の中に <b>エラーを発生させる</b> ブロックを入れ、種類を <code>ValueError</code>、メッセージを <code>だめ</code> にする</li><li><b>エラーのとき：</b> の中に <b>「エラーをつかまえた」を表示する</b> を入れる</li></ol><p>「▶ 実行」を押して <code>エラーをつかまえた</code> と出れば成功です。</p><pre>try:\n    raise ValueError(\"だめ\")\nexcept ValueError:\n    print(\"エラーをつかまえた\")</pre>",
       "hint": "自分で起こしたエラーも、except でつかまえれば止まりません。",
       "run": true,
       "check": {
@@ -88,6 +93,7 @@
       "track": "code",
       "title": "コードを読もう：try / except の流れ",
       "body": "<p>手順2で組んだブロックは、次のPythonコードになります。エラーが起きたとき、実行の流れがどう動くかに注目しましょう。</p><pre class=\"code-lines\">try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre><ul><li>1〜2行目：<code>try:</code> の中は「エラーが起きるかもしれない処理」です。ここで <code>10 / 0</code>（0で割る）を計算しようとします。</li><li>ここで <code>ZeroDivisionError</code> というエラーが発生します。すると <code>print(10 / 0)</code> は<b>最後まで実行されず</b>、流れは <code>except</code> へ<b>飛びます</b>。</li><li>3〜4行目：<code>except ZeroDivisionError:</code> の中が動き、<code>0では割れません</code> が表示されます。</li></ul><p>エラーが起きた行で処理が中断し、<code>except</code> に飛んで続きが動く——これが例外処理の流れです。</p>",
+      "bodyEasy": "<p>手順2のブロックは、次のコードになります。エラーが起きたとき流れがどう動くかに注目しましょう。</p><pre class=\"code-lines\">try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print(\"0では割れません\")</pre><ul><li>1〜2行目：<code>try:</code> の中は「エラーが起きるかもしれない処理」。ここで <code>10 / 0</code> を計算しようとします。</li><li><code>ZeroDivisionError</code> が発生。<code>print(10 / 0)</code> は<b>最後まで動かず</b>、流れは <code>except</code> へ<b>飛びます</b>。</li><li>3〜4行目：<code>except</code> の中が動き、<code>0では割れません</code> が出ます。</li></ul><p>エラーの行で止まり、<code>except</code> に飛んで続きが動く——これが例外処理の流れです。</p>",
       "hint": "try の中でエラーが出ると、その先はスキップされて except の中に飛びます。",
       "callout": {
         "target": "code",
@@ -99,6 +105,7 @@
       "quiz": true,
       "title": "コード読解テスト",
       "body": "<p>次のコードを実行すると、<b>何行目</b>でエラーが起きるでしょう？行番号（数字）で答えてください。</p><pre class=\"code-lines\">a = 10\nb = 0\nc = a / b\nprint(c)</pre>",
+      "bodyEasy": "<p>次のコードを実行すると、<b>何行目</b>でエラーが起きるでしょう？行番号（数字）で答えてください。</p><pre class=\"code-lines\">a = 10\nb = 0\nc = a / b\nprint(c)</pre>",
       "hint": "0で割るとエラーになります。a / b の計算をしている行を探しましょう。",
       "check": {
         "answerText": {
@@ -116,6 +123,7 @@
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>試す（try）</b>と<b>エラーのとき（except）</b>を使って、<code>10 / 0</code>（0で割る）で起きるエラーをつかまえ、<code>エラー</code> と表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">エラー</pre>",
+      "bodyEasy": "<p><b>試す（try）</b>と<b>エラーのとき（except）</b>を使いましょう。<code>10 / 0</code>（0で割る）で起きるエラーをつかまえ、<code>エラー</code> と表示するコードを書いて実行しましょう。</p><pre class=\"code-lines\">エラー</pre>",
       "hint": "try: の中で print(10 / 0) を計算し、except ZeroDivisionError: の中で print(\"エラー\") と書きます。",
       "check": {
         "codeRun": {
@@ -138,6 +146,7 @@
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p>例外処理（try / except）を使う一番の目的はどれでしょう？</p>",
+      "bodyEasy": "<p>例外処理（try / except）を使う一番の目的はどれでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -154,6 +163,7 @@
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p><code>int(\"abc\")</code> のように、文字を数値に変換できないときに起きるエラーはどれでしょう？</p>",
+      "bodyEasy": "<p><code>int(\"abc\")</code> のように、文字を数値に変えられないときに起きるエラーはどれでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -170,6 +180,7 @@
       "quiz": true,
       "title": "課題：エラーに強いプログラムを作ろう",
       "body": "<p><b>試す：／エラー（…）のとき：</b> のブロックを使って、エラーが起きても止まらないプログラムを作ってみましょう。ブロックを1つ置いて中身を組めばクリアです。</p><p>組み合わせ例：</p>",
+      "bodyEasy": "<p><b>試す：／エラー（…）のとき：</b> のブロックを使って、エラーが起きても止まらないプログラムを作ってみましょう。ブロックを1つ置いて中身を組めばクリアです。</p><p>組み合わせ例：</p>",
       "hint": "「試す：」にエラーが起きそうな処理を、「エラーのとき：」に対処の表示を入れます。",
       "check": {
         "blocksRequired": [

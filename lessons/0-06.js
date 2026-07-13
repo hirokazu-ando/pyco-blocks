@@ -21,12 +21,14 @@ window.PYCO_LESSONS["0-06"] = {
       "track": "block",
       "title": "真偽値とは何か",
       "body": "<p>プログラムは「正しいか、間違いか」を判断しながら動きます。この2つだけの値を <b>真偽値</b> といいます。</p><ul><li><b>True（真）</b>：正しい</li><li><b>False（偽）</b>：間違い</li></ul><p><code>5 &lt; 10</code> のように2つの値をくらべると、答えは <code>True</code> か <code>False</code> になります。次回の「もし〜なら」で、この真偽値を使って処理を分けます。</p>",
+      "bodyEasy": "<p>プログラムは「正しい」か「まちがい」かを見て動きます。この2つだけの値が <b>真偽値（しんぎち）</b> です。</p><ul><li><b>True</b>：正しい</li><li><b>False</b>：まちがい</li></ul><p><code>5 &lt; 10</code> のように数をくらべると、答えは <code>True</code> か <code>False</code> になります。</p>",
       "hint": "「値」カテゴリの True/False ブロックが真偽値そのものです。"
     },
     {
       "track": "block",
       "title": "手順1：比較ブロックを置く",
       "body": "<p>「分岐」カテゴリから <b>比較</b> ブロック（<code>&gt;</code> や <code>&lt;</code> を選ぶもの）を取り出し、下の図のように置きましょう。左に <code>5</code>、真ん中で <code>&lt;</code>、右に <code>10</code> を入れます。</p><p>1つ置けたらクリアです。</p>",
+      "bodyEasy": "<p>「分岐」カテゴリから <b>比較</b> ブロック（<code>&gt;</code> や <code>&lt;</code>）を出して、左に <code>5</code>、まん中で <code>&lt;</code>、右に <code>10</code> を入れます。</p><p>1つ置けたらクリアです。</p>",
       "hint": "左右のあなには「値」カテゴリの数値ブロックが入ります。真ん中のプルダウンで比較の種類を選びます。",
       "check": {
         "blocksRequired": [
@@ -47,6 +49,7 @@ window.PYCO_LESSONS["0-06"] = {
       "track": "block",
       "title": "手順2：5 < 10 を表示する",
       "body": "<p><b>値を表示する</b> に <b>比較</b> ブロックをはめ、<code>5 &lt; 10</code>（5は10より小さい？）を作ります。下の図のように組みましょう。</p><p>「▶ 実行」を押すと、答えの真偽値が表示されます。</p><pre>print(5 &lt; 10)</pre>",
+      "bodyEasy": "<p><b>値を表示する</b> に <b>比較</b> をはめて <code>5 &lt; 10</code>（5は10より小さい？）を作ります。</p><p>「▶ 実行」を押すと真偽値が出ます。</p><pre>print(5 &lt; 10)</pre>",
       "hint": "比べた結果が正しければ True、間違いなら False が出ます。",
       "run": true,
       "check": {
@@ -65,12 +68,14 @@ window.PYCO_LESSONS["0-06"] = {
     {
       "track": "block",
       "title": "6つの比べ方",
-      "body": "<p>比較には6つの種類があります。</p><ul><li><code>&gt;</code> より大きい ／ <code>&gt;=</code> 以上</li><li><code>&lt;</code> より小さい ／ <code>&lt;=</code> 以下</li><li><code>==</code> 等しい ／ <code>!=</code> 等しくない</li></ul><p>「等しい」は <code>=</code> ではなく <code>==</code>（イコール2つ）を使います。<code>=</code> は変数に値を入れる代入なので、区別が大切です。</p>"
+      "body": "<p>比較には6つの種類があります。</p><ul><li><code>&gt;</code> より大きい ／ <code>&gt;=</code> 以上</li><li><code>&lt;</code> より小さい ／ <code>&lt;=</code> 以下</li><li><code>==</code> 等しい ／ <code>!=</code> 等しくない</li></ul><p>「等しい」は <code>=</code> ではなく <code>==</code>（イコール2つ）を使います。<code>=</code> は変数に値を入れる代入なので、区別が大切です。</p>",
+      "bodyEasy": "<p>くらべ方は6つあります。</p><ul><li><code>&gt;</code> より大きい ／ <code>&gt;=</code> 以上</li><li><code>&lt;</code> より小さい ／ <code>&lt;=</code> 以下</li><li><code>==</code> 等しい ／ <code>!=</code> 等しくない</li></ul><p>「等しい」は <code>==</code>（イコール2つ）です。<code>=</code>（1つ）は値を入れる合図なので、べつものです。</p>"
     },
     {
       "track": "block",
       "title": "手順3：変数と比べる",
       "body": "<p>下の図のように組み立てましょう。</p><ol><li><b>変数 a を 7 にする</b></li><li><b>値を表示する</b> に <b>比較</b> をはめ、<code>a == 7</code>（aは7と等しい？）を作る</li></ol><p>「▶ 実行」を押して <code>True</code> と出れば成功です。</p><pre>a = 7\nprint(a == 7)</pre>",
+      "bodyEasy": "<p>下の図のように組みます。</p><ol><li><b>変数 a を 7 にする</b></li><li><b>値を表示する</b> に <b>比較</b> をはめて <code>a == 7</code>（aは7と等しい？）を作る</li></ol><p>「▶ 実行」で <code>True</code> と出れば成功です。</p><pre>a = 7\nprint(a == 7)</pre>",
       "hint": "比較の左に変数ブロック a、真ん中で ==、右に数値 7 を入れます。",
       "run": true,
       "check": {
@@ -85,6 +90,7 @@ window.PYCO_LESSONS["0-06"] = {
       "track": "code",
       "title": "コードを読もう：比較の結果を表示",
       "body": "<p>ブロックから作られた Python コードを読んでみましょう。手順3で組んだのは次の2行です。</p><pre class=\"code-lines\">a = 7\nprint(a == 7)</pre><ul><li><b>1行目</b> <code>a = 7</code>：変数 <code>a</code> に <code>7</code> を入れます。<code>=</code>（イコール1つ）は「入れる」という意味の代入です。</li><li><b>2行目</b> <code>print(a == 7)</code>：<code>a == 7</code>（<code>a</code> は <code>7</code> と等しい？）を調べ、その結果である <code>True</code> を表示します。<code>==</code>（イコール2つ）は「等しいか」を調べる比較で、代入の <code>=</code> とは役割がちがいます。</li></ul><p>比較の結果は、いつも <code>True</code> か <code>False</code> のどちらかになります。</p>",
+      "bodyEasy": "<p>手順3のコードを読みます。</p><pre class=\"code-lines\">a = 7\nprint(a == 7)</pre><ul><li><b>1行目</b>：<code>a</code> に <code>7</code> を入れます。<code>=</code>（1つ）は「入れる」合図です。</li><li><b>2行目</b>：<code>a == 7</code>（aは7と等しい？）を調べて答えの <code>True</code> を表示します。<code>==</code>（2つ）は「等しいか」を調べるしるしです。</li></ul><p>くらべた答えは、いつも <code>True</code> か <code>False</code> です。</p>",
       "callout": {
         "target": "code",
         "text": "生成されたコードはここで見られます"
@@ -95,6 +101,7 @@ window.PYCO_LESSONS["0-06"] = {
       "quiz": true,
       "title": "コード読解テスト（記述式）",
       "body": "<p>次のコードを実行すると、何が表示されるでしょう？ <code>True</code> か <code>False</code> で答えてください。</p><pre class=\"code-lines\">x = 8\nprint(x == 10)</pre>",
+      "bodyEasy": "<p>次を実行すると、何が出るでしょう？ <code>True</code> か <code>False</code> で答えてください。</p><pre class=\"code-lines\">x = 8\nprint(x == 10)</pre>",
       "hint": "x は 8 です。8 は 10 と等しいでしょうか。",
       "check": {
         "answerText": {
@@ -111,6 +118,7 @@ window.PYCO_LESSONS["0-06"] = {
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>比較</b> を使って、<code>3 &lt; 5</code>（3は5より小さい？）の結果を表示するコードを書いて実行しましょう。<code>True</code> と表示されれば成功です。</p>",
+      "bodyEasy": "<p><b>比較</b> を使って <code>3 &lt; 5</code>（3は5より小さい？）の答えを表示しましょう。<code>True</code> と出れば成功です。</p>",
       "hint": "print の中に 3 &lt; 5 のような比較を入れます。True と直接書いてはいけません。",
       "check": {
         "codeRun": {
@@ -135,6 +143,7 @@ window.PYCO_LESSONS["0-06"] = {
       "quiz": true,
       "title": "確認クイズ①",
       "body": "<p><code>10 &lt; 5</code>（10は5より小さい？）を表示すると何が出るでしょう？</p>",
+      "bodyEasy": "<p><code>10 &lt; 5</code>（10は5より小さい？）を表示すると何が出るでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -151,6 +160,7 @@ window.PYCO_LESSONS["0-06"] = {
       "quiz": true,
       "title": "確認クイズ②",
       "body": "<p>「aは7と等しい」を調べるとき、正しい書き方はどれでしょう？</p>",
+      "bodyEasy": "<p>「aは7と等しい」を調べる正しい書き方はどれでしょう？</p>",
       "check": {
         "choice": {
           "options": [
@@ -167,6 +177,7 @@ window.PYCO_LESSONS["0-06"] = {
       "quiz": true,
       "title": "課題：比べてみよう",
       "body": "<p><b>比較</b> ブロックを <b>値を表示する</b> にはめて、好きな2つの値をくらべた結果を表示してみましょう。比較ブロックを1つ使えばクリアです。</p>",
+      "bodyEasy": "<p><b>比較</b> を <b>値を表示する</b> にはめて、好きな2つの値をくらべた答えを表示しましょう。比較ブロックを1つ使えばクリアです。</p>",
       "hint": "数値どうしでも、変数と数値でもかまいません。プルダウンで比べ方を変えて試しましょう。",
       "check": {
         "blocksRequired": [
