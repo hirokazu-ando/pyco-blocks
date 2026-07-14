@@ -19,6 +19,9 @@
   var LESSON_BASE  = 'lessons/';                 // レッスン JSON の置き場所
   var BACKUP_KEY   = 'pyco-tutorial-backup-';    // レッスン開始前の作品退避キー（+mode）
   var LEVEL_KEY    = 'pyco-tutorial-level';      // 解説レベル（'easy' / 'detailed'）。全レッスン共通・既定=くわしい
+  var FS_KEY       = 'pyco-tutorial-fontsize';   // 説明エリアの文字サイズ段階（0-4）。全レッスン共通
+  var FS_SCALES    = [0.9, 1.0, 1.1, 1.24, 1.38];// 読み物領域の倍率。既定(index=1)=1.0は現行サイズと同一
+  var FS_DEFAULT   = 1;                           // 既定段階（現行サイズ）
   var HASH_RE      = /[#&]lesson=([0-9A-Za-z_-]+)/;
   var TRACK_RE     = /[#&]track=(block|code)/;   // #lesson=0-05&track=code
 
@@ -119,6 +122,42 @@
     return lvl;
   }
 
+  // 説明エリアの文字サイズ段階（0-4）。localStorage に保存し全レッスン共通。既定=現行サイズ。
+  //   パネル要素の CSS 変数 --pyco-tut-fs-scale を段階倍率にセットし、
+  //   読み物領域（本文・ヒント・選択肢・完了画面など）の font-size を calc で連動させる。
+  function getFontIdx() {
+    try {
+      var v = parseInt(window.localStorage.getItem(FS_KEY), 10);
+      if (isNaN(v) || v < 0 || v >= FS_SCALES.length) return FS_DEFAULT;
+      return v;
+    } catch (e) { return FS_DEFAULT; }
+  }
+  function setFontIdx(i) {
+    var idx = Math.max(0, Math.min(FS_SCALES.length - 1, i | 0));
+    try { window.localStorage.setItem(FS_KEY, String(idx)); } catch (e) { /* noop */ }
+    return idx;
+  }
+  // 現在の段階をパネルへ適用し、ボタンの有効/無効表示も更新する
+  function applyFontScale() {
+    if (!panel) return;
+    var idx = getFontIdx();
+    try { panel.style.setProperty('--pyco-tut-fs-scale', String(FS_SCALES[idx])); } catch (e) { /* noop */ }
+    updateFontButtons(idx);
+  }
+  // 上限/下限でボタンを無効化表示する
+  function updateFontButtons(idx) {
+    if (idx == null) idx = getFontIdx();
+    var dec = $('pyco-tut-fs-dec'), inc = $('pyco-tut-fs-inc');
+    if (dec) dec.disabled = (idx <= 0);
+    if (inc) inc.disabled = (idx >= FS_SCALES.length - 1);
+  }
+  // A− / A＋ で1段階変更（上限下限で頭打ち）。レイアウトが動くので枠も追従。
+  function stepFont(delta) {
+    setFontIdx(getFontIdx() + delta);
+    applyFontScale();
+    try { positionCallout(); positionGuide(); } catch (e) { /* noop */ }
+  }
+
   // =============================================================
   // スタイル注入（既存の端末風・緑テーマを踏襲）
   // =============================================================
@@ -155,13 +194,15 @@
     + '.pyco-tut-pbar-fill{height:100%;background:var(--accent-green,#00ff41);width:0;transition:width .3s ease;'
     + 'box-shadow:0 0 6px var(--accent-green,#00ff41);}'
     + '.pyco-tut-body{flex:1;overflow-y:auto;padding:14px 14px 18px;}'
-    + '.pyco-tut-step-title{font-size:.98rem;font-weight:bold;color:var(--accent-cyan,#00d4ff);margin:0 0 8px;}'
+    + '.pyco-tut-step-title{font-size:calc(.98rem * var(--pyco-tut-fs-scale,1));font-weight:bold;color:var(--accent-cyan,#00d4ff);margin:0 0 8px;}'
     + '.pyco-tut-quizbadge{display:inline-block;font-size:.62rem;background:var(--accent-amber,#ffb700);'
     + 'color:#111;font-weight:bold;padding:1px 7px;border-radius:10px;margin-right:6px;vertical-align:middle;'
     + 'letter-spacing:.05em;}'
+    // ツール行：解説レベル切替 と 文字サイズ調整を1行に。大サイズ時は折り返す。
+    + '.pyco-tut-toolrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;}'
     // 解説レベル切替（やさしい ⇄ くわしい）：控えめなセグメント型トグル
     + '.pyco-tut-level{display:inline-flex;border:1px solid var(--border-dim,#1a341a);'
-    + 'border-radius:6px;overflow:hidden;margin:0 0 10px;}'
+    + 'border-radius:6px;overflow:hidden;}'
     + '.pyco-tut-level-btn{background:transparent;border:none;color:var(--text-dim,#5a8a5a);'
     + 'cursor:pointer;font:inherit;font-size:.72rem;padding:4px 12px;letter-spacing:.04em;'
     + '-webkit-appearance:none;appearance:none;}'
@@ -169,7 +210,18 @@
     + '.pyco-tut-level-btn:hover{color:var(--accent-green,#00ff41);}'
     + '.pyco-tut-level-btn.active{background:var(--accent-green,#00ff41);color:#04120a;font-weight:bold;}'
     + 'body.mobile-mode .pyco-tut-level-btn{padding:6px 14px;font-size:.76rem;}'
-    + '.pyco-tut-text{font-size:.86rem;line-height:1.7;}'
+    // 文字サイズ調整（A− / A＋）：レベルトグルと揃えたセグメント型。本体ツールバーと同じ操作感。
+    + '.pyco-tut-fs{display:inline-flex;border:1px solid var(--border-dim,#1a341a);'
+    + 'border-radius:6px;overflow:hidden;}'
+    + '.pyco-tut-fs-btn{background:transparent;border:none;color:var(--text-dim,#5a8a5a);'
+    + 'cursor:pointer;font:inherit;font-size:.72rem;padding:4px 11px;line-height:1.2;'
+    + '-webkit-appearance:none;appearance:none;}'
+    + '.pyco-tut-fs-btn + .pyco-tut-fs-btn{border-left:1px solid var(--border-dim,#1a341a);}'
+    + '.pyco-tut-fs-btn:hover:not(:disabled){color:var(--accent-green,#00ff41);}'
+    + '.pyco-tut-fs-btn:disabled{opacity:.35;cursor:not-allowed;}'
+    + 'body.mobile-mode .pyco-tut-fs-btn{padding:6px 15px;font-size:.8rem;}'
+    // ↓ 読み物領域は --pyco-tut-fs-scale（既定1=現行）で段階的に拡大縮小する
+    + '.pyco-tut-text{font-size:calc(.86rem * var(--pyco-tut-fs-scale,1));line-height:1.7;}'
     + '.pyco-tut-text p{margin:0 0 .7em;} .pyco-tut-text ul,.pyco-tut-text ol{margin:.3em 0 .8em 1.2em;}'
     + '.pyco-tut-text code{background:var(--bg-surface,#0b150b);color:var(--accent-green,#00ff41);'
     + 'padding:1px 5px;border-radius:4px;font-size:.9em;}'
@@ -189,40 +241,44 @@
     + '.pyco-tut-answer{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}'
     + '.pyco-tut-answer input{flex:1;min-width:110px;background:var(--bg-surface,#0b150b);'
     + 'border:1px solid var(--border-dim,#1a341a);color:var(--text-primary,#c8e6c8);font:inherit;'
-    + 'font-size:.86rem;padding:8px 10px;border-radius:6px;}'
+    + 'font-size:calc(.86rem * var(--pyco-tut-fs-scale,1));padding:8px 10px;border-radius:6px;}'
     + '.pyco-tut-answer input:focus{outline:none;border-color:var(--accent-cyan,#00d4ff);}'
     + '.pyco-tut-answer input:disabled{opacity:.6;}'
     + '.pyco-tut-answer button{background:transparent;border:1px solid var(--accent-cyan,#00d4ff);'
-    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;font-size:.8rem;'
+    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;'
+    + 'font-size:calc(.8rem * var(--pyco-tut-fs-scale,1));'
     + 'padding:8px 14px;border-radius:6px;}'
     + '.pyco-tut-answer button:disabled{opacity:.4;cursor:not-allowed;}'
-    + '.pyco-tut-answer-msg{width:100%;font-size:.8rem;min-height:1.2em;}'
+    + '.pyco-tut-answer-msg{width:100%;font-size:calc(.8rem * var(--pyco-tut-fs-scale,1));min-height:1.2em;}'
     + '.pyco-tut-answer-msg.ok{color:var(--accent-green,#00ff41);font-weight:bold;}'
     + '.pyco-tut-answer-msg.ng{color:#ff9090;}'
     // コード記述テスト（codeRun）の案内ボックス
     + '.pyco-tut-coderun{margin-top:12px;padding:10px 12px;border:1px dashed var(--accent-cyan,#00d4ff);'
-    + 'border-radius:6px;font-size:.8rem;line-height:1.6;}'
+    + 'border-radius:6px;font-size:calc(.8rem * var(--pyco-tut-fs-scale,1));line-height:1.6;}'
     + '.pyco-tut-coderun button{background:transparent;border:1px solid var(--accent-cyan,#00d4ff);'
-    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;font-size:.8rem;'
+    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;'
+    + 'font-size:calc(.8rem * var(--pyco-tut-fs-scale,1));'
     + 'padding:7px 12px;border-radius:6px;margin-top:6px;}'
     + '.pyco-tut-coderun .cm-on{color:var(--accent-green,#00ff41);font-weight:bold;}'
     + '.pyco-tut-hint{margin-top:12px;}'
     + '.pyco-tut-hint-toggle{background:transparent;border:1px dashed var(--accent-amber,#ffb700);'
-    + 'color:var(--accent-amber,#ffb700);cursor:pointer;font:inherit;font-size:.76rem;padding:5px 10px;'
+    + 'color:var(--accent-amber,#ffb700);cursor:pointer;font:inherit;'
+    + 'font-size:calc(.76rem * var(--pyco-tut-fs-scale,1));padding:5px 10px;'
     + 'border-radius:6px;width:100%;text-align:left;}'
-    + '.pyco-tut-hint-body{display:none;margin-top:8px;font-size:.82rem;line-height:1.6;'
+    + '.pyco-tut-hint-body{display:none;margin-top:8px;font-size:calc(.82rem * var(--pyco-tut-fs-scale,1));line-height:1.6;'
     + 'background:rgba(255,183,0,.08);border-left:3px solid var(--accent-amber,#ffb700);padding:8px 10px;'
     + 'border-radius:0 6px 6px 0;}'
     // 解説記事ボタン（ヒントボタンと揃えた控えめなスタイル）
     + '.pyco-tut-article{margin-top:8px;}'
     + '.pyco-tut-article-btn{background:transparent;border:1px dashed var(--accent-cyan,#00d4ff);'
-    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;font-size:.76rem;padding:5px 10px;'
+    + 'color:var(--accent-cyan,#00d4ff);cursor:pointer;font:inherit;'
+    + 'font-size:calc(.76rem * var(--pyco-tut-fs-scale,1));padding:5px 10px;'
     + 'border-radius:6px;width:100%;text-align:left;}'
     + '.pyco-tut-article-btn:hover{background:rgba(0,212,255,.08);}'
     + '.pyco-tut-choices{margin-top:12px;display:flex;flex-direction:column;gap:8px;}'
     + '.pyco-tut-choice{text-align:left;background:var(--bg-surface,#0b150b);'
     + 'border:1px solid var(--border-dim,#1a341a);color:var(--text-primary,#c8e6c8);cursor:pointer;'
-    + 'font:inherit;font-size:.84rem;padding:9px 12px;border-radius:6px;transition:all .15s ease;}'
+    + 'font:inherit;font-size:calc(.84rem * var(--pyco-tut-fs-scale,1));padding:9px 12px;border-radius:6px;transition:all .15s ease;}'
     + '.pyco-tut-choice:hover{border-color:var(--accent-cyan,#00d4ff);}'
     + '.pyco-tut-choice.correct{border-color:var(--accent-green,#00ff41);color:var(--accent-green,#00ff41);'
     + 'background:rgba(0,255,65,.1);} '
@@ -240,7 +296,7 @@
     // 完了画面
     + '.pyco-tut-done{text-align:center;padding:20px 6px;}'
     + '.pyco-tut-done .big{font-size:2.4rem;margin-bottom:10px;}'
-    + '.pyco-tut-done h4{color:var(--accent-green,#00ff41);font-size:1.05rem;margin:0 0 6px;}'
+    + '.pyco-tut-done h4{color:var(--accent-green,#00ff41);font-size:calc(1.05rem * var(--pyco-tut-fs-scale,1));margin:0 0 6px;}'
     // モーダル（一覧・修了証）
     + '.pyco-tut-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99000;'
     + 'display:flex;align-items:center;justify-content:center;padding:16px;}'
@@ -302,6 +358,16 @@
     + '#pyco-tut-callout .arrow-left{right:-16px;border-left-color:var(--accent-amber,#ffb700);}'
     + '#pyco-tut-callout .arrow-bottom{top:-16px;border-bottom-color:var(--accent-amber,#ffb700);}'
     + '#pyco-tut-callout .arrow-top{bottom:-16px;border-top-color:var(--accent-amber,#ffb700);}'
+    // 順次操作ガイド：対象を順番に光らせる枠（callout とは別色・番号バッジ付き）
+    + '#pyco-tut-guide-hl{position:fixed;z-index:9060;pointer-events:none;display:none;'
+    + 'border:2px solid var(--accent-cyan,#00d4ff);border-radius:8px;'
+    + 'animation:pycoTutGuidePulse 1.4s ease-in-out infinite;}'
+    + '@keyframes pycoTutGuidePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.5);}'
+    + '50%{box-shadow:0 0 0 8px rgba(0,212,255,0);}}'
+    + '#pyco-tut-guide-hl .gb{position:absolute;top:-11px;left:-11px;min-width:20px;height:20px;'
+    + 'box-sizing:border-box;padding:0 5px;border-radius:11px;background:var(--accent-cyan,#00d4ff);'
+    + 'color:#04120a;font:bold 12px/20px var(--font-mono,monospace);text-align:center;'
+    + 'box-shadow:0 1px 4px rgba(0,0,0,.5);}'
     // ---- モバイル：折りたたみ式ボトムシート ----
     //   判定はメディアクエリではなく body.mobile-mode（アプリ本体の判定と同一。
     //   手動「スマホ表示/PC表示」切替にも正しく追従する）
@@ -319,8 +385,8 @@
     + 'body.mobile-mode #pyco-tut-panel.minimized .pyco-tut-foot{padding:6px 12px 8px;}'
     + 'body.mobile-mode #pyco-tut-panel .pyco-tut-head{cursor:pointer;}'
     + 'body.mobile-mode .pyco-tut-body{padding:12px 12px 14px;}'
-    // iOSの自動ズーム防止（16px未満のinputはフォーカスでズームされる）
-    + 'body.mobile-mode .pyco-tut-answer input{font-size:16px;}'
+    // iOSの自動ズーム防止（16px未満のinputはフォーカスでズームされる）。文字サイズ拡大時は追従。
+    + 'body.mobile-mode .pyco-tut-answer input{font-size:max(16px, calc(.86rem * var(--pyco-tut-fs-scale,1)));}'
     // シート表示中は実行FAB(#btn-mobile-run)をシートの直上に退避し前面へ
     //  （既定位置だとシートに覆われてタップ不能になるため）
     + 'body.mobile-mode.pyco-tut-open #btn-mobile-run{z-index:9200;'
@@ -391,6 +457,7 @@
     });
     els.prev.addEventListener('click', prevStep);
     els.next.addEventListener('click', nextStep);
+    applyFontScale(); // 保存済みの文字サイズ段階をパネルへ反映
     return panel;
   }
   function toggleCollapse() {
@@ -458,6 +525,7 @@
         if (ws && window.Blockly) window.Blockly.svgResize(ws);
         refreshEditor();
         positionCallout(); // パネル開閉でレイアウトが動いた後に追従
+        positionGuide();
       }, 300);
     } catch (e) { /* noop */ }
   }
@@ -770,6 +838,200 @@
   }
 
   // =============================================================
+  // 順次操作ガイド（配置ステップで操作対象を順番に光らせる）
+  //   非クイズ・ブロックトラックで check.blocksRequired / blocksMin を
+  //   持つステップに自動付与。必要ブロック種を1つずつ「①パレット →
+  //   ②フライアウト内の当該ブロック →（配置後）次のブロックへ」と誘導し、
+  //   run:true のステップは最後に「▶ 実行」ボタンを指す。
+  //   進行はワークスペースの実状態から毎回算出するため、ユーザーが
+  //   先回りして置いても整合して追い越す。番号バッジ＋パルス枠のみで、
+  //   吹き出しは既存 callout に譲る（対象が一致するときはガイド枠を出さない）。
+  //   step.guide===false で無効化。step.guide が配列なら手動列で上書き。
+  // =============================================================
+  var guideHl = null;       // ガイド用ハイライト枠（DOM）
+  var activeGuide = null;   // 現ステップのガイド定義（null=無効）
+
+  function ensureGuideDom() {
+    if (guideHl) return;
+    injectStyle();
+    guideHl = document.createElement('div');
+    guideHl.id = 'pyco-tut-guide-hl';
+    guideHl.setAttribute('aria-hidden', 'true');
+    var b = document.createElement('span');
+    b.className = 'gb';
+    guideHl.appendChild(b);
+    document.body.appendChild(guideHl);
+  }
+  function hideGuideVisual() { if (guideHl) guideHl.style.display = 'none'; }
+  function hideGuide() { activeGuide = null; hideGuideVisual(); }
+
+  // 現ステップにガイドを設定（renderStep から呼ぶ）
+  function setupGuide(step) {
+    activeGuide = buildGuide(step);
+    positionGuide();
+  }
+  // ガイド定義を作る（対象外なら null）
+  function buildGuide(step) {
+    if (!step) return null;
+    if (currentTrack !== 'block') return null; // コードトラックは対象外
+    if (step.quiz) return null;                // クイズは対象外
+    if (step.guide === false) return null;     // 明示無効化
+    if (Array.isArray(step.guide)) {           // 手動上書き列
+      var ents = step.guide.filter(function(g) { return g && g.target; });
+      return ents.length ? { manual: ents } : null;
+    }
+    var chk = step.check || {};
+    var req = [];
+    if (Array.isArray(chk.blocksRequired)) {
+      req = chk.blocksRequired.slice();
+    } else if (chk.blocksMin && typeof chk.blocksMin === 'object') {
+      Object.keys(chk.blocksMin).forEach(function(t) {
+        var n = chk.blocksMin[t] || 0;
+        for (var i = 0; i < n; i++) req.push(t);
+      });
+    }
+    if (!req.length) return null;              // 配置課題でなければ対象外
+    return { required: req, run: !!step.run };
+  }
+
+  // tutorial の単一カテゴリ・ツールボックスのフライアウトを取得
+  function getTutFlyout() {
+    var ws = getWs();
+    if (!ws) return null;
+    var fo = null;
+    try { if (ws.getFlyout) fo = ws.getFlyout(); } catch (e) { /* noop */ }
+    if (!fo) {
+      try { var tb = ws.getToolbox && ws.getToolbox(); if (tb && tb.getFlyout) fo = tb.getFlyout(); }
+      catch (e) { /* noop */ }
+    }
+    return fo;
+  }
+  // フライアウト内に見えている指定種ブロックの画面矩形（無ければ null）
+  function flyoutBlockRect(type) {
+    try {
+      var fo = getTutFlyout();
+      if (!fo || (fo.isVisible && !fo.isVisible())) return null;
+      var fws = fo.getWorkspace && fo.getWorkspace();
+      if (!fws) return null;
+      var blocks = fws.getTopBlocks(false);
+      for (var i = 0; i < blocks.length; i++) {
+        if (blocks[i].type === type && blocks[i].getSvgRoot) {
+          var r = blocks[i].getSvgRoot().getBoundingClientRect();
+          if (r.width > 0 || r.height > 0) return r;
+        }
+      }
+    } catch (e) { /* noop */ }
+    return null;
+  }
+  // ワークスペース上のブロック種→個数
+  function wsBlockCounts() {
+    var counts = {};
+    try {
+      var ws = getWs();
+      if (ws) ws.getAllBlocks(false).forEach(function(b) { counts[b.type] = (counts[b.type] || 0) + 1; });
+    } catch (e) { /* noop */ }
+    return counts;
+  }
+
+  // ガイドの現在対象を算出（{target, badge} or null=完了で消灯）
+  function computeGuideState() {
+    var g = activeGuide;
+    if (!g) return null;
+    var step = steps()[stepIndex];
+    if (!step) return null;
+
+    // 手動列: 置いたブロック数で進める（配置系ステップ想定）
+    if (g.manual) {
+      var placed = 0, cts = wsBlockCounts();
+      Object.keys(cts).forEach(function(k) { placed += cts[k]; });
+      var mi = Math.min(placed, g.manual.length - 1);
+      var ent = g.manual[mi];
+      return { target: ent.target, badge: String(mi + 1) };
+    }
+
+    // 自動: 必要ブロックを1つずつ。実状態を消費して最初の未達スロットを探す
+    var counts = wsBlockCounts();
+    var need = g.required;
+    var badge = 0, targetType = null;
+    for (var i = 0; i < need.length; i++) {
+      var t = need[i];
+      if ((counts[t] || 0) > 0) { counts[t]--; continue; } // 既に置かれている＝満たす
+      targetType = t; badge = i + 1; break;
+    }
+    if (targetType == null) {
+      // 全ブロック配置済み。run 指定かつ未実行なら実行ボタンへ
+      if (g.run) {
+        var out = ($('monitor-output') || {}).textContent || '';
+        if (!/>>> *(完了|エラー)/.test(out)) {
+          return { target: 'run', badge: String(need.length + 1) };
+        }
+      }
+      return null; // 完了→ガイド消灯
+    }
+    // フライアウトに対象ブロックが見えていれば「②フライアウト内の当該ブロック」、
+    // 見えていなければ「①パレット」を指す
+    if (flyoutBlockRect(targetType)) {
+      return { target: { flyoutBlock: targetType }, badge: String(badge) };
+    }
+    return { target: 'toolbox', badge: String(badge) };
+  }
+
+  // ガイド対象→画面矩形（flyoutBlock 以外は callout と同じ解決を流用）
+  function resolveGuideRect(target) {
+    if (target && typeof target === 'object' && target.flyoutBlock) {
+      return flyoutBlockRect(target.flyoutBlock);
+    }
+    return resolveTargetRect(target);
+  }
+  // callout と対象が一致するか（一致時はガイド枠を出さず callout を優先）
+  function guideCoincidesCallout(target) {
+    if (!currentCallout || !currentCallout.target) return false;
+    var ct = currentCallout.target, gt = target;
+    if (typeof ct === 'string' && typeof gt === 'string') return ct === gt;
+    if (ct && gt && typeof ct === 'object' && typeof gt === 'object' && ct.block && gt.flyoutBlock) {
+      return ct.block === gt.flyoutBlock;
+    }
+    return false;
+  }
+
+  function positionGuide() {
+    if (!isOpen || !activeGuide) { hideGuideVisual(); return; }
+    var stt = computeGuideState();
+    if (!stt) { hideGuideVisual(); return; }
+    // callout 優先: 対象が同じならガイド枠は出さない（callout がその対象を示す）
+    if (guideCoincidesCallout(stt.target)) { hideGuideVisual(); return; }
+    var rect = resolveGuideRect(stt.target);
+    var vw = window.innerWidth, vh = window.innerHeight;
+    if (!rect || rect.right < 0 || rect.left > vw || rect.bottom < 0 || rect.top > vh) {
+      hideGuideVisual(); return;
+    }
+    // モバイルはボトムシート・タブバーの上端でクリップ（callout と同様）
+    var pad = 3, maxBottom = vh;
+    if (isMobileLayout()) {
+      try {
+        if (panel && panel.classList.contains('open')) {
+          maxBottom = Math.min(maxBottom, panel.getBoundingClientRect().top - 2);
+        }
+        var tabbar = $('mobile-tabbar');
+        if (tabbar && window.getComputedStyle(tabbar).display !== 'none') {
+          maxBottom = Math.min(maxBottom, tabbar.getBoundingClientRect().top - 2);
+        }
+      } catch (e) { /* noop */ }
+    }
+    var top = rect.top - pad;
+    var bottom = Math.min(rect.bottom + pad, maxBottom);
+    if (bottom - top < 12) { hideGuideVisual(); return; }
+    ensureGuideDom();
+    guideHl.style.display = 'block';
+    guideHl.style.left   = (rect.left - pad) + 'px';
+    guideHl.style.top    = top + 'px';
+    guideHl.style.width  = (rect.width + pad * 2) + 'px';
+    guideHl.style.height = (bottom - top) + 'px';
+    var badge = guideHl.querySelector('.gb');
+    if (badge) badge.textContent = stt.badge || '';
+  }
+
+  // =============================================================
   // レッスンのロード
   //   二段構え: (1) <script src="lessons/*.js"> で事前読込された
   //   window.PYCO_LESSONS / PYCO_LESSONS_INDEX を最優先で使う
@@ -891,6 +1153,7 @@
   // レッスンを終了して元の作品へ戻す
   function endLesson(completed) {
     hideCallout();
+    hideGuide();
     setCodingMode(false); // コード記述テスト中の終了でも通常状態へ戻す
     stopMonitorObserver();
     restoreToolbox();
@@ -978,6 +1241,7 @@
     syncCollapseGlyph();
     var btn = $('btn-tutorial');
     if (btn) btn.classList.add('tutorial-active');
+    applyFontScale(); // 開くたびに保存済みの文字サイズ段階を再適用
     resizeBlockly();
     updateSheetHeightVar();
     setTimeout(updateSheetHeightVar, 320);
@@ -985,6 +1249,7 @@
   function closePanel() {
     isOpen = false;
     hideCallout();
+    hideGuideVisual();
     document.body.classList.remove('pyco-tut-open');
     if (panel) { panel.classList.remove('open'); panel.classList.remove('minimized'); }
     var btn = $('btn-tutorial');
@@ -1011,6 +1276,7 @@
         }
       } catch (e) { /* noop */ }
       evaluateCurrent();
+      positionGuide(); // 実行完了で run 誘導を消灯するため出力変化でも再算出
     });
     monObserver.observe(out, { childList: true, subtree: true, characterData: true });
   }
@@ -1053,13 +1319,25 @@
     html += '<h3 class="pyco-tut-step-title">'
           + (step.quiz ? '<span class="pyco-tut-quizbadge">クイズ</span>' : '')
           + escapeHtml(step.title || ('ステップ ' + (stepIndex + 1))) + '</h3>';
-    // 解説レベル切替トグル（本文の直上）。全ステップに常設し、選択は全レッスン共通で保存。
-    html += '<div class="pyco-tut-level" role="group" aria-label="解説レベルの切替">'
-          + '<button type="button" class="pyco-tut-level-btn" data-level="easy" aria-pressed="false">やさしい</button>'
-          + '<button type="button" class="pyco-tut-level-btn" data-level="detailed" aria-pressed="false">くわしい</button>'
+    // 解説レベル切替トグル＋文字サイズ調整（本文の直上）。全ステップに常設し、選択は全レッスン共通で保存。
+    html += '<div class="pyco-tut-toolrow">'
+          +   '<div class="pyco-tut-level" role="group" aria-label="解説レベルの切替">'
+          +     '<button type="button" class="pyco-tut-level-btn" data-level="easy" aria-pressed="false">やさしい</button>'
+          +     '<button type="button" class="pyco-tut-level-btn" data-level="detailed" aria-pressed="false">くわしい</button>'
+          +   '</div>'
+          +   '<div class="pyco-tut-fs" role="group" aria-label="説明の文字サイズ">'
+          +     '<button type="button" class="pyco-tut-fs-btn" id="pyco-tut-fs-dec" aria-label="説明の文字を小さく" title="文字を小さく">A−</button>'
+          +     '<button type="button" class="pyco-tut-fs-btn" id="pyco-tut-fs-inc" aria-label="説明の文字を大きく" title="文字を大きく">A＋</button>'
+          +   '</div>'
           + '</div>';
     html += '<div class="pyco-tut-text" id="pyco-tut-text"></div>';
     els.body.innerHTML = html;
+
+    // 文字サイズ A− / A＋ を配線し、上限下限の無効化表示を反映する
+    var fsDec = $('pyco-tut-fs-dec'), fsInc = $('pyco-tut-fs-inc');
+    if (fsDec) fsDec.addEventListener('click', function() { stepFont(-1); });
+    if (fsInc) fsInc.addEventListener('click', function() { stepFont(1); });
+    updateFontButtons();
 
     // レベルに応じて本文を差し替える（bodyEasy が無ければ静かに通常 body へフォールバック）。
     function paintLevelText() {
@@ -1155,6 +1433,10 @@
     }
     if (stepCallout) showCallout(stepCallout); else hideCallout();
     setTimeout(positionCallout, 350);
+
+    // 順次操作ガイド（配置ステップのみ自動発動。callout の後に評価）
+    setupGuide(step);
+    setTimeout(positionGuide, 360);
   }
 
   // ステップ画像の描画（白カード＋@2x PNGを等倍相当で表示）
@@ -1632,6 +1914,7 @@
     navwrap.appendChild(lb);
 
     hideCallout();
+    hideGuide();
     toast('「' + (lesson.title || id) + '」の' + kindLabel + 'を完了しました！', 'ok');
   }
   // 完了画面で差し替えたナビを既定の prev/next に戻す
@@ -1815,6 +2098,18 @@
     // コールアウトの位置追従（ウィンドウリサイズ・ページ内スクロール）
     window.addEventListener('resize', positionCallout);
     window.addEventListener('scroll', positionCallout, true);
+    // ガイド枠も同じトリガで追従
+    window.addEventListener('resize', positionGuide);
+    window.addEventListener('scroll', positionGuide, true);
+    // パレット（カテゴリ）クリックでフライアウトが開いた直後に、対象ブロックの
+    // ハイライトへ切り替えるための再算出（ワークスペース変更イベントを伴わない
+    // フライアウト開閉を拾う）。ガイド動作中のクリックのみ数回だけ遅延再評価する。
+    document.addEventListener('click', function() {
+      if (!isOpen || !activeGuide) return;
+      setTimeout(positionGuide, 0);
+      setTimeout(positionGuide, 100);
+      setTimeout(positionGuide, 280);
+    });
     // 詰め幅（--pyco-tut-side-w）もビューポート変化に追従させる
     window.addEventListener('resize', updateSideLayoutVar);
     // モバイルのタブ切替（ペイン切替）でも再配置。対象が非表示になった
@@ -1824,6 +2119,8 @@
       tabbar.addEventListener('click', function() {
         setTimeout(positionCallout, 120);
         setTimeout(positionCallout, 400);
+        setTimeout(positionGuide, 120);
+        setTimeout(positionGuide, 400);
       });
     }
     checkHashLaunch();
@@ -1841,6 +2138,7 @@
       // コールアウトはスクロール/ズーム(VIEWPORT_CHANGE)・ブロック移動を
       // 含む全イベントで追従させる（UI イベントでも位置は変わるため）
       positionCallout();
+      positionGuide(); // ガイドも全イベントで再算出・追従（配置・先回りに整合）
       if (ev && ev.isUiEvent) return;
       evaluateCurrent();
     });
