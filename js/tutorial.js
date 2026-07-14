@@ -22,6 +22,17 @@
   var FS_KEY       = 'pyco-tutorial-fontsize';   // 説明エリアの文字サイズ段階（0-4）。全レッスン共通
   var FS_SCALES    = [0.9, 1.0, 1.1, 1.24, 1.38];// 読み物領域の倍率。既定(index=1)=1.0は現行サイズと同一
   var FS_DEFAULT   = 1;                           // 既定段階（現行サイズ）
+  var WIDTH_KEY    = 'pyco-tutorial-width';       // デスクトップのガイドパネル幅(px)。全レッスン共通
+  var WIDTH_DEFAULT = 360;                         // 既定パネル幅（現行と同一）
+  var WIDTH_MIN    = 300;                           // パネル最小幅
+  // パネル最大幅：700px と 画面幅の55% の小さい方（狭い画面で本体が潰れないように）
+  function widthMax() {
+    try { return Math.min(700, Math.round(window.innerWidth * 0.55)); } catch (e) { return 700; }
+  }
+  function clampWidth(w) {
+    var hi = Math.max(WIDTH_MIN, widthMax());
+    return Math.max(WIDTH_MIN, Math.min(hi, Math.round(w)));
+  }
   var HASH_RE      = /[#&]lesson=([0-9A-Za-z_-]+)/;
   var TRACK_RE     = /[#&]track=(block|code)/;   // #lesson=0-05&track=code
 
@@ -158,6 +169,34 @@
     try { positionCallout(); positionGuide(); } catch (e) { /* noop */ }
   }
 
+  // -----------------------------------------------------------------
+  // デスクトップ用パネル幅（ドラッグで調整・localStorage 共有）。
+  //   幅は CSS 変数 --pyco-tut-panel-w でパネルに与える（インラインwidthを
+  //   使うとモバイルの width:auto を上書きしてしまうため変数経由にする）。
+  //   本体を詰める --pyco-tut-side-w は updateSideLayoutVar() が追従する。
+  // -----------------------------------------------------------------
+  function getSavedWidth() {
+    try {
+      var v = parseInt(window.localStorage.getItem(WIDTH_KEY), 10);
+      if (isNaN(v)) return WIDTH_DEFAULT;
+      return clampWidth(v);
+    } catch (e) { return WIDTH_DEFAULT; }
+  }
+  function setSavedWidth(w) {
+    var v = clampWidth(w);
+    try { window.localStorage.setItem(WIDTH_KEY, String(v)); } catch (e) { /* noop */ }
+    return v;
+  }
+  // パネルへ幅を反映（変数セット→本体マージンも追従）。saveがtrueなら保存もする。
+  function applyPanelWidth(w, save) {
+    if (!panel) return;
+    var v = clampWidth(w);
+    try { panel.style.setProperty('--pyco-tut-panel-w', v + 'px'); } catch (e) { /* noop */ }
+    if (save) setSavedWidth(v);
+    updateSideLayoutVar(); // 実測幅から --pyco-tut-side-w を更新（本体が詰まる）
+    return v;
+  }
+
   // =============================================================
   // スタイル注入（既存の端末風・緑テーマを踏襲）
   // =============================================================
@@ -165,7 +204,7 @@
   function injectStyle() {
     if ($(STYLE_ID)) return;
     var css = ''
-    + '#pyco-tut-panel{position:fixed;top:0;right:0;bottom:0;width:min(360px,100vw);'
+    + '#pyco-tut-panel{position:fixed;top:0;right:0;bottom:0;width:min(var(--pyco-tut-panel-w,360px),100vw);'
     + 'background:var(--bg-panel,#070d07);border-left:1px solid var(--border-dim,#1a341a);'
     + 'box-shadow:-4px 0 24px rgba(0,0,0,.45);z-index:9000;display:flex;flex-direction:column;'
     + 'transform:translateX(100%);transition:transform .28s ease;font-family:var(--font-mono,monospace);'
@@ -181,6 +220,23 @@
     //   幅は JS が --pyco-tut-side-w を設定（開＝実パネル幅／折りたたみ＝34px）。
     + 'body.pyco-tut-open:not(.mobile-mode) .main{'
     + 'margin-right:var(--pyco-tut-side-w,360px);transition:margin-right .28s ease;}'
+    // ---- 幅調整ドラッグハンドル（デスクトップのみ）----
+    //   パネル左端に沿う縦の当たり判定。中央に控えめな縦グリップを表示し、
+    //   ホバー／ドラッグ中はアクセント色で視認できるようにする（絵文字なし）。
+    + '.pyco-tut-resize{position:absolute;top:0;left:-4px;width:9px;height:100%;'
+    + 'cursor:col-resize;z-index:9100;touch-action:none;}'
+    + '.pyco-tut-resize::before{content:"";position:absolute;top:50%;left:50%;'
+    + 'transform:translate(-50%,-50%);width:2px;height:46px;border-radius:2px;'
+    + 'background:var(--border-dim,#1a341a);transition:background .15s ease,height .15s ease;}'
+    + '.pyco-tut-resize:hover::before,.pyco-tut-resize.dragging::before{'
+    + 'background:var(--accent-green,#00ff41);height:64px;}'
+    // 折りたたみ時・モバイルではハンドル無効
+    + '#pyco-tut-panel.collapsed .pyco-tut-resize{display:none;}'
+    + 'body.mobile-mode .pyco-tut-resize{display:none;}'
+    // ドラッグ中は追従を滑らかにするためトランジションを止める
+    + 'body.pyco-tut-resizing #pyco-tut-panel,'
+    + 'body.pyco-tut-resizing:not(.mobile-mode) .main{transition:none!important;}'
+    + 'body.pyco-tut-resizing{cursor:col-resize;user-select:none;-webkit-user-select:none;}'
     + '.pyco-tut-head{display:flex;align-items:center;gap:8px;padding:10px 12px;'
     + 'border-bottom:1px solid var(--border-dim,#1a341a);flex-shrink:0;}'
     + '.pyco-tut-head .t{font-size:.82rem;font-weight:bold;color:var(--accent-green,#00ff41);'
@@ -409,6 +465,7 @@
     panel.id = 'pyco-tut-panel';
     panel.setAttribute('aria-label', '学習モード');
     panel.innerHTML = ''
+      + '<div class="pyco-tut-resize" id="pyco-tut-resize" title="ドラッグで幅を調整（ダブルクリックで既定に戻す）"></div>'
       + '<div class="pyco-tut-head">'
       +   '<span class="t" id="pyco-tut-lesson-title">学習モード</span>'
       +   '<span class="hp" id="pyco-tut-head-progress"></span>'
@@ -427,6 +484,7 @@
     document.body.appendChild(panel);
     els.lessonTitle = $('pyco-tut-lesson-title');
     els.headProgress = $('pyco-tut-head-progress');
+    els.resize = $('pyco-tut-resize');
     els.collapse = $('pyco-tut-collapse');
     els.close = $('pyco-tut-close');
     els.pbar = $('pyco-tut-pbar-fill');
@@ -458,7 +516,65 @@
     els.prev.addEventListener('click', prevStep);
     els.next.addEventListener('click', nextStep);
     applyFontScale(); // 保存済みの文字サイズ段階をパネルへ反映
+    applyPanelWidth(getSavedWidth(), false); // 保存済みの幅を反映（初期360px）
+    initResizeHandle(); // 幅調整ドラッグの配線
     return panel;
+  }
+
+  // -----------------------------------------------------------------
+  // 幅調整ドラッグ（デスクトップのみ）
+  //   mousedown → document mousemove(rAFスロットル) → mouseup。
+  //   ドラッグ中はパネル幅と本体マージンをリアルタイム連動、
+  //   終了時に保存＋resizeBlockly一式（Blockly/CodeMirror再レイアウト＋枠追従）。
+  //   ダブルクリックで既定360pxにリセット。折りたたみ中・モバイルは無効。
+  // -----------------------------------------------------------------
+  var resizeState = { active: false, rafId: 0, pendingX: 0 };
+  function initResizeHandle() {
+    if (!els.resize) return;
+    els.resize.addEventListener('mousedown', onResizeDown);
+    // ダブルクリックで既定幅へリセット
+    els.resize.addEventListener('dblclick', function(ev) {
+      ev.preventDefault();
+      if (isMobileLayout() || panel.classList.contains('collapsed')) return;
+      applyPanelWidth(WIDTH_DEFAULT, true);
+      resizeBlockly();
+    });
+  }
+  function onResizeDown(ev) {
+    if (isMobileLayout() || panel.classList.contains('collapsed')) return;
+    ev.preventDefault();
+    resizeState.active = true;
+    els.resize.classList.add('dragging');
+    document.body.classList.add('pyco-tut-resizing');
+    document.addEventListener('mousemove', onResizeMove);
+    document.addEventListener('mouseup', onResizeUp);
+  }
+  function onResizeMove(ev) {
+    if (!resizeState.active) return;
+    // パネルは右端固定。新しい幅 = ビューポート幅 - カーソルX。
+    resizeState.pendingX = ev.clientX;
+    if (resizeState.rafId) return;
+    resizeState.rafId = requestAnimationFrame(function() {
+      resizeState.rafId = 0;
+      if (!resizeState.active) return;
+      var w = window.innerWidth - resizeState.pendingX;
+      applyPanelWidth(w, false); // ドラッグ中は保存しない（連続書込回避）
+      // ドラッグ中も吹き出し・順次ガイドを追従させる（軽い処理のみ）
+      try { positionCallout(); positionGuide(); } catch (e) { /* noop */ }
+    });
+  }
+  function onResizeUp() {
+    if (!resizeState.active) return;
+    resizeState.active = false;
+    if (resizeState.rafId) { cancelAnimationFrame(resizeState.rafId); resizeState.rafId = 0; }
+    els.resize.classList.remove('dragging');
+    document.body.classList.remove('pyco-tut-resizing');
+    document.removeEventListener('mousemove', onResizeMove);
+    document.removeEventListener('mouseup', onResizeUp);
+    // 確定幅を保存し、Blockly/CodeMirror/枠を再レイアウト
+    var cur = Math.round(panel.getBoundingClientRect().width);
+    setSavedWidth(cur);
+    resizeBlockly();
   }
   function toggleCollapse() {
     if (isMobileLayout()) {
@@ -2110,8 +2226,15 @@
       setTimeout(positionGuide, 100);
       setTimeout(positionGuide, 280);
     });
-    // 詰め幅（--pyco-tut-side-w）もビューポート変化に追従させる
-    window.addEventListener('resize', updateSideLayoutVar);
+    // 詰め幅（--pyco-tut-side-w）もビューポート変化に追従させる。
+    //   併せて、狭くなった画面では保存幅が上限(55%/700px)を超えないよう
+    //   パネル幅を再クランプする（保存値自体は変えない＝広い画面へ戻せば復帰）。
+    window.addEventListener('resize', function() {
+      if (panel && isOpen && !isMobileLayout() && !panel.classList.contains('collapsed')) {
+        applyPanelWidth(getSavedWidth(), false);
+      }
+      updateSideLayoutVar();
+    });
     // モバイルのタブ切替（ペイン切替）でも再配置。対象が非表示になった
     // ハイライトはここで消える（レイアウト確定後に遅延実行）
     var tabbar = $('mobile-tabbar');
