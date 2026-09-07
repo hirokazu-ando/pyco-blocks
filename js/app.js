@@ -3332,6 +3332,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== 配線図プレビュー更新 =====
+  // 配線図の地色は画面のテーマに合わせる。用紙色のまま黒い画面に置くと
+  // 白い板だけが浮いて見えるため（data-theme は白テーマのときだけ 'light'）。
+  function circuitIsDark() {
+    return document.documentElement.getAttribute('data-theme') !== 'light';
+  }
+
   function updateCircuitPreview() {
     const previewSvg = document.getElementById('circuit-preview-svg');
     const previewSummary = document.getElementById('circuit-preview-summary');
@@ -3339,7 +3345,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       const overrides = window.__pycoCircuitOverrides || {};
       const wireOverrides = window.__pycoCircuitWireOverrides || {};
-      const result = generateCircuitSVG(workspace, { overrides, wireOverrides });
+      const result = generateCircuitSVG(workspace, { overrides, wireOverrides, dark: circuitIsDark() });
       previewSvg.innerHTML = result.svg;
       // 固定 width/height を外して CSS でコンテナにフィットさせる
       const svgEl = previewSvg.querySelector('svg');
@@ -3431,6 +3437,9 @@ document.addEventListener('DOMContentLoaded', function() {
     editor.setOption('theme', t.cmTheme);
     workspace.setTheme(t.blocklyTheme);
     localStorage.setItem('pyco-theme', themeId);
+    // 配線図の地色もテーマに追従させる（拡大表示が開いていればそちらも）
+    if (currentMode === 'micropython') updateCircuitPreview();
+    if (typeof window.__pycoCircuitRerender === 'function') window.__pycoCircuitRerender();
   }
 
   document.getElementById('btn-theme').addEventListener('click', function() {
@@ -5604,6 +5613,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const result = generateCircuitSVG(workspace, {
         overrides: circuitOverrides,
         wireOverrides: circuitWireOverrides,
+        dark: circuitIsDark(),
       });
       currentSvgStr = result.svg;
       target.innerHTML = result.svg;
@@ -5862,8 +5872,28 @@ document.addEventListener('DOMContentLoaded', function() {
     btnZoomOut.addEventListener('click', () => applyZoom(currentScale * 0.8));
     btnZoomFit.addEventListener('click', () => { panX = 0; panY = 0; applyZoom(1); });
 
+    // 保存は画面のテーマに関わらず用紙版で書き出す。記事に貼ったり印刷したり
+    // する用途なので、黒い地の図が出てくると使いにくいため。
+    function paperSvgStr() {
+      try {
+        return generateCircuitSVG(workspace, {
+          overrides: circuitOverrides,
+          wireOverrides: circuitWireOverrides,
+          dark: false,
+        }).svg;
+      } catch (err) {
+        console.error('[circuit-save]', err);
+        return currentSvgStr;
+      }
+    }
+
+    // テーマ切替から呼ばれる。拡大表示が開いているときだけ描き直す。
+    window.__pycoCircuitRerender = function() {
+      if (modal.style.display !== 'none') renderInto(wrap);
+    };
+
     if (btnDlSvg) btnDlSvg.addEventListener('click', function() {
-      const blob = new Blob([currentSvgStr], { type: 'image/svg+xml' });
+      const blob = new Blob([paperSvgStr()], { type: 'image/svg+xml' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'circuit.svg';
@@ -5887,7 +5917,7 @@ document.addEventListener('DOMContentLoaded', function() {
         a.download = 'circuit.png';
         a.click();
       };
-      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(currentSvgStr);
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(paperSvgStr());
     });
   })();
 

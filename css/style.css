@@ -552,11 +552,18 @@ h1 {
 }
 
 /* 配線図プレビュー (MicroPython モード時の左下のみ)
-   背景はエディタと同じ暗色ではなく、図の用紙と同じ生成り色 (#fbfaf7) にしてある。
-   配線図の SVG は全面に用紙を敷いて描くので、パネルを暗くすると
-   白い紙だけが板のように浮いて見えてしまう。用紙の色をパネルまで
-   広げることで「紙に描いた図」として読める。色の指定は app.html の
-   #circuit-preview-area / #circuit-preview-svg / #circuit-svg-wrap にある。 */
+
+   背景は必ず配線図 SVG の地色と同じにすること。SVG は全面に地色を敷いて
+   描くので、片方だけ違う色にすると板が一枚浮いて見える。SVG 側の配色は
+   js/circuit_viewer_direct.js の PAL_LIGHT / PAL_DARK にあり、
+   js/app.js の circuitIsDark() が画面のテーマを見て切り替えている。
+   ここの背景色はその二つと一致させる。 */
+#circuit-preview-area,
+#circuit-preview-svg,
+#circuit-svg-wrap { background: #0d1117; }          /* PAL_DARK.paper と一致 */
+[data-theme="light"] #circuit-preview-area,
+[data-theme="light"] #circuit-preview-svg,
+[data-theme="light"] #circuit-svg-wrap { background: #fbfaf7; }  /* PAL_LIGHT.paper */
 .main.game-layout.mode-micropython #circuit-preview-area {
   display: flex !important;
   flex-direction: column;
@@ -580,9 +587,12 @@ h1 {
 /* MicroPython 以外では完全に非表示（!important 上書きを防止） */
 .main:not(.mode-micropython) #circuit-preview-area { display: none !important; }
 #circuit-preview-svg:hover {
-  /* 用紙色の上に出す枠なので、暗い緑でないと見えない */
-  outline: 1px solid rgba(45, 122, 74, 0.55);
+  outline: 1px solid rgba(104, 211, 145, 0.4);
   outline-offset: -1px;
+}
+/* 白テーマでは用紙の上に出る枠なので、濃い緑でないと見えない */
+[data-theme="light"] #circuit-preview-svg:hover {
+  outline-color: rgba(45, 122, 74, 0.55);
 }
 /* 配線図モーダル内: 配線ヒットエリアの操作性 */
 #circuit-svg-wrap .cv-wire { cursor: ew-resize; }
