@@ -551,7 +551,12 @@ h1 {
   grid-row: 1;
 }
 
-/* 配線図プレビュー (MicroPython モード時の左下のみ) */
+/* 配線図プレビュー (MicroPython モード時の左下のみ)
+   背景はエディタと同じ暗色ではなく、図の用紙と同じ生成り色 (#fbfaf7) にしてある。
+   配線図の SVG は全面に用紙を敷いて描くので、パネルを暗くすると
+   白い紙だけが板のように浮いて見えてしまう。用紙の色をパネルまで
+   広げることで「紙に描いた図」として読める。色の指定は app.html の
+   #circuit-preview-area / #circuit-preview-svg / #circuit-svg-wrap にある。 */
 .main.game-layout.mode-micropython #circuit-preview-area {
   display: flex !important;
   flex-direction: column;
@@ -575,7 +580,9 @@ h1 {
 /* MicroPython 以外では完全に非表示（!important 上書きを防止） */
 .main:not(.mode-micropython) #circuit-preview-area { display: none !important; }
 #circuit-preview-svg:hover {
-  outline: 1px solid rgba(104, 211, 145, 0.4);
+  /* 用紙色の上に出す枠なので、暗い緑でないと見えない */
+  outline: 1px solid rgba(45, 122, 74, 0.55);
+  outline-offset: -1px;
 }
 /* 配線図モーダル内: 配線ヒットエリアの操作性 */
 #circuit-svg-wrap .cv-wire { cursor: ew-resize; }

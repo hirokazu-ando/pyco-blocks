@@ -72,7 +72,7 @@
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20260710b">
+  <link rel="stylesheet" href="css/style.css?v=20260907a">
   <link rel="stylesheet" href="css/firmware.css?v=20260907a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
@@ -179,7 +179,7 @@
         <!-- pygame.display.set_mode() がここに canvas を生成 -->
       </div>
       <!-- 配線図プレビューエリア（micropython モード時のみ左下に表示） -->
-      <div id="circuit-preview-area" style="display:none; background:#0d1117; border-radius:6px; overflow:hidden; position:relative;">
+      <div id="circuit-preview-area" style="display:none; background:#fbfaf7; border-radius:6px; overflow:hidden; position:relative;">
         <div class="game-area-resize-handle" id="circuit-preview-resize-handle"></div>
         <div id="circuit-preview-header" style="background:#1a202c; color:#68d391; font-weight:bold; font-size:0.88em; padding:4px 8px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2d3748;">
           <span>実態配線図プレビュー</span>
@@ -188,7 +188,7 @@
             <button id="btn-circuit-collapse" title="プレビューを折りたたむ" style="background:#2d3748; border:1px solid #4a5568; color:#a0aec0; cursor:pointer; font-size:0.78em; padding:2px 8px; border-radius:3px; line-height:1.5; white-space:nowrap;">非表示 ▼</button>
           </div>
         </div>
-        <div id="circuit-preview-svg" style="flex:1; overflow:hidden; background:#0d1117; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="クリックで拡大表示"></div>
+        <div id="circuit-preview-svg" style="flex:1; overflow:hidden; background:#fbfaf7; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="クリックで拡大表示"></div>
       </div>
       <div id="monitor-panel-anchor"></div>
       <div id="monitor-panel">
@@ -1926,7 +1926,7 @@
         <span id="circuit-summary" style="color:#718096; font-size:.85em;"></span>
         <button id="circuit-close" style="background:none; border:none; color:#718096; font-size:.9em; cursor:pointer; line-height:1; margin-left:12px;">閉じる</button>
       </div>
-      <div id="circuit-svg-wrap" style="overflow:hidden; flex:1; min-height:0; background:#0d1117; border-radius:6px; padding:8px; cursor:grab;"></div>
+      <div id="circuit-svg-wrap" style="overflow:hidden; flex:1; min-height:0; background:#fbfaf7; border-radius:6px; padding:8px; cursor:grab;"></div>
       <div style="display:flex; gap:8px; flex-shrink:0;">
         <button id="circuit-dl-svg" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">SVG保存</button>
         <button id="circuit-dl-png" style="background:#1a4a7a; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">PNG保存</button>
