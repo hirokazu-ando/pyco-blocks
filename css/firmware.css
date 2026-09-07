@@ -308,6 +308,94 @@
 
 .fw-nav { display: flex; gap: 8px; flex: 0 0 auto; }
 
+/* ===== 初期化画面 ===== */
+/* display を持つ要素は hidden 属性だけでは消えない */
+.fw-steps[hidden] { display: none; }
+
+/* フッターの控えめな入口。ふだんは目立たせない。 */
+.fw-link {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  color: var(--text-dim, #5a8a5a);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dotted var(--border-dim, #1a341a);
+  cursor: pointer;
+}
+.fw-link:hover { color: var(--accent-cyan, #00d4ff); border-bottom-color: var(--accent-cyan, #00d4ff); }
+
+#fw-body .fw-pane + .fw-pane { margin-top: 14px; }
+.fw-pane p { margin: 0 0 10px; }
+.fw-pane p:last-child { margin-bottom: 0; }
+
+.fw-pane-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-family: var(--font-title, monospace);
+  font-size: 14px;
+  color: var(--accent-green, #00ff41);
+}
+.fw-tag {
+  padding: 1px 7px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--bg-base, #060b06);
+  background: var(--accent-green, #00ff41);
+  border-radius: 999px;
+}
+
+/* 消すと戻せないほうは枠ごと色を変えて、押す前に気づかせる。 */
+.fw-pane--danger { border-color: rgba(255, 183, 0, 0.55); }
+.fw-pane--danger .fw-pane-title { color: var(--accent-amber, #ffb700); }
+.fw-danger-note {
+  padding: 9px 12px;
+  color: var(--accent-amber, #ffb700);
+  background: rgba(255, 183, 0, 0.08);
+  border-left: 3px solid var(--accent-amber, #ffb700);
+  border-radius: 0 4px 4px 0;
+}
+
+/* 「消えるもの／残るもの」の対比表 */
+.fw-kv { margin: 0 0 10px; padding: 0; list-style: none; }
+.fw-kv li { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px dotted var(--border-dim, #1a341a); }
+.fw-kv li:last-child { border-bottom: 0; }
+.fw-kv b {
+  flex: 0 0 5.5em;
+  font-weight: 400;
+  color: var(--accent-cyan, #00d4ff);
+}
+
+.fw-steps-list { margin: 0 0 10px; padding-left: 1.5em; }
+.fw-steps-list li { margin-bottom: 7px; }
+
+/* 消す直前の確認。ボタンの場所にそのまま出す。 */
+.fw-confirm {
+  padding: 12px 14px;
+  background: rgba(255, 183, 0, 0.06);
+  border: 1px solid var(--accent-amber, #ffb700);
+  border-radius: 4px;
+}
+.fw-confirm-q {
+  margin: 0 0 6px !important;
+  font-size: 14px;
+  color: var(--accent-amber, #ffb700);
+}
+.fw-confirm-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+.fw-btn--danger {
+  color: var(--accent-amber, #ffb700);
+  border-color: var(--accent-amber, #ffb700);
+}
+.fw-btn--danger:hover:not(:disabled) {
+  color: var(--bg-base, #060b06);
+  background: var(--accent-amber, #ffb700);
+  border-color: var(--accent-amber, #ffb700);
+}
+
 /* ===== 狭い画面 ===== */
 @media (max-width: 640px) {
   .fw-modal  { padding: 0; }
@@ -316,6 +404,10 @@
   .fw-steps li span { width: 18px; height: 18px; }
   .fw-cards { grid-template-columns: repeat(2, 1fr); }
   .fw-body { padding: 12px; }
+  .fw-kv li { flex-direction: column; gap: 2px; }
+  .fw-kv b { flex: none; }
+  .fw-confirm-btns { flex-direction: column-reverse; }
+  .fw-confirm-btns .fw-btn { width: 100%; }
 }
 
 /* ===== ツールバーの入口ボタン =====

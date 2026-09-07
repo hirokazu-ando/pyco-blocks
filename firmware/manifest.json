@@ -53,5 +53,16 @@
       "size": 1774080,
       "sha256": "c49c7ed93eb7eeaaa78436b17bd4329e5d4ccbaebc1e79503ad75e0a29c4530e"
     }
-  ]
+  ],
+  "flashNuke": {
+    "file": "flash_nuke.uf2",
+    "size": 114688,
+    "sha256": "f3c3b6a62d2d7e944f336bc2ec73393f00adfbb56b6fa7440ba7ee3d5ad5b49d",
+    "source": "https://datasheets.raspberrypi.com/soft/flash_nuke.uf2",
+    "license": "BSD-3-Clause (Raspberry Pi pico-examples)",
+    "families": [
+      "0xe48bff56",
+      "0xe48bff57"
+    ]
+  }
 }

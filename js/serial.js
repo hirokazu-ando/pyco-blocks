@@ -226,6 +226,67 @@ const PicoSerial = (() => {
     }
   }
 
+  // --- Pico の中身を空にする（MicroPython 本体は残す） ---
+  //
+  // 書き込んだばかりの MicroPython はファイルが 1 つも無い状態なので、
+  // ルート以下を全部消せばファイルシステムは工場出荷時と同じになる。
+  // main.py だけ消す作りにすると、boot.py や lib/ が残って
+  // 「消したはずなのに直らない」という一番わかりにくい状態を作ってしまう。
+  async function wipeFiles(onStatus) {
+    if (!port) throw new Error('Pico に接続されていません');
+    await stopMonitor();
+    const reader = port.readable.getReader();
+
+    try {
+      onStatus('実行を中断中...');
+      await write('\x03\x03');       // Ctrl+C × 2：暴走中のプログラムを止める
+      await readUntil(reader, '>>>', 2000);
+
+      onStatus('Raw REPL に切り替え中...');
+      await write('\x01');
+      if (!await readUntil(reader, 'raw REPL', 3000)) {
+        throw new Error('Raw REPL に切り替えできません。Pico が MicroPython で起動しているか確認してください。');
+      }
+
+      onStatus('ファイルを削除中...');
+      // ディレクトリは中身を消してから rmdir する。os.stat()[0] の 0x4000 がディレクトリの印。
+      const script = [
+        'import os',
+        '_n=0',
+        'def _rm(p):',
+        '    global _n',
+        '    try: _m=os.stat(p)[0]',
+        '    except Exception: return',
+        '    if _m & 0x4000:',
+        '        for _e in os.listdir(p): _rm(p+"/"+_e)',
+        '        try: os.rmdir(p)',
+        '        except Exception: pass',
+        '    else:',
+        '        try:',
+        '            os.remove(p); _n+=1',
+        '        except Exception: pass',
+        'for _e in os.listdir("/"): _rm("/"+_e)',
+        'print("WIPED",_n)',
+      ].join('\n');
+      await write(script + '\x04');
+      // 応答は OK + 出力 + \x04 + エラー + \x04 + > の形。
+      // エラーが出ていれば \x04\x04> にはならないので、そのまま失敗として扱える。
+      if (!await readUntil(reader, '\x04\x04>', 8000)) {
+        throw new Error('削除の応答を確認できませんでした。Pico を挿し直してからやり直してください。');
+      }
+
+      onStatus('Pico をリセット中...');
+      await write('import machine; machine.reset()\x04');
+      await sleep(300);
+
+      await disconnect();
+      onStatus('✓ Pico を空にしました');
+    } finally {
+      try { await reader.cancel(); } catch (_) {}
+      try { reader.releaseLock(); } catch (_) {}
+    }
+  }
+
   // --- main.py 書き込みメイン ---
   async function writeMainPy(code, onStatus) {
     await stopMonitor();   // モニターが reader を保持している場合に解放
@@ -272,5 +333,5 @@ const PicoSerial = (() => {
   }
 
   return { connect, reconnect, disconnect, isConnected, stopCode, runCode, writeMainPy,
-           startMonitor, stopMonitor, isMonitoring, enterBootloader };
+           startMonitor, stopMonitor, isMonitoring, enterBootloader, wipeFiles };
 })();

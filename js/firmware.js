@@ -4,6 +4,11 @@
 // 導入まで行き着けるようにする。手順は 4 段階。
 //   ① ボードを選ぶ  ② BOOTSEL にする  ③ 書き込む  ④ つないで確かめる
 //
+// もう一つ「初期化」画面を持っている（フッターの［初期化…］から入る）。
+// おかしくなった Pico を戻すためのもので、軽い順に 2 段階ある。
+//   軽： Pico の中のファイルを消す（Web Serial・MicroPython は残る）
+//   重： flash_nuke.uf2 でフラッシュを全消去（MicroPython も消えるので入れ直しが要る）
+//
 // ファームウェア（UF2）は firmware/ に同梱したものを配る。
 // 一覧の正本は firmware/manifest.json で、tools/fetch_firmware.py が生成する。
 // MicroPython は MIT ライセンスなので再配布できる。
@@ -14,6 +19,10 @@ const PicoFirmware = (() => {
   const MANIFEST_URL = 'firmware/manifest.json';
   const LS_BOARD     = 'pycoblocks.firmware.board';
   const CREDIT       = 'ファームウェアは MicroPython 公式配布（MIT ライセンス）をそのまま同梱しています。';
+  const NUKE_CREDIT  = 'flash_nuke.uf2 は Raspberry Pi 公式配布のビルド済みバイナリ'
+                     + '（pico-examples, BSD-3-Clause, Copyright (c) 2020 Raspberry Pi (Trading) Ltd.）'
+                     + 'をそのまま同梱しています。';
+  const NUKE_FALLBACK_URL = 'https://datasheets.raspberrypi.com/soft/flash_nuke.uf2';
 
   // manifest.json が読めないとき（file:// で開いた場合など）に使う。
   // UF2 のリンクは公式のダウンロードページに逃がす。
@@ -33,6 +42,7 @@ const PicoFirmware = (() => {
   let boards   = [];
   let selected = null;   // ボード定義そのもの
   let step     = 1;
+  let view     = 'wizard';   // 'wizard' = 導入の4ステップ ／ 'reset' = 初期化画面
   let root     = null;   // モーダルの最上位要素
   let busy     = false;
 
@@ -98,7 +108,7 @@ const PicoFirmware = (() => {
     root.innerHTML = `
       <div class="fw-dialog">
         <header class="fw-head">
-          <h2 class="fw-title">MicroPython を入れる</h2>
+          <h2 class="fw-title" id="fw-title">MicroPython を入れる</h2>
           <button type="button" class="fw-close" id="fw-close" aria-label="閉じる">×</button>
         </header>
         <ol class="fw-steps" id="fw-steps">
@@ -109,6 +119,8 @@ const PicoFirmware = (() => {
         </ol>
         <div class="fw-body" id="fw-body"></div>
         <footer class="fw-foot">
+          <button type="button" class="fw-link" id="fw-reset-open"
+                  title="おかしくなった Pico を元に戻す">初期化…</button>
           <div class="fw-msg" id="fw-msg"></div>
           <div class="fw-nav">
             <button type="button" class="fw-btn" id="fw-prev">戻る</button>
@@ -119,7 +131,17 @@ const PicoFirmware = (() => {
     document.body.appendChild(root);
 
     $('#fw-close').addEventListener('click', close);
-    $('#fw-prev').addEventListener('click', () => go(step - 1));
+    $('#fw-prev').addEventListener('click', () => {
+      // 初期化画面では「戻る」は導入ウィザードへの復帰を意味する
+      if (view === 'reset') { view = 'wizard'; setMsg(''); render(); return; }
+      go(step - 1);
+    });
+    $('#fw-reset-open').addEventListener('click', () => {
+      if (busy) return;
+      view = 'reset';
+      setMsg('');
+      render();
+    });
     $('#fw-next').addEventListener('click', () => go(step + 1));
     root.addEventListener('click', e => { if (e.target === root) close(); });
     document.addEventListener('keydown', e => {
@@ -266,8 +288,135 @@ const PicoFirmware = (() => {
       </details>`;
   }
 
+  // ------------------------------------------------------------ 初期化画面
+  //
+  // 「動かなくなった Pico を元に戻す」ための画面。軽い順に 2 つ並べ、
+  // 上から試させる。下は MicroPython ごと消えるので警告を大きく出す。
+
+  function renderReset() {
+    const connected = deps.serial && deps.serial.isConnected();
+    const nuke      = manifest && manifest.flashNuke;
+    const nukeUrl   = nuke ? 'firmware/' + nuke.file : NUKE_FALLBACK_URL;
+    const nukeSize  = nuke ? '（約 ' + Math.round(nuke.size / 1024) + ' KB）' : '';
+
+    return `
+      <p class="fw-lead">おかしくなった Pico を元に戻す。
+        <strong>上から順に試す。</strong>たいていは 1 つめで直る。</p>
+
+      <section class="fw-pane">
+        <h3 class="fw-pane-title">1. プログラムを消す<span class="fw-tag">おすすめ</span></h3>
+        <p>Pico に保存したファイルを全部消す。MicroPython 本体は残るので、
+          消したあとすぐまた書き込める。つないだまま数秒で終わる。</p>
+        <ul class="fw-kv">
+          <li><b>消えるもの</b>Pico に保存したプログラムとフォルダ（<code>main.py</code> など）</li>
+          <li><b>残るもの</b>MicroPython 本体</li>
+          <li><b>効くとき</b>プログラムが止まらない／書き込んでも反応しない／前のプログラムが勝手に動く</li>
+        </ul>
+        <p class="fw-note">パソコン側のブロックやプログラムは消えない。</p>
+        <div id="fw-wipe-area">
+          <button type="button" class="fw-btn fw-btn--primary fw-btn--wide" id="fw-wipe">
+            ${connected ? 'Pico のプログラムを消す' : 'Pico につないで消す'}
+          </button>
+        </div>
+      </section>
+
+      <section class="fw-pane fw-pane--danger">
+        <h3 class="fw-pane-title">2. まっさらにする</h3>
+        <p class="fw-danger-note"><strong>MicroPython も消える。</strong>
+          このあと手順 3 で入れ直すまで、Pico は何もできない状態になる。</p>
+        <p>上の 1 で直らないときの最後の手段。フラッシュメモリを全部消して、買ったときの状態に戻す。
+          <code>flash_nuke.uf2</code> という消去専用のファイルを書き込んで行う。</p>
+        <ol class="fw-steps-list">
+          <li>Pico を <strong>BOOTSEL</strong> にする（［戻る］から手順 2 のやり方でよい）。</li>
+          <li>
+            <a class="fw-btn fw-btn--danger fw-btn--inline" id="fw-nuke" href="${nukeUrl}" download>
+              flash_nuke.uf2 をダウンロード</a>${nukeSize}
+            <span class="fw-note">ダウンロードしただけでは何も起きない。</span>
+          </li>
+          <li>そのファイルを <code>RPI-RP2</code> ドライブへドラッグ＆ドロップする。</li>
+          <li>消え終わると Pico はひとりでに BOOTSEL に戻り、<code>RPI-RP2</code> がもう一度出てくる
+            （出てこなければ USB を挿し直す）。</li>
+          <li>［戻る］→ 手順 3 に進んで、MicroPython を入れ直す。</li>
+        </ol>
+        <p class="fw-note">${NUKE_CREDIT}</p>
+      </section>`;
+  }
+
+  function bindReset() {
+    const wipe = $('#fw-wipe');
+    if (wipe) wipe.addEventListener('click', askWipeConfirm);
+    const nuke = $('#fw-nuke');
+    if (nuke) nuke.addEventListener('click', () => {
+      setMsg('落とした flash_nuke.uf2 を RPI-RP2 ドライブへドラッグ＆ドロップすると消去が始まる。', 'info');
+    });
+  }
+
+  // 押し間違い対策。消す直前にもう一度だけ聞く。
+  function askWipeConfirm() {
+    if (busy) return;
+    $('#fw-wipe-area').innerHTML = `
+      <div class="fw-confirm">
+        <p class="fw-confirm-q">本当に消してよいか？</p>
+        <p>Pico に保存したプログラムは<strong>全部消える。元には戻せない。</strong></p>
+        <div class="fw-confirm-btns">
+          <button type="button" class="fw-btn" id="fw-wipe-cancel">やめる</button>
+          <button type="button" class="fw-btn fw-btn--danger" id="fw-wipe-go">消す</button>
+        </div>
+      </div>`;
+    $('#fw-wipe-cancel').addEventListener('click', () => { setMsg(''); render(); });
+    $('#fw-wipe-go').addEventListener('click', onWipeFiles);
+    $('#fw-wipe-cancel').focus();
+  }
+
+  async function onWipeFiles() {
+    const serial = deps.serial;
+    if (!serial || busy) return;
+    const go = $('#fw-wipe-go'), cancel = $('#fw-wipe-cancel');
+    busy = true;
+    if (go) go.disabled = true;
+    if (cancel) cancel.disabled = true;
+    try {
+      if (!serial.isConnected()) {
+        setMsg('つなぐ Pico を選ぶ…', 'info');
+        await serial.connect();
+      }
+      await serial.wipeFiles(msg => setMsg(msg, 'info'));
+      if (deps.onSerialChange) deps.onSerialChange();
+      busy = false;
+      render();                                   // ボタンを元に戻す
+      setMsg('✓ Pico を空にした。もう一度つなげばすぐ使える。', 'ok');
+    } catch (e) {
+      busy = false;
+      setMsg(friendly(e), 'err');
+      if (go) go.disabled = false;
+      if (cancel) cancel.disabled = false;
+    } finally {
+      busy = false;
+    }
+  }
+
+  // ------------------------------------------------------------ 描画
+
   function render() {
     const body = $('#fw-body');
+
+    if (view === 'reset') {
+      body.innerHTML = renderReset();
+      $('#fw-title').textContent = 'Pico を初期化する';
+      $('#fw-steps').hidden = true;
+      $('#fw-reset-open').hidden = true;
+      $('#fw-prev').disabled = false;
+      $('#fw-next').hidden = true;
+      bindReset();
+      body.scrollTop = 0;
+      return;
+    }
+
+    $('#fw-title').textContent = 'MicroPython を入れる';
+    $('#fw-steps').hidden = false;
+    $('#fw-reset-open').hidden = false;
+    $('#fw-next').hidden = false;
+
     if (step === 1)      body.innerHTML = renderStep1();
     else if (step === 2) body.innerHTML = renderStep2();
     else if (step === 3) body.innerHTML = renderStep3();
@@ -435,6 +584,7 @@ const PicoFirmware = (() => {
     buildRoot();
     await loadManifest();
     if (!selected) restoreSelection();
+    view = (opts && opts.view) === 'reset' ? 'reset' : 'wizard';
     step = (opts && opts.step) || (selected ? 2 : 1);
     root.style.display = 'flex';
     setMsg('');
