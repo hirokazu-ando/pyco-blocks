@@ -73,6 +73,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
   <link rel="stylesheet" href="css/style.css?v=20260710b">
+  <link rel="stylesheet" href="css/firmware.css?v=20260907a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -127,6 +128,7 @@
       <button id="btn-toggle-comments"># ON</button>
       <button id="btn-coding-mode">コード編集</button>
       <div class="toolbar-sep" id="serial-sep"></div>
+      <button id="btn-firmware" title="Pico に MicroPython を入れる（はじめて使うとき・入れ直すとき）">MicroPython導入</button>
       <button id="btn-connect">接続</button>
       <button id="btn-reconnect" title="Pico を抜き差ししたあと、ポート選択なしで接続し直します">再接続</button>
       <button id="btn-run" disabled>▶ 実行</button>
@@ -1848,6 +1850,8 @@
 
   <script src="js/block_palette.js?v=20260530a"></script>
   <script src="js/serial.js?v=20260708a"></script>
+  <script src="js/firmware_art.js?v=20260907a"></script>
+  <script src="js/firmware.js?v=20260907a"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <!-- 実体配線図レンダラ。読込順=legacy→bb→direct、後勝ちで direct が既定。

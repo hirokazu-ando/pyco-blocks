@@ -1,0 +1,353 @@
+/* ================================================
+   PycoBlocks — MicroPython 導入ウィザード
+   本体の PCB TERMINAL テーマ（css/style.css の変数）に乗せる。
+   ================================================ */
+
+.fw-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;                 /* circuit-modal / share-modal(9000) より前 */
+  display: none;                 /* JS が flex に切り替える */
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.fw-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(980px, 100%);
+  max-height: 92vh;
+  background: var(--bg-surface, #0b150b);
+  border: 1px solid var(--border-glow, #00ff41);
+  border-radius: 6px;
+  box-shadow: 0 0 24px rgba(0, 255, 65, 0.18);
+  overflow: hidden;
+}
+
+/* ===== ヘッダー ===== */
+.fw-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-dim, #1a341a);
+  background: var(--bg-panel, #070d07);
+}
+
+.fw-title {
+  margin: 0;
+  font-family: var(--font-title, monospace);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent-green, #00ff41);
+}
+
+.fw-close {
+  padding: 2px 10px;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--text-dim, #5a8a5a);
+  background: transparent;
+  border: 1px solid var(--border-dim, #1a341a);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.fw-close:hover { color: var(--accent-amber, #ffb700); border-color: var(--accent-amber, #ffb700); }
+
+/* ===== 進行表示 ===== */
+.fw-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 10px 16px;
+  list-style: none;
+  border-bottom: 1px solid var(--border-dim, #1a341a);
+  background: rgba(0, 255, 65, 0.02);
+}
+
+.fw-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 160px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-dim, #5a8a5a);
+  border-bottom: 2px solid transparent;
+}
+
+.fw-steps li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.fw-steps li.is-current {
+  color: var(--accent-green, #00ff41);
+  border-bottom-color: var(--accent-green, #00ff41);
+}
+.fw-steps li.is-done { color: var(--accent-cyan, #00d4ff); }
+
+/* ===== 本体 ===== */
+.fw-body {
+  flex: 1 1 auto;
+  padding: 16px;
+  overflow-y: auto;
+  color: var(--text-primary, #c8e6c8);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.fw-lead { margin: 0 0 12px; font-size: 14px; }
+.fw-lead strong, .fw-check strong { color: var(--accent-amber, #ffb700); }
+
+.fw-note {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--text-dim, #5a8a5a);
+  line-height: 1.7;
+}
+
+.fw-p { margin: 0 0 10px; }
+
+.fw-h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-title, monospace);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent-cyan, #00d4ff);
+}
+
+.fw-body code {
+  padding: 1px 5px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--accent-amber, #ffb700);
+  background: rgba(255, 183, 0, 0.08);
+  border: 1px solid rgba(255, 183, 0, 0.25);
+  border-radius: 3px;
+}
+
+.fw-list { margin: 0; padding-left: 1.4em; }
+.fw-list li { margin-bottom: 6px; }
+.fw-list--lg { font-size: 14px; }
+.fw-list strong { color: var(--accent-amber, #ffb700); }
+
+.fw-check {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  background: rgba(0, 212, 255, 0.06);
+  border-left: 3px solid var(--accent-cyan, #00d4ff);
+  border-radius: 0 4px 4px 0;
+}
+
+/* ===== ボードを選ぶ ===== */
+.fw-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.fw-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px;
+  font-family: inherit;
+  color: var(--text-primary, #c8e6c8);
+  text-align: center;
+  background: var(--bg-panel, #070d07);
+  border: 1px solid var(--border-dim, #1a341a);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.fw-card:hover { border-color: var(--accent-cyan, #00d4ff); }
+.fw-card.is-selected {
+  border-color: var(--accent-green, #00ff41);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.25) inset;
+}
+.fw-card-art { line-height: 0; }
+.fw-card-name { font-size: 12px; font-weight: 700; }
+.fw-card-hint { font-size: 11px; line-height: 1.6; color: var(--text-dim, #5a8a5a); }
+.fw-card-chip {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--accent-cyan, #00d4ff);
+}
+
+/* ===== 2 段組み ===== */
+.fw-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.fw-pane {
+  padding: 14px;
+  background: var(--bg-panel, #070d07);
+  border: 1px solid var(--border-dim, #1a341a);
+  border-radius: 5px;
+}
+.fw-pane--accent { border-color: var(--accent-green, #00ff41); }
+
+.fw-art {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 12px;
+  line-height: 0;
+}
+
+/* ===== ボタン ===== */
+.fw-btn {
+  padding: 7px 16px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary, #c8e6c8);
+  background: transparent;
+  border: 1px solid var(--border-dim, #1a341a);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.fw-btn:hover:not(:disabled) {
+  color: var(--accent-cyan, #00d4ff);
+  border-color: var(--accent-cyan, #00d4ff);
+}
+.fw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.fw-btn--primary {
+  color: var(--accent-green, #00ff41);
+  border-color: var(--accent-green, #00ff41);
+}
+.fw-btn--primary:hover:not(:disabled) {
+  color: var(--bg-base, #060b06);
+  background: var(--accent-green, #00ff41);
+  border-color: var(--accent-green, #00ff41);
+}
+
+.fw-btn--wide { display: block; width: 100%; padding: 10px 16px; font-size: 13px; }
+.fw-btn--inline { display: inline-block; text-decoration: none; }
+
+/* ===== 進み具合 ===== */
+.fw-progress {
+  height: 6px;
+  margin-top: 10px;
+  background: rgba(0, 255, 65, 0.08);
+  border: 1px solid var(--border-dim, #1a341a);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fw-progress-bar {
+  width: 0;
+  height: 100%;
+  background: var(--accent-green, #00ff41);
+  transition: width 0.2s;
+}
+
+/* ===== 結果表示 ===== */
+.fw-result {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+}
+.fw-result:empty { display: none; }
+.fw-result--ok {
+  color: var(--accent-green, #00ff41);
+  background: rgba(0, 255, 65, 0.06);
+  border-left-color: var(--accent-green, #00ff41);
+}
+.fw-result--err {
+  color: var(--accent-amber, #ffb700);
+  background: rgba(255, 183, 0, 0.06);
+  border-left-color: var(--accent-amber, #ffb700);
+}
+
+.fw-help { margin-top: 14px; font-size: 12px; }
+.fw-help summary {
+  cursor: pointer;
+  color: var(--accent-cyan, #00d4ff);
+  margin-bottom: 8px;
+}
+
+/* ===== フッター ===== */
+.fw-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-dim, #1a341a);
+  background: var(--bg-panel, #070d07);
+}
+
+.fw-msg {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-dim, #5a8a5a);
+}
+.fw-msg--ok   { color: var(--accent-green, #00ff41); }
+.fw-msg--err  { color: var(--accent-amber, #ffb700); }
+.fw-msg--info { color: var(--accent-cyan, #00d4ff); }
+
+.fw-nav { display: flex; gap: 8px; flex: 0 0 auto; }
+
+/* ===== 狭い画面 ===== */
+@media (max-width: 640px) {
+  .fw-modal  { padding: 0; }
+  .fw-dialog { max-height: 100vh; height: 100%; border-radius: 0; border-width: 0; }
+  .fw-steps li { flex: 1 1 auto; font-size: 11px; }
+  .fw-steps li span { width: 18px; height: 18px; }
+  .fw-cards { grid-template-columns: repeat(2, 1fr); }
+  .fw-body { padding: 12px; }
+}
+
+/* ===== ツールバーの入口ボタン =====
+   はじめて Pico を使う人が最初に押すボタンなので、
+   既定色（灰）のままだと埋もれる。琥珀の枠線ではっきり見せる。 */
+.toolbar button#btn-firmware {
+  color: var(--accent-amber, #ffb700);
+  border-color: rgba(255, 183, 0, 0.55);
+  text-shadow: none;
+  box-shadow: none;
+}
+.toolbar button#btn-firmware:hover {
+  background: rgba(255, 183, 0, 0.12);
+  border-color: var(--accent-amber, #ffb700);
+  box-shadow: 0 0 12px rgba(255, 183, 0, 0.35);
+}
+
+/* ===== 接続に失敗したときの誘導 =====
+   ツールバーの「MicroPython導入」を数回だけ光らせて気づかせる。
+   ずっと点滅させると邪魔なので 3 回で止める。 */
+.toolbar button#btn-firmware.fw-hint {
+  color: var(--accent-amber, #ffb700);
+  border-color: var(--accent-amber, #ffb700);
+  animation: fw-hint-blink 0.9s ease-in-out 3;
+}
+
+@keyframes fw-hint-blink {
+  0%, 100% { box-shadow: 0 0 0 rgba(255, 183, 0, 0); }
+  50%      { box-shadow: 0 0 10px rgba(255, 183, 0, 0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar button#btn-firmware.fw-hint { animation: none; }
+  .fw-progress-bar { transition: none; }
+}

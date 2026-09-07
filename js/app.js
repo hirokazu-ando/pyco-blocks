@@ -4031,6 +4031,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // ===== MicroPython 導入ウィザード =====
+  const btnFirmware = document.getElementById('btn-firmware');
+
+  if (typeof PicoFirmware !== 'undefined') {
+    PicoFirmware.init({
+      serial: PicoSerial,
+      // ウィザード側で接続・切断したときにツールバーの状態を合わせる
+      onSerialChange: () => updateSerialUI(),
+    });
+    if (btnFirmware) {
+      btnFirmware.addEventListener('click', () => {
+        hintFirmware(false);
+        PicoFirmware.open();
+      });
+    }
+  }
+
+  // Pico が見つからないときに「MicroPython導入」へ目を向けさせる
+  function hintFirmware(on) {
+    if (btnFirmware) btnFirmware.classList.toggle('fw-hint', !!on);
+  }
+
   // 接続失敗メッセージを分かりやすい日本語に整える
   function friendlyConnectError(e) {
     return e.message.includes('open') || e.message.includes('Failed')
@@ -4051,9 +4073,15 @@ document.addEventListener('DOMContentLoaded', function() {
       setSerialStatus('ポートを選択中...', '');
       await PicoSerial.connect();
       setSerialStatus('接続済み', 'ok');
+      hintFirmware(false);
       updateSerialUI();
     } catch (e) {
-      setSerialStatus('接続失敗: ' + friendlyConnectError(e), 'err');
+      // 一覧に Pico が出てこない原因の多くは MicroPython 未導入。
+      // 失敗をそこで終わらせず、導入ウィザードへ誘導する。
+      setSerialStatus(
+        '接続失敗: ' + friendlyConnectError(e) + ' — 一覧に Pico が無いときは［MicroPython導入］へ',
+        'err');
+      hintFirmware(true);
       updateSerialUI();
     }
   });
@@ -4204,9 +4232,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // シリアル関連ボタン（MicroPython && Web Serial対応のみ表示）
     const showSerial = mode === 'micropython' && hasSerial;
-    ['serial-sep', 'btn-connect', 'btn-reconnect', 'btn-run', 'btn-stop', 'btn-write'].forEach(id => {
+    ['btn-connect', 'btn-reconnect', 'btn-run', 'btn-stop', 'btn-write'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = showSerial ? '' : 'none';
+    });
+
+    // MicroPython 導入ウィザードは Web Serial 非対応のブラウザでも役に立つ
+    // （UF2 を配って手で書き込む道が残る）ので、モードだけで出し分ける。
+    ['serial-sep', 'btn-firmware'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (mode === 'micropython') ? '' : 'none';
     });
 
     // DEMOバッジ（MicroPythonモードでWeb Serial非対応のみ表示）

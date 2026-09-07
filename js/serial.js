@@ -146,6 +146,28 @@ const PicoSerial = (() => {
 
   function isMonitoring() { return monitorActive; }
 
+  // --- BOOTSEL（ファーム書き込みモード）に入れる ---
+  // machine.bootloader() を実行すると Pico はその場で USB を切り離し、
+  // RPI-RP2 ドライブとして再列挙する。応答は返ってこないので待たずに後片付けする。
+  // すでに MicroPython が入っている Pico を入れ直すとき、
+  // BOOTSEL ボタンを押しながら挿し直す手間を無くすために使う。
+  async function enterBootloader() {
+    if (!port) throw new Error('Pico に接続されていません');
+    await stopMonitor();
+    await sleep(200);
+    try {
+      await write('\x03\x03');                              // 実行中のプログラムを止める
+      await sleep(300);
+      await write('\x01');                                  // Raw REPL（エコーを抑える）
+      await sleep(200);
+      await write('import machine\nmachine.bootloader()\x04');
+      await sleep(500);
+    } catch (_) {
+      // 送信の途中でポートが消えるのは想定どおり。失敗として扱わない。
+    }
+    await disconnect();
+  }
+
   // --- 実行中のプログラムを停止（Ctrl+C x2） ---
   async function stopCode() {
     await write('\x03\x03');
@@ -250,5 +272,5 @@ const PicoSerial = (() => {
   }
 
   return { connect, reconnect, disconnect, isConnected, stopCode, runCode, writeMainPy,
-           startMonitor, stopMonitor, isMonitoring };
+           startMonitor, stopMonitor, isMonitoring, enterBootloader };
 })();
