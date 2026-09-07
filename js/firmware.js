@@ -119,8 +119,9 @@ const PicoFirmware = (() => {
         </ol>
         <div class="fw-body" id="fw-body"></div>
         <footer class="fw-foot">
-          <button type="button" class="fw-link" id="fw-reset-open"
-                  title="おかしくなった Pico を元に戻す">初期化…</button>
+          <button type="button" class="fw-btn fw-btn--reset" id="fw-reset-open"
+                  title="おかしくなった Pico を元に戻す（プログラムを消す・まっさらにする）">
+            <span class="fw-reset-mark" aria-hidden="true"></span>Pico を初期化する</button>
           <div class="fw-msg" id="fw-msg"></div>
           <div class="fw-nav">
             <button type="button" class="fw-btn" id="fw-prev">戻る</button>
