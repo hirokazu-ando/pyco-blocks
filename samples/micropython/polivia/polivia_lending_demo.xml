@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PoliviaBot UME 貸出セット用デモ（Pico W に main.py として書き込んでおく）
+  電源ON → OLED に案内を表示して待つ
+    SW1 … ライントレース（中央が黒=前進／左が黒=左に曲がる／右が黒=右に曲がる）
+    SW2 … 前進し、前 15cm 以内に障害物があれば止まる（なくなれば また前進）
+  速さはすべて 45%。OLED の文字は英数字だけ（SSD1306 の framebuf は日本語を出せない）。
+-->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_mode">mode</variable>
+    <variable id="var_dist">dist</variable>
+  </variables>
+  <block type="pvb_stop" id="ld_stop0" x="30" y="30">
+    <next>
+      <block type="pvb_oled_text" id="ld_o1">
+        <field name="ROW">1</field>
+        <value name="TEXT"><block type="val_str" id="ld_o1s"><field name="TEXT">PoliviaBot</field></block></value>
+        <next>
+          <block type="pvb_oled_text" id="ld_o2">
+            <field name="ROW">2</field>
+            <value name="TEXT"><block type="val_str" id="ld_o2s"><field name="TEXT">SW1: LINE</field></block></value>
+            <next>
+              <block type="pvb_oled_text" id="ld_o3">
+                <field name="ROW">3</field>
+                <value name="TEXT"><block type="val_str" id="ld_o3s"><field name="TEXT">SW2: STOP</field></block></value>
+                <next>
+                  <block type="pvb_oled_text" id="ld_o4">
+                    <field name="ROW">5</field>
+                    <value name="TEXT"><block type="val_str" id="ld_o4s"><field name="TEXT">MODE: WAIT</field></block></value>
+                    <next>
+                      <block type="var_set" id="ld_m0">
+                        <field name="VAR" id="var_mode">mode</field>
+                        <value name="VALUE"><block type="val_number" id="ld_m0n"><field name="NUM">0</field></block></value>
+                        <next>
+                          <block type="pico_forever" id="ld_loop">
+                            <statement name="DO">
+                              <block type="pvb_if_switch" id="ld_sw1">
+                                <field name="SW">13</field>
+                                <statement name="DO">
+                                  <block type="var_set" id="ld_m1">
+                                    <field name="VAR" id="var_mode">mode</field>
+                                    <value name="VALUE"><block type="val_number" id="ld_m1n"><field name="NUM">1</field></block></value>
+                                    <next>
+                                      <block type="pvb_oled_text" id="ld_o5">
+                                        <field name="ROW">5</field>
+                                        <value name="TEXT"><block type="val_str" id="ld_o5s"><field name="TEXT">MODE: LINE</field></block></value>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </statement>
+                                <next>
+                                  <block type="pvb_if_switch" id="ld_sw2">
+                                    <field name="SW">14</field>
+                                    <statement name="DO">
+                                      <block type="var_set" id="ld_m2">
+                                        <field name="VAR" id="var_mode">mode</field>
+                                        <value name="VALUE"><block type="val_number" id="ld_m2n"><field name="NUM">2</field></block></value>
+                                        <next>
+                                          <block type="pvb_oled_text" id="ld_o6">
+                                            <field name="ROW">5</field>
+                                            <value name="TEXT"><block type="val_str" id="ld_o6s"><field name="TEXT">MODE: SONAR</field></block></value>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="pico_if" id="ld_if1">
+                                        <mutation elseif="0" else="0"></mutation>
+                                        <comment pinned="false" h="120" w="260">ライントレース。後に置いたブロックほど優先される（右 &gt; 左 &gt; 中央）。
+どのセンサーも黒でないときは、あえて止めずに直前の動きを続ける。
+ラインがセンサーのすき間に入った一瞬に止めると、そのまま動けなくなるため。
+曲がっている途中なら、そのまま曲がり続けてラインを探しなおせる。</comment>
+                                        <value name="IF0">
+                                          <block type="cond_compare" id="ld_c1">
+                                            <field name="OP">==</field>
+                                            <value name="LEFT"><block type="val_var" id="ld_c1v"><field name="VAR" id="var_mode">mode</field></block></value>
+                                            <value name="RIGHT"><block type="val_number" id="ld_c1n"><field name="NUM">1</field></block></value>
+                                          </block>
+                                        </value>
+                                        <statement name="DO0">
+                                          <block type="pvb_if_line" id="ld_lc">
+                                            <field name="SENSOR">27</field>
+                                            <field name="COLOR">black</field>
+                                            <statement name="DO">
+                                              <block type="pvb_forward" id="ld_fw1">
+                                                <value name="SPEED"><shadow type="val_number" id="ld_fw1n"><field name="NUM">45</field></shadow></value>
+                                              </block>
+                                            </statement>
+                                            <next>
+                                              <block type="pvb_if_line" id="ld_ll">
+                                                <field name="SENSOR">26</field>
+                                                <field name="COLOR">black</field>
+                                                <statement name="DO">
+                                                  <block type="pvb_turn_left" id="ld_tl">
+                                                    <value name="SPEED"><shadow type="val_number" id="ld_tln"><field name="NUM">45</field></shadow></value>
+                                                  </block>
+                                                </statement>
+                                                <next>
+                                                  <block type="pvb_if_line" id="ld_lr">
+                                                    <field name="SENSOR">28</field>
+                                                    <field name="COLOR">black</field>
+                                                    <statement name="DO">
+                                                      <block type="pvb_turn_right" id="ld_tr">
+                                                        <value name="SPEED"><shadow type="val_number" id="ld_trn"><field name="NUM">45</field></shadow></value>
+                                                      </block>
+                                                    </statement>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </statement>
+                                        <next>
+                                          <block type="pico_if" id="ld_if2">
+                                            <mutation elseif="0" else="0"></mutation>
+                                            <value name="IF0">
+                                              <block type="cond_compare" id="ld_c2">
+                                                <field name="OP">==</field>
+                                                <value name="LEFT"><block type="val_var" id="ld_c2v"><field name="VAR" id="var_mode">mode</field></block></value>
+                                                <value name="RIGHT"><block type="val_number" id="ld_c2n"><field name="NUM">2</field></block></value>
+                                              </block>
+                                            </value>
+                                            <statement name="DO0">
+                                              <block type="pvb_sonar" id="ld_sn">
+                                                <field name="VAR" id="var_dist">dist</field>
+                                                <next>
+                                                  <block type="pico_if" id="ld_if3">
+                                                    <mutation elseif="0" else="1"></mutation>
+                                                    <comment pinned="false" h="110" w="260">「もし前に障害物が〜cm以内にあったら」には「そうでなければ」が無い。
+「前進する」を毎回先に出すと、測っている間（約0.06秒）だけ前に出てしまい、
+障害物の前で少しずつ近づいていく。
+そこで距離を変数 dist に入れ、止まる／前進するのどちらか一方だけを出す。</comment>
+                                                    <value name="IF0">
+                                                      <block type="cond_compare" id="ld_c3">
+                                                        <field name="OP">&lt;</field>
+                                                        <value name="LEFT"><block type="val_var" id="ld_c3v"><field name="VAR" id="var_dist">dist</field></block></value>
+                                                        <value name="RIGHT"><block type="val_number" id="ld_c3n"><field name="NUM">15</field></block></value>
+                                                      </block>
+                                                    </value>
+                                                    <statement name="DO0">
+                                                      <block type="pvb_stop" id="ld_stop1"></block>
+                                                    </statement>
+                                                    <statement name="ELSE">
+                                                      <block type="pvb_forward" id="ld_fw2">
+                                                        <value name="SPEED"><shadow type="val_number" id="ld_fw2n"><field name="NUM">45</field></shadow></value>
+                                                      </block>
+                                                    </statement>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </statement>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </statement>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

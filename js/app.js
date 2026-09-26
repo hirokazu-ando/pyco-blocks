@@ -1041,7 +1041,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       case 'pvb_switch_val': {
         const sw = block.getFieldValue('SW');
-        return `(Pin(${sw}, Pin.IN, Pin.PULL_UP).value() == 0)`;
+        // PoliviaBot UME の SW1(GP13)/SW2(GP14) は プルダウン・押すと High。
+        // 以前は PULL_UP で == 0 を 押下と していたので、押していない ときに True に なっていた
+        return `(Pin(${sw}, Pin.IN, Pin.PULL_DOWN).value() == 1)`;
       }
       case 'pvb_line_val': {
         const sensor = block.getFieldValue('SENSOR');
@@ -1995,7 +1997,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       case 'pvb_if_switch': {
         const sw = block.getFieldValue('SW');
-        code = appendLocal(code, indent + `if Pin(${sw}, Pin.IN, Pin.PULL_UP).value() == 0:\n`);
+        // プルダウン・押すと High（pvb_switch_val と 同じ 判定）
+        code = appendLocal(code, indent + `if Pin(${sw}, Pin.IN, Pin.PULL_DOWN).value() == 1:\n`);
         const inner = statementToCode(block, 'DO', indent + '    ');
         code = appendChildBody(code, inner, indent + '    pass\n');
         break;
