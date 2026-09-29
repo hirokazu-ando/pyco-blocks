@@ -1938,49 +1938,39 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       // ===== PoliviaBot UME モーター =====
+      // 駆動は bringup_UME_PicoW/05_motor_test.py・pb/pb_lib.py と同じ（2026-09-29）。
+      // 走る＝片側 High・もう片側で PWM（スローディケイ。低い速さでも回る）
+      // 止める＝両方 High（ブレーキ。その場で止まる）。前は片側 0 の駆動で、
+      // 低い速さで回らず、止めても惰性ですべって動画の実測と合わなかった。
+      // 実際のピン操作は先頭の _pvb_drive(左, 右)（-100〜100）にまとめてある。
       case 'pvb_forward': {
-        const lnFwd = _emitCtx.line;
-        registerExprBlocksAtLineFromInput(block, 'SPEED', lnFwd);
+        registerExprBlocksAtLineFromInput(block, 'SPEED', _emitCtx.line);
         const spd = valueToCode(block, 'SPEED', '50');
-        code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        // 右モーターは左と物理的に反対向きに取り付けられているため +/- を反転する
-        code = appendLocal(code, indent + `_lm.duty_u16(0); _rp.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(_d); _rm.duty_u16(_d)\n`);
+        code = appendLocal(code, indent + `_pvb_drive(${spd}, ${spd})\n`);
         break;
       }
       case 'pvb_backward': {
-        const lnBwd = _emitCtx.line;
-        registerExprBlocksAtLineFromInput(block, 'SPEED', lnBwd);
+        registerExprBlocksAtLineFromInput(block, 'SPEED', _emitCtx.line);
         const spd = valueToCode(block, 'SPEED', '50');
-        code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        // 右モーターは反転取り付けのため +/- を反転する
-        code = appendLocal(code, indent + `_lp.duty_u16(0); _rm.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lm.duty_u16(_d); _rp.duty_u16(_d)\n`);
+        code = appendLocal(code, indent + `_pvb_drive(-(${spd}), -(${spd}))\n`);
         break;
       }
       case 'pvb_turn_right': {
-        const lnTR = _emitCtx.line;
-        registerExprBlocksAtLineFromInput(block, 'SPEED', lnTR);
+        // 左=前進・右=後退（その場で右回り）
+        registerExprBlocksAtLineFromInput(block, 'SPEED', _emitCtx.line);
         const spd = valueToCode(block, 'SPEED', '50');
-        code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        // 左=前進・右=後退（右モーターは反転取り付けのため +/- を反転）
-        code = appendLocal(code, indent + `_lm.duty_u16(0); _rp.duty_u16(_d)\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(_d); _rm.duty_u16(0)\n`);
+        code = appendLocal(code, indent + `_pvb_drive(${spd}, -(${spd}))\n`);
         break;
       }
       case 'pvb_turn_left': {
-        const lnTL = _emitCtx.line;
-        registerExprBlocksAtLineFromInput(block, 'SPEED', lnTL);
+        // 左=後退・右=前進（その場で左回り）
+        registerExprBlocksAtLineFromInput(block, 'SPEED', _emitCtx.line);
         const spd = valueToCode(block, 'SPEED', '50');
-        code = appendLocal(code, indent + `_d = ${spd} * 65535 // 100\n`);
-        // 左=後退・右=前進（右モーターは反転取り付けのため +/- を反転）
-        code = appendLocal(code, indent + `_lm.duty_u16(_d); _rp.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lp.duty_u16(0); _rm.duty_u16(_d)\n`);
+        code = appendLocal(code, indent + `_pvb_drive(-(${spd}), ${spd})\n`);
         break;
       }
       case 'pvb_stop': {
-        code = appendLocal(code, indent + `_lp.duty_u16(0); _rp.duty_u16(0)\n`);
-        code = appendLocal(code, indent + `_lm.duty_u16(0); _rm.duty_u16(0)\n`);
+        code = appendLocal(code, indent + `_pvb_drive(0, 0)\n`);
         break;
       }
 
@@ -3244,11 +3234,22 @@ document.addEventListener('DOMContentLoaded', function() {
         (hasOled ? ((showComments ? '# OLED画面の描画用\n' : '') + `${cm}import framebuf\n`) : '') +
         (needsRandom ? ((showComments ? '# 乱数生成用\n' : '') + `${cm}import random\n`) : '') +
         '\n';
+      // UME V3：左右とも IN1（GP0 / GP2）側を High にすると前進（2026-09-12 実機で確認）
       const motorInit =
-        '_lp = PWM(Pin(0)); _lp.freq(1000)\n' +
-        '_lm = PWM(Pin(1)); _lm.freq(1000)\n' +
-        '_rp = PWM(Pin(2)); _rp.freq(1000)\n' +
-        '_rm = PWM(Pin(3)); _rm.freq(1000)\n\n';
+        '_lp = PWM(Pin(0)); _lp.freq(20000)\n' +
+        '_lm = PWM(Pin(1)); _lm.freq(20000)\n' +
+        '_rp = PWM(Pin(2)); _rp.freq(20000)\n' +
+        '_rm = PWM(Pin(3)); _rm.freq(20000)\n\n' +
+        'def _pvb_motor(a, b, p):\n' +
+        '    p = max(-100, min(100, p))\n' +
+        '    d = int(abs(p) * 65535 / 100)\n' +
+        '    if p >= 0:\n' +
+        '        a.duty_u16(65535); b.duty_u16(65535 - d)\n' +
+        '    else:\n' +
+        '        b.duty_u16(65535); a.duty_u16(65535 - d)\n\n' +
+        'def _pvb_drive(left, right):\n' +
+        '    _pvb_motor(_lp, _lm, left)\n' +
+        '    _pvb_motor(_rp, _rm, right)\n\n';
       // Thonny 動作版(07_sonar_test.py)に合わせ、time_pulse_us でタイムアウト付き測定。
       // エコーが返らない時も無限ループせず、遠距離(999cm)扱いで安全に抜ける。
       const sonarHelper =
