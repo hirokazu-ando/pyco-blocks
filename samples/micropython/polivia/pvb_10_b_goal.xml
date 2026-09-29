@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #10 例b：目標の濃さに寄っていって止まる（差に比例した速さ）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_goal">goal</variable>
+    <variable id="v_kp">kp</variable>
+    <variable id="v_v">v</variable>
+    <variable id="v_power">power</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b369">
+    <field name="VAR" id="v_goal">goal</field>
+    <value name="VALUE">
+      <block type="val_number" id="b368">
+        <field name="NUM">35000</field>
+      </block>
+    </value>
+    <next>
+      <block type="var_set" id="b371">
+        <field name="VAR" id="v_kp">kp</field>
+        <value name="VALUE">
+          <block type="val_number" id="b370">
+            <field name="NUM">0.004</field>
+          </block>
+        </value>
+        <next>
+          <block type="pvb_oled_label_val" id="b373">
+            <field name="ROW">1</field>
+            <field name="LABEL">goal:</field>
+            <value name="VALUE">
+              <block type="val_var" id="b372">
+                <field name="VAR" id="v_goal">goal</field>
+              </block>
+            </value>
+            <next>
+              <block type="py_while" id="b378">
+                <value name="COND">
+                  <block type="cond_not" id="b375">
+                    <value name="A">
+                      <block type="pvb_switch_val" id="b374">
+                        <field name="SW">13</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO">
+                  <block type="pico_wait" id="b377">
+                    <value name="SEC">
+                      <block type="val_number" id="b376">
+                        <field name="NUM">0.05</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pico_wait" id="b380">
+                    <value name="SEC">
+                      <block type="val_number" id="b379">
+                        <field name="NUM">0.5</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_forever" id="b398">
+                        <statement name="DO">
+                          <block type="var_set" id="b382">
+                            <field name="VAR" id="v_v">v</field>
+                            <value name="VALUE">
+                              <block type="pvb_line_val" id="b381">
+                                <field name="SENSOR">27</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="var_set" id="b388">
+                                <field name="VAR" id="v_power">power</field>
+                                <value name="VALUE">
+                                  <block type="py_math_op" id="b387">
+                                    <field name="OP">*</field>
+                                    <value name="LEFT">
+                                      <block type="py_math_op" id="b385">
+                                        <field name="OP">-</field>
+                                        <value name="LEFT">
+                                          <block type="val_var" id="b383">
+                                            <field name="VAR" id="v_goal">goal</field>
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_var" id="b384">
+                                            <field name="VAR" id="v_v">v</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_var" id="b386">
+                                        <field name="VAR" id="v_kp">kp</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="pvb_forward" id="b390">
+                                    <value name="SPEED">
+                                      <block type="val_var" id="b389">
+                                        <field name="VAR" id="v_power">power</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="pvb_oled_label_val" id="b392">
+                                        <field name="ROW">3</field>
+                                        <field name="LABEL">C:</field>
+                                        <value name="VALUE">
+                                          <block type="val_var" id="b391">
+                                            <field name="VAR" id="v_v">v</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="pvb_if_switch" id="b395">
+                                            <field name="SW">14</field>
+                                            <statement name="DO">
+                                              <block type="pvb_stop" id="b393">
+                                                <next>
+                                                  <block type="py_break" id="b394">
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </statement>
+                                            <next>
+                                              <block type="pico_wait" id="b397">
+                                                <value name="SEC">
+                                                  <block type="val_number" id="b396">
+                                                    <field name="NUM">0.02</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pvb_stop" id="b399">
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

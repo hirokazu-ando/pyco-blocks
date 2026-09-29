@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #08 演習の答え：SW2 で速さを 30→45→60 と変え、SW1 で走る（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_thr">thr</variable>
+    <variable id="v_speed">speed</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b181">
+    <field name="VAR" id="v_thr">thr</field>
+    <value name="VALUE">
+      <block type="val_number" id="b180">
+        <field name="NUM">30000</field>
+      </block>
+    </value>
+    <next>
+      <block type="var_set" id="b183">
+        <field name="VAR" id="v_speed">speed</field>
+        <value name="VALUE">
+          <block type="val_number" id="b182">
+            <field name="NUM">30</field>
+          </block>
+        </value>
+        <next>
+          <block type="pico_forever" id="b211">
+            <statement name="DO">
+              <block type="pvb_oled_label_val" id="b185">
+                <field name="ROW">1</field>
+                <field name="LABEL">speed:</field>
+                <value name="VALUE">
+                  <block type="val_var" id="b184">
+                    <field name="VAR" id="v_speed">speed</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_if_switch" id="b196">
+                    <field name="SW">14</field>
+                    <statement name="DO">
+                      <block type="var_change" id="b187">
+                        <field name="VAR" id="v_speed">speed</field>
+                        <value name="AMOUNT">
+                          <block type="val_number" id="b186">
+                            <field name="NUM">15</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pico_if" id="b193">
+                            <mutation elseif="0" else="0"></mutation>
+                            <value name="IF0">
+                              <block type="cond_compare" id="b190">
+                                <field name="OP">&gt;</field>
+                                <value name="LEFT">
+                                  <block type="val_var" id="b188">
+                                    <field name="VAR" id="v_speed">speed</field>
+                                  </block>
+                                </value>
+                                <value name="RIGHT">
+                                  <block type="val_number" id="b189">
+                                    <field name="NUM">60</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <statement name="DO0">
+                              <block type="var_set" id="b192">
+                                <field name="VAR" id="v_speed">speed</field>
+                                <value name="VALUE">
+                                  <block type="val_number" id="b191">
+                                    <field name="NUM">30</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </statement>
+                            <next>
+                              <block type="pico_wait" id="b195">
+                                <value name="SEC">
+                                  <block type="val_number" id="b194">
+                                    <field name="NUM">0.3</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pvb_if_switch" id="b208">
+                        <field name="SW">13</field>
+                        <statement name="DO">
+                          <block type="pico_wait" id="b198">
+                            <value name="SEC">
+                              <block type="val_number" id="b197">
+                                <field name="NUM">0.5</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pvb_forward" id="b200">
+                                <value name="SPEED">
+                                  <block type="val_var" id="b199">
+                                    <field name="VAR" id="v_speed">speed</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="py_while" id="b206">
+                                    <value name="COND">
+                                      <block type="cond_compare" id="b203">
+                                        <field name="OP">&lt;=</field>
+                                        <value name="LEFT">
+                                          <block type="pvb_line_val" id="b201">
+                                            <field name="SENSOR">27</field>
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_var" id="b202">
+                                            <field name="VAR" id="v_thr">thr</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO">
+                                      <block type="pico_wait" id="b205">
+                                        <value name="SEC">
+                                          <block type="val_number" id="b204">
+                                            <field name="NUM">0.005</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="pvb_stop" id="b207">
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pico_wait" id="b210">
+                            <value name="SEC">
+                              <block type="val_number" id="b209">
+                                <field name="NUM">0.05</field>
+                              </block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

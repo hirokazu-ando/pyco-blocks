@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #07 例a：3つのラインセンサーの値を OLED に出す（走らない）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pvb_oled_text" x="30" y="30" id="b141">
+    <field name="ROW">1</field>
+    <value name="TEXT">
+      <block type="val_str" id="b140">
+        <field name="TEXT">LINE SENSOR</field>
+      </block>
+    </value>
+    <next>
+      <block type="pico_forever" id="b150">
+        <statement name="DO">
+          <block type="pvb_oled_label_val" id="b143">
+            <field name="ROW">3</field>
+            <field name="LABEL">L:</field>
+            <value name="VALUE">
+              <block type="pvb_line_val" id="b142">
+                <field name="SENSOR">26</field>
+              </block>
+            </value>
+            <next>
+              <block type="pvb_oled_label_val" id="b145">
+                <field name="ROW">4</field>
+                <field name="LABEL">C:</field>
+                <value name="VALUE">
+                  <block type="pvb_line_val" id="b144">
+                    <field name="SENSOR">27</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_oled_label_val" id="b147">
+                    <field name="ROW">5</field>
+                    <field name="LABEL">R:</field>
+                    <value name="VALUE">
+                      <block type="pvb_line_val" id="b146">
+                        <field name="SENSOR">28</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_wait" id="b149">
+                        <value name="SEC">
+                          <block type="val_number" id="b148">
+                            <field name="NUM">0.2</field>
+                          </block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

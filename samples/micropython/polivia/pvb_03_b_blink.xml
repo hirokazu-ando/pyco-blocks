@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #03 例b：LED1 を 0.5 秒ごとに点滅（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" x="30" y="30" id="b8">
+    <statement name="DO">
+      <block type="pvb_led_on" id="b2">
+        <field name="LED">11</field>
+        <next>
+          <block type="pico_wait" id="b4">
+            <value name="SEC">
+              <block type="val_number" id="b3">
+                <field name="NUM">0.5</field>
+              </block>
+            </value>
+            <next>
+              <block type="pvb_led_off" id="b5">
+                <field name="LED">11</field>
+                <next>
+                  <block type="pico_wait" id="b7">
+                    <value name="SEC">
+                      <block type="val_number" id="b6">
+                        <field name="NUM">0.5</field>
+                      </block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

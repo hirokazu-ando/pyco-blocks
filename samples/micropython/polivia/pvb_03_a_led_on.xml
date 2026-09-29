@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #03 例a：LED1 をつける（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pvb_led_on" x="30" y="30" id="b1">
+    <field name="LED">11</field>
+  </block>
+</xml>

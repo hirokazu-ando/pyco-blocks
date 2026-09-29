@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #08 例a：線を見つけたら止まる（thr は #07 の床と線の真ん中に）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_thr">thr</variable>
+    <variable id="v_speed">speed</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b158">
+    <field name="VAR" id="v_thr">thr</field>
+    <value name="VALUE">
+      <block type="val_number" id="b157">
+        <field name="NUM">30000</field>
+      </block>
+    </value>
+    <next>
+      <block type="var_set" id="b160">
+        <field name="VAR" id="v_speed">speed</field>
+        <value name="VALUE">
+          <block type="val_number" id="b159">
+            <field name="NUM">30</field>
+          </block>
+        </value>
+        <next>
+          <block type="pvb_oled_label_val" id="b162">
+            <field name="ROW">1</field>
+            <field name="LABEL">speed:</field>
+            <value name="VALUE">
+              <block type="val_var" id="b161">
+                <field name="VAR" id="v_speed">speed</field>
+              </block>
+            </value>
+            <next>
+              <block type="py_while" id="b167">
+                <value name="COND">
+                  <block type="cond_not" id="b164">
+                    <value name="A">
+                      <block type="pvb_switch_val" id="b163">
+                        <field name="SW">13</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO">
+                  <block type="pico_wait" id="b166">
+                    <value name="SEC">
+                      <block type="val_number" id="b165">
+                        <field name="NUM">0.05</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pico_wait" id="b169">
+                    <value name="SEC">
+                      <block type="val_number" id="b168">
+                        <field name="NUM">0.5</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pvb_forward" id="b171">
+                        <value name="SPEED">
+                          <block type="val_var" id="b170">
+                            <field name="VAR" id="v_speed">speed</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pico_forever" id="b178">
+                            <statement name="DO">
+                              <block type="pico_if" id="b177">
+                                <mutation elseif="0" else="0"></mutation>
+                                <value name="IF0">
+                                  <block type="cond_compare" id="b174">
+                                    <field name="OP">&gt;</field>
+                                    <value name="LEFT">
+                                      <block type="pvb_line_val" id="b172">
+                                        <field name="SENSOR">27</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_var" id="b173">
+                                        <field name="VAR" id="v_thr">thr</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO0">
+                                  <block type="pvb_stop" id="b175">
+                                    <next>
+                                      <block type="py_break" id="b176">
+                                      </block>
+                                    </next>
+                                  </block>
+                                </statement>
+                              </block>
+                            </statement>
+                            <next>
+                              <block type="pvb_led_on" id="b179">
+                                <field name="LED">11</field>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

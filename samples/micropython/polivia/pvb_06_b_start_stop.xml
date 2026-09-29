@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #06 例b：SW1 で走り出し、SW2 で止まる（run が状態を覚える）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_run">run</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b110">
+    <field name="VAR" id="v_run">run</field>
+    <value name="VALUE">
+      <block type="val_number" id="b109">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+    <next>
+      <block type="pico_forever" id="b128">
+        <statement name="DO">
+          <block type="pvb_if_switch" id="b113">
+            <field name="SW">13</field>
+            <statement name="DO">
+              <block type="var_set" id="b112">
+                <field name="VAR" id="v_run">run</field>
+                <value name="VALUE">
+                  <block type="val_number" id="b111">
+                    <field name="NUM">1</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+            <next>
+              <block type="pvb_if_switch" id="b116">
+                <field name="SW">14</field>
+                <statement name="DO">
+                  <block type="var_set" id="b115">
+                    <field name="VAR" id="v_run">run</field>
+                    <value name="VALUE">
+                      <block type="val_number" id="b114">
+                        <field name="NUM">0</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pico_if" id="b125">
+                    <mutation elseif="0" else="1"></mutation>
+                    <value name="IF0">
+                      <block type="cond_compare" id="b119">
+                        <field name="OP">==</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="b117">
+                            <field name="VAR" id="v_run">run</field>
+                          </block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="b118">
+                            <field name="NUM">1</field>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="pvb_forward" id="b121">
+                        <value name="SPEED">
+                          <block type="val_number" id="b120">
+                            <field name="NUM">40</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pvb_led_on" id="b122">
+                            <field name="LED">11</field>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <statement name="ELSE">
+                      <block type="pvb_stop" id="b123">
+                        <next>
+                          <block type="pvb_led_off" id="b124">
+                            <field name="LED">11</field>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_wait" id="b127">
+                        <value name="SEC">
+                          <block type="val_number" id="b126">
+                            <field name="NUM">0.02</field>
+                          </block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #03 演習の答え：動いている合図（短く2回光って休む）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" x="30" y="30" id="b30">
+    <statement name="DO">
+      <block type="pvb_led_on" id="b18">
+        <field name="LED">11</field>
+        <next>
+          <block type="pico_wait" id="b20">
+            <value name="SEC">
+              <block type="val_number" id="b19">
+                <field name="NUM">0.1</field>
+              </block>
+            </value>
+            <next>
+              <block type="pvb_led_off" id="b21">
+                <field name="LED">11</field>
+                <next>
+                  <block type="pico_wait" id="b23">
+                    <value name="SEC">
+                      <block type="val_number" id="b22">
+                        <field name="NUM">0.1</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pvb_led_on" id="b24">
+                        <field name="LED">11</field>
+                        <next>
+                          <block type="pico_wait" id="b26">
+                            <value name="SEC">
+                              <block type="val_number" id="b25">
+                                <field name="NUM">0.1</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pvb_led_off" id="b27">
+                                <field name="LED">11</field>
+                                <next>
+                                  <block type="pico_wait" id="b29">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b28">
+                                        <field name="NUM">0.7</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

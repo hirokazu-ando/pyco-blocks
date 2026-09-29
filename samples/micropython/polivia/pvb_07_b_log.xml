@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #07 例b：中のセンサーの値を PC に流す（シェルで見る・表に写す）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_v">v</variable>
+  </variables>
+  <block type="pico_forever" x="30" y="30" id="b156">
+    <statement name="DO">
+      <block type="var_set" id="b152">
+        <field name="VAR" id="v_v">v</field>
+        <value name="VALUE">
+          <block type="pvb_line_val" id="b151">
+            <field name="SENSOR">27</field>
+          </block>
+        </value>
+        <next>
+          <block type="pvb_print" id="b153">
+            <field name="VAR" id="v_v">v</field>
+            <next>
+              <block type="pico_wait" id="b155">
+                <value name="SEC">
+                  <block type="val_number" id="b154">
+                    <field name="NUM">0.2</field>
+                  </block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

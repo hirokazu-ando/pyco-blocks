@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #03 例c：LED1 と LED2 を交互に光らせる（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" x="30" y="30" id="b17">
+    <statement name="DO">
+      <block type="pvb_led_on" id="b9">
+        <field name="LED">11</field>
+        <next>
+          <block type="pvb_led_off" id="b10">
+            <field name="LED">12</field>
+            <next>
+              <block type="pico_wait" id="b12">
+                <value name="SEC">
+                  <block type="val_number" id="b11">
+                    <field name="NUM">0.5</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_led_off" id="b13">
+                    <field name="LED">11</field>
+                    <next>
+                      <block type="pvb_led_on" id="b14">
+                        <field name="LED">12</field>
+                        <next>
+                          <block type="pico_wait" id="b16">
+                            <value name="SEC">
+                              <block type="val_number" id="b15">
+                                <field name="NUM">0.5</field>
+                              </block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

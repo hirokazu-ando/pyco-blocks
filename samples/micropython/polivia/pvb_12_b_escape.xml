@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #12 例b：止まったら下がって向きを変え、また走る（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_dist">dist</variable>
+  </variables>
+  <block type="py_while" x="30" y="30" id="b453">
+    <value name="COND">
+      <block type="cond_not" id="b450">
+        <value name="A">
+          <block type="pvb_switch_val" id="b449">
+            <field name="SW">13</field>
+          </block>
+        </value>
+      </block>
+    </value>
+    <statement name="DO">
+      <block type="pico_wait" id="b452">
+        <value name="SEC">
+          <block type="val_number" id="b451">
+            <field name="NUM">0.05</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+    <next>
+      <block type="pico_wait" id="b455">
+        <value name="SEC">
+          <block type="val_number" id="b454">
+            <field name="NUM">0.5</field>
+          </block>
+        </value>
+        <next>
+          <block type="pico_forever" id="b477">
+            <statement name="DO">
+              <block type="pvb_sonar" id="b456">
+                <field name="VAR" id="v_dist">dist</field>
+                <next>
+                  <block type="pico_if" id="b473">
+                    <mutation elseif="0" else="1"></mutation>
+                    <value name="IF0">
+                      <block type="cond_compare" id="b459">
+                        <field name="OP">&lt;</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="b457">
+                            <field name="VAR" id="v_dist">dist</field>
+                          </block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="b458">
+                            <field name="NUM">20</field>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="pvb_stop" id="b460">
+                        <next>
+                          <block type="pvb_led_on" id="b461">
+                            <field name="LED">11</field>
+                            <next>
+                              <block type="pvb_backward" id="b463">
+                                <value name="SPEED">
+                                  <block type="val_number" id="b462">
+                                    <field name="NUM">40</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="pico_wait" id="b465">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b464">
+                                        <field name="NUM">0.5</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="pvb_turn_right" id="b467">
+                                        <value name="SPEED">
+                                          <block type="val_number" id="b466">
+                                            <field name="NUM">40</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="pico_wait" id="b469">
+                                            <value name="SEC">
+                                              <block type="val_number" id="b468">
+                                                <field name="NUM">0.6</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="pvb_led_off" id="b470">
+                                                <field name="LED">11</field>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <statement name="ELSE">
+                      <block type="pvb_forward" id="b472">
+                        <value name="SPEED">
+                          <block type="val_number" id="b471">
+                            <field name="NUM">40</field>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pvb_if_switch" id="b476">
+                        <field name="SW">14</field>
+                        <statement name="DO">
+                          <block type="pvb_stop" id="b474">
+                            <next>
+                              <block type="py_break" id="b475">
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </statement>
+            <next>
+              <block type="pvb_stop" id="b478">
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

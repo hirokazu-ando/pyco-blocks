@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #05 例a：速さを変数にして前進（speed を書き換えて比べる）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_speed">speed</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b76">
+    <field name="VAR" id="v_speed">speed</field>
+    <value name="VALUE">
+      <block type="val_number" id="b75">
+        <field name="NUM">30</field>
+      </block>
+    </value>
+    <next>
+      <block type="pvb_oled_label_val" id="b78">
+        <field name="ROW">1</field>
+        <field name="LABEL">speed:</field>
+        <value name="VALUE">
+          <block type="val_var" id="b77">
+            <field name="VAR" id="v_speed">speed</field>
+          </block>
+        </value>
+        <next>
+          <block type="pvb_forward" id="b80">
+            <value name="SPEED">
+              <block type="val_var" id="b79">
+                <field name="VAR" id="v_speed">speed</field>
+              </block>
+            </value>
+            <next>
+              <block type="pico_wait" id="b82">
+                <value name="SEC">
+                  <block type="val_number" id="b81">
+                    <field name="NUM">2</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_stop" id="b83">
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>
