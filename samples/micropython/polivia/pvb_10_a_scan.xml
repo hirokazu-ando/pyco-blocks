@@ -4,31 +4,31 @@
   <variables>
     <variable id="v_v">v</variable>
   </variables>
-  <block type="pico_forever" x="30" y="30" id="b367">
+  <block type="pico_forever" x="30" y="30" id="b371">
     <statement name="DO">
-      <block type="var_set" id="b361">
+      <block type="var_set" id="b365">
         <field name="VAR" id="v_v">v</field>
         <value name="VALUE">
-          <block type="pvb_line_val" id="b360">
+          <block type="pvb_line_val" id="b364">
             <field name="SENSOR">27</field>
           </block>
         </value>
         <next>
-          <block type="pvb_oled_label_val" id="b363">
+          <block type="pvb_oled_label_val" id="b367">
             <field name="ROW">1</field>
             <field name="LABEL">C:</field>
             <value name="VALUE">
-              <block type="val_var" id="b362">
+              <block type="val_var" id="b366">
                 <field name="VAR" id="v_v">v</field>
               </block>
             </value>
             <next>
-              <block type="pvb_print" id="b364">
+              <block type="pvb_print" id="b368">
                 <field name="VAR" id="v_v">v</field>
                 <next>
-                  <block type="pico_wait" id="b366">
+                  <block type="pico_wait" id="b370">
                     <value name="SEC">
-                      <block type="val_number" id="b365">
+                      <block type="val_number" id="b369">
                         <field name="NUM">0.2</field>
                       </block>
                     </value>

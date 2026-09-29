@@ -5,146 +5,146 @@
     <variable id="v_thr">thr</variable>
     <variable id="v_speed">speed</variable>
   </variables>
-  <block type="var_set" x="30" y="30" id="b401">
+  <block type="var_set" x="30" y="30" id="b404">
     <field name="VAR" id="v_thr">thr</field>
     <value name="VALUE">
-      <block type="val_number" id="b400">
+      <block type="val_number" id="b403">
         <field name="NUM">30000</field>
       </block>
     </value>
     <next>
-      <block type="var_set" id="b403">
+      <block type="var_set" id="b406">
         <field name="VAR" id="v_speed">speed</field>
         <value name="VALUE">
-          <block type="val_number" id="b402">
+          <block type="val_number" id="b405">
             <field name="NUM">35</field>
           </block>
         </value>
         <next>
-          <block type="py_while" id="b408">
+          <block type="py_while" id="b411">
             <value name="COND">
-              <block type="cond_not" id="b405">
+              <block type="cond_not" id="b408">
                 <value name="A">
-                  <block type="pvb_switch_val" id="b404">
+                  <block type="pvb_switch_val" id="b407">
                     <field name="SW">13</field>
                   </block>
                 </value>
               </block>
             </value>
             <statement name="DO">
-              <block type="pico_wait" id="b407">
+              <block type="pico_wait" id="b410">
                 <value name="SEC">
-                  <block type="val_number" id="b406">
+                  <block type="val_number" id="b409">
                     <field name="NUM">0.05</field>
                   </block>
                 </value>
               </block>
             </statement>
             <next>
-              <block type="pico_wait" id="b410">
+              <block type="pico_wait" id="b413">
                 <value name="SEC">
-                  <block type="val_number" id="b409">
+                  <block type="val_number" id="b412">
                     <field name="NUM">0.5</field>
                   </block>
                 </value>
                 <next>
-                  <block type="pico_forever" id="b434">
+                  <block type="pico_forever" id="b437">
                     <statement name="DO">
-                      <block type="pico_if" id="b416">
+                      <block type="pico_if" id="b419">
                         <mutation elseif="0" else="0"></mutation>
                         <value name="IF0">
-                          <block type="cond_compare" id="b413">
+                          <block type="cond_compare" id="b416">
                             <field name="OP">&gt;</field>
                             <value name="LEFT">
-                              <block type="pvb_line_val" id="b411">
+                              <block type="pvb_line_val" id="b414">
                                 <field name="SENSOR">27</field>
                               </block>
                             </value>
                             <value name="RIGHT">
-                              <block type="val_var" id="b412">
+                              <block type="val_var" id="b415">
                                 <field name="VAR" id="v_thr">thr</field>
                               </block>
                             </value>
                           </block>
                         </value>
                         <statement name="DO0">
-                          <block type="pvb_forward" id="b415">
+                          <block type="pvb_forward" id="b418">
                             <value name="SPEED">
-                              <block type="val_var" id="b414">
+                              <block type="val_var" id="b417">
                                 <field name="VAR" id="v_speed">speed</field>
                               </block>
                             </value>
                           </block>
                         </statement>
                         <next>
-                          <block type="pico_if" id="b422">
+                          <block type="pico_if" id="b425">
                             <mutation elseif="0" else="0"></mutation>
                             <value name="IF0">
-                              <block type="cond_compare" id="b419">
+                              <block type="cond_compare" id="b422">
                                 <field name="OP">&gt;</field>
                                 <value name="LEFT">
-                                  <block type="pvb_line_val" id="b417">
+                                  <block type="pvb_line_val" id="b420">
                                     <field name="SENSOR">26</field>
                                   </block>
                                 </value>
                                 <value name="RIGHT">
-                                  <block type="val_var" id="b418">
+                                  <block type="val_var" id="b421">
                                     <field name="VAR" id="v_thr">thr</field>
                                   </block>
                                 </value>
                               </block>
                             </value>
                             <statement name="DO0">
-                              <block type="pvb_turn_left" id="b421">
+                              <block type="pvb_turn_left" id="b424">
                                 <value name="SPEED">
-                                  <block type="val_var" id="b420">
+                                  <block type="val_var" id="b423">
                                     <field name="VAR" id="v_speed">speed</field>
                                   </block>
                                 </value>
                               </block>
                             </statement>
                             <next>
-                              <block type="pico_if" id="b428">
+                              <block type="pico_if" id="b431">
                                 <mutation elseif="0" else="0"></mutation>
                                 <value name="IF0">
-                                  <block type="cond_compare" id="b425">
+                                  <block type="cond_compare" id="b428">
                                     <field name="OP">&gt;</field>
                                     <value name="LEFT">
-                                      <block type="pvb_line_val" id="b423">
+                                      <block type="pvb_line_val" id="b426">
                                         <field name="SENSOR">28</field>
                                       </block>
                                     </value>
                                     <value name="RIGHT">
-                                      <block type="val_var" id="b424">
+                                      <block type="val_var" id="b427">
                                         <field name="VAR" id="v_thr">thr</field>
                                       </block>
                                     </value>
                                   </block>
                                 </value>
                                 <statement name="DO0">
-                                  <block type="pvb_turn_right" id="b427">
+                                  <block type="pvb_turn_right" id="b430">
                                     <value name="SPEED">
-                                      <block type="val_var" id="b426">
+                                      <block type="val_var" id="b429">
                                         <field name="VAR" id="v_speed">speed</field>
                                       </block>
                                     </value>
                                   </block>
                                 </statement>
                                 <next>
-                                  <block type="pvb_if_switch" id="b431">
+                                  <block type="pvb_if_switch" id="b434">
                                     <field name="SW">14</field>
                                     <statement name="DO">
-                                      <block type="pvb_stop" id="b429">
+                                      <block type="pvb_stop" id="b432">
                                         <next>
-                                          <block type="py_break" id="b430">
+                                          <block type="py_break" id="b433">
                                           </block>
                                         </next>
                                       </block>
                                     </statement>
                                     <next>
-                                      <block type="pico_wait" id="b433">
+                                      <block type="pico_wait" id="b436">
                                         <value name="SEC">
-                                          <block type="val_number" id="b432">
+                                          <block type="val_number" id="b435">
                                             <field name="NUM">0.005</field>
                                           </block>
                                         </value>
@@ -158,10 +158,6 @@
                         </next>
                       </block>
                     </statement>
-                    <next>
-                      <block type="pvb_stop" id="b435">
-                      </block>
-                    </next>
                   </block>
                 </next>
               </block>

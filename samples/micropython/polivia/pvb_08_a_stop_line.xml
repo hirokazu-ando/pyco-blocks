@@ -64,9 +64,9 @@
                           </block>
                         </value>
                         <next>
-                          <block type="pico_forever" id="b178">
+                          <block type="pico_forever" id="b179">
                             <statement name="DO">
-                              <block type="pico_if" id="b177">
+                              <block type="pico_if" id="b178">
                                 <mutation elseif="0" else="0"></mutation>
                                 <value name="IF0">
                                   <block type="cond_compare" id="b174">
@@ -86,18 +86,18 @@
                                 <statement name="DO0">
                                   <block type="pvb_stop" id="b175">
                                     <next>
-                                      <block type="py_break" id="b176">
+                                      <block type="pvb_led_on" id="b176">
+                                        <field name="LED">11</field>
+                                        <next>
+                                          <block type="py_break" id="b177">
+                                          </block>
+                                        </next>
                                       </block>
                                     </next>
                                   </block>
                                 </statement>
                               </block>
                             </statement>
-                            <next>
-                              <block type="pvb_led_on" id="b179">
-                                <field name="LED">11</field>
-                              </block>
-                            </next>
                           </block>
                         </next>
                       </block>

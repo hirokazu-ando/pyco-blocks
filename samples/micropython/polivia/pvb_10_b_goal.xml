@@ -7,126 +7,126 @@
     <variable id="v_v">v</variable>
     <variable id="v_power">power</variable>
   </variables>
-  <block type="var_set" x="30" y="30" id="b369">
+  <block type="var_set" x="30" y="30" id="b373">
     <field name="VAR" id="v_goal">goal</field>
     <value name="VALUE">
-      <block type="val_number" id="b368">
+      <block type="val_number" id="b372">
         <field name="NUM">35000</field>
       </block>
     </value>
     <next>
-      <block type="var_set" id="b371">
+      <block type="var_set" id="b375">
         <field name="VAR" id="v_kp">kp</field>
         <value name="VALUE">
-          <block type="val_number" id="b370">
+          <block type="val_number" id="b374">
             <field name="NUM">0.004</field>
           </block>
         </value>
         <next>
-          <block type="pvb_oled_label_val" id="b373">
+          <block type="pvb_oled_label_val" id="b377">
             <field name="ROW">1</field>
             <field name="LABEL">goal:</field>
             <value name="VALUE">
-              <block type="val_var" id="b372">
+              <block type="val_var" id="b376">
                 <field name="VAR" id="v_goal">goal</field>
               </block>
             </value>
             <next>
-              <block type="py_while" id="b378">
+              <block type="py_while" id="b382">
                 <value name="COND">
-                  <block type="cond_not" id="b375">
+                  <block type="cond_not" id="b379">
                     <value name="A">
-                      <block type="pvb_switch_val" id="b374">
+                      <block type="pvb_switch_val" id="b378">
                         <field name="SW">13</field>
                       </block>
                     </value>
                   </block>
                 </value>
                 <statement name="DO">
-                  <block type="pico_wait" id="b377">
+                  <block type="pico_wait" id="b381">
                     <value name="SEC">
-                      <block type="val_number" id="b376">
+                      <block type="val_number" id="b380">
                         <field name="NUM">0.05</field>
                       </block>
                     </value>
                   </block>
                 </statement>
                 <next>
-                  <block type="pico_wait" id="b380">
+                  <block type="pico_wait" id="b384">
                     <value name="SEC">
-                      <block type="val_number" id="b379">
+                      <block type="val_number" id="b383">
                         <field name="NUM">0.5</field>
                       </block>
                     </value>
                     <next>
-                      <block type="pico_forever" id="b398">
+                      <block type="pico_forever" id="b402">
                         <statement name="DO">
-                          <block type="var_set" id="b382">
+                          <block type="var_set" id="b386">
                             <field name="VAR" id="v_v">v</field>
                             <value name="VALUE">
-                              <block type="pvb_line_val" id="b381">
+                              <block type="pvb_line_val" id="b385">
                                 <field name="SENSOR">27</field>
                               </block>
                             </value>
                             <next>
-                              <block type="var_set" id="b388">
+                              <block type="var_set" id="b392">
                                 <field name="VAR" id="v_power">power</field>
                                 <value name="VALUE">
-                                  <block type="py_math_op" id="b387">
+                                  <block type="py_math_op" id="b391">
                                     <field name="OP">*</field>
                                     <value name="LEFT">
-                                      <block type="py_math_op" id="b385">
+                                      <block type="py_math_op" id="b389">
                                         <field name="OP">-</field>
                                         <value name="LEFT">
-                                          <block type="val_var" id="b383">
+                                          <block type="val_var" id="b387">
                                             <field name="VAR" id="v_goal">goal</field>
                                           </block>
                                         </value>
                                         <value name="RIGHT">
-                                          <block type="val_var" id="b384">
+                                          <block type="val_var" id="b388">
                                             <field name="VAR" id="v_v">v</field>
                                           </block>
                                         </value>
                                       </block>
                                     </value>
                                     <value name="RIGHT">
-                                      <block type="val_var" id="b386">
+                                      <block type="val_var" id="b390">
                                         <field name="VAR" id="v_kp">kp</field>
                                       </block>
                                     </value>
                                   </block>
                                 </value>
                                 <next>
-                                  <block type="pvb_forward" id="b390">
+                                  <block type="pvb_forward" id="b394">
                                     <value name="SPEED">
-                                      <block type="val_var" id="b389">
+                                      <block type="val_var" id="b393">
                                         <field name="VAR" id="v_power">power</field>
                                       </block>
                                     </value>
                                     <next>
-                                      <block type="pvb_oled_label_val" id="b392">
+                                      <block type="pvb_oled_label_val" id="b396">
                                         <field name="ROW">3</field>
                                         <field name="LABEL">C:</field>
                                         <value name="VALUE">
-                                          <block type="val_var" id="b391">
+                                          <block type="val_var" id="b395">
                                             <field name="VAR" id="v_v">v</field>
                                           </block>
                                         </value>
                                         <next>
-                                          <block type="pvb_if_switch" id="b395">
+                                          <block type="pvb_if_switch" id="b399">
                                             <field name="SW">14</field>
                                             <statement name="DO">
-                                              <block type="pvb_stop" id="b393">
+                                              <block type="pvb_stop" id="b397">
                                                 <next>
-                                                  <block type="py_break" id="b394">
+                                                  <block type="py_break" id="b398">
                                                   </block>
                                                 </next>
                                               </block>
                                             </statement>
                                             <next>
-                                              <block type="pico_wait" id="b397">
+                                              <block type="pico_wait" id="b401">
                                                 <value name="SEC">
-                                                  <block type="val_number" id="b396">
+                                                  <block type="val_number" id="b400">
                                                     <field name="NUM">0.02</field>
                                                   </block>
                                                 </value>
@@ -142,10 +142,6 @@
                             </next>
                           </block>
                         </statement>
-                        <next>
-                          <block type="pvb_stop" id="b399">
-                          </block>
-                        </next>
                       </block>
                     </next>
                   </block>
