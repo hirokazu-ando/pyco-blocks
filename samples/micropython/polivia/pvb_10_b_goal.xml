@@ -11,7 +11,7 @@
     <field name="VAR" id="v_goal">goal</field>
     <value name="VALUE">
       <block type="val_number" id="b372">
-        <field name="NUM">35000</field>
+        <field name="NUM">14000</field>
       </block>
     </value>
     <next>
