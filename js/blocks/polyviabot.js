@@ -171,4 +171,68 @@ Blockly.Blocks['pvb_oled_clear'] = {
   }
 };
 
+// 左右の速さを別々に決めて走る（二部 #14 以降：旋回半径・比例制御・PD 制御）
+Blockly.Blocks['pvb_drive'] = {
+  init: function() {
+    this.appendDummyInput().appendField('左');
+    this.appendValueInput('LEFT').setCheck('Number');
+    this.appendDummyInput().appendField('%  右');
+    this.appendValueInput('RIGHT').setCheck('Number');
+    this.appendDummyInput().appendField('% で走る');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.polyvia);
+    this.setTooltip('左右の車輪の速さを -100〜100 で決めます。マイナスは後ろ向き。左右を変えると曲がりながら進みます');
+  }
+};
+
+// 起動してからの時間（ミリ秒）
+Blockly.Blocks['pvb_ticks_ms'] = {
+  init: function() {
+    this.appendDummyInput().appendField('起動してからの時間（ms）');
+    this.setOutput(true, 'Number');
+    this.setColour(P.polyvia);
+    this.setTooltip('プログラムが動き始めてからのミリ秒です。2回読んだ差で、かかった時間が分かります');
+  }
+};
+
+// ===== Pico W 限定：Wi-Fi（四部「つなぐ」）=====
+
+// ロボットが Wi-Fi の親機になる（学校の Wi-Fi を使わない）
+Blockly.Blocks['pvb_wifi_ap'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Wi-Fi の親機になる  名前')
+      .appendField(new Blockly.FieldTextInput('PoliviaBot'), 'SSID')
+      .appendField('  パスワード')
+      .appendField(new Blockly.FieldTextInput('polivia123'), 'PASS');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。ロボットが Wi-Fi の親機になります。スマホの Wi-Fi 設定でこの名前を選んでつなぎ、ブラウザで 192.168.4.1 を開きます。パスワードは8文字以上');
+  }
+};
+
+// スマホに操縦ページを出す（待たずに戻る Web サーバ）
+Blockly.Blocks['pvb_web_start'] = {
+  init: function() {
+    this.appendDummyInput().appendField('操縦ページを出す');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。スマホのブラウザに前・後ろ・左・右・止めるのボタンを出します。ボタンを押している間、命令が送られ続けます');
+  }
+};
+
+// 操縦ページで押されたボタン（押されていなければ空）
+Blockly.Blocks['pvb_web_button'] = {
+  init: function() {
+    this.appendDummyInput().appendField('操縦ページで押されたボタン');
+    this.setOutput(true, 'String');
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。"前進" "後退" "左" "右" "停止" のどれか。新しい命令が届いていなければ ""（空）です。ずっと繰り返すの中で毎回読みます');
+  }
+};
+
 })();

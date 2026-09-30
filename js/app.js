@@ -576,6 +576,11 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'pvb_turn_right':   return `右旋回`;
       case 'pvb_turn_left':    return `左旋回`;
       case 'pvb_stop':         return `止まる（モーター停止）`;
+      case 'pvb_drive':        return `左右の速さを決めて走る`;
+      case 'pvb_ticks_ms':     return `起動してからの時間（ms）`;
+      case 'pvb_wifi_ap':      return `Wi-Fi の親機になる（名前: ${block.getFieldValue('SSID')}）`;
+      case 'pvb_web_start':    return `操縦ページを出す`;
+      case 'pvb_web_button':   return `操縦ページで押されたボタン`;
       case 'pvb_led_on': {
         const n = block.getFieldValue('LED') === '11' ? '1' : '2';
         return `LED${n} 点灯（GP${block.getFieldValue('LED')}）`;
@@ -1051,6 +1056,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       case 'pvb_sonar_val':
         return '_pvb_sonar_cm()';
+      case 'pvb_ticks_ms':
+        return 'utime.ticks_ms()';
+      case 'pvb_web_button':
+        return '_pvb_web_poll()';
       case 'py_list_empty':
         return '[]';
       case 'py_list_get': {
@@ -1973,6 +1982,33 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `_pvb_drive(0, 0)\n`);
         break;
       }
+      case 'pvb_drive': {
+        const lnDrv = _emitCtx.line;
+        registerExprBlocksAtLineFromInput(block, 'LEFT', lnDrv);
+        registerExprBlocksAtLineFromInput(block, 'RIGHT', lnDrv);
+        const dl = valueToCode(block, 'LEFT', '50');
+        const dr = valueToCode(block, 'RIGHT', '50');
+        code = appendLocal(code, indent + `_pvb_drive(${dl}, ${dr})\n`);
+        break;
+      }
+
+      // ===== PoliviaBot Wi-Fi（Pico W 限定）=====
+      // 親機（AP）にして、スマホをロボットの Wi-Fi に直接つなぐ。学校の Wi-Fi を通さない。
+      case 'pvb_wifi_ap': {
+        const apSsid = block.getFieldValue('SSID');
+        const apPass = block.getFieldValue('PASS');
+        code = appendLocal(code, indent + `_ap = network.WLAN(network.AP_IF)\n`);
+        code = appendLocal(code, indent + `_ap.config(essid=${JSON.stringify(apSsid)}, password=${JSON.stringify(apPass)})\n`);
+        code = appendLocal(code, indent + `_ap.active(True)\n`);
+        code = appendLocal(code, indent + `while not _ap.active():\n`);
+        code = appendLocal(code, indent + `    utime.sleep(0.1)\n`);
+        code = appendLocal(code, indent + `print("Wi-Fi", ${JSON.stringify(apSsid)}, "http://" + _ap.ifconfig()[0])\n`);
+        break;
+      }
+      case 'pvb_web_start': {
+        code = appendLocal(code, indent + `_pvb_web_start()\n`);
+        break;
+      }
 
       // ===== PoliviaBot LED / スイッチ =====
       case 'pvb_led_on': {
@@ -2348,6 +2384,8 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'pvb_switch_val':
       case 'pvb_line_val':
       case 'pvb_sonar_val':
+      case 'pvb_ticks_ms':
+      case 'pvb_web_button':
       case 'py_list_empty':
       case 'py_list_get':
       case 'py_list_len':
@@ -3215,7 +3253,7 @@ document.addEventListener('DOMContentLoaded', function() {
       header = importLines.join('\n') + '\n\n';
     } else {
       // ─── MicroPythonモード：既存ロジック ───
-      const motorTypes = ['pvb_forward','pvb_backward','pvb_turn_right','pvb_turn_left','pvb_stop'];
+      const motorTypes = ['pvb_forward','pvb_backward','pvb_turn_right','pvb_turn_left','pvb_stop','pvb_drive'];
       const hasMotor   = motorTypes.some(t => blockTypes.has(t));
       const hasSonarVal = blockTypes.has('pvb_sonar_val');
       // 超音波系ブロックがあれば machine.time_pulse_us を取り込む（タイムアウト付き測定に必須）
@@ -3226,12 +3264,18 @@ document.addEventListener('DOMContentLoaded', function() {
       const oledTypes = ['pvb_oled_text','pvb_oled_label_val','pvb_oled_clear'];
       const hasOled = oledTypes.some(t => blockTypes.has(t));
 
+      // PoliviaBot の Wi-Fi（Pico W 限定）。操縦ページは待たずに戻る Web サーバ
+      const hasWeb = blockTypes.has('pvb_web_start') || blockTypes.has('pvb_web_button');
+      const hasWifiAp = blockTypes.has('pvb_wifi_ap');
+
       const needsRandom = blockTypes.has('py_random_int');
       const machineImports = 'Pin, PWM, ADC' + (hasSonar ? ', time_pulse_us' : '') + (hasOled ? ', I2C' : '');
       const baseHeader =
         (showComments ? '# Picoのピン・PWM・ADC制御用\n' : '') + `${cm}from machine import ${machineImports}\n` +
         (showComments ? '# 時間待機用（MicroPython版 time モジュール）\n' : '') + `${cm}import utime\n` +
         (hasOled ? ((showComments ? '# OLED画面の描画用\n' : '') + `${cm}import framebuf\n`) : '') +
+        (hasWifiAp ? ((showComments ? '# Wi-Fi の親機になる（Pico W）\n' : '') + `${cm}import network\n`) : '') +
+        (hasWeb ? ((showComments ? '# 操縦ページを出す（Pico W）\n' : '') + `${cm}import socket\n`) : '') +
         (needsRandom ? ((showComments ? '# 乱数生成用\n' : '') + `${cm}import random\n`) : '') +
         '\n';
       // UME V3：左右とも IN1（GP0 / GP2）側を High にすると前進（2026-09-12 実機で確認）
@@ -3285,10 +3329,44 @@ document.addEventListener('DOMContentLoaded', function() {
         '_i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=100000)\n' +
         '_oled = SSD1306_I2C(128, 64, _i2c, 0x3C)\n\n';
 
+      // 操縦ページ（Pico W）。accept を待たない作りにして、ずっと繰り返すの中で
+      // 毎回呼んでも走りが止まらないようにする。ボタンを押している間はページが
+      // 0.2 秒ごとに命令を送り続け、離すと "停止" を1回送る。
+      const webHelper =
+        '_PVB_CMD = {b"/f": "前進", b"/b": "後退", b"/l": "左", b"/r": "右", b"/s": "停止"}\n' +
+        `_PVB_PAGE = '''<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>PoliviaBot</title><style>body{font-family:sans-serif;text-align:center;margin:0;padding:12px;user-select:none;-webkit-user-select:none}div{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:360px;margin:0 auto}button{font-size:24px;padding:28px 0;border:0;border-radius:12px;background:#ddd;touch-action:none}button:active{background:#8cd}</style><h3>PoliviaBot</h3><div><i></i><button data-c=f>前</button><i></i><button data-c=l>左</button><button data-c=s>止</button><button data-c=r>右</button><i></i><button data-c=b>後</button><i></i></div><script>var t=null;function go(c){fetch('/'+c,{cache:'no-store'}).catch(function(){})}document.querySelectorAll('button').forEach(function(b){var c=b.dataset.c;b.onpointerdown=function(e){e.preventDefault();go(c);clearInterval(t);t=null;if(c!='s')t=setInterval(function(){go(c)},200)};b.onpointerup=b.onpointerleave=b.onpointercancel=function(){if(t){clearInterval(t);t=null;go('s')}}})</script>'''.encode()\n\n` +
+        'def _pvb_web_start():\n' +
+        '    global _pvb_srv\n' +
+        '    _pvb_srv = socket.socket()\n' +
+        '    _pvb_srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n' +
+        '    _pvb_srv.bind(("0.0.0.0", 80))\n' +
+        '    _pvb_srv.listen(2)\n' +
+        '    _pvb_srv.setblocking(False)\n\n' +
+        'def _pvb_web_poll():\n' +
+        '    try:\n' +
+        '        c, _ = _pvb_srv.accept()\n' +
+        '    except OSError:\n' +
+        '        return ""\n' +
+        '    cmd = ""\n' +
+        '    try:\n' +
+        '        c.settimeout(0.3)\n' +
+        '        req = c.recv(256).split(b" ")\n' +
+        '        cmd = _PVB_CMD.get(req[1] if len(req) > 1 else b"/", "")\n' +
+        '        if cmd:\n' +
+        '            c.sendall(b"HTTP/1.0 200 OK\\r\\nContent-Type: text/plain\\r\\nCache-Control: no-store\\r\\n\\r\\nok")\n' +
+        '        else:\n' +
+        '            c.sendall(b"HTTP/1.0 200 OK\\r\\nContent-Type: text/html; charset=utf-8\\r\\n\\r\\n")\n' +
+        '            c.sendall(_PVB_PAGE)\n' +
+        '    except OSError:\n' +
+        '        pass\n' +
+        '    c.close()\n' +
+        '    return cmd\n\n';
+
       header = baseHeader;
       if (hasMotor)    header += motorInit;
       if (hasSonarVal) header += sonarHelper;
       if (hasOled)     header += oledSetup;
+      if (hasWeb)      header += webHelper;
     }
 
     const isMain = activeFileIdx === 0;
