@@ -3350,7 +3350,15 @@ document.addEventListener('DOMContentLoaded', function() {
         '    cmd = ""\n' +
         '    try:\n' +
         '        c.settimeout(0.3)\n' +
-        '        req = c.recv(256).split(b" ")\n' +
+        '        # 最後の空行まで読みきってから返す。読み残して閉じると接続がリセットされ、\n' +
+        '        # スマホのブラウザはページを捨ててしまう（リクエストは 450 バイトほどある）\n' +
+        '        req = b""\n' +
+        '        while b"\\r\\n\\r\\n" not in req and len(req) < 2048:\n' +
+        '            d = c.recv(512)\n' +
+        '            if not d:\n' +
+        '                break\n' +
+        '            req += d\n' +
+        '        req = req.split(b" ")\n' +
         '        cmd = _PVB_CMD.get(req[1] if len(req) > 1 else b"/", "")\n' +
         '        if cmd:\n' +
         '            c.sendall(b"HTTP/1.0 200 OK\\r\\nContent-Type: text/plain\\r\\nCache-Control: no-store\\r\\n\\r\\nok")\n' +
