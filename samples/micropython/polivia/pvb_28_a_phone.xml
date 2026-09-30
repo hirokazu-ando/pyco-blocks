@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #28 例a：スマホの操縦ページで動かす（命令が来なければ前の動きを続ける）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_cmd">cmd</variable>
+  </variables>
+  <block type="pvb_wifi_ap" x="30" y="30" id="b644">
+    <field name="SSID">PoliviaBot</field>
+    <field name="PASS">polivia123</field>
+    <next>
+      <block type="pvb_web_start" id="b645">
+        <next>
+          <block type="pvb_oled_clear" id="b646">
+            <next>
+              <block type="pvb_oled_text" id="b648">
+                <field name="ROW">1</field>
+                <value name="TEXT">
+                  <block type="val_str" id="b647">
+                    <field name="TEXT">WiFi: PoliviaBot</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_oled_text" id="b650">
+                    <field name="ROW">2</field>
+                    <value name="TEXT">
+                      <block type="val_str" id="b649">
+                        <field name="TEXT">192.168.4.1</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_forever" id="b680">
+                        <statement name="DO">
+                          <block type="var_set" id="b652">
+                            <field name="VAR" id="v_cmd">cmd</field>
+                            <value name="VALUE">
+                              <block type="pvb_web_button" id="b651">
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pico_if" id="b677">
+                                <mutation elseif="4" else="0"></mutation>
+                                <value name="IF0">
+                                  <block type="cond_compare" id="b655">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b653">
+                                        <field name="VAR" id="v_cmd">cmd</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_str" id="b654">
+                                        <field name="TEXT">前進</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="IF1">
+                                  <block type="cond_compare" id="b660">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b658">
+                                        <field name="VAR" id="v_cmd">cmd</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_str" id="b659">
+                                        <field name="TEXT">後退</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="IF2">
+                                  <block type="cond_compare" id="b665">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b663">
+                                        <field name="VAR" id="v_cmd">cmd</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_str" id="b664">
+                                        <field name="TEXT">左</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="IF3">
+                                  <block type="cond_compare" id="b670">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b668">
+                                        <field name="VAR" id="v_cmd">cmd</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_str" id="b669">
+                                        <field name="TEXT">右</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="IF4">
+                                  <block type="cond_compare" id="b675">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b673">
+                                        <field name="VAR" id="v_cmd">cmd</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_str" id="b674">
+                                        <field name="TEXT">停止</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO0">
+                                  <block type="pvb_forward" id="b657">
+                                    <value name="SPEED">
+                                      <block type="val_number" id="b656">
+                                        <field name="NUM">50</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </statement>
+                                <statement name="DO1">
+                                  <block type="pvb_backward" id="b662">
+                                    <value name="SPEED">
+                                      <block type="val_number" id="b661">
+                                        <field name="NUM">50</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </statement>
+                                <statement name="DO2">
+                                  <block type="pvb_turn_left" id="b667">
+                                    <value name="SPEED">
+                                      <block type="val_number" id="b666">
+                                        <field name="NUM">40</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </statement>
+                                <statement name="DO3">
+                                  <block type="pvb_turn_right" id="b672">
+                                    <value name="SPEED">
+                                      <block type="val_number" id="b671">
+                                        <field name="NUM">40</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </statement>
+                                <statement name="DO4">
+                                  <block type="pvb_stop" id="b676">
+                                  </block>
+                                </statement>
+                                <next>
+                                  <block type="pico_wait" id="b679">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b678">
+                                        <field name="NUM">0.02</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>
