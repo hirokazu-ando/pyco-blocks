@@ -296,6 +296,18 @@
       <block type="pvb_wifi_ap" gap="8"></block>
       <block type="pvb_web_start" gap="8"></block>
       <block type="pvb_web_button" gap="8"></block>
+      <block type="pvb_web_show" gap="8">
+        <value name="VALUE">
+          <shadow type="val_number"><field name="NUM">0</field></shadow>
+        </value>
+      </block>
+      <block type="pvb_web_number" gap="8"></block>
+      <block type="pvb_udp_send" gap="8">
+        <value name="MSG">
+          <shadow type="val_str"><field name="TEXT">GO</field></shadow>
+        </value>
+      </block>
+      <block type="pvb_udp_recv" gap="8"></block>
     </category>
     <category name="繰り返し" colour="#F9A825">
       <block type="pico_forever" gap="8"></block>

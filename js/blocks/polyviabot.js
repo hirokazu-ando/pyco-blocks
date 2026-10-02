@@ -235,4 +235,53 @@ Blockly.Blocks['pvb_web_button'] = {
   }
 };
 
+// 操縦ページに値を出す（スマホに数字と小さなグラフが出る）
+Blockly.Blocks['pvb_web_show'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+      .appendField('操縦ページに  名前')
+      .appendField(new Blockly.FieldTextInput('L'), 'NAME')
+      .appendField('  値');
+    this.appendDummyInput().appendField('を出す');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。「操縦ページを出す」のあとで使います。スマホのページに、名前と値と、値の動きのグラフが出ます（0.3 秒ごとに更新）');
+  }
+};
+
+// 操縦ページから届いた数（ページの入力欄 A・B）
+Blockly.Blocks['pvb_web_number'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('操縦ページから届いた数')
+      .appendField(new Blockly.FieldDropdown([['A', 'A'], ['B', 'B']]), 'KEY');
+    this.setOutput(true, 'Number');
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。スマホのページの入力欄 A・B に入れて「送る」を押した数です。まだ何も送っていなければ 0');
+  }
+};
+
+// 合図を送る（同じ Wi-Fi にいる全員へ・UDP）
+Blockly.Blocks['pvb_udp_send'] = {
+  init: function() {
+    this.appendValueInput('MSG').appendField('合図を送る');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。同じ Wi-Fi にいるロボット全員に、短い合図（文字や数）を送ります。届いたかどうかは確かめません');
+  }
+};
+
+// 届いた合図（なければ空）
+Blockly.Blocks['pvb_udp_recv'] = {
+  init: function() {
+    this.appendDummyInput().appendField('届いた合図');
+    this.setOutput(true, 'String');
+    this.setColour(P.gpioPicoW);
+    this.setTooltip('Pico W 専用。ほかのロボットから届いた合図です。新しい合図がなければ ""（空）。ずっと繰り返すの中で毎回読みます');
+  }
+};
+
 })();
