@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #32 演習の答え（1号機）：2秒走ったら STOP を送って止まる（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pvb_wifi_ap" x="30" y="30" id="b4796">
+    <field name="SSID">PoliviaBot</field>
+    <field name="PASS">polivia123</field>
+    <next>
+      <block type="pvb_oled_clear" id="b4797">
+        <next>
+          <block type="pvb_oled_text" id="b4799">
+            <field name="ROW">1</field>
+            <value name="TEXT">
+              <block type="val_str" id="b4798">
+                <field name="TEXT">ROBOT 1</field>
+              </block>
+            </value>
+            <next>
+              <block type="pvb_oled_text" id="b4801">
+                <field name="ROW">2</field>
+                <value name="TEXT">
+                  <block type="val_str" id="b4800">
+                    <field name="TEXT">SW1 = GO</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="py_while" id="b4806">
+                    <value name="COND">
+                      <block type="cond_not" id="b4803">
+                        <value name="A">
+                          <block type="pvb_switch_val" id="b4802">
+                            <field name="SW">13</field>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO">
+                      <block type="pico_wait" id="b4805">
+                        <value name="SEC">
+                          <block type="val_number" id="b4804">
+                            <field name="NUM">0.05</field>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_repeat" id="b4812">
+                        <value name="TIMES">
+                          <block type="val_number" id="b4811">
+                            <field name="NUM">3</field>
+                          </block>
+                        </value>
+                        <statement name="DO">
+                          <block type="pvb_udp_send" id="b4808">
+                            <value name="MSG">
+                              <block type="val_str" id="b4807">
+                                <field name="TEXT">GO</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pico_wait" id="b4810">
+                                <value name="SEC">
+                                  <block type="val_number" id="b4809">
+                                    <field name="NUM">0.02</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pvb_forward" id="b4814">
+                            <value name="SPEED">
+                              <block type="val_number" id="b4813">
+                                <field name="NUM">40</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pico_wait" id="b4816">
+                                <value name="SEC">
+                                  <block type="val_number" id="b4815">
+                                    <field name="NUM">2</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="pico_repeat" id="b4822">
+                                    <value name="TIMES">
+                                      <block type="val_number" id="b4821">
+                                        <field name="NUM">3</field>
+                                      </block>
+                                    </value>
+                                    <statement name="DO">
+                                      <block type="pvb_udp_send" id="b4818">
+                                        <value name="MSG">
+                                          <block type="val_str" id="b4817">
+                                            <field name="TEXT">STOP</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="pico_wait" id="b4820">
+                                            <value name="SEC">
+                                              <block type="val_number" id="b4819">
+                                                <field name="NUM">0.02</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="pvb_stop" id="b4823">
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

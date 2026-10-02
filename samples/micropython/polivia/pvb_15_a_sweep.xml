@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #15 例a：左だけ・右だけを 2% ずつ上げて、回り出す D を探す（車輪を浮かせる）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_D">D</variable>
+  </variables>
+  <block type="pvb_oled_clear" x="30" y="30" id="b1293">
+    <next>
+      <block type="pvb_oled_text" id="b1295">
+        <field name="ROW">1</field>
+        <value name="TEXT">
+          <block type="val_str" id="b1294">
+            <field name="TEXT">LEFT  SW1:go</field>
+          </block>
+        </value>
+        <next>
+          <block type="py_while" id="b1300">
+            <value name="COND">
+              <block type="cond_not" id="b1297">
+                <value name="A">
+                  <block type="pvb_switch_val" id="b1296">
+                    <field name="SW">13</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO">
+              <block type="pico_wait" id="b1299">
+                <value name="SEC">
+                  <block type="val_number" id="b1298">
+                    <field name="NUM">0.05</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+            <next>
+              <block type="py_while" id="b1304">
+                <value name="COND">
+                  <block type="pvb_switch_val" id="b1301">
+                    <field name="SW">13</field>
+                  </block>
+                </value>
+                <statement name="DO">
+                  <block type="pico_wait" id="b1303">
+                    <value name="SEC">
+                      <block type="val_number" id="b1302">
+                        <field name="NUM">0.05</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="var_set" id="b1306">
+                    <field name="VAR" id="v_D">D</field>
+                    <value name="VALUE">
+                      <block type="val_number" id="b1305">
+                        <field name="NUM">0</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_repeat" id="b1318">
+                        <value name="TIMES">
+                          <block type="val_number" id="b1317">
+                            <field name="NUM">31</field>
+                          </block>
+                        </value>
+                        <statement name="DO">
+                          <block type="pvb_oled_label_val" id="b1308">
+                            <field name="ROW">2</field>
+                            <field name="LABEL">D:</field>
+                            <value name="VALUE">
+                              <block type="val_var" id="b1307">
+                                <field name="VAR" id="v_D">D</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pvb_print" id="b1309">
+                                <field name="VAR" id="v_D">D</field>
+                                <next>
+                                  <block type="pvb_drive" id="b1312">
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b1310">
+                                        <field name="VAR" id="v_D">D</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_number" id="b1311">
+                                        <field name="NUM">0</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="pico_wait" id="b1314">
+                                        <value name="SEC">
+                                          <block type="val_number" id="b1313">
+                                            <field name="NUM">1</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="var_change" id="b1316">
+                                            <field name="VAR" id="v_D">D</field>
+                                            <value name="AMOUNT">
+                                              <block type="val_number" id="b1315">
+                                                <field name="NUM">2</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pvb_stop" id="b1319">
+                            <next>
+                              <block type="pvb_oled_text" id="b1321">
+                                <field name="ROW">1</field>
+                                <value name="TEXT">
+                                  <block type="val_str" id="b1320">
+                                    <field name="TEXT">RIGHT SW1:go</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="py_while" id="b1326">
+                                    <value name="COND">
+                                      <block type="cond_not" id="b1323">
+                                        <value name="A">
+                                          <block type="pvb_switch_val" id="b1322">
+                                            <field name="SW">13</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO">
+                                      <block type="pico_wait" id="b1325">
+                                        <value name="SEC">
+                                          <block type="val_number" id="b1324">
+                                            <field name="NUM">0.05</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="py_while" id="b1330">
+                                        <value name="COND">
+                                          <block type="pvb_switch_val" id="b1327">
+                                            <field name="SW">13</field>
+                                          </block>
+                                        </value>
+                                        <statement name="DO">
+                                          <block type="pico_wait" id="b1329">
+                                            <value name="SEC">
+                                              <block type="val_number" id="b1328">
+                                                <field name="NUM">0.05</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </statement>
+                                        <next>
+                                          <block type="var_set" id="b1332">
+                                            <field name="VAR" id="v_D">D</field>
+                                            <value name="VALUE">
+                                              <block type="val_number" id="b1331">
+                                                <field name="NUM">0</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="pico_repeat" id="b1344">
+                                                <value name="TIMES">
+                                                  <block type="val_number" id="b1343">
+                                                    <field name="NUM">31</field>
+                                                  </block>
+                                                </value>
+                                                <statement name="DO">
+                                                  <block type="pvb_oled_label_val" id="b1334">
+                                                    <field name="ROW">2</field>
+                                                    <field name="LABEL">D:</field>
+                                                    <value name="VALUE">
+                                                      <block type="val_var" id="b1333">
+                                                        <field name="VAR" id="v_D">D</field>
+                                                      </block>
+                                                    </value>
+                                                    <next>
+                                                      <block type="pvb_print" id="b1335">
+                                                        <field name="VAR" id="v_D">D</field>
+                                                        <next>
+                                                          <block type="pvb_drive" id="b1338">
+                                                            <value name="LEFT">
+                                                              <block type="val_number" id="b1336">
+                                                                <field name="NUM">0</field>
+                                                              </block>
+                                                            </value>
+                                                            <value name="RIGHT">
+                                                              <block type="val_var" id="b1337">
+                                                                <field name="VAR" id="v_D">D</field>
+                                                              </block>
+                                                            </value>
+                                                            <next>
+                                                              <block type="pico_wait" id="b1340">
+                                                                <value name="SEC">
+                                                                  <block type="val_number" id="b1339">
+                                                                    <field name="NUM">1</field>
+                                                                  </block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="var_change" id="b1342">
+                                                                    <field name="VAR" id="v_D">D</field>
+                                                                    <value name="AMOUNT">
+                                                                      <block type="val_number" id="b1341">
+                                                                        <field name="NUM">2</field>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </statement>
+                                                <next>
+                                                  <block type="pvb_stop" id="b1345">
+                                                    <next>
+                                                      <block type="pvb_oled_text" id="b1347">
+                                                        <field name="ROW">3</field>
+                                                        <value name="TEXT">
+                                                          <block type="val_str" id="b1346">
+                                                            <field name="TEXT">END</field>
+                                                          </block>
+                                                        </value>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -2,108 +2,108 @@
 <!-- Part 2 PoliviaBot #14 例a：左右の速さを変えて円を描く（5秒走って止まる）（tools/build_pvb_samples.py が生成） -->
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables>
-    <variable id="v_L">L</variable>
-    <variable id="v_R">R</variable>
+    <variable id="v_VL">VL</variable>
+    <variable id="v_VR">VR</variable>
     <variable id="v_t0">t0</variable>
   </variables>
-  <block type="var_set" x="30" y="30" id="b620">
-    <field name="VAR" id="v_L">L</field>
+  <block type="var_set" x="30" y="30" id="b1229">
+    <field name="VAR" id="v_VL">VL</field>
     <value name="VALUE">
-      <block type="val_number" id="b619">
+      <block type="val_number" id="b1228">
         <field name="NUM">50</field>
       </block>
     </value>
     <next>
-      <block type="var_set" id="b622">
-        <field name="VAR" id="v_R">R</field>
+      <block type="var_set" id="b1231">
+        <field name="VAR" id="v_VR">VR</field>
         <value name="VALUE">
-          <block type="val_number" id="b621">
+          <block type="val_number" id="b1230">
             <field name="NUM">30</field>
           </block>
         </value>
         <next>
-          <block type="py_while" id="b627">
+          <block type="py_while" id="b1236">
             <value name="COND">
-              <block type="cond_not" id="b624">
+              <block type="cond_not" id="b1233">
                 <value name="A">
-                  <block type="pvb_switch_val" id="b623">
+                  <block type="pvb_switch_val" id="b1232">
                     <field name="SW">13</field>
                   </block>
                 </value>
               </block>
             </value>
             <statement name="DO">
-              <block type="pico_wait" id="b626">
+              <block type="pico_wait" id="b1235">
                 <value name="SEC">
-                  <block type="val_number" id="b625">
+                  <block type="val_number" id="b1234">
                     <field name="NUM">0.05</field>
                   </block>
                 </value>
               </block>
             </statement>
             <next>
-              <block type="pico_wait" id="b629">
+              <block type="pico_wait" id="b1238">
                 <value name="SEC">
-                  <block type="val_number" id="b628">
+                  <block type="val_number" id="b1237">
                     <field name="NUM">0.5</field>
                   </block>
                 </value>
                 <next>
-                  <block type="var_set" id="b631">
+                  <block type="var_set" id="b1240">
                     <field name="VAR" id="v_t0">t0</field>
                     <value name="VALUE">
-                      <block type="pvb_ticks_ms" id="b630">
+                      <block type="pvb_ticks_ms" id="b1239">
                       </block>
                     </value>
                     <next>
-                      <block type="pvb_drive" id="b634">
+                      <block type="pvb_drive" id="b1243">
                         <value name="LEFT">
-                          <block type="val_var" id="b632">
-                            <field name="VAR" id="v_L">L</field>
+                          <block type="val_var" id="b1241">
+                            <field name="VAR" id="v_VL">VL</field>
                           </block>
                         </value>
                         <value name="RIGHT">
-                          <block type="val_var" id="b633">
-                            <field name="VAR" id="v_R">R</field>
+                          <block type="val_var" id="b1242">
+                            <field name="VAR" id="v_VR">VR</field>
                           </block>
                         </value>
                         <next>
-                          <block type="py_while" id="b642">
+                          <block type="py_while" id="b1251">
                             <value name="COND">
-                              <block type="cond_compare" id="b639">
+                              <block type="cond_compare" id="b1248">
                                 <field name="OP">&lt;</field>
                                 <value name="LEFT">
-                                  <block type="py_math_op" id="b637">
+                                  <block type="py_math_op" id="b1246">
                                     <field name="OP">-</field>
                                     <value name="LEFT">
-                                      <block type="pvb_ticks_ms" id="b635">
+                                      <block type="pvb_ticks_ms" id="b1244">
                                       </block>
                                     </value>
                                     <value name="RIGHT">
-                                      <block type="val_var" id="b636">
+                                      <block type="val_var" id="b1245">
                                         <field name="VAR" id="v_t0">t0</field>
                                       </block>
                                     </value>
                                   </block>
                                 </value>
                                 <value name="RIGHT">
-                                  <block type="val_number" id="b638">
+                                  <block type="val_number" id="b1247">
                                     <field name="NUM">5000</field>
                                   </block>
                                 </value>
                               </block>
                             </value>
                             <statement name="DO">
-                              <block type="pico_wait" id="b641">
+                              <block type="pico_wait" id="b1250">
                                 <value name="SEC">
-                                  <block type="val_number" id="b640">
+                                  <block type="val_number" id="b1249">
                                     <field name="NUM">0.05</field>
                                   </block>
                                 </value>
                               </block>
                             </statement>
                             <next>
-                              <block type="pvb_stop" id="b643">
+                              <block type="pvb_stop" id="b1252">
                               </block>
                             </next>
                           </block>

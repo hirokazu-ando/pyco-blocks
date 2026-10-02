@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #24 例b：動き出す境目 D0 を足して、届かない差を小さくする（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_target">target</variable>
+    <variable id="v_Kp">Kp</variable>
+    <variable id="v_D0">D0</variable>
+    <variable id="v_loops">loops</variable>
+    <variable id="v_dist">dist</variable>
+    <variable id="v_P">P</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b3100">
+    <field name="VAR" id="v_target">target</field>
+    <value name="VALUE">
+      <block type="val_number" id="b3099">
+        <field name="NUM">20</field>
+      </block>
+    </value>
+    <next>
+      <block type="var_set" id="b3102">
+        <field name="VAR" id="v_Kp">Kp</field>
+        <value name="VALUE">
+          <block type="val_number" id="b3101">
+            <field name="NUM">3</field>
+          </block>
+        </value>
+        <next>
+          <block type="var_set" id="b3104">
+            <field name="VAR" id="v_D0">D0</field>
+            <value name="VALUE">
+              <block type="val_number" id="b3103">
+                <field name="NUM">20</field>
+              </block>
+            </value>
+            <next>
+              <block type="var_set" id="b3141">
+                <field name="VAR" id="v_loops">loops</field>
+                <value name="VALUE">
+                  <block type="val_number" id="b3140">
+                    <field name="NUM">0</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_oled_clear" id="b3142">
+                    <next>
+                      <block type="pvb_oled_text" id="b3144">
+                        <field name="ROW">1</field>
+                        <value name="TEXT">
+                          <block type="val_str" id="b3143">
+                            <field name="TEXT">ACC</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pvb_oled_label_val" id="b3146">
+                            <field name="ROW">2</field>
+                            <field name="LABEL">target:</field>
+                            <value name="VALUE">
+                              <block type="val_var" id="b3145">
+                                <field name="VAR" id="v_target">target</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="py_while" id="b3151">
+                                <value name="COND">
+                                  <block type="cond_not" id="b3148">
+                                    <value name="A">
+                                      <block type="pvb_switch_val" id="b3147">
+                                        <field name="SW">13</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO">
+                                  <block type="pico_wait" id="b3150">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b3149">
+                                        <field name="NUM">0.05</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </statement>
+                                <next>
+                                  <block type="pico_wait" id="b3153">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b3152">
+                                        <field name="NUM">0.5</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="py_while" id="b3179">
+                                        <value name="COND">
+                                          <block type="cond_not" id="b3155">
+                                            <value name="A">
+                                              <block type="pvb_switch_val" id="b3154">
+                                                <field name="SW">14</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                        <statement name="DO">
+                                          <block type="var_change" id="b3157">
+                                            <field name="VAR" id="v_loops">loops</field>
+                                            <value name="AMOUNT">
+                                              <block type="val_number" id="b3156">
+                                                <field name="NUM">1</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="pvb_sonar" id="b3158">
+                                                <field name="VAR" id="v_dist">dist</field>
+                                                <next>
+                                                  <block type="pico_if" id="b3168">
+                                                    <mutation elseif="0" else="1"></mutation>
+                                                    <value name="IF0">
+                                                      <block type="cond_compare" id="b3161">
+                                                        <field name="OP">&gt;</field>
+                                                        <value name="LEFT">
+                                                          <block type="val_var" id="b3159">
+                                                            <field name="VAR" id="v_dist">dist</field>
+                                                          </block>
+                                                        </value>
+                                                        <value name="RIGHT">
+                                                          <block type="val_number" id="b3160">
+                                                            <field name="NUM">100</field>
+                                                          </block>
+                                                        </value>
+                                                      </block>
+                                                    </value>
+                                                    <statement name="DO0">
+                                                      <block type="pvb_stop" id="b3162">
+                                                        <next>
+                                                          <block type="pvb_led_on" id="b3163">
+                                                            <field name="LED">12</field>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </statement>
+                                                    <statement name="ELSE">
+                                                      <block type="var_set" id="b3110">
+                                                        <field name="VAR" id="v_P">P</field>
+                                                        <value name="VALUE">
+                                                          <block type="py_math_op" id="b3109">
+                                                            <field name="OP">*</field>
+                                                            <value name="LEFT">
+                                                              <block type="val_var" id="b3105">
+                                                                <field name="VAR" id="v_Kp">Kp</field>
+                                                              </block>
+                                                            </value>
+                                                            <value name="RIGHT">
+                                                              <block type="py_math_op" id="b3108">
+                                                                <field name="OP">-</field>
+                                                                <value name="LEFT">
+                                                                  <block type="val_var" id="b3106">
+                                                                    <field name="VAR" id="v_dist">dist</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="RIGHT">
+                                                                  <block type="val_var" id="b3107">
+                                                                    <field name="VAR" id="v_target">target</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                          </block>
+                                                        </value>
+                                                        <next>
+                                                          <block type="pico_if" id="b3133">
+                                                            <mutation elseif="2" else="0"></mutation>
+                                                            <value name="IF0">
+                                                              <block type="cond_compare" id="b3116">
+                                                                <field name="OP">&lt;</field>
+                                                                <value name="LEFT">
+                                                                  <block type="py_abs" id="b3114">
+                                                                    <value name="VALUE">
+                                                                      <block type="py_math_op" id="b3113">
+                                                                        <field name="OP">-</field>
+                                                                        <value name="LEFT">
+                                                                          <block type="val_var" id="b3111">
+                                                                            <field name="VAR" id="v_dist">dist</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <value name="RIGHT">
+                                                                          <block type="val_var" id="b3112">
+                                                                            <field name="VAR" id="v_target">target</field>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="RIGHT">
+                                                                  <block type="val_number" id="b3115">
+                                                                    <field name="NUM">1</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                            <value name="IF1">
+                                                              <block type="cond_compare" id="b3121">
+                                                                <field name="OP">&gt;</field>
+                                                                <value name="LEFT">
+                                                                  <block type="val_var" id="b3119">
+                                                                    <field name="VAR" id="v_P">P</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="RIGHT">
+                                                                  <block type="val_number" id="b3120">
+                                                                    <field name="NUM">0</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                            <value name="IF2">
+                                                              <block type="cond_compare" id="b3128">
+                                                                <field name="OP">&lt;</field>
+                                                                <value name="LEFT">
+                                                                  <block type="val_var" id="b3126">
+                                                                    <field name="VAR" id="v_P">P</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="RIGHT">
+                                                                  <block type="val_number" id="b3127">
+                                                                    <field name="NUM">0</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                            <statement name="DO0">
+                                                              <block type="var_set" id="b3118">
+                                                                <field name="VAR" id="v_P">P</field>
+                                                                <value name="VALUE">
+                                                                  <block type="val_number" id="b3117">
+                                                                    <field name="NUM">0</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </statement>
+                                                            <statement name="DO1">
+                                                              <block type="var_set" id="b3125">
+                                                                <field name="VAR" id="v_P">P</field>
+                                                                <value name="VALUE">
+                                                                  <block type="py_math_op" id="b3124">
+                                                                    <field name="OP">+</field>
+                                                                    <value name="LEFT">
+                                                                      <block type="val_var" id="b3122">
+                                                                        <field name="VAR" id="v_P">P</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="RIGHT">
+                                                                      <block type="val_var" id="b3123">
+                                                                        <field name="VAR" id="v_D0">D0</field>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </statement>
+                                                            <statement name="DO2">
+                                                              <block type="var_set" id="b3132">
+                                                                <field name="VAR" id="v_P">P</field>
+                                                                <value name="VALUE">
+                                                                  <block type="py_math_op" id="b3131">
+                                                                    <field name="OP">-</field>
+                                                                    <value name="LEFT">
+                                                                      <block type="val_var" id="b3129">
+                                                                        <field name="VAR" id="v_P">P</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="RIGHT">
+                                                                      <block type="val_var" id="b3130">
+                                                                        <field name="VAR" id="v_D0">D0</field>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </statement>
+                                                            <next>
+                                                              <block type="var_set" id="b3139">
+                                                                <field name="VAR" id="v_P">P</field>
+                                                                <value name="VALUE">
+                                                                  <block type="py_max2" id="b3138">
+                                                                    <value name="A">
+                                                                      <block type="val_number" id="b3134">
+                                                                        <field name="NUM">-60</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="B">
+                                                                      <block type="py_min2" id="b3137">
+                                                                        <value name="A">
+                                                                          <block type="val_number" id="b3135">
+                                                                            <field name="NUM">60</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <value name="B">
+                                                                          <block type="val_var" id="b3136">
+                                                                            <field name="VAR" id="v_P">P</field>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </value>
+                                                                  </block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="pvb_drive" id="b3166">
+                                                                    <value name="LEFT">
+                                                                      <block type="val_var" id="b3164">
+                                                                        <field name="VAR" id="v_P">P</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <value name="RIGHT">
+                                                                      <block type="val_var" id="b3165">
+                                                                        <field name="VAR" id="v_P">P</field>
+                                                                      </block>
+                                                                    </value>
+                                                                    <next>
+                                                                      <block type="pvb_led_off" id="b3167">
+                                                                        <field name="LED">12</field>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </statement>
+                                                    <next>
+                                                      <block type="pico_if" id="b3178">
+                                                        <mutation elseif="0" else="0"></mutation>
+                                                        <value name="IF0">
+                                                          <block type="cond_compare" id="b3173">
+                                                            <field name="OP">==</field>
+                                                            <value name="LEFT">
+                                                              <block type="py_math_op" id="b3171">
+                                                                <field name="OP">%</field>
+                                                                <value name="LEFT">
+                                                                  <block type="val_var" id="b3169">
+                                                                    <field name="VAR" id="v_loops">loops</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="RIGHT">
+                                                                  <block type="val_number" id="b3170">
+                                                                    <field name="NUM">5</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                            <value name="RIGHT">
+                                                              <block type="val_number" id="b3172">
+                                                                <field name="NUM">0</field>
+                                                              </block>
+                                                            </value>
+                                                          </block>
+                                                        </value>
+                                                        <statement name="DO0">
+                                                          <block type="pvb_oled_label_val" id="b3177">
+                                                            <field name="ROW">3</field>
+                                                            <field name="LABEL">dist:</field>
+                                                            <value name="VALUE">
+                                                              <block type="py_round" id="b3176">
+                                                                <value name="VALUE">
+                                                                  <block type="val_var" id="b3174">
+                                                                    <field name="VAR" id="v_dist">dist</field>
+                                                                  </block>
+                                                                </value>
+                                                                <value name="DIGITS">
+                                                                  <block type="val_number" id="b3175">
+                                                                    <field name="NUM">1</field>
+                                                                  </block>
+                                                                </value>
+                                                              </block>
+                                                            </value>
+                                                          </block>
+                                                        </statement>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </statement>
+                                        <next>
+                                          <block type="pvb_stop" id="b3180">
+                                            <next>
+                                              <block type="pvb_led_off" id="b3181">
+                                                <field name="LED">12</field>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

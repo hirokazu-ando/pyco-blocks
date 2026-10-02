@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #15 例b：SW2 で D を 20→30→…→90 と変え、SW1 で 1秒だけ走る（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_D">D</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b1349">
+    <field name="VAR" id="v_D">D</field>
+    <value name="VALUE">
+      <block type="val_number" id="b1348">
+        <field name="NUM">20</field>
+      </block>
+    </value>
+    <next>
+      <block type="pico_forever" id="b1374">
+        <statement name="DO">
+          <block type="pvb_oled_label_val" id="b1351">
+            <field name="ROW">1</field>
+            <field name="LABEL">D:</field>
+            <value name="VALUE">
+              <block type="val_var" id="b1350">
+                <field name="VAR" id="v_D">D</field>
+              </block>
+            </value>
+            <next>
+              <block type="pvb_if_switch" id="b1362">
+                <field name="SW">14</field>
+                <statement name="DO">
+                  <block type="var_change" id="b1353">
+                    <field name="VAR" id="v_D">D</field>
+                    <value name="AMOUNT">
+                      <block type="val_number" id="b1352">
+                        <field name="NUM">10</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_if" id="b1359">
+                        <mutation elseif="0" else="0"></mutation>
+                        <value name="IF0">
+                          <block type="cond_compare" id="b1356">
+                            <field name="OP">&gt;</field>
+                            <value name="LEFT">
+                              <block type="val_var" id="b1354">
+                                <field name="VAR" id="v_D">D</field>
+                              </block>
+                            </value>
+                            <value name="RIGHT">
+                              <block type="val_number" id="b1355">
+                                <field name="NUM">90</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <block type="var_set" id="b1358">
+                            <field name="VAR" id="v_D">D</field>
+                            <value name="VALUE">
+                              <block type="val_number" id="b1357">
+                                <field name="NUM">20</field>
+                              </block>
+                            </value>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pico_wait" id="b1361">
+                            <value name="SEC">
+                              <block type="val_number" id="b1360">
+                                <field name="NUM">0.3</field>
+                              </block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pvb_if_switch" id="b1371">
+                    <field name="SW">13</field>
+                    <statement name="DO">
+                      <block type="pico_wait" id="b1364">
+                        <value name="SEC">
+                          <block type="val_number" id="b1363">
+                            <field name="NUM">0.5</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pvb_drive" id="b1367">
+                            <value name="LEFT">
+                              <block type="val_var" id="b1365">
+                                <field name="VAR" id="v_D">D</field>
+                              </block>
+                            </value>
+                            <value name="RIGHT">
+                              <block type="val_var" id="b1366">
+                                <field name="VAR" id="v_D">D</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pico_wait" id="b1369">
+                                <value name="SEC">
+                                  <block type="val_number" id="b1368">
+                                    <field name="NUM">1</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="pvb_stop" id="b1370">
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_wait" id="b1373">
+                        <value name="SEC">
+                          <block type="val_number" id="b1372">
+                            <field name="NUM">0.05</field>
+                          </block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #27 演習の答え：自動ドア（25cm で開き、35cm より離れて 2 秒で閉じる）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_door">door</variable>
+    <variable id="v_far">far</variable>
+    <variable id="v_dist">dist</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b3890">
+    <field name="VAR" id="v_door">door</field>
+    <value name="VALUE">
+      <block type="val_number" id="b3889">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+    <next>
+      <block type="var_set" id="b3892">
+        <field name="VAR" id="v_far">far</field>
+        <value name="VALUE">
+          <block type="val_number" id="b3891">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+        <next>
+          <block type="pvb_oled_clear" id="b3893">
+            <next>
+              <block type="pvb_oled_text" id="b3895">
+                <field name="ROW">1</field>
+                <value name="TEXT">
+                  <block type="val_str" id="b3894">
+                    <field name="TEXT">DOOR</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_oled_text" id="b3897">
+                    <field name="ROW">3</field>
+                    <value name="TEXT">
+                      <block type="val_str" id="b3896">
+                        <field name="TEXT">CLOSE</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_forever" id="b3938">
+                        <statement name="DO">
+                          <block type="pvb_sonar" id="b3898">
+                            <field name="VAR" id="v_dist">dist</field>
+                            <next>
+                              <block type="pico_if" id="b3937">
+                                <mutation elseif="0" else="1"></mutation>
+                                <value name="IF0">
+                                  <block type="cond_compare" id="b3901">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="b3899">
+                                        <field name="VAR" id="v_door">door</field>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_number" id="b3900">
+                                        <field name="NUM">0</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO0">
+                                  <block type="pico_if" id="b3912">
+                                    <mutation elseif="0" else="0"></mutation>
+                                    <value name="IF0">
+                                      <block type="cond_compare" id="b3904">
+                                        <field name="OP">&lt;</field>
+                                        <value name="LEFT">
+                                          <block type="val_var" id="b3902">
+                                            <field name="VAR" id="v_dist">dist</field>
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_number" id="b3903">
+                                            <field name="NUM">25</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO0">
+                                      <block type="var_set" id="b3906">
+                                        <field name="VAR" id="v_door">door</field>
+                                        <value name="VALUE">
+                                          <block type="val_number" id="b3905">
+                                            <field name="NUM">1</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="var_set" id="b3908">
+                                            <field name="VAR" id="v_far">far</field>
+                                            <value name="VALUE">
+                                              <block type="val_number" id="b3907">
+                                                <field name="NUM">0</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="pvb_led_on" id="b3909">
+                                                <field name="LED">11</field>
+                                                <next>
+                                                  <block type="pvb_oled_text" id="b3911">
+                                                    <field name="ROW">3</field>
+                                                    <value name="TEXT">
+                                                      <block type="val_str" id="b3910">
+                                                        <field name="TEXT">OPEN</field>
+                                                      </block>
+                                                    </value>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                  </block>
+                                </statement>
+                                <statement name="ELSE">
+                                  <block type="pico_if" id="b3936">
+                                    <mutation elseif="0" else="1"></mutation>
+                                    <value name="IF0">
+                                      <block type="cond_compare" id="b3915">
+                                        <field name="OP">&gt;</field>
+                                        <value name="LEFT">
+                                          <block type="val_var" id="b3913">
+                                            <field name="VAR" id="v_dist">dist</field>
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_number" id="b3914">
+                                            <field name="NUM">35</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO0">
+                                      <block type="pico_if" id="b3933">
+                                        <mutation elseif="1" else="0"></mutation>
+                                        <value name="IF0">
+                                          <block type="cond_compare" id="b3918">
+                                            <field name="OP">==</field>
+                                            <value name="LEFT">
+                                              <block type="val_var" id="b3916">
+                                                <field name="VAR" id="v_far">far</field>
+                                              </block>
+                                            </value>
+                                            <value name="RIGHT">
+                                              <block type="val_number" id="b3917">
+                                                <field name="NUM">0</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                        <value name="IF1">
+                                          <block type="cond_compare" id="b3925">
+                                            <field name="OP">&gt;=</field>
+                                            <value name="LEFT">
+                                              <block type="py_math_op" id="b3923">
+                                                <field name="OP">-</field>
+                                                <value name="LEFT">
+                                                  <block type="pvb_ticks_ms" id="b3921">
+                                                  </block>
+                                                </value>
+                                                <value name="RIGHT">
+                                                  <block type="val_var" id="b3922">
+                                                    <field name="VAR" id="v_far">far</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </value>
+                                            <value name="RIGHT">
+                                              <block type="val_number" id="b3924">
+                                                <field name="NUM">2000</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                        <statement name="DO0">
+                                          <block type="var_set" id="b3920">
+                                            <field name="VAR" id="v_far">far</field>
+                                            <value name="VALUE">
+                                              <block type="pvb_ticks_ms" id="b3919">
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </statement>
+                                        <statement name="DO1">
+                                          <block type="var_set" id="b3927">
+                                            <field name="VAR" id="v_door">door</field>
+                                            <value name="VALUE">
+                                              <block type="val_number" id="b3926">
+                                                <field name="NUM">0</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="var_set" id="b3929">
+                                                <field name="VAR" id="v_far">far</field>
+                                                <value name="VALUE">
+                                                  <block type="val_number" id="b3928">
+                                                    <field name="NUM">0</field>
+                                                  </block>
+                                                </value>
+                                                <next>
+                                                  <block type="pvb_led_off" id="b3930">
+                                                    <field name="LED">11</field>
+                                                    <next>
+                                                      <block type="pvb_oled_text" id="b3932">
+                                                        <field name="ROW">3</field>
+                                                        <value name="TEXT">
+                                                          <block type="val_str" id="b3931">
+                                                            <field name="TEXT">CLOSE</field>
+                                                          </block>
+                                                        </value>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </statement>
+                                      </block>
+                                    </statement>
+                                    <statement name="ELSE">
+                                      <block type="var_set" id="b3935">
+                                        <field name="VAR" id="v_far">far</field>
+                                        <value name="VALUE">
+                                          <block type="val_number" id="b3934">
+                                            <field name="NUM">0</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </statement>
+                                  </block>
+                                </statement>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #29 例a：3つのラインセンサーの値をスマホに出す（走らない）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pvb_wifi_ap" x="30" y="30" id="b3939">
+    <field name="SSID">PoliviaBot</field>
+    <field name="PASS">polivia123</field>
+    <next>
+      <block type="pvb_web_start" id="b3940">
+        <next>
+          <block type="pvb_oled_clear" id="b3941">
+            <next>
+              <block type="pvb_oled_text" id="b3943">
+                <field name="ROW">1</field>
+                <value name="TEXT">
+                  <block type="val_str" id="b3942">
+                    <field name="TEXT">WiFi: PoliviaBot</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pvb_oled_text" id="b3945">
+                    <field name="ROW">2</field>
+                    <value name="TEXT">
+                      <block type="val_str" id="b3944">
+                        <field name="TEXT">192.168.4.1</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_forever" id="b3954">
+                        <statement name="DO">
+                          <block type="pvb_web_show" id="b3947">
+                            <field name="NAME">L</field>
+                            <value name="VALUE">
+                              <block type="pvb_line_val" id="b3946">
+                                <field name="SENSOR">26</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pvb_web_show" id="b3949">
+                                <field name="NAME">C</field>
+                                <value name="VALUE">
+                                  <block type="pvb_line_val" id="b3948">
+                                    <field name="SENSOR">27</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="pvb_web_show" id="b3951">
+                                    <field name="NAME">R</field>
+                                    <value name="VALUE">
+                                      <block type="pvb_line_val" id="b3950">
+                                        <field name="SENSOR">28</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="pico_wait" id="b3953">
+                                        <value name="SEC">
+                                          <block type="val_number" id="b3952">
+                                            <field name="NUM">0.1</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

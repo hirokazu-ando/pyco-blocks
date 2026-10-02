@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #16 演習の答え：SW1 を4回押して、白と3個の黒を覚える（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_wL">wL</variable>
+    <variable id="v_wC">wC</variable>
+    <variable id="v_wR">wR</variable>
+    <variable id="v_bL">bL</variable>
+    <variable id="v_bC">bC</variable>
+    <variable id="v_bR">bR</variable>
+    <variable id="v_nL">nL</variable>
+    <variable id="v_nC">nC</variable>
+    <variable id="v_nR">nR</variable>
+  </variables>
+  <block type="pvb_oled_clear" x="30" y="30" id="b1492">
+    <next>
+      <block type="pvb_oled_text" id="b1494">
+        <field name="ROW">1</field>
+        <value name="TEXT">
+          <block type="val_str" id="b1493">
+            <field name="TEXT">WHITE: SW1</field>
+          </block>
+        </value>
+        <next>
+          <block type="py_while" id="b1499">
+            <value name="COND">
+              <block type="cond_not" id="b1496">
+                <value name="A">
+                  <block type="pvb_switch_val" id="b1495">
+                    <field name="SW">13</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO">
+              <block type="pico_wait" id="b1498">
+                <value name="SEC">
+                  <block type="val_number" id="b1497">
+                    <field name="NUM">0.05</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+            <next>
+              <block type="py_while" id="b1503">
+                <value name="COND">
+                  <block type="pvb_switch_val" id="b1500">
+                    <field name="SW">13</field>
+                  </block>
+                </value>
+                <statement name="DO">
+                  <block type="pico_wait" id="b1502">
+                    <value name="SEC">
+                      <block type="val_number" id="b1501">
+                        <field name="NUM">0.05</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="var_set" id="b1505">
+                    <field name="VAR" id="v_wL">wL</field>
+                    <value name="VALUE">
+                      <block type="pvb_line_val" id="b1504">
+                        <field name="SENSOR">26</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="var_set" id="b1507">
+                        <field name="VAR" id="v_wC">wC</field>
+                        <value name="VALUE">
+                          <block type="pvb_line_val" id="b1506">
+                            <field name="SENSOR">27</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="var_set" id="b1509">
+                            <field name="VAR" id="v_wR">wR</field>
+                            <value name="VALUE">
+                              <block type="pvb_line_val" id="b1508">
+                                <field name="SENSOR">28</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pvb_oled_text" id="b1511">
+                                <field name="ROW">1</field>
+                                <value name="TEXT">
+                                  <block type="val_str" id="b1510">
+                                    <field name="TEXT">BLACK L: SW1</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="py_while" id="b1516">
+                                    <value name="COND">
+                                      <block type="cond_not" id="b1513">
+                                        <value name="A">
+                                          <block type="pvb_switch_val" id="b1512">
+                                            <field name="SW">13</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO">
+                                      <block type="pico_wait" id="b1515">
+                                        <value name="SEC">
+                                          <block type="val_number" id="b1514">
+                                            <field name="NUM">0.05</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="py_while" id="b1520">
+                                        <value name="COND">
+                                          <block type="pvb_switch_val" id="b1517">
+                                            <field name="SW">13</field>
+                                          </block>
+                                        </value>
+                                        <statement name="DO">
+                                          <block type="pico_wait" id="b1519">
+                                            <value name="SEC">
+                                              <block type="val_number" id="b1518">
+                                                <field name="NUM">0.05</field>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </statement>
+                                        <next>
+                                          <block type="var_set" id="b1522">
+                                            <field name="VAR" id="v_bL">bL</field>
+                                            <value name="VALUE">
+                                              <block type="pvb_line_val" id="b1521">
+                                                <field name="SENSOR">26</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="pvb_oled_text" id="b1524">
+                                                <field name="ROW">1</field>
+                                                <value name="TEXT">
+                                                  <block type="val_str" id="b1523">
+                                                    <field name="TEXT">BLACK C: SW1</field>
+                                                  </block>
+                                                </value>
+                                                <next>
+                                                  <block type="py_while" id="b1529">
+                                                    <value name="COND">
+                                                      <block type="cond_not" id="b1526">
+                                                        <value name="A">
+                                                          <block type="pvb_switch_val" id="b1525">
+                                                            <field name="SW">13</field>
+                                                          </block>
+                                                        </value>
+                                                      </block>
+                                                    </value>
+                                                    <statement name="DO">
+                                                      <block type="pico_wait" id="b1528">
+                                                        <value name="SEC">
+                                                          <block type="val_number" id="b1527">
+                                                            <field name="NUM">0.05</field>
+                                                          </block>
+                                                        </value>
+                                                      </block>
+                                                    </statement>
+                                                    <next>
+                                                      <block type="py_while" id="b1533">
+                                                        <value name="COND">
+                                                          <block type="pvb_switch_val" id="b1530">
+                                                            <field name="SW">13</field>
+                                                          </block>
+                                                        </value>
+                                                        <statement name="DO">
+                                                          <block type="pico_wait" id="b1532">
+                                                            <value name="SEC">
+                                                              <block type="val_number" id="b1531">
+                                                                <field name="NUM">0.05</field>
+                                                              </block>
+                                                            </value>
+                                                          </block>
+                                                        </statement>
+                                                        <next>
+                                                          <block type="var_set" id="b1535">
+                                                            <field name="VAR" id="v_bC">bC</field>
+                                                            <value name="VALUE">
+                                                              <block type="pvb_line_val" id="b1534">
+                                                                <field name="SENSOR">27</field>
+                                                              </block>
+                                                            </value>
+                                                            <next>
+                                                              <block type="pvb_oled_text" id="b1537">
+                                                                <field name="ROW">1</field>
+                                                                <value name="TEXT">
+                                                                  <block type="val_str" id="b1536">
+                                                                    <field name="TEXT">BLACK R: SW1</field>
+                                                                  </block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="py_while" id="b1542">
+                                                                    <value name="COND">
+                                                                      <block type="cond_not" id="b1539">
+                                                                        <value name="A">
+                                                                          <block type="pvb_switch_val" id="b1538">
+                                                                            <field name="SW">13</field>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </value>
+                                                                    <statement name="DO">
+                                                                      <block type="pico_wait" id="b1541">
+                                                                        <value name="SEC">
+                                                                          <block type="val_number" id="b1540">
+                                                                            <field name="NUM">0.05</field>
+                                                                          </block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </statement>
+                                                                    <next>
+                                                                      <block type="py_while" id="b1546">
+                                                                        <value name="COND">
+                                                                          <block type="pvb_switch_val" id="b1543">
+                                                                            <field name="SW">13</field>
+                                                                          </block>
+                                                                        </value>
+                                                                        <statement name="DO">
+                                                                          <block type="pico_wait" id="b1545">
+                                                                            <value name="SEC">
+                                                                              <block type="val_number" id="b1544">
+                                                                                <field name="NUM">0.05</field>
+                                                                              </block>
+                                                                            </value>
+                                                                          </block>
+                                                                        </statement>
+                                                                        <next>
+                                                                          <block type="var_set" id="b1548">
+                                                                            <field name="VAR" id="v_bR">bR</field>
+                                                                            <value name="VALUE">
+                                                                              <block type="pvb_line_val" id="b1547">
+                                                                                <field name="SENSOR">28</field>
+                                                                              </block>
+                                                                            </value>
+                                                                            <next>
+                                                                              <block type="pvb_oled_text" id="b1550">
+                                                                                <field name="ROW">1</field>
+                                                                                <value name="TEXT">
+                                                                                  <block type="val_str" id="b1549">
+                                                                                    <field name="TEXT">OK</field>
+                                                                                  </block>
+                                                                                </value>
+                                                                                <next>
+                                                                                  <block type="pico_forever" id="b1565">
+                                                                                    <statement name="DO">
+                                                                                      <block type="var_set" id="b1211">
+                                                                                        <field name="VAR" id="v_nL">nL</field>
+                                                                                        <value name="VALUE">
+                                                                                          <block type="py_math_op" id="b1210">
+                                                                                            <field name="OP">/</field>
+                                                                                            <value name="LEFT">
+                                                                                              <block type="py_math_op" id="b1206">
+                                                                                                <field name="OP">-</field>
+                                                                                                <value name="LEFT">
+                                                                                                  <block type="pvb_line_val" id="b1204">
+                                                                                                    <field name="SENSOR">26</field>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                                <value name="RIGHT">
+                                                                                                  <block type="val_var" id="b1205">
+                                                                                                    <field name="VAR" id="v_wL">wL</field>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                              </block>
+                                                                                            </value>
+                                                                                            <value name="RIGHT">
+                                                                                              <block type="py_math_op" id="b1209">
+                                                                                                <field name="OP">-</field>
+                                                                                                <value name="LEFT">
+                                                                                                  <block type="val_var" id="b1207">
+                                                                                                    <field name="VAR" id="v_bL">bL</field>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                                <value name="RIGHT">
+                                                                                                  <block type="val_var" id="b1208">
+                                                                                                    <field name="VAR" id="v_wL">wL</field>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                              </block>
+                                                                                            </value>
+                                                                                          </block>
+                                                                                        </value>
+                                                                                        <next>
+                                                                                          <block type="var_set" id="b1219">
+                                                                                            <field name="VAR" id="v_nC">nC</field>
+                                                                                            <value name="VALUE">
+                                                                                              <block type="py_math_op" id="b1218">
+                                                                                                <field name="OP">/</field>
+                                                                                                <value name="LEFT">
+                                                                                                  <block type="py_math_op" id="b1214">
+                                                                                                    <field name="OP">-</field>
+                                                                                                    <value name="LEFT">
+                                                                                                      <block type="pvb_line_val" id="b1212">
+                                                                                                        <field name="SENSOR">27</field>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                    <value name="RIGHT">
+                                                                                                      <block type="val_var" id="b1213">
+                                                                                                        <field name="VAR" id="v_wC">wC</field>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                                <value name="RIGHT">
+                                                                                                  <block type="py_math_op" id="b1217">
+                                                                                                    <field name="OP">-</field>
+                                                                                                    <value name="LEFT">
+                                                                                                      <block type="val_var" id="b1215">
+                                                                                                        <field name="VAR" id="v_bC">bC</field>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                    <value name="RIGHT">
+                                                                                                      <block type="val_var" id="b1216">
+                                                                                                        <field name="VAR" id="v_wC">wC</field>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                              </block>
+                                                                                            </value>
+                                                                                            <next>
+                                                                                              <block type="var_set" id="b1227">
+                                                                                                <field name="VAR" id="v_nR">nR</field>
+                                                                                                <value name="VALUE">
+                                                                                                  <block type="py_math_op" id="b1226">
+                                                                                                    <field name="OP">/</field>
+                                                                                                    <value name="LEFT">
+                                                                                                      <block type="py_math_op" id="b1222">
+                                                                                                        <field name="OP">-</field>
+                                                                                                        <value name="LEFT">
+                                                                                                          <block type="pvb_line_val" id="b1220">
+                                                                                                            <field name="SENSOR">28</field>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <value name="RIGHT">
+                                                                                                          <block type="val_var" id="b1221">
+                                                                                                            <field name="VAR" id="v_wR">wR</field>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                    <value name="RIGHT">
+                                                                                                      <block type="py_math_op" id="b1225">
+                                                                                                        <field name="OP">-</field>
+                                                                                                        <value name="LEFT">
+                                                                                                          <block type="val_var" id="b1223">
+                                                                                                            <field name="VAR" id="v_bR">bR</field>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <value name="RIGHT">
+                                                                                                          <block type="val_var" id="b1224">
+                                                                                                            <field name="VAR" id="v_wR">wR</field>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                  </block>
+                                                                                                </value>
+                                                                                                <next>
+                                                                                                  <block type="pvb_oled_label_val" id="b1554">
+                                                                                                    <field name="ROW">4</field>
+                                                                                                    <field name="LABEL">nL:</field>
+                                                                                                    <value name="VALUE">
+                                                                                                      <block type="py_round" id="b1553">
+                                                                                                        <value name="VALUE">
+                                                                                                          <block type="val_var" id="b1551">
+                                                                                                            <field name="VAR" id="v_nL">nL</field>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <value name="DIGITS">
+                                                                                                          <block type="val_number" id="b1552">
+                                                                                                            <field name="NUM">2</field>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                    <next>
+                                                                                                      <block type="pvb_oled_label_val" id="b1558">
+                                                                                                        <field name="ROW">5</field>
+                                                                                                        <field name="LABEL">nC:</field>
+                                                                                                        <value name="VALUE">
+                                                                                                          <block type="py_round" id="b1557">
+                                                                                                            <value name="VALUE">
+                                                                                                              <block type="val_var" id="b1555">
+                                                                                                                <field name="VAR" id="v_nC">nC</field>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                            <value name="DIGITS">
+                                                                                                              <block type="val_number" id="b1556">
+                                                                                                                <field name="NUM">2</field>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <next>
+                                                                                                          <block type="pvb_oled_label_val" id="b1562">
+                                                                                                            <field name="ROW">6</field>
+                                                                                                            <field name="LABEL">nR:</field>
+                                                                                                            <value name="VALUE">
+                                                                                                              <block type="py_round" id="b1561">
+                                                                                                                <value name="VALUE">
+                                                                                                                  <block type="val_var" id="b1559">
+                                                                                                                    <field name="VAR" id="v_nR">nR</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                                <value name="DIGITS">
+                                                                                                                  <block type="val_number" id="b1560">
+                                                                                                                    <field name="NUM">2</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                            <next>
+                                                                                                              <block type="pico_wait" id="b1564">
+                                                                                                                <value name="SEC">
+                                                                                                                  <block type="val_number" id="b1563">
+                                                                                                                    <field name="NUM">0.2</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                              </block>
+                                                                                                            </next>
+                                                                                                          </block>
+                                                                                                        </next>
+                                                                                                      </block>
+                                                                                                    </next>
+                                                                                                  </block>
+                                                                                                </next>
+                                                                                              </block>
+                                                                                            </next>
+                                                                                          </block>
+                                                                                        </next>
+                                                                                      </block>
+                                                                                    </statement>
+                                                                                  </block>
+                                                                                </next>
+                                                                              </block>
+                                                                            </next>
+                                                                          </block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

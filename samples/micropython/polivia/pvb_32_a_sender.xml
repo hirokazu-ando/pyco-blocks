@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #32 例a（1号機）：親機になり、SW1 で「GO」を送って自分も走る（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pvb_wifi_ap" x="30" y="30" id="b4727">
+    <field name="SSID">PoliviaBot</field>
+    <field name="PASS">polivia123</field>
+    <next>
+      <block type="pvb_oled_clear" id="b4728">
+        <next>
+          <block type="pvb_oled_text" id="b4730">
+            <field name="ROW">1</field>
+            <value name="TEXT">
+              <block type="val_str" id="b4729">
+                <field name="TEXT">ROBOT 1</field>
+              </block>
+            </value>
+            <next>
+              <block type="pvb_oled_text" id="b4732">
+                <field name="ROW">2</field>
+                <value name="TEXT">
+                  <block type="val_str" id="b4731">
+                    <field name="TEXT">SW1 = GO</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="py_while" id="b4737">
+                    <value name="COND">
+                      <block type="cond_not" id="b4734">
+                        <value name="A">
+                          <block type="pvb_switch_val" id="b4733">
+                            <field name="SW">13</field>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO">
+                      <block type="pico_wait" id="b4736">
+                        <value name="SEC">
+                          <block type="val_number" id="b4735">
+                            <field name="NUM">0.05</field>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_repeat" id="b4743">
+                        <value name="TIMES">
+                          <block type="val_number" id="b4742">
+                            <field name="NUM">3</field>
+                          </block>
+                        </value>
+                        <statement name="DO">
+                          <block type="pvb_udp_send" id="b4739">
+                            <value name="MSG">
+                              <block type="val_str" id="b4738">
+                                <field name="TEXT">GO</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pico_wait" id="b4741">
+                                <value name="SEC">
+                                  <block type="val_number" id="b4740">
+                                    <field name="NUM">0.02</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pvb_forward" id="b4745">
+                            <value name="SPEED">
+                              <block type="val_number" id="b4744">
+                                <field name="NUM">40</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="pico_wait" id="b4747">
+                                <value name="SEC">
+                                  <block type="val_number" id="b4746">
+                                    <field name="NUM">2</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="pvb_stop" id="b4748">
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

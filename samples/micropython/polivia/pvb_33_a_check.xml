@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #33 例a（後ろ）：前の機体までの距離と、届いた合図を OLED に出す（走らない）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_sig">sig</variable>
+    <variable id="v_msg">msg</variable>
+    <variable id="v_dist">dist</variable>
+  </variables>
+  <block type="pvb_oled_clear" x="30" y="30" id="b4857">
+    <next>
+      <block type="pvb_oled_text" id="b4859">
+        <field name="ROW">1</field>
+        <value name="TEXT">
+          <block type="val_str" id="b4858">
+            <field name="TEXT">ROBOT 2</field>
+          </block>
+        </value>
+        <next>
+          <block type="pvb_oled_text" id="b4861">
+            <field name="ROW">2</field>
+            <value name="TEXT">
+              <block type="val_str" id="b4860">
+                <field name="TEXT">connecting...</field>
+              </block>
+            </value>
+            <next>
+              <block type="pico_w_wifi_connect" id="b4862">
+                <field name="SSID">PoliviaBot</field>
+                <field name="PASS">polivia123</field>
+                <next>
+                  <block type="pvb_oled_text" id="b4864">
+                    <field name="ROW">2</field>
+                    <value name="TEXT">
+                      <block type="val_str" id="b4863">
+                        <field name="TEXT">READY</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="var_set" id="b4866">
+                        <field name="VAR" id="v_sig">sig</field>
+                        <value name="VALUE">
+                          <block type="val_str" id="b4865">
+                            <field name="TEXT">-</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pico_forever" id="b4882">
+                            <statement name="DO">
+                              <block type="var_set" id="b4868">
+                                <field name="VAR" id="v_msg">msg</field>
+                                <value name="VALUE">
+                                  <block type="pvb_udp_recv" id="b4867">
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="py_while" id="b4876">
+                                    <value name="COND">
+                                      <block type="cond_compare" id="b4871">
+                                        <field name="OP">!=</field>
+                                        <value name="LEFT">
+                                          <block type="val_var" id="b4869">
+                                            <field name="VAR" id="v_msg">msg</field>
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_str" id="b4870">
+                                            <field name="TEXT"></field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO">
+                                      <block type="var_set" id="b4873">
+                                        <field name="VAR" id="v_sig">sig</field>
+                                        <value name="VALUE">
+                                          <block type="val_var" id="b4872">
+                                            <field name="VAR" id="v_msg">msg</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="var_set" id="b4875">
+                                            <field name="VAR" id="v_msg">msg</field>
+                                            <value name="VALUE">
+                                              <block type="pvb_udp_recv" id="b4874">
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                    <next>
+                                      <block type="pvb_sonar" id="b4877">
+                                        <field name="VAR" id="v_dist">dist</field>
+                                        <next>
+                                          <block type="pvb_oled_label_val" id="b4879">
+                                            <field name="ROW">3</field>
+                                            <field name="LABEL">dist:</field>
+                                            <value name="VALUE">
+                                              <block type="val_var" id="b4878">
+                                                <field name="VAR" id="v_dist">dist</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="pvb_oled_label_val" id="b4881">
+                                                <field name="ROW">4</field>
+                                                <field name="LABEL">sig:</field>
+                                                <value name="VALUE">
+                                                  <block type="val_var" id="b4880">
+                                                    <field name="VAR" id="v_sig">sig</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </statement>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

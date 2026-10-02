@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 PoliviaBot #14 演習の答え：8の字（右回りの円のあと、左右を入れかえて左回りの円）（tools/build_pvb_samples.py が生成） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="v_VL">VL</variable>
+    <variable id="v_VR">VR</variable>
+    <variable id="v_T">T</variable>
+    <variable id="v_t0">t0</variable>
+  </variables>
+  <block type="var_set" x="30" y="30" id="b1254">
+    <field name="VAR" id="v_VL">VL</field>
+    <value name="VALUE">
+      <block type="val_number" id="b1253">
+        <field name="NUM">50</field>
+      </block>
+    </value>
+    <next>
+      <block type="var_set" id="b1256">
+        <field name="VAR" id="v_VR">VR</field>
+        <value name="VALUE">
+          <block type="val_number" id="b1255">
+            <field name="NUM">30</field>
+          </block>
+        </value>
+        <next>
+          <block type="var_set" id="b1258">
+            <field name="VAR" id="v_T">T</field>
+            <value name="VALUE">
+              <block type="val_number" id="b1257">
+                <field name="NUM">4000</field>
+              </block>
+            </value>
+            <next>
+              <block type="py_while" id="b1263">
+                <value name="COND">
+                  <block type="cond_not" id="b1260">
+                    <value name="A">
+                      <block type="pvb_switch_val" id="b1259">
+                        <field name="SW">13</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO">
+                  <block type="pico_wait" id="b1262">
+                    <value name="SEC">
+                      <block type="val_number" id="b1261">
+                        <field name="NUM">0.05</field>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pico_wait" id="b1265">
+                    <value name="SEC">
+                      <block type="val_number" id="b1264">
+                        <field name="NUM">0.5</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="var_set" id="b1267">
+                        <field name="VAR" id="v_t0">t0</field>
+                        <value name="VALUE">
+                          <block type="pvb_ticks_ms" id="b1266">
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pvb_drive" id="b1270">
+                            <value name="LEFT">
+                              <block type="val_var" id="b1268">
+                                <field name="VAR" id="v_VL">VL</field>
+                              </block>
+                            </value>
+                            <value name="RIGHT">
+                              <block type="val_var" id="b1269">
+                                <field name="VAR" id="v_VR">VR</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="py_while" id="b1278">
+                                <value name="COND">
+                                  <block type="cond_compare" id="b1275">
+                                    <field name="OP">&lt;</field>
+                                    <value name="LEFT">
+                                      <block type="py_math_op" id="b1273">
+                                        <field name="OP">-</field>
+                                        <value name="LEFT">
+                                          <block type="pvb_ticks_ms" id="b1271">
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_var" id="b1272">
+                                            <field name="VAR" id="v_t0">t0</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_var" id="b1274">
+                                        <field name="VAR" id="v_T">T</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO">
+                                  <block type="pico_wait" id="b1277">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b1276">
+                                        <field name="NUM">0.05</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </statement>
+                                <next>
+                                  <block type="var_set" id="b1280">
+                                    <field name="VAR" id="v_t0">t0</field>
+                                    <value name="VALUE">
+                                      <block type="pvb_ticks_ms" id="b1279">
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="pvb_drive" id="b1283">
+                                        <value name="LEFT">
+                                          <block type="val_var" id="b1281">
+                                            <field name="VAR" id="v_VR">VR</field>
+                                          </block>
+                                        </value>
+                                        <value name="RIGHT">
+                                          <block type="val_var" id="b1282">
+                                            <field name="VAR" id="v_VL">VL</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="py_while" id="b1291">
+                                            <value name="COND">
+                                              <block type="cond_compare" id="b1288">
+                                                <field name="OP">&lt;</field>
+                                                <value name="LEFT">
+                                                  <block type="py_math_op" id="b1286">
+                                                    <field name="OP">-</field>
+                                                    <value name="LEFT">
+                                                      <block type="pvb_ticks_ms" id="b1284">
+                                                      </block>
+                                                    </value>
+                                                    <value name="RIGHT">
+                                                      <block type="val_var" id="b1285">
+                                                        <field name="VAR" id="v_t0">t0</field>
+                                                      </block>
+                                                    </value>
+                                                  </block>
+                                                </value>
+                                                <value name="RIGHT">
+                                                  <block type="val_var" id="b1287">
+                                                    <field name="VAR" id="v_T">T</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </value>
+                                            <statement name="DO">
+                                              <block type="pico_wait" id="b1290">
+                                                <value name="SEC">
+                                                  <block type="val_number" id="b1289">
+                                                    <field name="NUM">0.05</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </statement>
+                                            <next>
+                                              <block type="pvb_stop" id="b1292">
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>
