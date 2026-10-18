@@ -81,11 +81,14 @@ Blockly.Blocks['pvb_if_line'] = {
       .appendField(new Blockly.FieldDropdown([['左','26'],['中','27'],['右','28']]), 'SENSOR')
       .appendField('が')
       .appendField(new Blockly.FieldDropdown([['黒','black'],['白','white']]), 'COLOR')
-      .appendField('だったら');
+      .appendField('だったら（しきい値')
+      .appendField(new Blockly.FieldNumber(10000, 0, 65535, 1), 'THR')
+      .appendField('）');
     this.appendStatementInput('DO').setCheck(null);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.sensorStatement);
+    this.setTooltip('読んだ値がしきい値より大きければ黒、小さければ白。白は約2500、黒は約17000〜25000。うまく見分けられないときは「ラインセンサーを読む」で白と黒の値を測り、その真ん中にします');
   }
 };
 

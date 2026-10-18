@@ -2091,7 +2091,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const sensor = block.getFieldValue('SENSOR');
         const color = block.getFieldValue('COLOR');
         const op = color === 'black' ? '>' : '<';
-        code = appendLocal(code, indent + `if ADC(${sensor}).read_u16() ${op} 32767:\n`);
+        const thr = parseInt(block.getFieldValue('THR'), 10);
+        const thrVal = Number.isFinite(thr) ? thr : 10000;  // 9/30 実機：白2500・黒17000〜25000
+        code = appendLocal(code, indent + `if ADC(${sensor}).read_u16() ${op} ${thrVal}:\n`);
         const inner = statementToCode(block, 'DO', indent + '    ');
         code = appendChildBody(code, inner, indent + '    pass\n');
         break;
