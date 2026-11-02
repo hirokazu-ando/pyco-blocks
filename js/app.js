@@ -121,6 +121,16 @@ document.addEventListener('DOMContentLoaded', function() {
   let syntaxCollapsed = false;
   let _errorLineNo = -1;   // コーディングモードでハイライト中のエラー行（0始まり・無しは-1）
   let currentMode = 'micropython'; // 初期値は後で applyMode('python') で上書き
+  // MicroPython モードでつなぐボード（'pico' / 'microbit'）。
+  // micro:bit も中身は MicroPython モードなので currentMode は 'micropython' のまま、
+  // ツールボックス・生成コードの先頭・通信の細部だけをこれで切り替える。
+  // 保存や共有 URL では 'microbit' を 1 つのモードとして扱う（modeKey()）。
+  let currentBoard = 'pico';
+  function modeKey() {
+    return (currentMode === 'micropython' && currentBoard === 'microbit') ? 'microbit' : currentMode;
+  }
+  // serial.js / firmware.js からボードを知るための窓口
+  window.PycoBoard = { get: function() { return currentBoard; } };
 
   // ===== ファイルタブ管理（Python入門モードのみ） =====
   let pyFiles = [{ name: 'main.py', content: '# ブロックを追加してください', blockXml: null }];
@@ -859,7 +869,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Part 5/6 ml
       case 'ml_data_2d':    return `特徴量データ ${block.getFieldValue('DATA').slice(0, 20)}...`;
       case 'ml_label_list': return `ラベルデータ ${block.getFieldValue('DATA').slice(0, 20)}...`;
-      default:                 return block.type;
+      default: {
+        const mbLabel = window.PycoMicrobit ? PycoMicrobit.label(block) : null;
+        return mbLabel || block.type;
+      }
     }
   }
 
@@ -1574,6 +1587,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return block.getFieldValue('DATA') || '[]';
       }
       default:
+        // micro:bit のブロックは js/blocks/microbit.js が受け持つ
+        if (window.PycoMicrobit && PycoMicrobit.hasValue(block.type)) return PycoMicrobit.value(block);
         return '0';
     }
   }
@@ -3203,6 +3218,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       default:
+        if (window.PycoMicrobit && PycoMicrobit.hasStmt(block.type)) {
+          block.inputList.forEach(function(inp) {
+            if (isBlocklyValueInput(inp)) registerExprBlocksAtLineFromInput(block, inp.name, _emitCtx.line);
+          });
+          code = appendLocal(code, indent + PycoMicrobit.stmt(block, valueToCode) + '\n');
+          break;
+        }
         code = appendLocal(code, indent + `pass  # 未対応ブロック: ${block.type}\n`);
     }
 
@@ -3280,6 +3302,9 @@ document.addEventListener('DOMContentLoaded', function() {
         importLines.push((showComments ? `# 自作モジュール ${mod} をインポート\n` : '') + `${cm}import ${mod}`);
       });
       header = importLines.join('\n') + '\n\n';
+    } else if (currentBoard === 'microbit') {
+      // ─── MicroPython（micro:bit）：machine.Pin ではなく microbit モジュール ───
+      header = PycoMicrobit.header(blockTypes, showComments);
     } else {
       // ─── MicroPythonモード：既存ロジック ───
       const motorTypes = ['pvb_forward','pvb_backward','pvb_turn_right','pvb_turn_left','pvb_stop','pvb_drive'];
@@ -3512,8 +3537,8 @@ document.addEventListener('DOMContentLoaded', function() {
       clearBlockSelectionHighlight();
     }
 
-    // MicroPython モード: 配線図プレビューを更新
-    if (currentMode === 'micropython') updateCircuitPreview();
+    // MicroPython モード: 配線図プレビューを更新（配線図は Pico 用だけ）
+    if (currentMode === 'micropython' && currentBoard === 'pico') updateCircuitPreview();
   }
 
   // ===== 配線図プレビュー更新 =====
@@ -3623,7 +3648,7 @@ document.addEventListener('DOMContentLoaded', function() {
     workspace.setTheme(t.blocklyTheme);
     localStorage.setItem('pyco-theme', themeId);
     // 配線図の地色もテーマに追従させる（拡大表示が開いていればそちらも）
-    if (currentMode === 'micropython') updateCircuitPreview();
+    if (currentMode === 'micropython' && currentBoard === 'pico') updateCircuitPreview();
     if (typeof window.__pycoCircuitRerender === 'function') window.__pycoCircuitRerender();
   }
 
@@ -4092,7 +4117,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       var encoded = _bytesToBase64Url(bytes);
       // 開く相手が別モードでも自動で合わせられるよう、編集モードもハッシュに含める
-      var url = location.origin + location.pathname + '#m=' + currentMode + '&' + key + encoded;
+      var url = location.origin + location.pathname + '#m=' + modeKey() + '&' + key + encoded;
 
       // URLが長すぎる場合は共有を止め、サーバ設置(?src=)を案内する
       if (url.length > 8000) {
@@ -4273,7 +4298,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 一覧に Pico が出てこない原因の多くは MicroPython 未導入。
       // 失敗をそこで終わらせず、導入ウィザードへ誘導する。
       setSerialStatus(
-        '接続失敗: ' + friendlyConnectError(e) + ' — 一覧に Pico が無いときは［MicroPython導入］へ',
+        '接続失敗: ' + friendlyConnectError(e) + ' — 一覧に ' + (currentBoard === 'microbit' ? 'micro:bit' : 'Pico') + ' が無いときは［MicroPython導入］へ',
         'err');
       hintFirmware(true);
       updateSerialUI();
@@ -4397,14 +4422,18 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // モードを切り替える（clearWorkspace=trueのときワークスペースをクリア）
+  // mode は 'python' / 'game' / 'micropython'（Pico）/ 'microbit'
   function applyMode(mode, clearWorkspace) {
+    if (mode === 'microbit') { currentBoard = 'microbit'; mode = 'micropython'; }
+    else if (mode === 'micropython') currentBoard = 'pico';
     currentMode = mode;
     if (clearWorkspace) workspace.clear();
 
     // モードボタン
     document.getElementById('btn-mode-python').classList.toggle('mode-btn--active', mode === 'python');
     document.getElementById('btn-mode-game').classList.toggle('mode-btn--active', mode === 'game');
-    document.getElementById('btn-mode-micropython').classList.toggle('mode-btn--active', mode === 'micropython');
+    document.getElementById('btn-mode-micropython').classList.toggle('mode-btn--active', mode === 'micropython' && currentBoard === 'pico');
+    document.getElementById('btn-mode-microbit').classList.toggle('mode-btn--active', mode === 'micropython' && currentBoard === 'microbit');
 
     // ツールボックス切り替え（サブファイルなら module 用ツールボックスを優先）
     let toolboxId = 'toolbox-' + mode;
@@ -4412,12 +4441,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (mode === 'python') toolboxId = 'toolbox-module';
       else if (mode === 'game') toolboxId = 'toolbox-game-module';
     }
+    if (mode === 'micropython' && currentBoard === 'microbit') toolboxId = 'toolbox-microbit';
     workspace.updateToolbox(document.getElementById(toolboxId));
 
     // ラベル更新
     document.getElementById('title-sub').textContent =
       mode === 'python' ? 'Python 入門'
       : mode === 'game' ? 'ゲーム'
+      : currentBoard === 'microbit' ? 'micro:bit / MicroPython'
       : 'Raspberry Pi Pico / MicroPython';
     document.getElementById('code-header-title').textContent =
       mode === 'python' ? 'Python Output'
@@ -4442,8 +4473,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const demoBadge = document.getElementById('demo-badge');
     if (demoBadge) demoBadge.style.display = (mode === 'micropython' && !hasSerial) ? '' : 'none';
 
-    // 配線図ボタン（MicroPythonモードのみ表示）
-    const showCircuit = mode === 'micropython';
+    // 配線図ボタン（MicroPythonモード・Pico のみ表示）
+    const showCircuit = mode === 'micropython' && currentBoard === 'pico';
     ['circuit-sep', 'btn-circuit'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = showCircuit ? '' : 'none';
@@ -4565,9 +4596,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (gameArea) gameArea.style.display = (mode === 'game') ? '' : 'none';
-    if (circuitPreview) circuitPreview.style.display = (mode === 'micropython') ? '' : 'none';
+    // 配線図は Pico の部品データで描くので、micro:bit では出さない
+    if (circuitPreview) circuitPreview.style.display = (mode === 'micropython' && currentBoard === 'pico') ? '' : 'none';
     // モード判別用クラス（CSS 側の !important 上書きを mode 別にするため）
     if (mainEl) mainEl.classList.toggle('mode-micropython', mode === 'micropython');
+    if (mainEl) mainEl.classList.toggle('mode-microbit', mode === 'micropython' && currentBoard === 'microbit');
     // MicroPython 以外に切り替えたら配線図モーダルを閉じる
     if (mode !== 'micropython') {
       const cmodal = document.getElementById('circuit-modal');
@@ -4625,10 +4658,17 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.getElementById('btn-mode-micropython').addEventListener('click', function() {
-    if (currentMode === 'micropython') return;
+    if (modeKey() === 'micropython') return;
     const hasBlocks = workspace.getAllBlocks(false).length > 0;
     if (hasBlocks && !confirm('MicroPythonモードに切り替えます。\nワークスペースのブロックがクリアされます。よろしいですか？')) return;
     applyMode('micropython', true);
+  });
+
+  document.getElementById('btn-mode-microbit').addEventListener('click', function() {
+    if (modeKey() === 'microbit') return;
+    const hasBlocks = workspace.getAllBlocks(false).length > 0;
+    if (hasBlocks && !confirm('micro:bit モードに切り替えます。\nワークスペースのブロックがクリアされます。よろしいですか？')) return;
+    applyMode('microbit', true);
   });
 
   // ===== Python シェル実行（Skulpt） =====
@@ -6012,7 +6052,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: false });
 
     function openModal() {
-      if (currentMode !== 'micropython') return;
+      if (currentMode !== 'micropython' || currentBoard !== 'pico') return;
       if (typeof generateCircuitSVG !== 'function') {
         alert('配線図エンジンが読み込まれていません。Ctrl+Shift+R で強制リロードしてください。');
         return;
@@ -6128,11 +6168,24 @@ document.addEventListener('DOMContentLoaded', function() {
     Blockly.svgResize(workspace);
   }
 
+  // micro:bit のツールボックスに、ボードに関係ない共通カテゴリを Pico 用から写して足す。
+  // 同じ XML を 2 か所に書くと片方だけ直して食い違うので、元は toolbox-micropython の 1 つだけにする
+  (function buildMicrobitToolbox() {
+    const src = document.getElementById('toolbox-micropython');
+    const dst = document.getElementById('toolbox-microbit');
+    if (!src || !dst) return;
+    const COMMON = ['繰り返し', '分岐', '時間', '変数', '計算', '値', '表示', 'カスタム'];
+    COMMON.forEach(function(name) {
+      const cat = Array.from(src.children).find(function(c) { return c.getAttribute('name') === name; });
+      if (cat) dst.appendChild(cat.cloneNode(true));
+    });
+  })();
+
   // ===== 初期化 =====
-  // URLパラメータ ?mode=micropython でモードを指定できる（省略時は python）
+  // URLパラメータ ?mode=micropython（Pico）/ microbit でモードを指定できる（省略時は python）
   const _urlParams = new URLSearchParams(window.location.search);
   const _urlMode = _urlParams.get('mode');
-  applyMode(_urlMode === 'micropython' ? 'micropython' : (_urlMode === 'game' ? 'game' : 'python'), false);
+  applyMode((_urlMode === 'micropython' || _urlMode === 'microbit' || _urlMode === 'game') ? _urlMode : 'python', false);
 
   // モード適用後にレイアウトが落ち着いてからオートフィット
   requestAnimationFrame(() => requestAnimationFrame(autoFitInitialZoom));
@@ -6221,7 +6274,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var _hashMode = _hash.match(/[#&]m=([^&]+)/);
       if (_hashMode) {
         var _m = _hashMode[1];
-        if ((_m === 'python' || _m === 'game' || _m === 'micropython') && _m !== currentMode) {
+        if ((_m === 'python' || _m === 'game' || _m === 'micropython' || _m === 'microbit') && _m !== modeKey()) {
           applyMode(_m, false);
         }
       }
@@ -6246,7 +6299,7 @@ document.addEventListener('DOMContentLoaded', function() {
   //   この serialize/restore をそのまま使い回せるようにするのが目的。
   //     - serialize()      … 現在の作品を XML 文字列にする（複数ファイルは <project>）
   //     - restore(text)    … XML 文字列をワークスペースに読み込む（共有/`?src=` と同経路）
-  //     - getMode()        … 'python' / 'game' / 'micropython'
+  //     - getMode()        … 'python' / 'game' / 'micropython' / 'microbit'
   //     - hasUrlSource()   … 共有URLや ?src= 指定があるか（自動復元の優先判定用）
   // ============================================================
   function _autosaveSerialize() {
@@ -6292,7 +6345,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   window.PycoWorkspaceIO = {
     workspace: workspace,
-    getMode: function() { return currentMode; },
+    getMode: function() { return modeKey(); },
     serialize: _autosaveSerialize,
     restore: _autosaveRestore,
     hasUrlSource: _autosaveHasUrlSource

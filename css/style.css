@@ -586,6 +586,11 @@ h1 {
 }
 /* MicroPython 以外では完全に非表示（!important 上書きを防止） */
 .main:not(.mode-micropython) #circuit-preview-area { display: none !important; }
+/* 配線図は Pico の部品で描くので micro:bit では出さない（上の !important に勝つため同じ強さで） */
+.main.game-layout.mode-micropython.mode-microbit #circuit-preview-area,
+.main.mode-microbit #circuit-preview-resize-handle { display: none !important; }
+/* 配線図の分の高さもブロック置き場に使う */
+.main.game-layout.mode-microbit #blockly-div { height: auto; flex: 1 1 0; }
 #circuit-preview-svg:hover {
   outline: 1px solid rgba(104, 211, 145, 0.4);
   outline-offset: -1px;
@@ -2202,7 +2207,7 @@ body.mobile-mode header {
   overflow: hidden;
 }
 
-/* モード切替（Python/ゲーム/μPython）は左寄せで固定 */
+/* モード切替（Python/ゲーム/Pi Pico）は左寄せで固定 */
 body.mobile-mode .mode-toggle {
   margin-left: 0;
   flex-shrink: 0;

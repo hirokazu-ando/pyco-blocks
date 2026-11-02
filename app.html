@@ -72,7 +72,7 @@
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20260907b">
+  <link rel="stylesheet" href="css/style.css?v=20261102a">
   <link rel="stylesheet" href="css/firmware.css?v=20260907a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
@@ -108,7 +108,10 @@
     <div class="mode-toggle">
       <button class="mode-btn" id="btn-mode-python">Python</button>
       <button class="mode-btn" id="btn-mode-game">ゲーム</button>
-      <button class="mode-btn" id="btn-mode-micropython">μPython</button>
+      <button class="mode-btn" id="btn-mode-micropython"
+              title="Raspberry Pi Pico につないで MicroPython を動かすモード">Pi Pico</button>
+      <button class="mode-btn" id="btn-mode-microbit"
+              title="micro:bit（V2）につないで MicroPython を動かすモード">micro:bit</button>
     </div>
     <span class="version-tag">v2.1 · UME</span>
     <span class="demo-badge" id="demo-badge" style="display:none">DEMO MODE</span>
@@ -229,6 +232,46 @@
   <div id="game-dock-resize-handle" style="display:none"></div>
   <div id="game-shell-dock" style="display:none"></div>
 
+  <!-- micro:bit 用。共通のカテゴリ（繰り返し・分岐・時間・変数・計算・値・表示・カスタム）は
+       app.js が起動時に toolbox-micropython から写して後ろに足す -->
+  <xml id="toolbox-microbit" style="display:none">
+    <category name="LED 表示" colour="#D81B60">
+      <block type="mb_scroll" gap="8"><value name="TEXT"><shadow type="val_str"><field name="TEXT">Hello</field></shadow></value></block>
+      <block type="mb_show" gap="8"><value name="TEXT"><shadow type="val_number"><field name="NUM">1</field></shadow></value></block>
+      <block type="mb_show_icon" gap="8"></block>
+      <block type="mb_set_pixel" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">2</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">2</field></shadow></value><value name="B"><shadow type="val_number"><field name="NUM">9</field></shadow></value></block>
+      <block type="mb_clear" gap="8"></block>
+    </category>
+    <category name="ボタン" colour="#00897B">
+      <block type="mb_button" gap="8"></block>
+      <block type="mb_button_presses" gap="8"></block>
+      <block type="mb_logo_touched" gap="8"></block>
+    </category>
+    <category name="センサー" colour="#6D4C41">
+      <block type="mb_accel" gap="8"></block>
+      <block type="mb_gesture" gap="8"></block>
+      <block type="mb_temperature" gap="8"></block>
+      <block type="mb_light" gap="8"></block>
+      <block type="mb_sound_level" gap="8"></block>
+      <block type="mb_running_time" gap="8"></block>
+    </category>
+    <category name="音" colour="#26A69A">
+      <block type="mb_music_play" gap="8"></block>
+      <block type="mb_music_pitch" gap="8"><value name="FREQ"><shadow type="val_number"><field name="NUM">440</field></shadow></value><value name="MS"><shadow type="val_number"><field name="NUM">500</field></shadow></value></block>
+      <block type="mb_music_stop" gap="8"></block>
+    </category>
+    <category name="無線" colour="#3949AB">
+      <block type="mb_radio_group" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">1</field></shadow></value></block>
+      <block type="mb_radio_send" gap="8"><value name="VALUE"><shadow type="val_str"><field name="TEXT">hello</field></shadow></value></block>
+      <block type="mb_radio_receive" gap="8"></block>
+    </category>
+    <category name="端子" colour="#EF6C00">
+      <block type="mb_digital_write" gap="8"></block>
+      <block type="mb_digital_read" gap="8"></block>
+      <block type="mb_analog_write" gap="8"><value name="VALUE"><shadow type="val_number"><field name="NUM">512</field></shadow></value></block>
+      <block type="mb_analog_read" gap="8"></block>
+    </category>
+  </xml>
   <xml id="toolbox-micropython" style="display:none">
     <category name="PoliviaBot" colour="#EF5350">
       <block type="pvb_forward" gap="8">
@@ -1874,10 +1917,10 @@
     </category>
   </xml>
 
-  <script src="js/block_palette.js?v=20260530a"></script>
-  <script src="js/serial.js?v=20260708a"></script>
+  <script src="js/block_palette.js?v=20261102a"></script>
+  <script src="js/serial.js?v=20261102a"></script>
   <script src="js/firmware_art.js?v=20260907a"></script>
-  <script src="js/firmware.js?v=20260907a"></script>
+  <script src="js/firmware.js?v=20261102a"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <!-- 実体配線図レンダラ。読込順=legacy→bb→direct、後勝ちで direct が既定。
@@ -1887,6 +1930,7 @@
   <script src="js/circuit_viewer_direct.js?v=20260907a"></script>
   <script src="js/blocks/control.js"></script>
   <script src="js/blocks/polyviabot.js?v=20260708d"></script>
+  <script src="js/blocks/microbit.js?v=20261102a"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
   <script src="js/blocks/values.js?v=20260427b"></script>
   <script src="js/blocks/variables.js"></script>
@@ -1907,7 +1951,7 @@
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/app.js?v=20260929a"></script>
+  <script src="js/app.js?v=20261102a"></script>
   <script src="js/autosave.js?v=20260710a"></script>
   <!-- クラウド保存（Google ログイン + Firestore）。firebase_config.js が未設定なら
        cloud.js は何も表示せず SDK も読み込まない＝現状の動作に一切影響しない。 -->

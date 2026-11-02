@@ -398,8 +398,57 @@ const PicoFirmware = (() => {
 
   // ------------------------------------------------------------ 描画
 
+  // ------------------------------------------------------- micro:bit の画面
+  //
+  // micro:bit は BOOTSEL が無く、挿せばいつも MICROBIT ドライブが出る。
+  // そこへ .hex をドラッグすれば書き込みが終わるので、1 画面で済ませる。
+  // 初期化も同じ操作（.hex を入れ直すとファイルも消える）。
+  const MICROBIT_HEX = 'firmware/microbit/micropython-microbit-v2.1.1.hex';
+
+  function renderMicrobit() {
+    return `
+      <p class="fw-lead">micro:bit は <strong>V2</strong>（裏の右下に V2 の印刷・表にマイクの穴がある）だけ使える。</p>
+      <ol class="fw-list fw-list--lg">
+        <li>micro:bit を USB でパソコンにつなぐ。<code>MICROBIT</code> という名前のドライブが出る。</li>
+        <li>下のボタンで MicroPython（<code>.hex</code> ファイル）をダウンロードする。</li>
+        <li>ダウンロードしたファイルを <code>MICROBIT</code> ドライブへドラッグ＆ドロップする。
+            裏の黄色いランプが点滅し、止まると書き込み完了。</li>
+        <li>下の「接続してためす」を押し、出てきた一覧から micro:bit を選ぶ。</li>
+      </ol>
+      <div class="fw-two">
+        <a class="fw-btn fw-btn--primary fw-btn--wide" id="fw-mb-download"
+           href="${MICROBIT_HEX}" download>MicroPython をダウンロード（v2.1.1）</a>
+        <button type="button" class="fw-btn fw-btn--primary fw-btn--wide" id="fw-connect">接続してためす</button>
+      </div>
+      <div class="fw-result" id="fw-result"></div>
+      <details class="fw-help">
+        <summary>うまくいかないとき・元に戻したいとき</summary>
+        <ul class="fw-list">
+          <li>おかしくなったときも同じ手順でよい。<code>.hex</code> を入れ直すと、保存したプログラム（main.py）も消えて元に戻る。</li>
+          <li>MakeCode で作ったプログラムを入れると MicroPython は消える。使うときはもう一度入れ直す。</li>
+          <li>USB ケーブルが「充電専用」だと通信できない。データ通信できるケーブルに替える。</li>
+          <li>ブラウザは Chrome か Edge を使う（Safari・Firefox では接続できない）。</li>
+        </ul>
+      </details>
+      <p class="fw-note">MicroPython for micro:bit（MIT License）／
+        <a href="https://github.com/microbit-foundation/micropython-microbit-v2" target="_blank" rel="noopener">microbit-foundation/micropython-microbit-v2</a></p>`;
+  }
+
   function render() {
     const body = $('#fw-body');
+
+    if (view === 'microbit') {
+      body.innerHTML = renderMicrobit();
+      $('#fw-title').textContent = 'micro:bit に MicroPython を入れる';
+      $('#fw-steps').hidden = true;
+      $('#fw-reset-open').hidden = true;
+      $('#fw-prev').hidden = true;
+      $('#fw-next').hidden = true;
+      $('#fw-connect').addEventListener('click', onTryConnect);
+      body.scrollTop = 0;
+      return;
+    }
+    $('#fw-prev').hidden = false;
 
     if (view === 'reset') {
       body.innerHTML = renderReset();
@@ -585,7 +634,8 @@ const PicoFirmware = (() => {
     buildRoot();
     await loadManifest();
     if (!selected) restoreSelection();
-    view = (opts && opts.view) === 'reset' ? 'reset' : 'wizard';
+    const isMicrobit = !!(window.PycoBoard && window.PycoBoard.get() === 'microbit');
+    view = isMicrobit ? 'microbit' : (opts && opts.view) === 'reset' ? 'reset' : 'wizard';
     step = (opts && opts.step) || (selected ? 2 : 1);
     root.style.display = 'flex';
     setMsg('');
