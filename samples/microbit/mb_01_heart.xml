@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="ハートを出す（どきどき）" desc="最初にハートを出し、ずっと大小のハートを入れかえて、どきどきさせる">
+  <block type="mb_on_start" x="30" y="30">
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">HEART</field></block>
+    </statement>
+  </block>
+  <block type="mb_forever" x="30" y="170">
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">HEART</field>
+        <next><block type="mb_pause"><value name="MS"><block type="val_number"><field name="NUM">500</field></block></value>
+          <next><block type="mb_show_icon"><field name="ICON">HEART_SMALL</field>
+            <next><block type="mb_pause"><value name="MS"><block type="val_number"><field name="NUM">500</field></block></value></block></next>
+          </block></next>
+        </block></next>
+      </block>
+    </statement>
+  </block>
+</xml>

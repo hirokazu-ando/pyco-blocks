@@ -291,7 +291,8 @@ Blockly.Blocks['pico_for_from_to'] = {
     this.appendValueInput('START').setCheck('Number');
     this.appendDummyInput().appendField('から');
     this.appendValueInput('STOP').setCheck('Number');
-    this.appendDummyInput().appendField('まで');
+    // range(start, stop) は stop を含まない。「まで」だと 10 も入ると読めてしまうので「の手前まで」と書く
+    this.appendDummyInput().appendField('の手前まで');
     this.appendValueInput('STEP').setCheck('Number');
     this.appendDummyInput().appendField('ずつ繰り返す');
     this.appendStatementInput('DO').setCheck(null);
@@ -299,7 +300,7 @@ Blockly.Blocks['pico_for_from_to'] = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.loops);
-    this.setTooltip('START から STOP まで STEP ずつ増やしながら繰り返します');
+    this.setTooltip('はじめの数から、終わりの数の手前まで、決めた数ずつ増やしながら繰り返します。終わりの数は含みません（1〜10 にしたいときは「1 から 11 の手前まで」）');
   }
 };
 

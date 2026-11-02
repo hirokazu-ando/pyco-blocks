@@ -229,12 +229,14 @@ Blockly.Blocks['pico_lcd_init'] = {
       .appendField(new Blockly.FieldDropdown(makePinOptions('0')), 'SDA')
       .appendField('  SCLピン')
       .appendField(new Blockly.FieldDropdown(makePinOptions('1')), 'SCL')
+      .appendField('  アドレス')
+      .appendField(new Blockly.FieldDropdown([['0x27','0x27'],['0x3F','0x3F']]), 'ADDR')
       .appendField('  変数')
       .appendField(new Blockly.FieldVariable('lcd'), 'VAR');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(P.gpioDisplay);
-    this.setTooltip('LCD1602（I2Cアドレス0x27）を初期化します。lcd1602.py が Pico に入っている必要があります');
+    this.setTooltip('LCD1602 を初期化します。I2Cアドレスは基板によって 0x27 と 0x3F があります。lcd1602.py が Pico に入っている必要があります');
   }
 };
 Blockly.Blocks['pico_lcd_print'] = {

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="温度計" desc="A を押すと今の温度（℃）を数で出す。シミュレータでは温度のつまみで変えられる">
+  <block type="mb_on_start" x="30" y="30">
+    <statement name="DO">
+      <block type="mb_scroll"><value name="TEXT"><block type="val_str"><field name="TEXT">A</field></block></value></block>
+    </statement>
+  </block>
+  <block type="mb_on_button" x="30" y="170"><field name="BTN">a</field>
+    <statement name="DO">
+      <block type="mb_show_number"><value name="NUM"><block type="mb_temperature"></block></value>
+        <next><block type="mb_show_icon"><field name="ICON">YES</field></block></next>
+      </block>
+    </statement>
+  </block>
+</xml>

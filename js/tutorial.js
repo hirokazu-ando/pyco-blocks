@@ -210,6 +210,9 @@
     + 'transform:translateX(100%);transition:transform .28s ease;font-family:var(--font-mono,monospace);'
     + 'color:var(--text-primary,#c8e6c8);}'
     + '#pyco-tut-panel.open{transform:translateX(0);}'
+    // パソコン表示ではヘッダーの下から出す（top:0 だとヘッダー右側のモード切替・接続を覆い、
+    // レッスンで別モードへ移ると元のモードへ戻るボタンが見えなくなっていた）。下端は app.js が測る
+    + 'body:not(.mobile-mode) #pyco-tut-panel{top:var(--pyco-header-bottom,0px);}'
     // 折りたたみ時：34pxの可視ストリップ。クリックで再展開できるよう手のカーソルを出す
     + '#pyco-tut-panel.collapsed{transform:translateX(calc(100% - 34px));cursor:pointer;}'
     + 'body:not(.mobile-mode) #pyco-tut-panel.collapsed::after{content:"◀";position:absolute;'
@@ -1202,6 +1205,11 @@
     loadLesson(id).then(function(def) {
       // モード不一致は案内のみ（クロスモードは後続対応）
       var mode = getMode();
+      // 別モードのレッスンを選んだら、そのモードへ切り替えてから始める（今の作品はモード別に自動保存される）
+      if (def.mode && def.mode !== mode && typeof window.PycoSwitchMode === 'function') {
+        window.PycoSwitchMode(def.mode);
+        mode = getMode();
+      }
       if (def.mode && def.mode !== mode) {
         toast('このレッスンは「' + def.mode + '」モード向けです。モードを切り替えてからお試しください。', 'error');
         return;
@@ -2094,9 +2102,62 @@
     body.className = 'pyco-tut-modal-body';
     modal.appendChild(body);
 
+    // いまのモードのレッスンが無いとき（Pi Pico・micro:bit・ゲーム）は、Python 入門だけが並んで
+    // 「使えるものが無い」と迷うので、先にそう書き、サンプルへの入口を出す
+    var curMode = getMode();
+    var hasModeLesson = Object.keys(idx.lessons || {}).some(function(lid) {
+      var d = window.PYCO_LESSONS && window.PYCO_LESSONS[lid];
+      return d && (d.mode || 'python') === curMode;
+    });
+    if (!hasModeLesson) {
+      var names = { micropython: 'Pi Pico', microbit: 'micro:bit', game: 'ゲーム', python: 'Python 入門' };
+      // 案内は 1 行＋大きなボタンだけ。Python 入門のレッスンは下の「ほかのモードのレッスン」に畳む
+      //   （そのまま並べると、押した子が確認なしで Python モードへ移り、戻り方が分からなくなっていた）
+      var note = document.createElement('div');
+      note.className = 'pyco-tut-modenote';
+      note.style.cssText = 'border:1px solid var(--accent-amber,#ffb700);border-radius:0;padding:12px 14px;margin:0 0 14px;line-height:1.6;';
+      var nt = document.createElement('div');
+      nt.style.cssText = 'font-weight:bold;font-size:1rem;';
+      nt.textContent = (names[curMode] || curMode) + ' はサンプルから始めよう（開いたら［▶ 実行］）';
+      note.appendChild(nt);
+      if (window.PycoSamples && window.PycoSamples.open) {
+        var sb = document.createElement('button');
+        sb.type = 'button';
+        sb.className = 'pyco-tut-samplesbtn';
+        // 押した先は今のモードのサンプル一覧（app.js の openSamples）。行き止まりにならないよう
+        // micro:bit にも samples/microbit/ のはじめの 8 本がある
+        sb.textContent = '▶ ' + (names[curMode] || curMode) + ' のサンプルを開く';
+        sb.style.cssText = 'display:block;width:100%;margin-top:10px;min-height:44px;padding:6px 16px;border-radius:0;cursor:pointer;font-weight:bold;font-size:1rem;';
+        sb.addEventListener('click', function() { close(); window.PycoSamples.open(); });
+        note.appendChild(sb);
+      }
+      body.appendChild(note);
+      var other = document.createElement('details');
+      other.className = 'pyco-tut-othermode';
+      var osm = document.createElement('summary');
+      osm.textContent = 'ほかのモードのレッスン（Python 入門）▶ 選ぶと Python モードに切り替わります';
+      osm.style.cssText = 'cursor:pointer;padding:8px 0;font-weight:bold;';
+      other.appendChild(osm);
+      var oexp = document.createElement('p');
+      oexp.style.cssText = 'margin:0 0 10px;font-size:.85rem;color:var(--text-dim,#7a9a7a);';
+      oexp.textContent = '今の作品は自動で保存されます。上の［' + (names[curMode] || curMode) + '］ボタンでいつでも戻れます。';
+      other.appendChild(oexp);
+      body.appendChild(other);
+      body = other;   // 下のレッスン一覧は畳んだ中へ入れる
+    }
+
     (idx.groups || []).forEach(function(group) {
       var h = document.createElement('h4');
-      h.textContent = group.title || group.id;
+      // 見出しは「Python × 入門 パート0：はじめの一歩」の形で、同じパートのグループが並ぶと
+      // 全部「パート0」に見えて区別がつかない。違いの出る後ろ半分を前に出し、括弧にはパートでなく
+      // レッスン番号の範囲（#00〜#04）を書く（3 つとも同じパート0なので、パートでは見分けられない）
+      var gt = group.title || group.id;
+      var gm = /^(.*?)\s*パート(\d+)：(.+)$/.exec(gt);
+      var ids = group.lessons || [];
+      var num = function(lid) { var m = /-(\d+)$/.exec(lid || ''); return m ? '#' + m[1] : ''; };
+      var range = ids.length ? (num(ids[0]) + (ids.length > 1 ? '〜' + num(ids[ids.length - 1]) : '')) : '';
+      var series = gm ? gm[1].replace(/\s*×\s*/, ' ') : '';
+      h.textContent = gm ? (gm[3] + '（' + series + (range ? ' ' + range : ' パート' + gm[2]) + '）') : gt;
       h.style.cssText = 'color:var(--accent-cyan,#00d4ff);margin:4px 0 10px;font-size:.92rem;';
       body.appendChild(h);
 

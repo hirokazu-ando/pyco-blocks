@@ -348,7 +348,8 @@
           var tr = gf('TRIG'), ec = gf('ECHO');
           add('hcsr04_' + tr + '_' + ec, 'HCSR04', { VCC: { v3v3: true }, TRIG: { gp: tr }, ECHO: { gp: ec }, GND: { gnd: true } });
         } else if (t === 'pico_dht_read') {
-          add('dht' + gf('PIN'), 'DHT22', { VCC: { v3v3: true }, SIG: { gp: gf('PIN') }, GND: { gnd: true } });
+          // ブロックは DHT11（コードも from dht import DHT11）。図の部品は形の同じ DHT22 の絵を借り、名前だけ DHT11 にする
+          add('dht' + gf('PIN'), 'DHT22', { VCC: { v3v3: true }, SIG: { gp: gf('PIN') }, GND: { gnd: true } }, { model: 'DHT11' });
         } else if (t === 'pico_lcd_init') {
           add('lcd_' + gf('SDA') + '_' + gf('SCL'), 'LCD', { GND: { gnd: true }, VCC: { v3v3: true }, SDA: { gp: gf('SDA') }, SCL: { gp: gf('SCL') } });
         } else if (t === 'pico_7seg_show') {
@@ -1204,8 +1205,10 @@
       var ps = primarySide(c), side = ps.side, s = 0.62;
       var sl = slotV(side, 96, ps.anchorY, c);
       var innerX = innerXOf(side, sl.dx);
+      var model = c.model || 'DHT22';
       var pr = placeSideStack('wokwi-dht22', c.compId, side, innerX, sl.cy, s, POINTS);
-      partsSvg.push(pr.svg); addBox(c.compId, pr.bbox);
+      // 本体に印字された型番も合わせる（DHT11 の絵は無いので、ピン配置が同じ DHT22 の絵を使う）
+      partsSvg.push(String(pr.svg).replace(/DHT22/g, model)); addBox(c.compId, pr.bbox);
       wires.add(POINTS[c.compId + '.VCC'], v3Pt(), PAL.v, c.compId + ':VCC');
       net.union(c.compId + '.VCC', '3v3');
       var g = gndPt(POINTS[c.compId + '.GND'].y, side);
@@ -1214,10 +1217,10 @@
       wires.add(POINTS[c.compId + '.SDA'], gpPt(c.pins.SIG.gp), nextSig(), c.compId + ':SIG');
       net.union(c.compId + '.SDA', gpKey(c.pins.SIG.gp));
       pinLabelAt(POINTS[c.compId + '.VCC'], 'VCC', side); pinLabelAt(POINTS[c.compId + '.SDA'], 'DATA', side); pinLabelAt(POINTS[c.compId + '.GND'], 'GND', side);
-      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '温湿度センサ DHT22', true);
-      chk(c.compId, 'DHT22: DATA→GP' + c.pins.SIG.gp, connected(c.compId + '.SDA', gpKey(c.pins.SIG.gp)));
-      chk(c.compId, 'DHT22: VCC→3V3/GND→GND', is3v3(c.compId + '.VCC') && isGnd(c.compId + '.GND'));
-      chk(c.compId, 'DHT22: NC未接続', !isGnd(c.compId + '.NC') && !is3v3(c.compId + '.NC'));
+      nameLabel((pr.bbox.x0 + pr.bbox.x1) / 2, pr.bbox, '温湿度センサ ' + model, true);
+      chk(c.compId, model + ': DATA→GP' + c.pins.SIG.gp, connected(c.compId + '.SDA', gpKey(c.pins.SIG.gp)));
+      chk(c.compId, model + ': VCC→3V3/GND→GND', is3v3(c.compId + '.VCC') && isGnd(c.compId + '.GND'));
+      chk(c.compId, model + ': NC未接続', !isGnd(c.compId + '.NC') && !is3v3(c.compId + '.NC'));
     };
 
     // 7セグLED（サイド・縦向き＝各ピンが異なる高さで格子配線に載る）
@@ -1583,8 +1586,14 @@
       overlay.push('<text x="' + pico.cx + '" y="' + (vy + 40 + i * 16) + '" text-anchor="middle" font-size="12" fill="' + PAL.ng + '">GP' + bp.gp + ' は内部専用ピンです</text>');
     });
     if (comps.length === 0 && !parsed.onboardLedOn && (parsed.badPins || []).length === 0) {
-      overlay.push('<text x="' + pico.cx + '" y="' + (vy1 + 26) + '" text-anchor="middle" font-size="18" fill="' + PAL.hint + '">MicroPython ブロックを追加すると</text>');
-      overlay.push('<text x="' + pico.cx + '" y="' + (vy1 + 52) + '" text-anchor="middle" font-size="18" fill="' + PAL.hint + '">配線図が表示されます</text>');
+      // 案内文は図の横幅の真ん中に置き、図が文より細いときは左右に同じだけ広げる。
+      // 以前は Pico の中心（図の真ん中とは限らない）に置いていて、文の左端が図の外に出て
+      // 「›Python ブロックを追加す」のように切れて見えた
+      var need = 340;   // 18px の文「MicroPython ブロックを追加すると」が収まる幅
+      if (vx1 - vx < need) { var grow = (need - (vx1 - vx)) / 2; vx -= grow; vx1 += grow; }
+      var mid = (vx + vx1) / 2;
+      overlay.push('<text x="' + r2(mid) + '" y="' + (vy1 + 26) + '" text-anchor="middle" font-size="18" fill="' + PAL.hint + '">MicroPython ブロックを追加すると</text>');
+      overlay.push('<text x="' + r2(mid) + '" y="' + (vy1 + 52) + '" text-anchor="middle" font-size="18" fill="' + PAL.hint + '">配線図が表示されます</text>');
       vy1 += 66;
     }
 

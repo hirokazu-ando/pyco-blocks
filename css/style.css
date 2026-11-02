@@ -586,11 +586,27 @@ h1 {
 }
 /* MicroPython 以外では完全に非表示（!important 上書きを防止） */
 .main:not(.mode-micropython) #circuit-preview-area { display: none !important; }
-/* 配線図は Pico の部品で描くので micro:bit では出さない（上の !important に勝つため同じ強さで） */
-.main.game-layout.mode-micropython.mode-microbit #circuit-preview-area,
-.main.mode-microbit #circuit-preview-resize-handle { display: none !important; }
-/* 配線図の分の高さもブロック置き場に使う */
-.main.game-layout.mode-microbit #blockly-div { height: auto; flex: 1 1 0; }
+/* 配線図は Pico の部品で描くので micro:bit では出さず、同じ場所にシミュレータを出す */
+.main.mode-microbit #circuit-preview-header,
+.main.mode-microbit #circuit-preview-svg { display: none !important; }
+.main.mode-microbit #mb-sim { display: flex !important; }
+/* センサーモニターのセンサー選び（シリアルモニタの右上に出る） */
+#mb-sensor-pop { position: absolute; right: 8px; top: 34px; z-index: 30; width: 300px; padding: 10px 12px;
+  background: #1a202c; color: #e2e8f0; border: 1px solid #4a5568; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.45); font-size: 13px; }
+#mb-sensor-pop[hidden] { display: none; }
+#mb-sensor-pop .msp-title { font-weight: bold; margin-bottom: 6px; }
+#mb-sensor-pop .msp-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+#mb-sensor-pop label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+#mb-sensor-pop .msp-foot { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+#mb-sensor-pop .msp-where { flex: 1; color: #a0aec0; font-size: 12px; }
+#mb-sensor-pop button { padding: 4px 12px; border-radius: 5px; border: 1px solid #4a5568; background: #2d3748; color: #e2e8f0; cursor: pointer; }
+#mb-sensor-pop .msp-go { background: #276749; border-color: #2f855a; }
+#mb-sensor-pop .msp-go:disabled { opacity: .4; cursor: default; }
+[data-theme="light"] #mb-sensor-pop { background: #fff; color: #1a202c; border-color: #cbd5e0; }
+[data-theme="light"] #mb-sensor-pop button { background: #edf2f7; color: #1a202c; border-color: #cbd5e0; }
+[data-theme="light"] #mb-sensor-pop .msp-go { background: #38a169; color: #fff; }
+/* micro:bit：差し込み口の文字（白地）の「"」は MakeCode と同じ赤。ふつうのブロック（茶色）では白のまま */
+.blocklyShadow .mbQuote { fill: #a31515 !important; }
 #circuit-preview-svg:hover {
   outline: 1px solid rgba(104, 211, 145, 0.4);
   outline-offset: -1px;
@@ -997,8 +1013,8 @@ h1 {
   opacity: 0.5;
 }
 
-/* クリアボタン */
-#btn-monitor-clear {
+/* クリア・グラフ・センサーモニターのボタン */
+#btn-monitor-clear, #btn-plot, #btn-sensor-monitor {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.06em;
@@ -1011,7 +1027,7 @@ h1 {
   transition: all 0.2s;
   text-transform: uppercase;
 }
-#btn-monitor-clear:hover {
+#btn-monitor-clear:hover, #btn-plot:hover, #btn-sensor-monitor:hover {
   color: var(--text-primary);
   border-color: var(--text-dim);
   background: rgba(90,138,90,0.08);
@@ -2587,3 +2603,860 @@ body.mobile-mode.menu-open #mobile-menu-backdrop {
 
 /* モバイル（ドロワー内）ではアカウント名を短めに */
 body.mobile-mode .cloud-account-name { max-width: 90px; }
+
+/* =====================================================================
+   UI 改善 r1（担当B：見た目）2026-11-02
+   レビュー：04_UIデザイナー U01〜U19／05_アクセシビリティ A11Y-02〜20 ほか。
+   既存のルールを上書きするため、このブロックはファイルの最後に置く。
+   ===================================================================== */
+
+/* ---------- 書体（B11/U17）：Share Tech Mono には日本語が無いので、日本語は UD ゴシックで出す ---------- */
+:root {
+  --font-mono: 'Share Tech Mono', 'BIZ UDGothic', 'Noto Sans JP', 'Yu Gothic UI', 'Meiryo', monospace;
+}
+
+/* ---------- 大文字変換をやめる（B1/U07）：日本語の文やファイル名（.py・micro:bit）を崩さない ---------- */
+.toolbar button,
+.mode-btn,
+.code-header,
+.monitor-header,
+#btn-monitor,
+#btn-monitor-clear, #btn-plot, #btn-sensor-monitor,
+.serial-status,
+#serial-status {
+  text-transform: none;
+}
+
+/* ---------- ヘッダー：メニューが作業域の上に出られるように重なり順を上げる ---------- */
+header { z-index: 200; }
+
+/* ---------- ツールバーのボタン（B5/U15）：高さ 32px・文字 12px 以上にそろえる ---------- */
+.toolbar { gap: 6px; }
+.toolbar button {
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.8rem;          /* 12.8px */
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+#btn-font-inc, #btn-font-dec, #btn-theme {
+  font-size: 0.8rem;
+  padding: 0 12px;
+  letter-spacing: 0.03em;
+}
+.toolbar-sep { height: 20px; margin: 0 2px; }
+
+/* モード切替（A11Y-09）：12.8px・高さ 32px */
+.mode-btn {
+  font-size: 0.8rem;
+  min-height: 32px;
+  padding: 0 14px;
+  letter-spacing: 0.03em;
+}
+
+/* ---------- 実行を主役に（B2/U02）：緑の塗りつぶし。押せないときは「点線の枠＋読める灰色」 ---------- */
+#btn-run,
+#btn-run-python {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #04140a;
+  font-weight: 700;
+  text-shadow: none;
+  box-shadow: 0 0 10px rgba(0,255,65,0.30);
+}
+#btn-run:hover:not(:disabled),
+#btn-run-python:hover:not(:disabled) {
+  background: #5dff85;
+  border-color: #5dff85;
+  color: #04140a;
+  box-shadow: 0 0 16px rgba(0,255,65,0.55);
+}
+[data-theme="light"] #btn-run,
+[data-theme="light"] #btn-run-python { color: #fff; box-shadow: none; }
+[data-theme="light"] #btn-run:hover:not(:disabled),
+[data-theme="light"] #btn-run-python:hover:not(:disabled) { background: #16631a; border-color: #16631a; color: #fff; }
+
+/* 押せないボタン共通：消えたように見せず、読める濃さの灰色＋点線の枠で「いまは押せない」を示す。
+   理由は title（app.html）に書く */
+.toolbar button:disabled,
+#btn-run:disabled, #btn-stop:disabled, #btn-write:disabled, #btn-reconnect:disabled,
+#btn-run-python:disabled {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px dashed var(--text-dim);
+  text-shadow: none;
+  box-shadow: none;
+  opacity: 1;
+  cursor: not-allowed;
+  font-weight: normal;
+}
+
+/* 学習モード（U02）：塗りをやめて枠線のアンバーに。学習中だけ塗りつぶす */
+#btn-tutorial {
+  background: transparent;
+  color: var(--accent-amber);
+  border-color: var(--accent-amber);
+  box-shadow: none;
+  text-shadow: none;
+}
+#btn-tutorial:hover {
+  background: rgba(255,183,0,0.14);
+  color: var(--accent-amber);
+  border-color: var(--accent-amber);
+  box-shadow: none;
+}
+#btn-tutorial.tutorial-active {
+  background: var(--accent-amber);
+  color: #171004;
+  border-color: var(--accent-amber);
+  box-shadow: none;
+}
+[data-theme="light"] #btn-tutorial.tutorial-active { color: #fff; }
+
+/* 接続（U05）：未接続のときこそ目立たせる（シアン）。再接続は控えめ */
+#btn-connect {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  font-weight: 700;
+}
+#btn-connect:hover {
+  color: #fff;
+  border-color: var(--accent-cyan);
+  background: rgba(0,212,255,0.14);
+}
+[data-theme="light"] #btn-connect:hover { color: var(--accent-cyan); }
+#btn-reconnect {
+  color: var(--text-dim);
+  border-color: var(--border-dim);
+  text-shadow: none;
+  box-shadow: none;
+}
+#btn-reconnect:hover:not(:disabled) {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0,212,255,0.08);
+  box-shadow: none;
+}
+
+/* ---------- メニュー「ファイル ▾」「⚙ 表示 ▾」（B1/U01） ---------- */
+.tb-menu {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.toolbar .tb-menu-btn {
+  color: var(--text-primary);
+  border-color: var(--border-dim);
+}
+.toolbar .tb-menu-btn:hover,
+.tb-menu.open > .tb-menu-btn {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0,212,255,0.08);
+}
+.tb-caret { font-size: 0.7em; }
+.tb-menu-pop {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 300;
+  min-width: 230px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-cyan);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+}
+[data-theme="light"] .tb-menu-pop { box-shadow: 0 8px 22px rgba(0,0,0,0.16); }
+.tb-menu.open > .tb-menu-pop { display: flex; }
+#tb-pop-file button,
+#tb-pop-view button {
+  color: var(--text-primary);
+  border-color: var(--border-dim);
+  text-shadow: none;
+  box-shadow: none;
+  background: transparent;
+}
+#tb-pop-file button { width: 100%; justify-content: flex-start; }
+#tb-pop-file button:hover,
+#tb-pop-view button:hover {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0,212,255,0.08);
+}
+#tb-pop-view #btn-mobile-toggle.active { background: var(--accent-green); color: #06210d; border-color: var(--accent-green); }
+#tb-pop-file .toolbar-sep { width: 100%; height: 1px; margin: 2px 0; }
+.tb-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tb-menu-label {
+  flex: 1 1 auto;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+#tb-pop-view #btn-mobile-toggle { width: 100%; }
+
+/* スマホのドロワー（☰）ではメニューを開かず、中身をそのまま並べる */
+body.mobile-mode .tb-menu,
+body.mobile-mode .tb-menu-pop { display: contents; }
+body.mobile-mode .tb-menu-btn { display: none !important; }
+body.mobile-mode .tb-menu-row { display: inline-flex; flex: 0 0 auto; }
+body.mobile-mode #tb-pop-file button { width: auto; }
+body.mobile-mode #tb-pop-view #btn-mobile-toggle { width: auto; }
+
+/* ---------- 「スマホ表示」ボタンが黒テーマで見えない（B3/U04） ---------- */
+#btn-mobile-toggle {
+  color: var(--text-primary);
+  border-color: var(--border-dim);
+}
+#btn-mobile-toggle:hover {
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+/* ---------- フォーカスの枠（B3/U09/A11Y-14）：どのテーマでも見えるシアンの枠 ---------- */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+/* 角を欠いたボタン（clip-path）は外側の枠が切れるので、フォーカス中だけ角欠けを外して枠を出す。
+   枠の色はボタンの色（シアン等）と重ならないよう、文字色と同じ白／黒の二重線にする */
+.toolbar button:focus-visible,
+.mode-btn:focus-visible,
+#btn-monitor:focus-visible,
+#btn-monitor-clear:focus-visible, #btn-plot:focus-visible, #btn-sensor-monitor:focus-visible {
+  clip-path: none;
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--accent-cyan);
+}
+/* 実機の配線図ボタン：白テーマで薄すぎた水色を濃く */
+[data-theme="light"] #btn-circuit { color: #00707f; border-color: #00838f; text-shadow: none; box-shadow: none; }
+[data-theme="light"] #btn-circuit:hover { color: #fff; background: #00838f; }
+/* ツールボックス（カテゴリ）：キーボードで選んでいる行に枠 */
+.blocklyToolbox:focus-visible,
+.blocklyToolboxDiv:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: -2px; }
+.blocklyToolbox:focus-visible .blocklyTreeSelected,
+.blocklyToolboxDiv:focus-visible .blocklyTreeSelected,
+.blocklyToolbox:focus-visible .blocklyToolboxSelected,
+.blocklyToolboxCategory:focus-visible,
+.blocklyToolboxCategory:focus-visible > .blocklyTreeRow,
+.blocklyTreeRow:focus-visible {
+  outline: 2px solid var(--accent-cyan) !important;
+  outline-offset: -2px;
+}
+
+/* ---------- 白テーマのコントラスト（B4/A11Y-10）：AA 4.5:1 以上へ ---------- */
+[data-theme="light"] {
+  --text-dim:     #4a6a4a;   /* 旧 #6a8a6a（3.57:1）→ 約 6:1 */
+  --accent-amber: #7a5200;   /* 旧 #9a6800（4.47:1）→ 約 7:1 */
+  --accent-cyan:  #005a96;   /* 旧 #0066aa → 少し濃く */
+}
+[data-theme="light"] .CodeMirror-linenumber { color: #5f7a5f !important; }   /* 旧 2.56:1 */
+[data-theme="light"] .py-error { color: #b42318; }                          /* 旧 #ff6060（2.96:1） */
+/* エラーは色だけでなく文字でも分かるように（A11Y-13） */
+.py-error::before { content: '⚠ '; }
+
+/* 黒テーマ：エディタの案内コメントと行番号を読める濃さに（A11Y-11） */
+.cm-s-dracula span.cm-comment { color: #8f9bc8 !important; }
+.CodeMirror-linenumber { color: #7a9f7a !important; }
+[data-theme="light"] .cm-s-default span.cm-comment { color: #8a4b00; }
+
+/* ---------- シリアルモニタのボタン（A11Y-09）：12px 以上・高さ 30px ---------- */
+#btn-monitor, #btn-monitor-clear, #btn-plot, #btn-sensor-monitor {
+  font-size: 0.78rem;
+  min-height: 30px;
+  padding: 0 12px;
+  letter-spacing: 0.03em;
+}
+.code-header, .monitor-header { font-size: 0.78rem; letter-spacing: 0.05em; }
+/* 細い列（1024px の micro:bit など）でボタンの文字が2行に割れないように。入りきらなければ行ごと折り返す */
+.monitor-header { flex-wrap: wrap; row-gap: 4px; }
+#monitor-header-title { white-space: nowrap; }
+.monitor-controls { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.monitor-controls button { white-space: nowrap; }
+#serial-status { font-size: 0.8rem; }
+
+/* ---------- 配線図プレビューの見出し（B11/U12）：inline style をやめ、テーマに合わせる ---------- */
+#circuit-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--bg-panel);
+  color: var(--accent-green);
+  font-weight: bold;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+#circuit-preview-header .cph-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#circuit-preview-summary {
+  color: var(--text-dim);
+  font-weight: normal;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+#btn-circuit-collapse {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  min-height: 28px;
+  padding: 0 10px;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+#btn-circuit-collapse:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+/* 配線図の拡大表示のボタン（U13）：主＝塗り／副＝枠線の2種類に整理。モーダルは常に暗い面なので色は固定 */
+.pb-btn {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid #4a5568;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pb-btn:hover { border-color: #00d4ff; color: #00d4ff; }
+.pb-btn-primary { background: #00c853; border-color: #00c853; color: #04140a; font-weight: 700; }
+.pb-btn-primary:hover { background: #5dff85; border-color: #5dff85; color: #04140a; }
+
+/* ---------- エラーヒント（B8/P-05）：中身の高さに合わせ、最大でも画面の 1/3。下はスクロール ---------- */
+#error-hint {
+  white-space: normal;               /* 子要素の間の改行・字下げが空白として出ていた */
+  max-height: min(33vh, 260px);
+  padding: 8px 14px 10px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  box-shadow: 0 -6px 18px rgba(0,0,0,0.35);
+}
+#error-hint #error-hint-body { white-space: pre-wrap; }
+#error-hint .error-hint-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+  color: #ffb3b3;
+  background: inherit;
+}
+/* ［閉じる］は button（Tab で届く）。PC 32px・スマホ 44px（r5 05 R5-01） */
+#error-hint .error-hint-close {
+  min-height: 32px;
+  min-width: 64px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 0;
+}
+#error-hint .error-hint-close:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+body.mobile-mode #error-hint .error-hint-close { min-height: 44px; min-width: 72px; font-size: 0.9rem; }
+[data-theme="light"] #error-hint .error-hint-close { color: #8a1c12; }
+[data-theme="light"] #error-hint { color: #8a1c12; }
+
+/* ---------- ゲーム（B9/P-07・U14） ---------- */
+/* 1366×768 で作業域を広げる：左（ブロック＋ゲーム画面）を最低 58% に。右のコード・シェルは空きが多い */
+@media (min-width: 901px) {
+  .main.game-layout:not(.mode-micropython) {
+    grid-template-columns: minmax(260px, max(var(--game-left, 50%), 58%)) 8px minmax(260px, 1fr);
+  }
+}
+/* ゲーム画面は枠に合わせて縮める（縦横比は保つ・下が切れない） */
+.main.game-layout #game-canvas-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+.main.game-layout #game-canvas-area > .game-area-resize-handle,
+.main.game-layout #game-canvas-area > #game-title-bar { align-self: stretch; }
+.main.game-layout .pyco-game-canvas {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+[data-theme="light"] #game-canvas-area { background: var(--bg-panel); }
+/* 実行する前の空の枠に案内を出す */
+.main.game-layout #game-canvas-area:not(:has(canvas))::before {
+  content: '▶ 実行すると、ここにゲーム画面が出ます';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+#game-title-bar { margin-bottom: 4px; }
+
+/* ---------- micro:bit を狭い画面（〜1280px）で使うとき（B10/E11・P-08）：ブロック側を広く、コード欄を細く ---------- */
+@media (min-width: 901px) and (max-width: 1280px) {
+  .main.game-layout.mode-microbit {
+    grid-template-columns: minmax(300px, max(var(--game-left, 50%), 64%)) 8px minmax(220px, 1fr);
+  }
+}
+
+/* ---------- スマホ（B5/A11Y-04・07・16） ---------- */
+/* カテゴリ行を指で押せる高さに */
+body.mobile-mode .blocklyToolboxCategory,
+body.mobile-mode .blocklyTreeRow {
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center;
+}
+/* ヘッダー（A11Y-07）：390px 幅で「☰ メニュー」が画面外へ切れていた。
+   タイトルの文字をアイコンに置き換えて幅を空け、その分モード切替の文字を 12px に上げる */
+@media (max-width: 480px) {
+  body.mobile-mode .title-block h1 {
+    font-size: 0;
+    width: 28px;
+    height: 28px;
+    background: url('../assets/pycoblocks-icon.svg') center / contain no-repeat;
+    text-shadow: none;
+  }
+  body.mobile-mode .mode-btn { font-size: 0.75rem; padding-left: 5px; padding-right: 5px; }
+  body.mobile-mode #btn-mobile-menu { padding-left: 8px; padding-right: 8px; }
+}
+@media (max-width: 380px) {
+  body.mobile-mode .mode-btn { font-size: 0.66rem; padding-left: 3px; padding-right: 3px; }
+}
+/* ドロワー内の文字を 13px 以上に */
+body.mobile-mode .toolbar button { font-size: 0.85rem; height: auto; }
+body.mobile-mode .tb-menu-label { font-size: 0.85rem; }
+
+/* ---------- 動きを減らす設定のとき点滅を止める（A11Y-19） ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .status-dot, .demo-badge { animation: none; }
+}
+
+/* =====================================================================
+   UI 改善 r2（担当B：見た目）2026-11-02
+   レビュー：r2 の 04_UIデザイナー R2-04/07/09/10/11・U18／05_アクセシビリティ A11Y-05/06/09・R2-01/02。
+   r1 のまとまりの後ろに置き、必要なところだけ上書きする。
+   ===================================================================== */
+
+/* ---------- B3/A11Y-06・05 R2-01/R2-02：スマホの「▶ 実行」をタブバーの右端に収める ----------
+   画面の上に浮かせると、傾きスライダー・やりなおす・「配線図を表示」を必ずどれかがふさぐ。
+   タブバーの中に置けば、作業域・シミュレータ・配線図の帯と重ならない。 */
+:root { --mobile-run-w: 112px; }
+body.mobile-mode #mobile-tabbar {
+  padding-right: calc(var(--mobile-run-w) + 16px);
+}
+body.mobile-mode #btn-mobile-run {
+  right: 8px;
+  bottom: calc((var(--mobile-tabbar-h) - 44px) / 2);
+  height: 44px;
+  min-height: 44px;
+  min-width: var(--mobile-run-w);
+  justify-content: center;
+  padding: 0 16px;
+  border-radius: 0;
+  clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  box-shadow: none;
+}
+[data-theme="light"] body.mobile-mode #btn-mobile-run:not(:disabled) { color: #fff; }
+/* 押せないときもタブと同じ面の上で「押せない」と分かる見た目（点線の枠） */
+body.mobile-mode #btn-mobile-run:disabled {
+  background: transparent;
+  border: 1px dashed var(--text-dim);
+  color: var(--text-dim);
+  clip-path: none;
+}
+/* シミュレータの下余白は浮いた実行ボタンのためだった。もう要らないので詰める */
+body.mobile-mode #mb-sim { padding-bottom: 12px; }
+
+/* ---------- B2/A11Y-09：タブレット（820px）のモード切替を 12px に・シリアルモニタのボタンを 32px に ---------- */
+@media (min-width: 481px) {
+  body.mobile-mode .mode-btn { font-size: 0.75rem; padding-left: 8px; padding-right: 8px; }
+}
+#btn-monitor, #btn-monitor-clear, #btn-plot, #btn-sensor-monitor { min-height: 32px; }
+/* ファイルのタブ（main.py）を 12.8px に、「＋」を 32×32 に */
+.file-tab { font-size: 0.8rem; }
+#btn-add-file { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; }
+.file-tab-close { font-size: 0.75rem; padding: 4px 6px; }
+
+/* ---------- B4/R2-07：作業域の［リファレンス／もどす／やりなおす］をツールバーのボタンと同じ種類に ----------
+   JS がインラインで付けた見た目（角丸・不透明度）を上書きする */
+#ws-undo-bar button {
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--border-dim) !important;
+  border-radius: 0 !important;
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.8rem !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  white-space: nowrap;
+}
+#ws-undo-bar button:hover:not(:disabled) {
+  color: var(--accent-cyan) !important;
+  border-color: var(--accent-cyan) !important;
+}
+#ws-undo-bar button:disabled {
+  background: transparent !important;
+  border-style: dashed !important;
+  border-color: var(--text-dim) !important;
+  color: var(--text-dim) !important;
+  cursor: not-allowed !important;
+}
+/* 調べもの（リファレンス）と編集（もどす・やりなおす）を縦線で分ける */
+#ws-undo-bar #btn-ws-reference {
+  margin-right: 8px;
+  box-shadow: 9px 0 0 -8px var(--border-dim);
+}
+body.mobile-mode #ws-undo-bar button { min-width: 44px; min-height: 44px !important; font-size: 1rem !important; }
+
+/* ---------- B5/R2-09：配線図の拡大表示（モーダル）を白テーマでも明るく ----------
+   app.html のインライン指定（濃紺）を白テーマのときだけ上書きする */
+#circuit-modal > div { border-radius: 0 !important; }
+[data-theme="light"] #circuit-modal { background: rgba(20,40,20,0.45) !important; }
+[data-theme="light"] #circuit-modal > div {
+  background: var(--bg-surface) !important;
+  border-color: var(--border-glow) !important;
+  color: var(--text-primary);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+}
+[data-theme="light"] #circuit-modal > div > div:first-child > span:first-child { color: var(--accent-green) !important; }
+[data-theme="light"] #circuit-modal #circuit-summary,
+[data-theme="light"] #circuit-modal #circuit-close,
+[data-theme="light"] #circuit-modal > div > div:last-child > span { color: var(--text-dim) !important; }
+[data-theme="light"] #circuit-modal .pb-btn { border-color: var(--border-dim); color: var(--text-primary); }
+[data-theme="light"] #circuit-modal .pb-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+[data-theme="light"] #circuit-modal .pb-btn-primary { background: var(--accent-green); border-color: var(--accent-green); color: #fff; }
+[data-theme="light"] #circuit-modal .pb-btn-primary:hover { background: #16631a; border-color: #16631a; color: #fff; }
+#circuit-close { min-height: 32px; padding: 0 10px !important; border: 1px solid currentColor !important; }
+
+/* ---------- B6/R2-10：Pico をつないでいないときは「接続」が最初に押すボタン ----------
+   実行・停止が押せない（＝未接続で何も動いていない）間だけ、接続をシアンの塗りにする。
+   micro:bit はつないでいなくても実行（シミュレータ）が押せるので塗らない */
+#btn-run:disabled + #btn-stop:disabled ~ #btn-connect:not(.connected):not(:disabled) {
+  background: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  color: #001018;
+  text-shadow: none;
+}
+#btn-run:disabled + #btn-stop:disabled ~ #btn-connect:not(.connected):not(:disabled):hover {
+  background: #5ce1ff;
+  border-color: #5ce1ff;
+  color: #001018;
+}
+[data-theme="light"] #btn-run:disabled + #btn-stop:disabled ~ #btn-connect:not(.connected):not(:disabled),
+[data-theme="light"] #btn-run:disabled + #btn-stop:disabled ~ #btn-connect:not(.connected):not(:disabled):hover { color: #fff; }
+
+/* ---------- B8/U18・R2-11：ログインはツールバーの右端へ。色は接続（シアン）と分ける ---------- */
+.toolbar #cloud-toolbar { margin-left: auto; }
+.toolbar #cloud-sep { display: none; }
+#btn-cloud-login {
+  color: var(--text-primary);
+  border-color: var(--border-dim);
+  text-shadow: none;
+  box-shadow: none;
+}
+#btn-cloud-login:hover {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0,212,255,0.08);
+  box-shadow: none;
+}
+body.mobile-mode .toolbar #cloud-toolbar { margin-left: 0; }
+
+/* ---------- R2-08：グラフの背景をアプリの面の色にそろえる ---------- */
+:root body #serial-plot { background: var(--bg-panel); border-top-color: var(--border-dim); }
+:root body #serial-plot .sp-legend { font-size: 12px; }
+:root body #serial-plot .sp-item { color: var(--text-primary); }
+/* タブレット（820px）でボードが画面いっぱいになり、操作パネルが見えなくなるので上限を付ける */
+body.mobile-mode #mb-sim .mbs-board { max-width: 460px; align-self: center; }
+/* 配線図プレビューの見出しが狭い画面で2行に割れないように */
+#circuit-preview-header > span:first-child { white-space: nowrap; }
+/* スマホ：もどす・やりなおすを 44px にすると縦に並べたときズームの列にかかるので、横に並べる */
+body.mobile-mode #ws-undo-bar { flex-direction: row !important; }
+
+/* =====================================================================
+   UI 改善 r3（担当B：見た目）2026-11-02
+   レビュー：r3 の 03_先生 P-06／04_UIデザイナー R3-03/R3-04／05_アクセシビリティ R3-06。
+   r1・r2 のまとまりの後ろに置き、必要なところだけ上書きする。
+   ===================================================================== */
+
+/* ---------- B1/P-06：黒テーマの押せないボタンの文字をプロジェクタでも読める明るさに ----------
+   点線の枠・透明の背景（＝押せない見た目）はそのまま。文字だけ #5a8a5a（約 4.8:1）→ #a3bba3（約 10:1）。
+   枠は文字より一段暗くして、押せるボタンの実線と見分けられるようにする */
+:root:not([data-theme="light"]) .toolbar button:disabled,
+:root:not([data-theme="light"]) #btn-run:disabled,
+:root:not([data-theme="light"]) #btn-stop:disabled,
+:root:not([data-theme="light"]) #btn-write:disabled,
+:root:not([data-theme="light"]) #btn-reconnect:disabled,
+:root:not([data-theme="light"]) #btn-run-python:disabled,
+:root:not([data-theme="light"]) #ws-undo-bar button:disabled,
+:root:not([data-theme="light"]) body.mobile-mode #btn-mobile-run:disabled {
+  color: #a3bba3 !important;
+  border-color: #6f8f6f !important;
+}
+
+/* ---------- B3/R3-04：サンプル一覧のダイアログ ----------
+   角をほかの部品（ツールバー・トースト・配線図の枠）と同じ角なしに。
+   項目は micro:bit と同じ「題名＋ひとこと説明」のカードに（説明の無い項目は題名だけのカード）。
+   JS（app.js buildSamplesModal）がインラインで付けた見た目を上書きする */
+[role="dialog"][aria-label="サンプルを開く"],
+[role="dialog"][aria-label="サンプルを開く"] button { border-radius: 0 !important; }
+[role="dialog"][aria-label="サンプルを開く"] details > div {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px !important;
+}
+[role="dialog"][aria-label="サンプルを開く"] details > div > button {
+  flex: none !important;
+  grid-column: auto;
+  display: block;
+  width: 100%;
+  min-height: 44px !important;
+  padding: 8px 12px !important;
+  font: inherit;
+  font-size: 14px !important;
+  font-weight: bold;
+  line-height: 1.4;
+  text-align: left;
+  border-left: 3px solid var(--accent-green) !important;
+}
+/* 説明のあるカードは1行に1つ（説明を読みやすい幅で） */
+[role="dialog"][aria-label="サンプルを開く"] details > div > button:has(> span) { grid-column: 1 / -1; }
+[role="dialog"][aria-label="サンプルを開く"] details > div > button > span { font-size: 13px !important; line-height: 1.5; }
+[role="dialog"][aria-label="サンプルを開く"] details > div > button:hover,
+[role="dialog"][aria-label="サンプルを開く"] details > div > button:focus-visible {
+  border-color: var(--accent-cyan) !important;
+  border-left-color: var(--accent-cyan) !important;
+}
+[role="dialog"][aria-label="サンプルを開く"] summary { min-height: 32px; display: list-item; }
+
+/* ---------- B4/R3-06：スマホの下タブ「いまどちら」を色以外でも ----------
+   選んでいる方：太字＋文字の下線＋上の太線。選んでいない方：ふつうの太さ・線なし。
+   読み上げ向けには app.js で aria-pressed を切り替える */
+body.mobile-mode #mobile-tabbar .m-tab { font-weight: normal; }
+body.mobile-mode #mobile-tabbar .m-tab.active,
+body.mobile-mode #mobile-tabbar .m-tab[aria-pressed="true"] {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  border-top-width: 4px;
+}
+[data-theme="light"] body.mobile-mode #mobile-tabbar .m-tab.active { background: rgba(30,122,30,0.08); }
+
+/* ---------- B2/R3-03：作業域の上の帯（#ws-strip）と区切り ----------
+   担当A が［書き方の一覧／もどす／やりなおす］を描画面の外の帯に横 1 列で並べた（app.js #ws-strip）。
+   帯はツールバーと同じ面の色＋下線で、作業域（ブロックを置く所）と分かれて見えるようにする。
+   r2 の「右に細い線（box-shadow）」は縦の列のときの名残で、線がボタンにくっつき幅もずれて見えたのでやめ、
+   調べもの（書き方の一覧）と編集（もどす・やりなおす）の間のすき間の真ん中に 1px の縦線を引く */
+#ws-strip {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-dim);
+}
+#ws-undo-bar #btn-ws-reference {
+  margin-right: 6px;
+  box-shadow: none !important;
+}
+#ws-undo-bar #btn-ws-undo { position: relative; margin-left: 7px; }
+#ws-undo-bar #btn-ws-undo::before {
+  content: '';
+  position: absolute;
+  left: -11px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--border-dim);
+  pointer-events: none;
+}
+/* スマホは「書き方」を記号ボタンと並べるので、区切り線の代わりに右の余白で分ける */
+body.mobile-mode #ws-undo-bar #btn-ws-undo { margin-left: 0; }
+body.mobile-mode #ws-undo-bar #btn-ws-undo::before { display: none; }
+/* 帯の高さ（36px／スマホ 50px）にボタンが収まるように */
+#ws-strip #ws-undo-bar button { min-height: 28px !important; height: 28px; }
+body.mobile-mode #ws-strip #ws-undo-bar button { min-height: 44px !important; height: 44px; }
+
+/* ---------- B5/R3-01・R3-02：知らせ（トースト）の見た目 ----------
+   置き場所・幅は担当A（app.js showToast：PC は右寄せ min(520px,…)、スマホは body 直下で左右 12px）。
+   ここでは角・色・字の大きさをアプリの部品にそろえる */
+.pyco-toast {
+  border-radius: 0 !important;
+  font-family: var(--font-mono);
+}
+.pyco-toast.err { background: #7a1f1f !important; border-color: #ff8a8a !important; color: #fff !important; }
+.pyco-toast:not(.err) { border-left: 4px solid var(--accent-green) !important; }
+.pyco-toast.err { border-left: 4px solid #ff8a8a !important; }
+.pyco-toast button { border-radius: 0 !important; font-family: inherit; }
+.pyco-toast button:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+[data-theme="light"] .pyco-toast:not(.err) { box-shadow: 0 4px 16px rgba(0,0,0,.15) !important; }
+/* スマホ：文が長いので 14px にし、ボタンは文の下の行へ（右寄せ） */
+.pyco-toast--mobile { font-size: 14px !important; padding: 10px 12px !important; justify-content: flex-end; }
+.pyco-toast--mobile .pyco-toast-msg { flex: 1 1 100% !important; }
+.pyco-toast--mobile button { min-height: 40px !important; }
+.pyco-toast--mobile > button:last-child { min-width: 40px !important; }
+
+/* ---------- B6/R3-02（03_先生）：止まったシミュレータの盤面を少し暗くする ----------
+   app.js が止めたときに #mb-sim へ .mbs-stopped を付ける（最初の実行の前は付かない）。
+   色だけでなく「停止中」の文字も盤面の上に出す（LED が光ったままでも止まっていると分かる） */
+#mb-sim .mbs-board { position: relative; transition: filter .2s; }
+#mb-sim.mbs-stopped .mbs-board { filter: grayscale(.6) brightness(.8); }
+#mb-sim.mbs-stopped .mbs-board::after {
+  content: '■ 停止中';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-dim);
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) { #mb-sim .mbs-board { transition: none; } }
+
+/* ---------- 担当A から頼まれた部品の見た目（r3 で新しくできたもの） ---------- */
+/* カテゴリの出し方（よく使うもの／ぜんぶ）：作業域の上の帯の左。今の方は塗り（aria-pressed）、
+   2 つをくっつけて 1 組の切替に見せる */
+#tb-scope .tb-scope-btn { min-height: 28px !important; }
+#tb-scope .tb-scope-btn + .tb-scope-btn { margin-left: -1px; }
+#tb-scope .tb-scope-btn[aria-pressed="false"]:hover { color: var(--accent-cyan) !important; border-color: var(--accent-cyan) !important; }
+#tb-scope .tb-scope-btn[aria-pressed="true"] { position: relative; z-index: 1; }
+[data-theme="light"] #tb-scope .tb-scope-btn[aria-pressed="true"] { color: #fff !important; }
+#tb-scope .tb-scope-btn:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; z-index: 2; }
+
+/* センサーモニター動作中：停止ボタンと同じ赤の枠で「押すと止まる」を示す（名前も JS が「■ … を止める」に変える） */
+#btn-sensor-monitor.is-running {
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  background: rgba(255,59,59,0.10);
+  font-weight: bold;
+}
+#btn-sensor-monitor.is-running:hover { background: rgba(255,59,59,0.20); color: #ff8a8a; border-color: #ff8a8a; }
+[data-theme="light"] #btn-sensor-monitor.is-running { color: #b42318; border-color: #b42318; background: rgba(180,35,24,0.08); }
+
+/* 学習モードの「（ボード）のサンプルを開く」：ブラウザ標準の白いボタンだったので、主役の緑の塗りに */
+.pyco-tut-samplesbtn {
+  background: var(--accent-green) !important;
+  color: #04140a !important;
+  border: 1px solid var(--accent-green) !important;
+  font-family: var(--font-mono);
+}
+.pyco-tut-samplesbtn:hover { background: #5dff85 !important; border-color: #5dff85 !important; }
+[data-theme="light"] .pyco-tut-samplesbtn { color: #fff !important; }
+[data-theme="light"] .pyco-tut-samplesbtn:hover { background: #16631a !important; border-color: #16631a !important; }
+.pyco-tut-samplesbtn:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+.pyco-tut-othermode > summary { min-height: 32px; }
+
+/* 書き方の一覧のブロック札：ほかの部品と角をそろえる */
+.syn-block { border-radius: 0 !important; }
+
+/* 04 R3-05 後半：スマホのメニュー内の「PC表示」（= スマホ表示が ON）を緑の塗りにしない。
+   主役の緑（▶ 実行）と 2 つ並んでしまうため。ON は枠線＋太字で示す */
+body.mobile-mode #btn-mobile-toggle.active,
+body.mobile-mode #tb-pop-view #btn-mobile-toggle.active {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-dim);
+  font-weight: normal;
+}
+
+/* =====================================================================
+   UI 改善 r4（Act）2026-11-02
+   レビュー：r4 の 01〜05。r3 までのまとまりの後ろに置き、必要なところだけ上書きする。
+   ===================================================================== */
+
+/* ---------- F2：帯のボタンの高さ・字（PC 32px・13px、スマホ 44px）と、切替の「いまの方」 ----------
+   いまの方は塗らない（塗りは［接続］［▶ 実行］＝次に押すボタンの色）。枠線＋太字＋下線で示す */
+#ws-strip #ws-undo-bar button { min-height: 32px !important; height: 32px; font-size: 13px !important; }
+body.mobile-mode #ws-strip #ws-undo-bar button { min-height: 44px !important; height: 44px; font-size: 1rem !important; }
+#tb-scope .tb-scope-btn { min-height: 32px !important; height: 32px; font-size: 13px !important; }
+body.mobile-mode #tb-scope .tb-scope-btn { min-height: 44px !important; height: 44px; font-size: 14px !important; }
+#tb-scope .tb-scope-btn[aria-pressed="true"],
+[data-theme="light"] #tb-scope .tb-scope-btn[aria-pressed="true"] {
+  background: var(--bg-surface) !important;
+  color: var(--accent-cyan) !important;
+  border-color: var(--accent-cyan) !important;
+  font-weight: bold !important;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+#ws-undo-bar #btn-ws-undo::before { top: 6px; bottom: 6px; }
+
+/* ---------- F6：スマホのゲーム（左列）はブロックの作業域を広く ----------
+   ブロック : ゲーム画面 = 2 : 3 だと作業域が 233px しかなかった。ゲーム画面は実行するまで案内だけなので 1 : 1 に */
+body.mobile-mode .main.game-layout:not(.mode-micropython) > #game-left-column > #blockly-div { flex: 1 1 0 !important; }
+body.mobile-mode .main.game-layout:not(.mode-micropython) > #game-left-column > #game-canvas-area { flex: 1 1 0 !important; }
+
+/* ---------- F4：書き方の一覧（ブロック画面の引き出し） ----------
+   ・題は引き出しの上の帯（「ブロックが作るコードの書き方の一覧」）だけにし、パネルの古い題は出さない
+   ・見出しも本文も 13px 以上（全モード）
+   ・引き出しの中はコードに入れられないので、項目は押せない見た目（cursor:default・ホバーの色なし）。
+     micro:bit の札だけは押せる（左のブロック一覧でそのブロックを光らせる） */
+.pyco-ref-drawer .syntax-header-title { display: none; }
+#syntax-panel .syntax-header-sub { font-size: 13px; }
+#syntax-panel .syn-cat-title { font-size: 13px; font-weight: bold; letter-spacing: 0.04em; }
+#syntax-panel .syn-item code { font-size: 13px; }
+#syntax-panel .syn-item .syn-label { font-size: 13px; }
+#syntax-panel .syn-item .syn-comment { font-size: 13px; }
+.pyco-ref-drawer .syn-item { cursor: default; }
+.pyco-ref-drawer .syn-item:hover { background: transparent; }
+.pyco-ref-drawer .syn-block { cursor: pointer; }
+.pyco-ref-drawer .syn-block:hover { outline: 2px solid var(--accent-cyan); outline-offset: 1px; }
+.pyco-ref-drawer .syn-block:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+/* 札から開いたブロック一覧のブロックを光らせる */
+.blocklyFlyout .pyco-ref-flash > .blocklyPath,
+.blocklyFlyout .pyco-ref-flash > path.blocklyPath {
+  stroke: #ffd400 !important;
+  stroke-width: 5px !important;
+  animation: pyco-ref-flash 0.6s ease-in-out 4 alternate;
+}
+.blocklyFlyout .pyco-ref-flash { filter: drop-shadow(0 0 6px #ffd400); }
+@keyframes pyco-ref-flash { from { stroke-opacity: 1; } to { stroke-opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .blocklyFlyout .pyco-ref-flash > .blocklyPath { animation: none; } }
+
+/* ---------- F10：1024〜1180px のパソコン表示でツールバーを 1 段に ----------
+   2 段目が［ログイン］だけ（Pico）・［⚙ 表示］＋［ログイン］（micro:bit）になり、作業域が 38px 低くなっていた。
+   ・［ログイン］は 1 段目（ロゴとモード切替の行）のモード切替の左へ（幅は app.js が --pyco-mode-toggle-w に入れる）
+   ・1100px 以下はボタンの左右の余白を 12px → 8px に詰める */
+@media (min-width: 901px) and (max-width: 1180px) {
+  body:not(.mobile-mode) header .toolbar #cloud-toolbar {
+    position: absolute;
+    top: 6px;
+    right: calc(12px + var(--pyco-mode-toggle-w, 320px) + 24px);
+    margin-left: 0;
+  }
+}
+@media (min-width: 901px) and (max-width: 1100px) {
+  body:not(.mobile-mode) header .toolbar button { padding: 0 8px; }
+  body:not(.mobile-mode) header .toolbar { gap: 5px; }
+}

@@ -158,6 +158,13 @@ const PicoFirmware = (() => {
     el.className = 'fw-msg' + (type ? ' fw-msg--' + type : '');
   }
 
+  // BOOTSEL のときにパソコンに出るドライブの名前。RP2040（Pico / Pico W）は RPI-RP2、
+  // RP2350（Pico 2 / Pico 2 W）は RP2350 という名前で出る。どれも RPI-RP2 と書いていたので、
+  // Pico 2 を持った生徒が「出てこない」と手を挙げていた。
+  function driveName() {
+    return selected && selected.chip === 'RP2350' ? 'RP2350' : 'RPI-RP2';
+  }
+
   // -------------------------------------------------------------- 各段階
 
   function renderStep1() {
@@ -175,7 +182,9 @@ const PicoFirmware = (() => {
     return `
       <p class="fw-lead">手に持っている基板と同じものを選ぶ。<strong>ここを間違えると、書き込んでも動かない。</strong></p>
       <div class="fw-cards">${cards}</div>
-      <p class="fw-note">${manifest ? CREDIT : '※ ファームウェアの一覧を読み込めなかったので、公式サイトからのダウンロードに切り替えている。'}</p>`;
+      <p class="fw-note">${manifest ? CREDIT : '※ ファームウェアの一覧を読み込めなかったので、公式サイトからのダウンロードに切り替えている。'}</p>
+      <p class="fw-note">動かなくなった Pico を元に戻したいときは
+        <a href="#" id="fw-reset-link">Pico を初期化する</a>。</p>`;
   }
 
   function renderStep2() {
@@ -199,12 +208,12 @@ const PicoFirmware = (() => {
           <button type="button" class="fw-btn fw-btn--primary fw-btn--wide" id="fw-bootsel">
             ${connected ? 'BOOTSEL に入れる' : 'つないで BOOTSEL に入れる'}
           </button>
-          <p class="fw-note">実行すると Pico はいったん切断され、パソコンに <code>RPI-RP2</code> という
+          <p class="fw-note">実行すると Pico はいったん切断され、パソコンに <code>${driveName()}</code> という
           ドライブとして出てくる。それが出れば成功。</p>
         </section>
       </div>
       <p class="fw-check">
-        <strong>うまくいったかの確認：</strong>パソコンに <code>RPI-RP2</code> という名前のドライブ
+        <strong>うまくいったかの確認：</strong>パソコンに <code>${driveName()}</code> という名前のドライブ
         （USB メモリのようなもの）が出ていれば、次に進んでよい。
       </p>`;
   }
@@ -233,7 +242,7 @@ const PicoFirmware = (() => {
         ${oneClick}
         <section class="fw-pane">
           <h3 class="fw-h3">${canWebUsb ? 'もうひとつの方法：ファイルを落とし込む' : 'ファイルを落とし込んで書き込む'}</h3>
-          <div class="fw-art">${PicoArt.dragDrop({ height: 170 })}</div>
+          <div class="fw-art">${PicoArt.dragDrop({ height: 170, drive: driveName() })}</div>
           <ol class="fw-list">
             <li>
               <a class="fw-btn fw-btn--primary fw-btn--inline" id="fw-download"
@@ -241,7 +250,7 @@ const PicoFirmware = (() => {
                 ${dlLabel}
               </a>
             </li>
-            <li>パソコンに出ている <code>RPI-RP2</code> ドライブを開く。</li>
+            <li>パソコンに出ている <code>${driveName()}</code> ドライブを開く。</li>
             <li>ダウンロードした <code>.uf2</code> ファイルを、そのドライブへドラッグ＆ドロップする。</li>
             <li>コピーが終わるとドライブがひとりでに消える。それが書き込み完了の合図。</li>
           </ol>
@@ -251,7 +260,7 @@ const PicoFirmware = (() => {
               <li><strong>コピーの途中でエラーが出た</strong> — 「デバイスが取り外されました」「コピー先が見つかりません」などは、
                   たいてい<strong>失敗ではない</strong>。書き込みが終わった Pico は自分でドライブを切り離すので、
                   パソコンがそれを異常と見なして言ってくるだけ。次へ進んで確かめればよい。</li>
-              <li><strong><code>RPI-RP2</code> ドライブが出てこない</strong> — BOOTSEL を押す力が足りないか、
+              <li><strong><code>${driveName()}</code> ドライブが出てこない</strong> — BOOTSEL を押す力が足りないか、
                   押す前に USB を挿している。「戻る」で手順をやり直す。
                   それでも出ないときは USB ケーブルを疑う（充電専用のケーブルでは出てこない）。</li>
               <li><strong>コピーしてもドライブが消えない</strong> — 選んだボードが違うおそれがある。
@@ -283,7 +292,7 @@ const PicoFirmware = (() => {
         <ul class="fw-list">
           <li>Thonny など、ほかのアプリが Pico をつかんでいないか確かめる。開いていたら閉じる。</li>
           <li>USB ケーブルが「充電専用」だと通信できない。データ通信できるケーブルに替える。</li>
-          <li><code>RPI-RP2</code> ドライブがまだ出たままなら、書き込みが終わっていない。手順 3 に戻る。</li>
+          <li><code>${driveName()}</code> ドライブがまだ出たままなら、書き込みが終わっていない。手順 3 に戻る。</li>
           <li>ブラウザは Chrome か Edge を使う（Safari・Firefox では接続できない）。</li>
         </ul>
       </details>`;
@@ -298,6 +307,8 @@ const PicoFirmware = (() => {
     const connected = deps.serial && deps.serial.isConnected();
     const nuke      = manifest && manifest.flashNuke;
     const nukeUrl   = nuke ? 'firmware/' + nuke.file : NUKE_FALLBACK_URL;
+    // ボードを選ぶ前に初期化へ来ることもあるので、そのときは両方の名前を書く
+    const resetDrive = selected ? driveName() : 'RPI-RP2（Pico 2 は RP2350）';
     const nukeSize  = nuke ? '（約 ' + Math.round(nuke.size / 1024) + ' KB）' : '';
 
     return `
@@ -334,8 +345,8 @@ const PicoFirmware = (() => {
               flash_nuke.uf2 をダウンロード</a>${nukeSize}
             <span class="fw-note">ダウンロードしただけでは何も起きない。</span>
           </li>
-          <li>そのファイルを <code>RPI-RP2</code> ドライブへドラッグ＆ドロップする。</li>
-          <li>消え終わると Pico はひとりでに BOOTSEL に戻り、<code>RPI-RP2</code> がもう一度出てくる
+          <li>そのファイルを <code>${resetDrive}</code> ドライブへドラッグ＆ドロップする。</li>
+          <li>消え終わると Pico はひとりでに BOOTSEL に戻り、<code>${resetDrive}</code> がもう一度出てくる
             （出てこなければ USB を挿し直す）。</li>
           <li>［戻る］→ 手順 3 に進んで、MicroPython を入れ直す。</li>
         </ol>
@@ -348,7 +359,7 @@ const PicoFirmware = (() => {
     if (wipe) wipe.addEventListener('click', askWipeConfirm);
     const nuke = $('#fw-nuke');
     if (nuke) nuke.addEventListener('click', () => {
-      setMsg('落とした flash_nuke.uf2 を RPI-RP2 ドライブへドラッグ＆ドロップすると消去が始まる。', 'info');
+      setMsg('落とした flash_nuke.uf2 を ' + driveName() + ' ドライブへドラッグ＆ドロップすると消去が始まる。', 'info');
     });
   }
 
@@ -464,7 +475,9 @@ const PicoFirmware = (() => {
 
     $('#fw-title').textContent = 'MicroPython を入れる';
     $('#fw-steps').hidden = false;
-    $('#fw-reset-open').hidden = false;
+    // 「初期化」は困ったときの道具。手順 1〜3 で常に左下に出ていると、はじめての生徒が押して
+    // 「まっさらにする」画面に入ってしまうので、手順 4 だけに出す（手順 1 には小さな文字リンクを置く）
+    $('#fw-reset-open').hidden = step !== 4;
     $('#fw-next').hidden = false;
 
     if (step === 1)      body.innerHTML = renderStep1();
@@ -491,6 +504,8 @@ const PicoFirmware = (() => {
 
   function bindStep() {
     if (step === 1) {
+      const rl = $('#fw-reset-link');
+      if (rl) rl.addEventListener('click', e => { e.preventDefault(); $('#fw-reset-open').click(); });
       root.querySelectorAll('.fw-card').forEach(card => {
         card.addEventListener('click', () => {
           selected = boards.find(b => b.id === card.dataset.board);
@@ -511,7 +526,7 @@ const PicoFirmware = (() => {
       if (flash) flash.addEventListener('click', onOneClickFlash);
       const dl = $('#fw-download');
       if (dl) dl.addEventListener('click', () => {
-        setMsg('ダウンロードした .uf2 を RPI-RP2 ドライブへドラッグ＆ドロップする。', 'info');
+        setMsg('ダウンロードした .uf2 を ' + driveName() + ' ドライブへドラッグ＆ドロップする。', 'info');
       });
     }
 
@@ -547,7 +562,7 @@ const PicoFirmware = (() => {
       setMsg('BOOTSEL に切り替え中…', 'info');
       await serial.enterBootloader();
       if (deps.onSerialChange) deps.onSerialChange();
-      setMsg('切り替えを送った。RPI-RP2 ドライブが出ていれば成功。次へ進む。', 'ok');
+      setMsg('切り替えを送った。' + driveName() + ' ドライブが出ていれば成功。次へ進む。', 'ok');
     } catch (e) {
       setMsg(friendly(e) , 'err');
     } finally {

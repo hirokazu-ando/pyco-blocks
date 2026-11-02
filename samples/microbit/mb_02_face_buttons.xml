@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="ボタンで表情を変える" desc="A を押すとにっこり、B を押すとしょんぼり。シミュレータでは A・B のボタンを押す">
+  <block type="mb_on_start" x="30" y="30">
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">MEH</field></block>
+    </statement>
+  </block>
+  <block type="mb_on_button" x="30" y="170"><field name="BTN">a</field>
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">HAPPY</field></block>
+    </statement>
+  </block>
+  <block type="mb_on_button" x="30" y="300"><field name="BTN">b</field>
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">SAD</field></block>
+    </statement>
+  </block>
+</xml>

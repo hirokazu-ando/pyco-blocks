@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="ゆさぶってサイコロ" desc="micro:bit をゆさぶると 1〜6 のどれかが出る。出た目は 3 回流れるので、よく見て読もう。シミュレータでは［ゆさぶる］を押す">
+  <block type="mb_on_start" x="30" y="30">
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">SQUARE_SMALL</field></block>
+    </statement>
+  </block>
+  <block type="mb_on_gesture" x="30" y="170"><field name="G">shake</field>
+    <statement name="DO">
+      <block type="var_set"><field name="VAR">dice</field>
+        <value name="VALUE">
+          <block type="py_random_int">
+            <value name="FROM"><block type="val_number"><field name="NUM">1</field></block></value>
+            <value name="TO"><block type="val_number"><field name="NUM">6</field></block></value>
+          </block>
+        </value>
+        <next>
+          <block type="pico_repeat">
+            <value name="TIMES"><block type="val_number"><field name="NUM">3</field></block></value>
+            <statement name="DO">
+              <block type="mb_show_number">
+                <value name="NUM"><block type="val_var"><field name="VAR">dice</field></block></value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

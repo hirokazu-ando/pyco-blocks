@@ -170,12 +170,14 @@ const PicoArt = (() => {
   /**
    * 「UF2 を RPI-RP2 ドライブに落とす」図。
    * 添え字がはみ出さないよう、viewBox に左右の余白と 2 行ぶんの下余白を取ってある。
+   * drive：ドライブの名前。Pico 2 系（RP2350）は「RP2350」で出るので、文章と図をそろえる
    */
   function dragDrop(o) {
-    const opt = Object.assign({ height: 150 }, o || {});
+    const opt = Object.assign({ height: 150, drive: 'RPI-RP2' }, o || {});
+    const drive = String(opt.drive).replace(/[<>&"]/g, '');
     return `
 <svg viewBox="0 0 150 76" height="${opt.height}" role="img"
-     aria-label="UF2 ファイルを RPI-RP2 ドライブにドラッグアンドドロップする図"
+     aria-label="UF2 ファイルを ${drive} ドライブにドラッグアンドドロップする図"
      style="max-width:100%; height:auto; max-height:${opt.height}px;">
   <defs>
     <marker id="pa-arrow2" viewBox="0 0 10 10" refX="9" refY="5"
@@ -211,7 +213,7 @@ const PicoArt = (() => {
     <rect x="0" y="5" width="48" height="3" fill="#64748b"/>
     <circle cx="6.5" cy="15" r="2.4" fill="#0f766e"/>
     <text x="12.5" y="17.4" fill="#0f172a" font-size="6.4"
-          font-family="sans-serif" font-weight="700">RPI-RP2</text>
+          font-family="sans-serif" font-weight="700">${drive}</text>
     <rect x="6.5" y="22" width="34" height="1.6" rx="0.8" fill="#cbd5e1"/>
     <rect x="6.5" y="26" width="24" height="1.6" rx="0.8" fill="#cbd5e1"/>
   </g>

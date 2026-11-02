@@ -46,12 +46,6 @@ window.PycoPalette = {
   customPython: '#455A64',
   timing: '#2E7D32',
   polyvia: '#EF5350',
-  mbDisplay: '#D81B60',  // micro:bit: LED 表示
-  mbInput:   '#00897B',  // micro:bit: ボタン・ロゴ
-  mbSensor:  '#6D4C41',  // micro:bit: 加速度・温度・明るさ・音の大きさ
-  mbSound:   '#26A69A',  // micro:bit: 音
-  mbRadio:   '#3949AB',  // micro:bit: 無線
-  mbPin:     '#EF6C00',  // micro:bit: 端子
   sensorValue: '#EF5350',
   sensorStatement: '#EF5350',
 };

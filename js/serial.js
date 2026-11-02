@@ -12,6 +12,8 @@ const PicoSerial = (() => {
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const decoder = new TextDecoder();
+  let lastRx = '';
+  const pendingReads = new WeakMap();   // reader → 時間切れで持ち越した read()       // readUntil が直近に受け取った文字（失敗時の原因表示に使う）
 
   // --- ボードの違い（app.js の window.PycoBoard が持つ） ---
   // micro:bit は USB を直接持たず、間のチップ（DAPLink）が 115200bps の UART に
@@ -103,14 +105,20 @@ const PicoSerial = (() => {
 
   async function readUntil(reader, target, timeoutMs, onData) {
     let buf = '';
+    lastRx = '';
 
     while (!buf.includes(target)) {
+      // 時間切れでも reader.read() は取り消されず、次に届いた文字を受け取ってしまう。
+      // 捨てると次の readUntil が肝心の応答（'raw REPL' など）を取り逃すので、待ちを持ち越す。
+      const pending = pendingReads.get(reader) || reader.read();
+      pendingReads.set(reader, pending);
       const result = await Promise.race([
-        reader.read(),
+        pending,
         new Promise(resolve => setTimeout(() => resolve(null), timeoutMs)),
       ]);
 
-      if (!result) return '';
+      if (!result) { lastRx = buf; return ''; }
+      pendingReads.delete(reader);
 
       const { value, done } = result;
       if (done) break;
@@ -121,7 +129,33 @@ const PicoSerial = (() => {
       }
     }
 
+    lastRx = buf;
     return buf.includes(target) ? buf : '';
+  }
+
+  // Ctrl+C でプログラムを止め、Ctrl+A で Raw REPL に入る。
+  // 1 回目は止めた直後の出力（Traceback や print の残り）に紛れて失敗することがあるので 3 回まで試す。
+  // 失敗したときは、ボードから何が返ってきたかで原因を分けて知らせる。
+  async function enterRawRepl(reader, onStatus) {
+    let heard = '';
+    for (let i = 0; i < 3; i++) {
+      onStatus(i === 0 ? '実行を中断中...' : `Raw REPL に切り替え中...（再試行 ${i}）`);
+      await write('\r\x03\x03');    // Ctrl+C × 2：実行中断
+      await readUntil(reader, '>>>', 1500);
+      heard += lastRx;
+      onStatus('Raw REPL に切り替え中...');
+      await write('\x01');           // Ctrl+A：Raw REPL モード
+      if (await readUntil(reader, 'raw REPL', 2000)) return;
+      heard += lastRx;
+    }
+    const got = heard.replace(/[\x00-\x08\x0b-\x1f]/g, '').trim();
+    if (!got) {
+      throw new Error(isMicrobit()
+        ? 'micro:bit から応答がありません。MicroPython の .hex を入れたか（MakeCode のプログラムのままだと応答しません）、' +
+          'ポート選択で「mbed Serial Port」または「micro:bit」を選んだか、本体が V2 か（V1 は非対応）を確かめてください。'
+        : 'Pico から応答がありません。MicroPython を入れたか、ポート選択で正しいポートを選んだかを確かめてください。');
+    }
+    throw new Error(`Raw REPL に切り替えできません。${boardName()} から返ってきた文字：「${got.slice(-120)}」`);
   }
 
   // --- シリアルモニター ---
@@ -205,15 +239,7 @@ const PicoSerial = (() => {
     activeReader = port.readable.getReader();
     const reader = activeReader;
     try {
-      onStatus('実行を中断中...');
-      await write('\x03\x03');
-      await sleep(800);
-
-      onStatus('Raw REPL に切り替え中...');
-      await write('\x01');
-      if (!await readUntil(reader, 'raw REPL', 3000)) {
-        throw new Error(`Raw REPL に切り替えできません。${boardName()} が MicroPython で起動しているか確認してください。`);
-      }
+      await enterRawRepl(reader, onStatus);
 
       onStatus('実行中...');
       await write(code + '\x04');
@@ -257,15 +283,7 @@ const PicoSerial = (() => {
     const reader = port.readable.getReader();
 
     try {
-      onStatus('実行を中断中...');
-      await write('\x03\x03');       // Ctrl+C × 2：暴走中のプログラムを止める
-      await readUntil(reader, '>>>', 2000);
-
-      onStatus('Raw REPL に切り替え中...');
-      await write('\x01');
-      if (!await readUntil(reader, 'raw REPL', 3000)) {
-        throw new Error(`Raw REPL に切り替えできません。${boardName()} が MicroPython で起動しているか確認してください。`);
-      }
+      await enterRawRepl(reader, onStatus);
 
       onStatus('ファイルを削除中...');
       // ディレクトリは中身を消してから rmdir する。os.stat()[0] の 0x4000 がディレクトリの印。
@@ -319,15 +337,7 @@ const PicoSerial = (() => {
     const reader = port.readable.getReader();
 
     try {
-      onStatus('実行を中断中...');
-      await write('\x03\x03');       // Ctrl+C × 2：実行中断
-      await readUntil(reader, '>>>', 2000);
-
-      onStatus('Raw REPL に切り替え中...');
-      await write('\x01');           // Ctrl+A：Raw REPL モード
-      if (!await readUntil(reader, 'raw REPL', 3000)) {
-        throw new Error(`Raw REPL に切り替えできません。${boardName()} が MicroPython で起動しているか確認してください。`);
-      }
+      await enterRawRepl(reader, onStatus);
 
       // UTF-8 バイト列を 128 バイトずつ HEX チャンクで書き込む
       const bytes = new TextEncoder().encode(code);

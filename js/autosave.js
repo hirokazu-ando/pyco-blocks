@@ -37,8 +37,14 @@
     catch (e) { /* プライベートモード等で読み取り専用のことがある。無視 */ }
   }
 
-  // ---- 復元通知トースト（外部依存なし・2.5秒で自動的に消える）----
+  // ---- 復元通知トースト（2.5秒で自動的に消える）----
+  //   アプリの知らせ（app.js の window.PycoToast：ツールバーの下）があればそれで出す。
+  //   見た目と場所が違う知らせが 2 種類あると、下に出たものが作業域の「↶ もどす」に重なっていた。
+  //   PycoToast が無いページ（単体で読み込んだとき）だけ、下の自前の表示を使う
   function showToast(msg) {
+    if (window.PycoToast && typeof window.PycoToast.show === 'function') {
+      try { window.PycoToast.show(msg, { type: 'info', ms: 2500 }); return; } catch (e) { /* 下へ */ }
+    }
     try {
       var el = document.createElement('div');
       el.textContent = msg;
@@ -128,8 +134,22 @@
       scheduleSave();
     });
 
+    // モード切替の直前に呼ぶ。1秒待ちの保存が残ったままモードが変わると、
+    // 旧モードの作品が新モードのキーへ（または空のまま）書かれてしまうので、
+    // 待ちを取り消して今のモードのキーへすぐ書く。
+    function flush() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      saveNow();
+    }
+    // モード切替の途中（作業域を空にした瞬間など）の変更を保存しないために、待ちだけ捨てる
+    function cancel() {
+      if (timer) { clearTimeout(timer); timer = null; }
+    }
+
     // 将来のクラウド保存(Firebase)等から即時保存を呼べるように公開
     window.PycoAutosave.saveNow  = saveNow;
+    window.PycoAutosave.flush    = flush;
+    window.PycoAutosave.cancel   = cancel;
     window.PycoAutosave.load     = loadFromStorage;
     window.PycoAutosave.clear    = removeFromStorage;
     window.PycoAutosave.storageKey = storageKey;

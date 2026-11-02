@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="センサーをグラフに" desc="傾き（加速度 x・y）と明るさを「名前:数値」で書き出す。シリアルモニタの［グラフ］で線になる">
+  <block type="mb_forever" x="30" y="30">
+    <statement name="DO">
+      <block type="mb_serial_value"><value name="NAME"><block type="val_str"><field name="TEXT">x</field></block></value><value name="NUM"><block type="mb_accel"><field name="AXIS">get_x</field></block></value>
+        <next><block type="mb_serial_value"><value name="NAME"><block type="val_str"><field name="TEXT">y</field></block></value><value name="NUM"><block type="mb_accel"><field name="AXIS">get_y</field></block></value>
+          <next><block type="mb_serial_value"><value name="NAME"><block type="val_str"><field name="TEXT">light</field></block></value><value name="NUM"><block type="mb_light"></block></value>
+            <next><block type="mb_pause"><value name="MS"><block type="val_number"><field name="NUM">200</field></block></value></block></next>
+          </block></next>
+        </block></next>
+      </block>
+    </statement>
+  </block>
+</xml>

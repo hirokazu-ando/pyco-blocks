@@ -7,7 +7,7 @@
         <next>
           <block type="pico_wait" id="b3">
             <value name="SEC">
-              <block type="math_number" id="b4">
+              <block type="val_number" id="b4">
                 <field name="NUM">1</field>
               </block>
             </value>
@@ -17,7 +17,7 @@
                 <next>
                   <block type="pico_wait" id="b6">
                     <value name="SEC">
-                      <block type="math_number" id="b7">
+                      <block type="val_number" id="b7">
                         <field name="NUM">1</field>
                       </block>
                     </value>

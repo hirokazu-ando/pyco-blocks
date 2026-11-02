@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="無線でメッセージ" desc="A を押すと同じグループの micro:bit へ「hello」を送り、届いた文字を流して表示する（2 台に書き込んで使う）">
+  <block type="mb_on_start" x="30" y="30">
+    <statement name="DO">
+      <block type="mb_radio_group"><value name="N"><block type="val_number"><field name="NUM">1</field></block></value></block>
+    </statement>
+  </block>
+  <block type="mb_on_button" x="30" y="170"><field name="BTN">a</field>
+    <statement name="DO">
+      <block type="mb_radio_send_string"><value name="VALUE"><block type="val_str"><field name="TEXT">hello</field></block></value>
+        <next><block type="mb_show_icon"><field name="ICON">YES</field></block></next>
+      </block>
+    </statement>
+  </block>
+  <block type="mb_on_radio" x="30" y="320">
+    <statement name="DO">
+      <block type="mb_scroll"><value name="TEXT"><block type="mb_received_string"></block></value></block>
+    </statement>
+  </block>
+</xml>

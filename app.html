@@ -65,14 +65,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
         integrity="sha384-zaeBlB/vwYsDRSlFajnDd7OydJ0cWk+c2OWybl3eSUf6hW2EbhlCsQPqKr3gkznT" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20261102a">
+  <link rel="stylesheet" href="css/style.css?v=20261102q">
   <link rel="stylesheet" href="css/firmware.css?v=20260907a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
@@ -116,38 +116,62 @@
     <span class="version-tag">v2.1 · UME</span>
     <span class="demo-badge" id="demo-badge" style="display:none">DEMO MODE</span>
     <button id="btn-mobile-menu" type="button" aria-label="ツールメニュー" aria-expanded="false" title="ツールメニューを開く">☰ メニュー</button>
+    <!-- ツールバー（B1：1366幅でも1行）。並びは「学習 │ 実行・停止 │ 実機の接続 │ 配線図 │ コード編集 │ ファイル▾ │ 表示▾」。
+         実行はどのモードでも学習モードのすぐ右に来る（Python/ゲームは btn-run-python、Pico/micro:bit は btn-run）。
+         使う回数の少ないボタンは「ファイル ▾」「⚙ 表示 ▾」の中（.tb-menu）に入れる。ID は変えていない（JS がこの ID で動く）。
+         メニューの開閉は js/toolbar_menu.js。スマホのドロワー（☰）ではメニューを開かずに中身をそのまま並べる（CSS）。 -->
     <div class="toolbar">
       <button id="btn-tutorial" title="学習モード（チュートリアル）でステップ学習する">学習モード</button>
       <div class="toolbar-sep"></div>
-      <button id="btn-save-xml">ブロック保存</button>
-      <button id="btn-load-xml">ブロック読込</button>
-      <button id="btn-share-url" title="今のブロックを復元できる共有URLをコピー">共有URL</button>
-      <input type="file" id="xml-input" accept=".xml" style="display:none">
-      <div class="toolbar-sep"></div>
-      <button id="btn-download">.py↓</button>
-      <button id="btn-load">.py↑</button>
-      <input type="file" id="file-input" accept=".py" style="display:none">
-      <div class="toolbar-sep"></div>
-      <button id="btn-toggle-comments"># ON</button>
-      <button id="btn-coding-mode">コード編集</button>
-      <div class="toolbar-sep" id="serial-sep"></div>
-      <button id="btn-firmware" title="Pico に MicroPython を入れる（はじめて使うとき・入れ直すとき）">MicroPython導入</button>
-      <button id="btn-connect">接続</button>
-      <button id="btn-reconnect" title="Pico を抜き差ししたあと、ポート選択なしで接続し直します">再接続</button>
-      <button id="btn-run" disabled>▶ 実行</button>
-      <button id="btn-stop" disabled>⏹ 停止</button>
-      <button id="btn-write" disabled>書き込み</button>
-      <div class="toolbar-sep" id="circuit-sep" style="display:none"></div>
-      <button id="btn-circuit" style="display:none" title="実態配線図を表示">配線図</button>
+      <button id="btn-run-python" class="tb-dup-mobile" style="display:none" title="ブロック（コード）を実行する（Ctrl+Enter）">▶ 実行</button>
+      <button id="btn-stop-python" class="tb-dup-mobile" style="display:none" title="実行を止める">■ 停止</button>
       <div class="toolbar-sep" id="run-py-sep" style="display:none"></div>
-      <button id="btn-run-python" style="display:none">▶ 実行</button>
-      <button id="btn-stop-python" style="display:none">⏹ 停止</button>
+      <button id="btn-run" class="tb-dup-mobile" disabled title="先に［接続］を押すと使えます">▶ 実行</button>
+      <button id="btn-stop" class="tb-dup-mobile" disabled title="先に［接続］を押すと使えます">■ 停止</button>
+      <button id="btn-write" disabled title="先に［接続］を押すと使えます（ボードにプログラムを書き込み、電源を入れたら動くようにする）">書き込み</button>
+      <div class="toolbar-sep" id="serial-sep"></div>
+      <button id="btn-connect" title="USB でつないだボードを選んで接続する">接続</button>
+      <button id="btn-reconnect" title="Pico を抜き差ししたあと、ポート選択なしで接続し直します">再接続</button>
+      <button id="btn-firmware" title="Pico に MicroPython を入れる（はじめて使うとき・入れ直すとき）">MicroPython導入</button>
+      <div class="toolbar-sep" id="circuit-sep" style="display:none"></div>
+      <button id="btn-circuit" style="display:none" title="実体配線図を表示">配線図</button>
       <div class="toolbar-sep"></div>
-      <button id="btn-font-dec">A−</button>
-      <button id="btn-font-inc">A+</button>
-      <div class="toolbar-sep"></div>
-      <button id="btn-theme">黒</button>
-      <button id="btn-mobile-toggle" title="スマホ・タブレット表示に切り替え">スマホ表示</button>
+      <button id="btn-coding-mode" title="Python のコードを自分で書いて編集する">コード編集</button>
+      <div class="tb-menu" id="tb-menu-file">
+        <button type="button" class="tb-menu-btn" id="btn-menu-file" aria-expanded="false" aria-controls="tb-pop-file" title="保存・読み込み・共有">ファイル <span class="tb-caret" aria-hidden="true">▼</span></button>
+        <div class="tb-menu-pop" id="tb-pop-file" role="group" aria-label="ファイル">
+          <button id="btn-samples" title="今のモードのサンプル（記事の例・答え）を一覧から開く">サンプルを開く</button>
+          <button id="btn-save-xml" title="今のブロックをファイル（.xml）に保存する">ブロックを保存</button>
+          <button id="btn-load-xml" title="保存したブロックのファイル（.xml）を開く">ブロックを開く</button>
+          <button id="btn-share-url" title="今のブロックを復元できる共有URLをコピー">共有URLをコピー</button>
+          <input type="file" id="xml-input" accept=".xml" style="display:none">
+          <div class="toolbar-sep"></div>
+          <button id="btn-download" title="Python のコードをファイル（.py）に保存する" aria-label="Python ファイル（.py）に保存">Python を保存（.py）</button>
+          <button id="btn-load" title="Python のファイル（.py）を開く" aria-label="Python ファイル（.py）を開く">Python を開く（.py）</button>
+          <input type="file" id="file-input" accept=".py" style="display:none">
+        </div>
+      </div>
+      <div class="tb-menu" id="tb-menu-view">
+        <button type="button" class="tb-menu-btn" id="btn-menu-view" aria-expanded="false" aria-controls="tb-pop-view" title="文字の大きさ・画面の色・コードの説明・スマホ表示">⚙ 表示 <span class="tb-caret" aria-hidden="true">▼</span></button>
+        <div class="tb-menu-pop" id="tb-pop-view" role="group" aria-label="表示">
+          <div class="tb-menu-row">
+            <span class="tb-menu-label">文字の大きさ</span>
+            <button id="btn-font-dec" title="コードの文字を小さく" aria-label="文字を小さく">A−</button>
+            <button id="btn-font-inc" title="コードの文字を大きく" aria-label="文字を大きく">A+</button>
+          </div>
+          <div class="tb-menu-row">
+            <span class="tb-menu-label">画面の色</span>
+            <button id="btn-theme" title="画面の色を白にする（いまは黒）" aria-label="画面の色を白にする（いまは黒）">白にする</button>
+          </div>
+          <div class="tb-menu-row">
+            <span class="tb-menu-label" id="lbl-toggle-comments">コードに説明（#）を書く</span>
+            <button id="btn-toggle-comments" role="switch" aria-checked="true" aria-labelledby="lbl-toggle-comments" title="生成したコードに説明のコメント（# …）を書くかどうか。押すと切り替わる">☑ あり</button>
+          </div>
+          <div class="tb-menu-row">
+            <button id="btn-mobile-toggle" title="スマホ・タブレット表示に切り替え">スマホ表示</button>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -156,7 +180,7 @@
     <!-- コーディングモード時に表示される構文リファレンスパネル -->
     <div id="syntax-panel">
       <div class="syntax-header">
-        <span class="syntax-header-title">◈ 構文リファレンス</span>
+        <span class="syntax-header-title">書き方の一覧</span>
         <span class="syntax-header-sub" id="syntax-mode-label">Python入門</span>
       </div>
       <div id="syntax-content"></div>
@@ -168,7 +192,7 @@
     <div id="code-home-anchor" style="display:none"></div>
     <div class="code-panel">
       <div class="code-header">
-        <span id="code-header-title">Python Output</span>
+        <span id="code-header-title">Python のコード</span>
         <span id="serial-status"></span>
       </div>
       <div id="file-tabs" style="display:none"></div>
@@ -184,14 +208,16 @@
       <!-- 配線図プレビューエリア（micropython モード時のみ左下に表示） -->
       <div id="circuit-preview-area" style="display:none; border-radius:6px; overflow:hidden; position:relative;">
         <div class="game-area-resize-handle" id="circuit-preview-resize-handle"></div>
-        <div id="circuit-preview-header" style="background:#1a202c; color:#68d391; font-weight:bold; font-size:0.88em; padding:4px 8px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2d3748;">
-          <span>実態配線図プレビュー</span>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span id="circuit-preview-summary" style="color:#718096; font-weight:normal; font-size:0.85em;"></span>
-            <button id="btn-circuit-collapse" title="プレビューを折りたたむ" style="background:#2d3748; border:1px solid #4a5568; color:#a0aec0; cursor:pointer; font-size:0.78em; padding:2px 8px; border-radius:3px; line-height:1.5; white-space:nowrap;">非表示 ▼</button>
+        <div id="circuit-preview-header">
+          <span>実体配線図プレビュー</span>
+          <div class="cph-right">
+            <span id="circuit-preview-summary"></span>
+            <button id="btn-circuit-collapse" title="プレビューを折りたたむ">非表示 ▼</button>
           </div>
         </div>
         <div id="circuit-preview-svg" style="flex:1; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="クリックで拡大表示"></div>
+        <!-- micro:bit モードでは配線図の代わりにシミュレータを出す（js/microbit_sim.js） -->
+        <div id="mb-sim" style="display:none"></div>
       </div>
       <div id="monitor-panel-anchor"></div>
       <div id="monitor-panel">
@@ -199,7 +225,9 @@
         <div class="monitor-header">
           <span id="monitor-header-title">シリアルモニタ</span>
           <div class="monitor-controls">
-            <button id="btn-monitor-clear">クリア</button>
+            <button id="btn-sensor-monitor" style="display:none" title="加速度・明るさ・温度・音の大きさをグラフで見る（つないでいなければシミュレータで）">センサーモニター</button>
+            <button id="btn-plot" title="print した数を折れ線グラフで見る">グラフ</button>
+            <button id="btn-monitor-clear" title="シリアルモニタとグラフの表示を消す">クリア</button>
           </div>
         </div>
         <pre id="monitor-output"></pre>
@@ -235,41 +263,96 @@
   <!-- micro:bit 用。共通のカテゴリ（繰り返し・分岐・時間・変数・計算・値・表示・カスタム）は
        app.js が起動時に toolbox-micropython から写して後ろに足す -->
   <xml id="toolbox-microbit" style="display:none">
-    <category name="LED 表示" colour="#D81B60">
-      <block type="mb_scroll" gap="8"><value name="TEXT"><shadow type="val_str"><field name="TEXT">Hello</field></shadow></value></block>
-      <block type="mb_show" gap="8"><value name="TEXT"><shadow type="val_number"><field name="NUM">1</field></shadow></value></block>
+    <category name="基本" colour="#1E90FF">
+      <block type="mb_show_number" gap="8"><value name="NUM"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_show_leds" gap="8"></block>
       <block type="mb_show_icon" gap="8"></block>
-      <block type="mb_set_pixel" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">2</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">2</field></shadow></value><value name="B"><shadow type="val_number"><field name="NUM">9</field></shadow></value></block>
+      <block type="mb_scroll" gap="8"><value name="TEXT"><shadow type="val_str"><field name="TEXT">Hello!</field></shadow></value></block>
       <block type="mb_clear" gap="8"></block>
+      <block type="mb_forever" gap="8"></block>
+      <block type="mb_pause" gap="8"><value name="MS"><shadow type="val_number"><field name="NUM">100</field></shadow></value></block>
+      <block type="mb_on_start" gap="8"></block>
+      <block type="mb_show_arrow" gap="8"></block>
     </category>
-    <category name="ボタン" colour="#00897B">
+    <category name="入力" colour="#D400D4">
+      <block type="mb_on_button" gap="8"></block>
+      <block type="mb_on_gesture" gap="8"></block>
+      <block type="mb_on_pin_pressed" gap="8"></block>
+      <block type="mb_on_logo" gap="8"></block>
+      <block type="mb_on_sound" gap="8"></block>
       <block type="mb_button" gap="8"></block>
-      <block type="mb_button_presses" gap="8"></block>
-      <block type="mb_logo_touched" gap="8"></block>
-    </category>
-    <category name="センサー" colour="#6D4C41">
+      <block type="mb_pin_touched" gap="8"></block>
       <block type="mb_accel" gap="8"></block>
-      <block type="mb_gesture" gap="8"></block>
-      <block type="mb_temperature" gap="8"></block>
+      <block type="mb_logo_touched" gap="8"></block>
       <block type="mb_light" gap="8"></block>
+      <block type="mb_compass" gap="8"></block>
+      <block type="mb_temperature" gap="8"></block>
       <block type="mb_sound_level" gap="8"></block>
+      <block type="mb_set_sound_threshold" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">128</field></shadow></value></block>
+      <block type="mb_is_gesture" gap="8"></block>
+      <block type="mb_calibrate" gap="8"></block>
+      <block type="mb_magnetic" gap="8"></block>
       <block type="mb_running_time" gap="8"></block>
     </category>
-    <category name="音" colour="#26A69A">
+    <category name="音楽" colour="#E63022">
       <block type="mb_music_play" gap="8"></block>
-      <block type="mb_music_pitch" gap="8"><value name="FREQ"><shadow type="val_number"><field name="NUM">440</field></shadow></value><value name="MS"><shadow type="val_number"><field name="NUM">500</field></shadow></value></block>
-      <block type="mb_music_stop" gap="8"></block>
+      <block type="mb_sound_effect" gap="8"></block>
+      <block type="mb_play_tone" gap="8"><value name="FREQ"><shadow type="val_number"><field name="NUM">262</field></shadow></value><value name="MS"><shadow type="val_number"><field name="NUM">500</field></shadow></value></block>
+      <block type="mb_ring_tone" gap="8"><value name="FREQ"><shadow type="val_number"><field name="NUM">262</field></shadow></value></block>
+      <block type="mb_rest" gap="8"><value name="MS"><shadow type="val_number"><field name="NUM">500</field></shadow></value></block>
+      <block type="mb_stop_all" gap="8"></block>
+      <block type="mb_set_volume" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">128</field></shadow></value></block>
+      <block type="mb_set_tempo" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">120</field></shadow></value></block>
+      <block type="mb_change_tempo" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">20</field></shadow></value></block>
+      <block type="mb_tempo" gap="8"></block>
+      <block type="mb_speaker" gap="8"></block>
     </category>
-    <category name="無線" colour="#3949AB">
+    <category name="LED" colour="#5C2D91">
+      <block type="mb_plot" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_unplot" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_toggle" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_point" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_plot_brightness" gap="8"><value name="X"><shadow type="val_number"><field name="NUM">0</field></shadow></value><value name="Y"><shadow type="val_number"><field name="NUM">0</field></shadow></value><value name="B"><shadow type="val_number"><field name="NUM">255</field></shadow></value></block>
+      <block type="mb_led_enable" gap="8"></block>
+    </category>
+    <category name="無線" colour="#E3008C">
       <block type="mb_radio_group" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">1</field></shadow></value></block>
-      <block type="mb_radio_send" gap="8"><value name="VALUE"><shadow type="val_str"><field name="TEXT">hello</field></shadow></value></block>
-      <block type="mb_radio_receive" gap="8"></block>
+      <block type="mb_radio_send_number" gap="8"><value name="VALUE"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_radio_send_string" gap="8"><value name="VALUE"><shadow type="val_str"><field name="TEXT">hello</field></shadow></value></block>
+      <block type="mb_on_radio" gap="8"></block>
+      <block type="mb_received_string" gap="8"></block>
+      <block type="mb_received_number" gap="8"></block>
+      <block type="mb_radio_power" gap="8"><value name="N"><shadow type="val_number"><field name="NUM">6</field></shadow></value></block>
     </category>
-    <category name="端子" colour="#EF6C00">
-      <block type="mb_digital_write" gap="8"></block>
+    <category name="ループ" colour="#00AA00" data-common="pico_repeat pico_for_range pico_for_from_to py_while py_break py_continue">
+      <block type="mb_every" gap="8"><value name="MS"><shadow type="val_number"><field name="NUM">500</field></shadow></value></block>
+    </category>
+    <category name="論理" colour="#00A4A6" data-common="pico_if cond_compare cond_and cond_or cond_not val_bool">
+    </category>
+    <category name="変数" colour="#DC143C" data-common="var_set var_set2 var_change val_var">
+    </category>
+    <category name="計算" colour="#9400D3" data-common="val_number py_math_op py_abs py_round py_int py_min2 py_max2 py_random_int">
+    </category>
+    <category name="文字列" colour="#B8860B" data-common="val_str">
+    </category>
+    <category name="入出力端子" colour="#B22222">
       <block type="mb_digital_read" gap="8"></block>
-      <block type="mb_analog_write" gap="8"><value name="VALUE"><shadow type="val_number"><field name="NUM">512</field></shadow></value></block>
+      <block type="mb_digital_write" gap="8"><value name="VALUE"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
       <block type="mb_analog_read" gap="8"></block>
+      <block type="mb_analog_write" gap="8"><value name="VALUE"><shadow type="val_number"><field name="NUM">1023</field></shadow></value></block>
+      <block type="mb_analog_period" gap="8"><value name="US"><shadow type="val_number"><field name="NUM">20000</field></shadow></value></block>
+      <block type="mb_servo_write" gap="8"><value name="DEG"><shadow type="val_number"><field name="NUM">180</field></shadow></value></block>
+      <block type="mb_servo_pulse" gap="8"><value name="US"><shadow type="val_number"><field name="NUM">1500</field></shadow></value></block>
+      <block type="mb_set_pull" gap="8"></block>
+      <block type="mb_pulse_in" gap="8"></block>
+    </category>
+    <category name="シリアル通信" colour="#002050">
+      <block type="mb_serial_line" gap="8"><value name="TEXT"><shadow type="val_str"><field name="TEXT"></field></shadow></value></block>
+      <block type="mb_serial_number" gap="8"><value name="NUM"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_serial_value" gap="8"><value name="NAME"><shadow type="val_str"><field name="TEXT">x</field></shadow></value><value name="NUM"><shadow type="val_number"><field name="NUM">0</field></shadow></value></block>
+      <block type="mb_serial_string" gap="8"><value name="TEXT"><shadow type="val_str"><field name="TEXT"></field></shadow></value></block>
+    </category>
+    <category name="カスタム" colour="#455A64" data-common="py_custom_stmt py_custom_expr">
     </category>
   </xml>
   <xml id="toolbox-micropython" style="display:none">
@@ -490,6 +573,8 @@
           <shadow type="val_number"><field name="NUM">1</field></shadow>
         </value>
       </block>
+      <!-- 値を使う側（変数の中身を読む）。「値」カテゴリにもある。変数を作ったら使う方もここで見つかるように -->
+      <block type="val_var" gap="8" data-dup="1"></block>
     </category>
     <category name="計算" colour="#FB8C00">
       <block type="py_math_op" gap="8">
@@ -602,6 +687,8 @@
           <shadow type="val_number"><field name="NUM">1</field></shadow>
         </value>
       </block>
+      <!-- 値を使う側（変数の中身を読む）。「値」カテゴリにもある。変数を作ったら使う方もここで見つかるように -->
+      <block type="val_var" gap="8" data-dup="1"></block>
     </category>
     <!-- 0-3/0-4: 四則演算・文字列操作・型変換・数学関数 -->
     <category name="計算" colour="#FB8C00">
@@ -1209,6 +1296,8 @@
           <shadow type="val_number"><field name="NUM">1</field></shadow>
         </value>
       </block>
+      <!-- 値を使う側（変数の中身を読む）。「値」カテゴリにもある。変数を作ったら使う方もここで見つかるように -->
+      <block type="val_var" gap="8" data-dup="1"></block>
     </category>
     <category name="リスト" colour="#689F38">
       <block type="py_list_empty" gap="8"></block>
@@ -1530,6 +1619,8 @@
           <shadow type="val_number"><field name="NUM">1</field></shadow>
         </value>
       </block>
+      <!-- 値を使う側（変数の中身を読む）。「値」カテゴリにもある。変数を作ったら使う方もここで見つかるように -->
+      <block type="val_var" gap="8" data-dup="1"></block>
     </category>
     <category name="分岐" colour="#5E35B1">
       <block type="pico_if" gap="8"></block>
@@ -1827,6 +1918,8 @@
       <block type="var_change" gap="8">
         <value name="AMOUNT"><shadow type="val_number"><field name="NUM">1</field></shadow></value>
       </block>
+      <!-- 値を使う側（変数の中身を読む）。「値」カテゴリにもある。変数を作ったら使う方もここで見つかるように -->
+      <block type="val_var" gap="8" data-dup="1"></block>
     </category>
     <category name="分岐" colour="#5E35B1">
       <block type="pico_if" gap="8"></block>
@@ -1917,20 +2010,20 @@
     </category>
   </xml>
 
-  <script src="js/block_palette.js?v=20261102a"></script>
-  <script src="js/serial.js?v=20261102a"></script>
-  <script src="js/firmware_art.js?v=20260907a"></script>
-  <script src="js/firmware.js?v=20261102a"></script>
+  <script src="js/block_palette.js?v=20261102f"></script>
+  <script src="js/serial.js?v=20261102c"></script>
+  <script src="js/firmware_art.js?v=20261102j"></script>
+  <script src="js/firmware.js?v=20261102j"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <!-- 実体配線図レンダラ。読込順=legacy→bb→direct、後勝ちで direct が既定。
        切替: 既定=直結スタイル / ?cv=bb=ブレッドボード型 / ?cv=legacy=旧版 -->
   <script src="js/circuit_parts_data.js?v=20260713b"></script>
   <script src="js/circuit_viewer_bb.js?v=20260713b"></script>
-  <script src="js/circuit_viewer_direct.js?v=20260907a"></script>
-  <script src="js/blocks/control.js"></script>
+  <script src="js/circuit_viewer_direct.js?v=20261102j"></script>
+  <script src="js/blocks/control.js?v=20261102g"></script>
   <script src="js/blocks/polyviabot.js?v=20260708d"></script>
-  <script src="js/blocks/microbit.js?v=20261102a"></script>
+  <script src="js/blocks/microbit.js?v=20261102j"></script>
   <script src="js/blocks/sensors.js?v=20260427c"></script>
   <script src="js/blocks/values.js?v=20260427b"></script>
   <script src="js/blocks/variables.js"></script>
@@ -1951,8 +2044,11 @@
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/app.js?v=20261102a"></script>
-  <script src="js/autosave.js?v=20260710a"></script>
+  <script src="js/microbit_sim.js?v=20261102m"></script>
+  <script src="js/serial_plot.js?v=20261102q"></script>
+  <script src="js/app.js?v=20261102q"></script>
+  <script src="js/autosave.js?v=20261102j"></script>
+  <script src="js/toolbar_menu.js?v=20261102h"></script>
   <!-- クラウド保存（Google ログイン + Firestore）。firebase_config.js が未設定なら
        cloud.js は何も表示せず SDK も読み込まない＝現状の動作に一切影響しない。 -->
   <script src="js/firebase_config.js?v=20260710a"></script>
@@ -1986,24 +2082,24 @@
   <script src="lessons/0-21.js?v=20260714c"></script>
   <script src="lessons/0-22.js?v=20260714c"></script>
   <script src="js/tutorial_progress.js?v=20260713b" defer></script>
-  <script src="js/tutorial.js?v=20260714e" defer></script>
+  <script src="js/tutorial.js?v=20261102m" defer></script>
 
-  <!-- 実態配線図モーダル -->
+  <!-- 実体配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
     <div style="background:#111827; border:1px solid #2d3748; border-radius:10px; padding:16px; width:min(960px,96vw); max-height:92vh; display:flex; flex-direction:column; gap:10px;">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
-        <span style="color:#68d391; font-weight:bold; font-size:1.05em;">実態配線図</span>
+        <span style="color:#68d391; font-weight:bold; font-size:1.05em;">実体配線図</span>
         <span id="circuit-summary" style="color:#718096; font-size:.85em;"></span>
         <button id="circuit-close" style="background:none; border:none; color:#718096; font-size:.9em; cursor:pointer; line-height:1; margin-left:12px;">閉じる</button>
       </div>
       <div id="circuit-svg-wrap" style="overflow:hidden; flex:1; min-height:0; border-radius:6px; padding:8px; cursor:grab;"></div>
       <div style="display:flex; gap:8px; flex-shrink:0;">
-        <button id="circuit-dl-svg" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">SVG保存</button>
-        <button id="circuit-dl-png" style="background:#1a4a7a; color:#fff; border:none; border-radius:4px; padding:6px 16px; cursor:pointer; font-size:.88em;">PNG保存</button>
-        <button id="circuit-zoom-in"  style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">＋</button>
-        <button id="circuit-zoom-out" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">－</button>
-        <button id="circuit-zoom-fit" style="background:#2d3748; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;">全体</button>
-        <button id="circuit-reset-pos" style="background:#5a3a2a; color:#fff; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:.88em;" title="部品・配線の手動調整を全て自動配置に戻す">自動配置に戻す</button>
+        <button id="circuit-dl-svg" class="pb-btn pb-btn-primary">SVG保存</button>
+        <button id="circuit-dl-png" class="pb-btn pb-btn-primary">PNG保存</button>
+        <button id="circuit-zoom-in" class="pb-btn pb-btn-ghost" title="拡大" aria-label="拡大">＋</button>
+        <button id="circuit-zoom-out" class="pb-btn pb-btn-ghost" title="縮小" aria-label="縮小">－</button>
+        <button id="circuit-zoom-fit" class="pb-btn pb-btn-ghost" title="全体が入る大きさにする">全体</button>
+        <button id="circuit-reset-pos" class="pb-btn pb-btn-ghost" title="部品・配線の手動調整を全て自動配置に戻す（元に戻せません）">自動配置に戻す（手動の調整は消えます）</button>
         <span style="color:#718096; font-size:.78em; align-self:center; margin-left:8px;">部品ドラッグで位置・線ドラッグで縦線位置</span>
       </div>
     </div>
@@ -2028,8 +2124,8 @@
   </div>
 
   <!-- エラー解説パネル（body末尾・fixed配置） -->
-  <div id="error-hint">
-    <span class="error-hint-close" id="error-hint-close">閉じる</span>
+  <div id="error-hint" role="alert">
+    <button type="button" class="error-hint-close" id="error-hint-close">閉じる</button>
     <div class="error-hint-title" id="error-hint-title"></div>
     <div id="error-hint-body"></div>
   </div>
@@ -2043,8 +2139,8 @@
 
   <!-- モバイル編集モード用ボトムタブバー（body.mobile-mode 時のみ表示） -->
   <nav id="mobile-tabbar" aria-label="表示の切り替え">
-    <button class="m-tab active" type="button" data-pane="blocks">ブロック</button>
-    <button class="m-tab" type="button" data-pane="code">コード・実行</button>
+    <button class="m-tab active" type="button" data-pane="blocks" aria-pressed="true">ブロック</button>
+    <button class="m-tab" type="button" data-pane="code" aria-pressed="false">コード・実行</button>
   </nav>
 </body>
 </html>

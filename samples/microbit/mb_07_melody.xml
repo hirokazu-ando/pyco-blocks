@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" mode="microbit" title="メロディを鳴らす" desc="A でハッピーバースデー、B でドレミ。音は micro:bit V2 のスピーカーから出る">
+  <block type="mb_on_button" x="30" y="30"><field name="BTN">a</field>
+    <statement name="DO">
+      <block type="mb_show_icon"><field name="ICON">MUSIC_QUAVER</field>
+        <next><block type="mb_music_play"><field name="TUNE">BIRTHDAY</field><field name="MODE">once</field></block></next>
+      </block>
+    </statement>
+  </block>
+  <block type="mb_on_button" x="30" y="190"><field name="BTN">b</field>
+    <statement name="DO">
+      <block type="mb_play_tone"><value name="FREQ"><block type="val_number"><field name="NUM">262</field></block></value><value name="MS"><block type="val_number"><field name="NUM">400</field></block></value>
+        <next><block type="mb_play_tone"><value name="FREQ"><block type="val_number"><field name="NUM">294</field></block></value><value name="MS"><block type="val_number"><field name="NUM">400</field></block></value>
+          <next><block type="mb_play_tone"><value name="FREQ"><block type="val_number"><field name="NUM">330</field></block></value><value name="MS"><block type="val_number"><field name="NUM">400</field></block></value></block></next>
+        </block></next>
+      </block>
+    </statement>
+  </block>
+</xml>

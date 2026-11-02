@@ -120,7 +120,7 @@
   }
 
   function modeLabel(mode) {
-    return mode === 'game' ? 'ゲーム' : mode === 'micropython' ? 'μPython' : 'Python';
+    return mode === 'game' ? 'ゲーム' : mode === 'micropython' ? 'Pi Pico' : 'Python';
   }
 
   function escapeHtml(s) {
