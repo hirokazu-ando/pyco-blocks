@@ -8336,6 +8336,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function fitAfterLoad() {
     requestAnimationFrame(function() { requestAnimationFrame(function() { autoFitInitialZoom(); showBlocksTopLeft(); }); });
   }
+  // ［⚙ 見た目］→［見やすい位置にもどす］。スマホでは拡大縮小ボタンを隠す（ブロックの欄に重なるため・2026-11-25 先生判断 8）ので、
+  // 見失ったときの戻り道をメニューに置く。パソコンでも使える
+  (function() {
+    const b = document.getElementById('btn-ws-refit');
+    if (b) b.addEventListener('click', function() { fitAfterLoad(); });
+  })();
 
   // micro:bit のツールボックスに、ボードに関係ない共通カテゴリを Pico 用から写して足す。
   // 同じ XML を 2 か所に書くと片方だけ直して食い違うので、元は toolbox-micropython の 1 つだけにする

@@ -1061,9 +1061,11 @@
       var g = gndPt(POINTS['res_' + c.compId + '.' + rFar].y, side);
       wires.add(POINTS['res_' + c.compId + '.' + rFar], g, PAL.gnd, c.compId + ':GND');
       net.union('res_' + c.compId + '.' + rFar, 'gnd');
+      // 部品をそろえる人が図だけで分かるように、足の長さと抵抗の値を部品名の札に書く（2026-11-25 先生判断 24）。
+      // 足の札に書くと横向きの LED の本体に重なるので、足は「＋／−」だけ。値は記事（Pico 電子工作 Part 1）と同じ 330Ω（絵の色帯も 橙橙茶）
       pinLabelAt(POINTS[c.compId + '.A'], '＋', side); pinLabelAt(POINTS[c.compId + '.C'], '−', side);
       var full = { x0: Math.min(pr.bbox.x0, rr.bbox.x0), y0: Math.min(pr.bbox.y0, rr.bbox.y0), x1: Math.max(pr.bbox.x1, rr.bbox.x1), y1: Math.max(pr.bbox.y1, rr.bbox.y1) };
-      nameLabel((full.x0 + full.x1) / 2, full, 'LED + 抵抗', true);
+      nameLabel((full.x0 + full.x1) / 2, full, 'LED（＋が長い足）+ 抵抗 330Ω', true);
       chk(c.compId, 'LED: GP→アノード', connected(gpKey(gp), c.compId + '.A'));
       chk(c.compId, 'LED: カソード→抵抗→GND', connected(c.compId + '.C', 'res_' + c.compId + '.' + rNear) && isGnd(c.compId + '.C'));
       chk(c.compId, 'LED: アノードとカソードは非短絡', !connected(c.compId + '.A', c.compId + '.C'));

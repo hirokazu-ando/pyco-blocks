@@ -3697,3 +3697,42 @@ body:not(.mobile-mode) header .toolbar button { height: auto; min-height: calc(3
 .pyco-dlg-btn.primary { background: var(--accent-green); color: var(--bg-base); border-color: var(--accent-green); font-weight: bold; }
 @media (pointer: coarse) { .pyco-dlg-btn { min-height: 44px; } }
 .share-qr-note { color: var(--text-dim); }
+
+/* スマホ（幅 600px 未満のスマホ表示）では Blockly の拡大縮小ボタン（中央へ・＋・－）を隠す。
+   ブロックが画面より長く、どこに置いてもブロックの数字の欄に重なって押せなくなるため（2026-11-25 先生判断 8・案 a）。
+   拡大縮小は 2 本指でつまむ（zoom.pinch）。見失ったら［⚙ 見た目］→［見やすい位置にもどす］ */
+@media (max-width: 599px) {
+  body.mobile-mode .blocklyZoom { display: none; }
+}
+
+/* ===== 横向きのスマホでゲームの絵が 79×53px と小さかった（2026-11-25 推奨で直す） =====
+   高さが 390px ほどしかないのに、ブロック欄とゲーム欄を 1:1 に分け、さらにタッチ用キーを絵の下に置いていた。
+   横向きで絵があるとき（実行した後）だけ、ゲーム欄を 2 倍に取り（ブロックも少し見えるように残す）、タッチ用キーを絵の右に縦に並べる */
+@media (orientation: landscape) and (max-height: 500px) {
+  body.mobile-mode .main.game-layout.mode-game > #game-left-column:not(.game-idle) > #blockly-div { flex: 1 1 0 !important; }
+  body.mobile-mode .main.game-layout.mode-game > #game-left-column:not(.game-idle) > #game-canvas-area { flex: 2 1 0 !important; }
+  body.mobile-mode .main.game-layout.mode-game #game-canvas-area:not(.game-full):not(:fullscreen):has(#game-touchpad) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    justify-items: center; align-items: center;
+  }
+  body.mobile-mode .main.game-layout.mode-game #game-canvas-area:not(.game-full):not(:fullscreen):has(#game-touchpad) > #game-title-bar { grid-column: 1 / -1; grid-row: 1; justify-self: stretch; }
+  body.mobile-mode .main.game-layout.mode-game #game-canvas-area:not(.game-full):not(:fullscreen):has(#game-touchpad) > .game-area-resize-handle { display: none; }
+  body.mobile-mode .main.game-layout.mode-game #game-canvas-area:not(.game-full):not(:fullscreen):has(#game-touchpad) > .pyco-game-canvas {
+    grid-column: 1; grid-row: 2; max-width: 100%; max-height: 100%; width: auto; height: auto;
+  }
+  body.mobile-mode .main.game-layout.mode-game #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad {
+    grid-column: 2; grid-row: 2; align-self: end; width: 184px; margin: 0 6px 4px 0; gap: 6px;
+    display: grid; grid-template-columns: repeat(3, 56px); grid-template-areas: ". up ." "left down right" "sp sp sp";
+   }
+  /* 右上の［⤢ 大きく］が ▲ に重なるので、空いている左下へ */
+  body.mobile-mode .main.game-layout.mode-game #game-canvas-area:not(.game-full):not(:fullscreen):has(#game-touchpad) > #btn-game-full { top: auto; right: auto; bottom: 6px; left: 6px; }
+  /* 並びは ◀ ▲ ▼ ▶ スペース（js/game_engine.js TOUCH_KEYS）。十字に置く */
+  body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-key { min-width: 0; width: 56px; padding: 0; }
+  body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-key:nth-child(1) { grid-area: left; }
+  body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-key:nth-child(2) { grid-area: up; }
+  body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-key:nth-child(3) { grid-area: down; }
+  body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-key:nth-child(4) { grid-area: right; }
+  body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-wide { grid-area: sp; width: 100%; }
+}
