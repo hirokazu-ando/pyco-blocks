@@ -107,6 +107,29 @@ function draw() {
   const outs = Object.keys(S.out).map(k => `${k.toUpperCase()}: ${S.out[k]}`);
   ui.out.textContent = outs.length ? '端子の出力　' + outs.join('　') : '';
   ui.radio.textContent = S.radioLog.slice(-4).join('\n');
+  announceLeds();
+}
+
+// LED の変化を画面読み上げに伝える（2026-11-25 先生判断 20）。
+// 文字を流すときは 1 秒に何度も変わるので、変化が 0.8 秒止まってから 1 回だけ読む
+let liveTimer = null, liveLast = '';
+function announceLeds() {
+  if (!ui || !ui.live) return;
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => {
+    const lit = S.on ? S.leds.filter(v => v > 0).length : 0;
+    const key = S.on ? S.leds.map(v => (v > 0 ? 9 : 0)).join('') : '';
+    let shape = '';
+    const names = window.PycoMbIconNames || {};
+    Object.keys(ICONS).some(k => {
+      if (ICONS[k].replace(/:/g, '').replace(/[1-9]/g, '9') === key && names[k]) { shape = '（' + names[k] + 'の形）'; return true; }
+      return false;
+    });
+    const msg = lit ? `LED が ${lit} 個ついています${shape}` : 'LED は全部消えています';
+    if (msg === liveLast) return;
+    liveLast = msg;
+    ui.live.textContent = msg;
+  }, 800);
 }
 
 function setLeds(arr) { S.leds = arr.slice(0, 25); while (S.leds.length < 25) S.leds.push(0); draw(); }
@@ -919,7 +942,17 @@ const CSS = `
 .mbs-svg .mbs-tp { text-anchor:middle; }
 /* 操作の列：幅があれば 2 列に並べて、温度・音・方角が下に隠れないようにする。
    それでも入りきらないときは、上下の影でスクロールできることを示す。 */
-.mbs-ctl { flex:1 1 240px; min-width:200px; display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+.mbs-live { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.mbs-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); align-content:start; gap:8px; margin-top:6px; }
+.mbs-more > summary { cursor:pointer; min-height:32px; display:flex; align-items:center; gap:6px; font-weight:700;
+  color:var(--accent-cyan, #3454D1); list-style:none; }
+.mbs-more > summary::-webkit-details-marker { display:none; }
+.mbs-more > summary::after { content:'▼'; font-size:10px; }
+.mbs-more[open] > summary::after { content:'▲'; }
+/* たたんでいる間は、操作の列を細くしてボードを大きく出す */
+#mb-sim:has(.mbs-more:not([open])) .mbs-board { max-width:62%; }
+#mb-sim:has(.mbs-more:not([open])) .mbs-ctl { flex:0 1 200px; }
+.mbs-ctl { flex:1 1 240px; min-width:200px; display:flex; flex-direction:column;
   align-content:start; gap:8px; align-self:stretch; overflow:auto; padding-right:2px;
   background:
     linear-gradient(var(--bg-panel, #f3f3f3) 30%, rgba(0,0,0,0)) top / 100% 24px local no-repeat,
@@ -974,6 +1007,7 @@ body.mobile-mode .mbs-board { max-width:none; width:100%; height:auto; min-heigh
 body.mobile-mode .mbs-ctl { overflow:visible; flex:0 0 auto; background:none; }
 body.mobile-mode .mbs-svg .mbs-btn-outer { stroke-width:16px; }
 body.mobile-mode .mbs-card label { min-height:40px; }
+body.mobile-mode .mbs-more > summary { min-height:44px; }
 body.mobile-mode .mbs-card input[type=range] { height:28px; }
 body.mobile-mode .mbs-run button, body.mobile-mode .mbs-row button, body.mobile-mode .mbs-row select, body.mobile-mode .mbs-row input[type=text] { min-height:44px; }
 `;
@@ -1130,6 +1164,11 @@ function mount(root, opts) {
       <div class="mbs-run" style="display:none">
         <button class="run">▶ 実行（シミュレータ）</button><button class="stop" disabled>■ シミュレータを止める</button>
       </div>
+      <!-- センサーのつまみは最初はたたむ。つまみの方がボードより大きく、LED の変化に気づきにくかった
+           （2026-11-25 先生判断 7）。たたんだ分の幅でボードを大きく出す -->
+      <details class="mbs-more">
+      <summary>センサーを動かす</summary>
+      <div class="mbs-cards">
       <div class="mbs-card">
         <h4>傾き（加速度）</h4>
         ${slider('x（mg）', 'ax', -2048, 2048, 8)}
@@ -1151,7 +1190,10 @@ function mount(root, opts) {
         <div class="mbs-row"><input type="text" class="rin" placeholder="無線で届く文字（例：12）" aria-label="無線で受け取るメッセージ（受信させる文字）"><button class="rgo">受信させる</button></div>
         <div class="mbs-radio"></div>
       </div>
+      </div>
+      </details>
       <div class="mbs-out"></div>
+      <div class="mbs-live" aria-live="polite" role="status"></div>
       <div class="mbs-note">音と無線は実機と少し違います</div>
     </div>`;
 
@@ -1161,6 +1203,7 @@ function mount(root, opts) {
     svg, used: new Set(),
     tilt: svg,
     leds: q('.mbs-led'),
+    live: root.querySelector('.mbs-live'),
     caps: { a: svg.querySelector('[data-k=a] .mbs-cap'), b: svg.querySelector('[data-k=b] .mbs-cap'), ab: svg.querySelector('[data-k=ab] .mbs-cap') },
     headBg: svg.querySelector('.mbs-head-bg'),
     pins: { p0: svg.querySelector('.mbs-pin[data-k=p0]'), p1: svg.querySelector('.mbs-pin[data-k=p1]'), p2: svg.querySelector('.mbs-pin[data-k=p2]') },

@@ -49,6 +49,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // キーボード操作のプラグイン（見た目は inject の前に1回だけ登録する決まり）。読めなくても本体は動かす
+  // registerNavigationDeferringToolbox は 3.0.5 では自分を呼ぶだけで再帰して落ちるので呼ばない（一覧のキー操作は Blockly 12.3 以降の本体が受け持つ）
+  const KbNav = window.KeyboardNavigation;
+  if (KbNav) {
+    try { KbNav.registerKeyboardNavigationStyles(); }
+    catch (e) { console.warn('[kbnav] register', e); }
+  }
   const workspace = Blockly.inject('blockly-div', {
     toolbox: document.getElementById('toolbox-python'),
     theme: pcbTheme,
@@ -60,6 +67,34 @@ document.addEventListener('DOMContentLoaded', function() {
     zoom: { controls: true, wheel: true, pinch: true, startScale: 1.0, maxScale: 3, minScale: 0.3 },
     move: { drag: true, wheel: false, scrollbars: true }
   });
+  if (KbNav) {
+    try { window.pycoKbNav = new KbNav(workspace); } catch (e) { console.warn('[kbnav] init', e); }
+    // ［/］で出る操作一覧は英語の内部名から作られ、Blockly.Msg では変えられない。書かれた後に表示だけ日本語へ置きかえる
+    const KB_JA = {
+      'Keyboard shortcuts': 'キーボード操作の一覧', 'KEYBOARD SHORTCUTS': 'キーボード操作の一覧', 'close': '閉じる',
+      'General': 'ふつうの操作', 'Editing': '編集', 'Code navigation': 'ブロックの間を移動',
+      'Menu': 'メニューを開く', 'Edit or confirm': '編集する・決定する', 'Exit': 'ぬける', 'Toolbox': 'ブロックの一覧を開く',
+      'Clean up workspace': 'ブロックを整列する', 'List shortcuts': 'この一覧を出す', 'Delete': '消す', 'Disconnect': '外す',
+      'Move Block': 'ブロックを動かす', 'Cut': '切り取り', 'Copy': 'コピー', 'Paste': '貼り付け', 'Duplicate': '複製',
+      'Undo': '元に戻す', 'Redo': 'やり直す', 'Up': '上へ', 'Down': '下へ', 'Right': '右へ', 'Left': '左へ',
+      'Next stack': '次のかたまりへ', 'Previous stack': '前のかたまりへ', 'To workspace': '作業域へ'
+    };
+    const KB_KEY = { 'Up': '↑', 'Down': '↓', 'Right': '→', 'Left': '←' };
+    const kbBox = document.getElementById('shortcuts');
+    if (kbBox && window.MutationObserver) {
+      const kbTranslate = function() {
+        const walker = document.createTreeWalker(kbBox, NodeFilter.SHOW_TEXT);
+        for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+          const key = t.nodeValue.trim().replace(/\s*–\s*$/, '');
+          // キーの札（Delete・Up など）は押すキーそのものなので訳さない。矢印だけ記号にする
+          const dict = (t.parentElement && t.parentElement.classList.contains('key')) ? KB_KEY : KB_JA;
+          if (dict[key]) t.nodeValue = t.nodeValue.replace(key, dict[key]);
+        }
+      };
+      kbTranslate();  // 中身はプラグインを作った時点で書かれる
+      new MutationObserver(kbTranslate).observe(kbBox, { childList: true, subtree: true });
+    }
+  }
 
   const lightTheme = Blockly.Theme.defineTheme('pycoLight', {
     base: Blockly.Themes.Classic,
@@ -171,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ツールボックス・生成コードの先頭・通信の細部だけをこれで切り替える。
   // 保存や共有 URL では 'microbit' を 1 つのモードとして扱う（modeKey()）。
   let currentBoard = 'pico';
+  const LAST_MODE_KEY = 'pyco-last-mode';
   function modeKey() {
     return (currentMode === 'micropython' && currentBoard === 'microbit') ? 'microbit' : currentMode;
   }
@@ -892,7 +928,20 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'py_import_csv':    return 'csv をインポートする';
       case 'py_csv_read_rows': return `CSV「${block.getFieldValue('FILENAME')}」を読み込む`;
       case 'py_csv_get_col':   return `列 ${block.getFieldValue('COL')} を数値リストとして取り出す`;
-      // Part 4 game
+      // Part 4 game：ブロックと同じ日本語名（以前は game_init などの内部名がそのまま出ていた・2026-11-25 先生判断 13）
+      case 'game_init':        return 'ゲームを初期化する';
+      case 'game_loop':        return 'ゲームループを開始する';
+      case 'game_events':      return 'ウィンドウを閉じたら終了する';
+      case 'game_flip':        return '画面を更新する';
+      case 'game_fill':        return '画面を色で塗りつぶす';
+      case 'game_rect':        return '四角形 Rect を作る';
+      case 'game_draw_rect':   return '四角形を描く';
+      case 'game_draw_circle': return '円を描く';
+      case 'game_draw_line':   return '線を描く';
+      case 'game_draw_text':   return '文字を書く';
+      case 'game_key_pressed': return 'キーが押されている';
+      case 'game_collide':     return '2 つの四角形が重なっている';
+      case 'game_quit':        return 'ゲームを終了する';
       case 'game_import_random': return 'random モジュールを読み込む';
       case 'game_random_int':    return `ランダム整数（${block.getFieldValue('LO')}〜${block.getFieldValue('HI')}）`;
       case 'game_timer_set':     return `タイマー変数「${getVarName(block, 'VAR')}」を SEC 秒後にセット`;
@@ -3952,7 +4001,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // ツールボックスを入れかえる所（モード切替・ファイルのタブ・学習モード）がいくつもあるので、ここでまとめて受ける
     const origUpdateToolbox = workspace.updateToolbox.bind(workspace);
-    workspace.updateToolbox = function(def) { origUpdateToolbox(def); applyToolboxScope(); };
+    // PoliviaBot のカテゴリは、PoliviaBot のブロックを使っているときだけ先頭に出し、
+    // それ以外（Pico だけで遊ぶとき）は後ろへ回す。先頭にあると「PoliviaBot が要る」と思われた（2026-11-25 先生判断 22）
+    function placePoliviaCategory(def) {
+      if (!def || def.id !== 'toolbox-micropython') return;
+      const cat = def.querySelector(':scope > category[name="PoliviaBot"]');
+      if (!cat) return;
+      const usesPvb = workspace.getAllBlocks(false).some(function(b) { return /^pvb_/.test(b.type); });
+      if (usesPvb) { if (def.firstElementChild !== cat) def.insertBefore(cat, def.firstElementChild); return; }
+      const custom = def.querySelector(':scope > category[name="カスタム"]');
+      if (cat.nextElementSibling !== custom) def.insertBefore(cat, custom);
+    }
+    workspace.updateToolbox = function(def) { placePoliviaCategory(def); origUpdateToolbox(def); applyToolboxScope(); };
+    // サンプルやファイルで PoliviaBot のブロックが入ったら、カテゴリを先頭へ戻す
+    let _pvbReorderTimer = null;
+    workspace.addChangeListener(function(e) {
+      if (e.type !== Blockly.Events.BLOCK_CREATE || modeKey() !== 'micropython') return;
+      if (!(e.ids || []).some(function(id) { const b = workspace.getBlockById(id); return b && /^pvb_/.test(b.type); })) return;
+      const def = document.getElementById('toolbox-micropython');
+      const cat = def && def.querySelector(':scope > category[name="PoliviaBot"]');
+      if (!cat || def.firstElementChild === cat) return;
+      clearTimeout(_pvbReorderTimer);
+      _pvbReorderTimer = setTimeout(function() { workspace.updateToolbox(def); }, 0);
+    });
     applyToolboxScope();
 
     // 「よく使うもの」のときに、隠れたカテゴリのブロックが作業域に入ったら（サンプル・ファイル・復元）「ぜんぶ」へ戻す。
@@ -4061,6 +4132,8 @@ document.addEventListener('DOMContentLoaded', function() {
     editor.getWrapperElement().style.fontSize = size + 'px';
     editor.refresh();
     document.getElementById('monitor-output').style.fontSize = size + 'px';
+    // ツールバーの文字も同じ割合で大きくする（小さくはしない・上限 1.4 倍）（2026-11-25 先生判断 17）
+    document.documentElement.style.setProperty('--tb-scale', String(Math.min(1.4, Math.max(1, size / FONT_DEFAULT))));
     localStorage.setItem('pyco-font-size', size);
   }
 
@@ -5356,13 +5429,22 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (key === 'micropython') {
         h.textContent = 'Pi Pico をつかう';
         row.appendChild(btn('サンプルを開く', 'primary', openSamples));
-        row.appendChild(btn('MicroPython導入', '', function() {
-          const fw = document.getElementById('btn-firmware');
-          if (fw) fw.click();
-        }));
-        note.textContent = 'Pico がなくても、ブロック → コード → 配線図 までは試せます。' +
-          '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。つないだら［接続］→［▶ 実行］' +
-          (('serial' in navigator) ? '' : '。この端末（スマホ・タブレットなど）ではつなげません。つなぐのはパソコンの Chrome か Edge から');
+        // MicroPython導入は 2 番手なので文字のリンクに下げる。つなげない端末では出さない（2026-11-25 先生判断 9）
+        if ('serial' in navigator) {
+          const fwLink = btn('はじめての Pico は MicroPython導入から', 'link', function() {
+            const fw = document.getElementById('btn-firmware');
+            if (fw) fw.click();
+          });
+          note.textContent = 'Pico がなくても、ブロック → コード → 配線図 までは試せます。' +
+            '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。つないだら［接続］→［▶ 実行］';
+          note.appendChild(document.createElement('br'));
+          note.appendChild(fwLink);
+        } else {
+          note.textContent = 'Pico がなくても、ブロック → コード → 配線図 までは試せます。' +
+            '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。' +
+            'この端末（スマホ・タブレットなど）ではつなげません。つなぐのはパソコンの Chrome か Edge から。' +
+            '機械なしで動きを試すなら Python モードへ';
+        }
       } else if (key === 'microbit') {
         h.textContent = 'はじめての micro:bit';
         row.appendChild(btn('サンプルを開く', 'primary', openSamples));
@@ -5484,6 +5566,36 @@ document.addEventListener('DOMContentLoaded', function() {
     return Blockly.Xml.domToText(dom);
   }
 
+  // 共有URLの QR コード。画面の中（qrcode-generator）で作り、URL はどこへも送らない。
+  // カメラで確実に読めるのは 1,000 文字くらいまで。それより長い URL（ゲームは数千文字になる）は
+  // QR を出さず、.xml で配る方法を案内する（2026-11-25 先生判断）
+  var SHARE_QR_MAX = 1000;
+  function _renderShareQr(url) {
+    var box = document.getElementById('share-qr');
+    var note = document.getElementById('share-qr-note');
+    if (!box || !note) return;
+    box.innerHTML = '';
+    if (url.length > SHARE_QR_MAX) {
+      note.textContent = 'この作品は URL が長い（' + url.length + ' 文字）ので、QR コードにできません。'
+        + 'URL を送っても途中で切れることがあります。確実に渡すには［' + fileMenuName() + ' → ブロックを保存］で .xml ファイルにして配ってください。';
+      return;
+    }
+    if (typeof qrcode !== 'function') {
+      note.textContent = 'QR コードの部品を読み込めませんでした。［コピー］で URL を送ってください。';
+      return;
+    }
+    try {
+      var qr = qrcode(0, 'L');
+      qr.addData(url, 'Byte');
+      qr.make();
+      box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+      note.textContent = 'タブレットやスマホのカメラで読むと、この作品が開きます。';
+    } catch (e) {
+      box.innerHTML = '';
+      note.textContent = 'QR コードにできませんでした。［コピー］で URL を送ってください。';
+    }
+  }
+
   // 共有URLモーダルを開いてURLを表示する
   var _shareCurrentUrl = '';
   var _shareRelease = null;
@@ -5498,6 +5610,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ta.value = url;
     if (msg) msg.textContent = '';
     if (lenEl) lenEl.textContent = url.length + ' 文字';
+    _renderShareQr(url);
     // ネイティブ共有(Web Share API)が使える端末でのみ「SNSで共有」を出す
     if (nativeBtn) nativeBtn.style.display = (typeof navigator.share === 'function') ? '' : 'none';
     // モバイルではツールメニュー(ドロワー)を閉じてからモーダルを最前面に出す
@@ -5692,8 +5805,9 @@ document.addEventListener('DOMContentLoaded', function() {
     runBtn.disabled = mb && !connected && _simRunning;
     runBtn.classList.toggle('needs-connect', needsConnect);
     stopBtn.disabled = !connected && !(mb && _simRunning);
-    runBtn.textContent = (mb && !connected) ? '▶ 実行（シミュレータ）' : '▶ 実行';
-    stopBtn.textContent = mb ? (connected ? '■ micro:bit を止める' : '■ シミュレータを止める') : '■ 停止';
+    // 呼び名はモードでそろえる（2026-11-25 先生判断 14）。シミュレータで動くことは title で伝える
+    runBtn.textContent = '▶ 実行';
+    stopBtn.textContent = '■ 止める';
     runBtn.title = connected ? board + ' でプログラムを動かします（Ctrl+Enter）'
       : mb ? 'つないでいないので、シミュレータで動かします（Ctrl+Enter）'
       : 'Pico をつなぐと動かせます（押すと、つなぎ方が出ます）';
@@ -5862,7 +5976,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!PicoSerial.isConnected()) { _pyStopRequested = true; return; }
     try {
       await PicoSerial.stopCode();
-      setSerialStatus('■ 停止しました', 'dim');
+      setSerialStatus('■ 止めました', 'dim');
     } catch (e) {
       setSerialStatus('停止エラー: ' + e.message, 'err');
     }
@@ -5949,9 +6063,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // モードを切り替える（clearWorkspace=trueのときワークスペースをクリア）
   // mode は 'python' / 'game' / 'micropython'（Pico）/ 'microbit'
   function applyMode(mode, clearWorkspace) {
+    if (window.PycoGameFull) window.PycoGameFull.exit();
     if (mode === 'microbit') { currentBoard = 'microbit'; mode = 'micropython'; }
     else if (mode === 'micropython') currentBoard = 'pico';
     currentMode = mode;
+    try { localStorage.setItem(LAST_MODE_KEY, modeKey()); } catch (e) { /* noop */ }
     if (clearWorkspace) workspace.clear();
 
     // モードボタン
@@ -7537,15 +7653,16 @@ document.addEventListener('DOMContentLoaded', function() {
   })();
 
   // スマホでは配線図プレビューが画面の下半分を占め、作業域が 230px ほどしか残らない。
-  // スマホ表示で Pico モードに入ったときは、はじめから折りたたんでおく（見たければ「配線図を表示 ▲」）
-  // パソコンでも、前に［非表示］にしていれば畳んだまま始める（覚えるのは上の折りたたみボタン）
+  // Pico モードに入ったときは、はじめから折りたたんでおく（見たければ「配線図を表示 ▲」）
+  // 前に［表示］にしていれば出したまま始める（覚えるのは上の折りたたみボタン）
   // 覚える場所は localStorage の pyco-circuit-collapsed（'1'＝畳む・'0'＝出す）
   function collapseCircuitForMobile() {
     if (modeKey() !== 'micropython') return;
     let pref = null;
     try { pref = localStorage.getItem('pyco-circuit-collapsed'); } catch (e) { /* noop */ }
-    const mobile = document.body.classList.contains('mobile-mode');
-    if (!(pref === '1' || (mobile && pref !== '0'))) return;
+    // パソコンでも最初は畳む。はじめはブロックを置く場所を広く取る（2026-11-25 先生判断 18）。
+    // 一度［表示］にした人は、それを覚えて次から出しておく
+    if (pref === '0') return;
     const svgEl = document.getElementById('circuit-preview-svg');
     const btn = document.getElementById('btn-circuit-collapse');
     if (svgEl && btn && svgEl.style.display !== 'none') btn.click();
@@ -8203,8 +8320,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const box = workspace.getBlocksBoundingBox();
     if (!box || box.right - box.left <= 0) return;
     const s = workspace.scale;
+    // カテゴリを押すと出る一覧（幅 100〜670px）は作業域の左に重なって開く。左端に寄せると、開いた一覧の裏に
+    // ブロックが隠れる（r5：micro:bit の［最初だけ］が見えない）。幅に余裕があるときは、よくある一覧の幅
+    // （約 300px。micro:bit の初期ブロックと同じ位置）から見せる。ブロックの座標は変えない（保存データ・生成コードは同じ）
+    let left = 20;
+    try {
+      const m = workspace.getMetrics();
+      const bw = (box.right - box.left) * s;
+      if (m && m.viewWidth >= 480) left += Math.max(0, Math.min(280, m.viewWidth - bw - 60));
+    } catch (e) { /* noop */ }
     // scrollX/Y はスクロール位置。ブロック座標 x は画面の x*scale + scrollX に描かれる
-    workspace.scroll(20 - box.left * s, 20 - box.top * s);
+    workspace.scroll(left - box.left * s, 20 - box.top * s);
   }
   // 読込のあとに使う組。レイアウトが落ち着いてから拡大率を合わせ、そのあとで位置を合わせる
   function fitAfterLoad() {
@@ -8260,11 +8386,86 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   })();
 
+  // ===== ゲーム画面の［⤢ 大きく］ =====
+  (function setupGameFullscreen() {
+    const btn = document.getElementById('btn-game-full');
+    const area = document.getElementById('game-canvas-area');
+    if (!btn || !area) return;
+    function isFull() {
+      return document.fullscreenElement === area || document.webkitFullscreenElement === area || area.classList.contains('game-full');
+    }
+    // 全画面では、ゲームの絵を縦横比を保ったまま入るだけ大きくする（CSS の width:auto では元の大きさより大きくならない）。
+    // マウスの座標は game_engine.js が表示の大きさから比で戻すので、縦横比さえ保てばずれない
+    function fit() {
+      const cnv = area.querySelector('canvas.pyco-game-canvas');
+      if (!cnv) return;
+      if (!isFull()) { cnv.style.width = cnv.style.height = cnv.style.maxWidth = cnv.style.maxHeight = ''; return; }
+      const cs = getComputedStyle(area);
+      let h = area.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+      const w = area.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+      const gap = parseFloat(cs.rowGap) || 0;
+      Array.prototype.forEach.call(area.children, function(c) {
+        if (c === cnv || c === btn) return;
+        const st = getComputedStyle(c);
+        if (st.display === 'none' || st.position === 'absolute' || st.position === 'fixed') return;
+        h -= c.offsetHeight + (parseFloat(st.marginTop) || 0) + (parseFloat(st.marginBottom) || 0) + gap;
+      });
+      const k = Math.max(0.1, Math.min(w / cnv.width, h / cnv.height));
+      cnv.style.maxWidth = cnv.style.maxHeight = 'none';
+      cnv.style.width = Math.floor(cnv.width * k) + 'px';
+      cnv.style.height = Math.floor(cnv.height * k) + 'px';
+    }
+    function sync() {
+      const on = isFull();
+      requestAnimationFrame(fit);
+      btn.textContent = on ? '✕ もどす' : '⤢ 大きく';
+      btn.title = on ? 'もとの大きさにもどす（Esc）' : 'ゲーム画面を画面いっぱいに出す（Esc でもどる）';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    function exit() {
+      if (area.classList.contains('game-full')) { area.classList.remove('game-full'); sync(); return; }
+      const ex = document.exitFullscreen || document.webkitExitFullscreen;
+      if (ex) { try { const r = ex.call(document); if (r && r.catch) r.catch(function() {}); } catch (e) { /* noop */ } }
+    }
+    btn.addEventListener('click', function() {
+      if (isFull()) { exit(); return; }
+      const req = area.requestFullscreen || area.webkitRequestFullscreen;
+      // 全画面にできないとき（iPhone の Safari など）は、画面に固定して広げる
+      function pseudo() { area.classList.add('game-full'); sync(); }
+      if (!req) { pseudo(); return; }
+      try {
+        const r = req.call(area);
+        if (r && r.catch) r.catch(pseudo);
+      } catch (e) { pseudo(); }
+    });
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    window.addEventListener('resize', function() { if (isFull()) fit(); });
+    // 全画面のまま実行し直したとき（絵が作り直される・set_mode で大きさが変わる）も合わせ直す
+    if (window.MutationObserver) {
+      new MutationObserver(function() { if (isFull()) fit(); })
+        .observe(area, { childList: true, subtree: true, attributes: true, attributeFilter: ['width', 'height'] });
+    }
+    // 代わりの広げ方のときも Esc でもどす（本物の全画面はブラウザが Esc を受け持つ）
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && area.classList.contains('game-full')) exit();
+    });
+    // ゲームモードから離れたら、広げたままにしない
+    window.PycoGameFull = { exit: function() { if (isFull()) exit(); } };
+  })();
+
   // ===== 初期化 =====
   // URLパラメータ ?mode=micropython（Pico）/ microbit でモードを指定できる（省略時は python）
   const _urlParams = new URLSearchParams(window.location.search);
   const _urlMode = _urlParams.get('mode');
-  applyMode((_urlMode === 'micropython' || _urlMode === 'microbit' || _urlMode === 'game') ? _urlMode : 'python', false);
+  // ?mode= がなければ、前回使ったモードで開く（ゲームで遊んでいた人が「作品が消えた」と思わないように）。
+  // ?src= や共有URL（#x1=）で開いたときは、その中身のモードに合わせるので前回のモードは使わない
+  function _validMode(m) { return m === 'python' || m === 'micropython' || m === 'microbit' || m === 'game'; }
+  var _startMode = _validMode(_urlMode) ? _urlMode : 'python';
+  if (!_validMode(_urlMode) && !_urlParams.get('src') && !/[#&](x1|xml)=/.test(window.location.hash || '')) {
+    try { var _lm = localStorage.getItem(LAST_MODE_KEY); if (_validMode(_lm)) _startMode = _lm; } catch (e) { /* noop */ }
+  }
+  applyMode(_startMode, false);
   // 前に配線図を［非表示］にしていれば、開いたときから畳んでおく（モードを切り替えたときは switchMode で同じことをする）
   collapseCircuitForMobile();
 
@@ -8678,10 +8879,10 @@ document.addEventListener('DOMContentLoaded', function() {
       runFab.style.display = target ? '' : 'none';
       runFab.disabled = stop ? false : (target ? target.disabled : true);
       runFab.classList.toggle('needs-connect', !stop && !!(target && target.classList.contains('needs-connect')));
-      const label = stop ? '■ 停止' : '▶ 実行';
+      const label = stop ? '■ 止める' : '▶ 実行';
       if (runFab.textContent !== label) runFab.textContent = label;
       runFab.title = stop ? '実行を止める' : (target && (target.disabled || target.classList.contains('needs-connect')) ? (target.title || '実行') : '実行');
-      runFab.setAttribute('aria-label', stop ? '停止' : '実行');
+      runFab.setAttribute('aria-label', stop ? '止める' : '実行');
     }
     if (runFab) {
       runFab.addEventListener('click', function() {

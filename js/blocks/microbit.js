@@ -46,6 +46,8 @@ const ICONS = [
 
 // アイコンの形（選択肢の絵に使う）。MakeCode for micro:bit の libs/core/icons.ts（MIT License,
 // Copyright (c) Microsoft Corporation）から取った。'9' が点く LED
+// シミュレータの読み上げ（LED の形の名前）に使う。英語名 → 日本語名
+window.PycoMbIconNames = Object.fromEntries(ICONS.map(([ja, en]) => [en, ja]));
 const ICON_SHAPE = {
   HEART: '09090:99999:99999:09990:00900',
   HEART_SMALL: '00000:09090:09990:00900:00000',
@@ -730,6 +732,10 @@ function header(blockTypes, showComments) {
   if (blockTypes.has('py_random_int')) h += c('乱数生成用') + 'import random\n';
   // 無線は電源を入れないと送れない・受け取れない。グループを決めなければ 0 番
   if (has(RADIO_TYPES)) h += '\nradio.on()\nreceived_string = ""\n';
+  // 補助の関数（_mb_num・_mb_edge）は、ブロック 1 つで 6 行ほど先頭に出る。初めての人がどこからが
+  // 自分のプログラムか分かるよう、前後に「自動で入る部分」の印を付ける（2026-11-25 先生判断 6）
+  const helpers = blockTypes.has('mb_received_number') || has(EDGE_TYPES);
+  if (helpers && showComments) h += '\n# ── ここから自動で入る部分（ブロックが使う道具。さわらなくてよい）──';
   if (blockTypes.has('mb_received_number')) {
     h += '\n' + c('受信した文字を数にする（読めないときは 0）') +
       'def _mb_num(s):\n' +
@@ -746,6 +752,7 @@ function header(blockTypes, showComments) {
       '    _mb_prev[key] = now\n' +
       '    return (now and not before) if rising else (before and not now)\n';
   }
+  if (helpers) h += c('── 自動で入る部分はここまで。ここから下が、ならべたブロックのプログラム ──');
   return h + '\n';
 }
 

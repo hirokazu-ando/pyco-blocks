@@ -345,6 +345,10 @@
     + '.pyco-tut-foot{border-top:1px solid var(--border-dim,#1a341a);padding:10px 12px;flex-shrink:0;}'
     + '.pyco-tut-check{font-size:.82rem;margin-bottom:8px;color:var(--text-dim,#5a8a5a);}'
     + '.pyco-tut-check.done{color:var(--accent-green,#00ff41);font-weight:bold;}'
+    + '.pyco-tut-skip{display:block;background:none;border:none;padding:4px 0;margin:0 0 6px;font-size:.8rem;'
+    +   'color:var(--text-dim,#5a8a5a);text-decoration:underline;cursor:pointer;min-height:32px;}'
+    + '.pyco-tut-skip[hidden]{display:none;}'
+    + '.pyco-tut-skip:hover,.pyco-tut-skip:focus-visible{color:var(--accent-cyan,#00d4ff);}'
     + '.pyco-tut-navbtns{display:flex;gap:8px;}'
     + '.pyco-tut-navbtns button{flex:1;background:transparent;border:1px solid var(--border-dim,#1a341a);'
     + 'color:var(--text-primary,#c8e6c8);cursor:pointer;font:inherit;font-size:.8rem;padding:8px 6px;'
@@ -479,6 +483,9 @@
       + '<div class="pyco-tut-body" id="pyco-tut-body"></div>'
       + '<div class="pyco-tut-foot">'
       +   '<div class="pyco-tut-check" id="pyco-tut-check">○ 待機中</div>'
+      // ブロックを置く手順は、ドラッグできない人（キーボードだけの人など）が先へ進めなかった。
+      // 合格の判定は変えず、飛ばして先へ進める道だけを置く（2026-11-25 先生判断 5）
+      +   '<button type="button" id="pyco-tut-skip" class="pyco-tut-skip" hidden>この手順を飛ばす</button>'
       +   '<div class="pyco-tut-navbtns">'
       +     '<button type="button" id="pyco-tut-prev">◀ もどる</button>'
       +     '<button type="button" id="pyco-tut-next" class="primary" disabled>次へ ▶</button>'
@@ -493,6 +500,14 @@
     els.pbar = $('pyco-tut-pbar-fill');
     els.body = $('pyco-tut-body');
     els.check = $('pyco-tut-check');
+    els.skip = $('pyco-tut-skip');
+    els.skip.addEventListener('click', function() {
+      var st = steps()[stepIndex];
+      if (!st) return;
+      st._skipped = true;
+      evaluateCurrent();
+      if (!els.next.disabled) els.next.focus();
+    });
     els.prev = $('pyco-tut-prev');
     els.next = $('pyco-tut-next');
     els.nav = panel.querySelector('.pyco-tut-navbtns');
@@ -1794,6 +1809,15 @@
     var step = steps()[stepIndex];
     if (!step) return;
     var passed = checkPasses(step);
+    var placeStep = !!(step.check && !step.quiz &&
+      (step.check.blocksRequired || step.check.blocksMin || step.check.xmlEquals));
+    if (els.skip) els.skip.hidden = !(placeStep && !passed && !step._skipped);
+    if (!passed && placeStep && step._skipped) {
+      els.check.textContent = '（この手順は飛ばしました）';
+      els.check.className = 'pyco-tut-check';
+      els.next.disabled = false;
+      return;
+    }
     if (passed && !step.check && !step.quiz) {
       // 読むだけのステップ。何もしていないのに「クリア！」が出ると、次に本当にできたときの手ごたえが弱まる
       els.check.textContent = '読んだら［次へ］';
