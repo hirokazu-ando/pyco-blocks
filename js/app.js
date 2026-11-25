@@ -4792,7 +4792,7 @@ document.addEventListener('DOMContentLoaded', function() {
     drawer.setAttribute('role', 'dialog');
     drawer.setAttribute('aria-modal', 'true');
     drawer.setAttribute('aria-label', '書き方の一覧');
-    // 上端はヘッダーの下（ツールバーの「⚙ 表示」などを覆わない）
+    // 上端はヘッダーの下（ツールバーの「⚙ 見た目」などを覆わない）
     drawer.style.cssText = 'position:absolute;top:0;right:0;bottom:0;width:min(380px,92vw);' +
       'display:flex;flex-direction:column;background:var(--bg-panel);border-left:1px solid var(--border-glow);box-shadow:-6px 0 18px rgba(0,0,0,.35);';
     back.appendChild(drawer);
@@ -4928,9 +4928,57 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== ブロック XML 保存 =====
   //   ルートに mode を書いておく。別のモードで開いたときに、どのモード用か分かるようにするため
   //   （Blockly はルートの属性を読まないので、読込側の互換は崩れない）。
-  document.getElementById('btn-save-xml').addEventListener('click', function() {
+  // 保存するときに名前（出席番号）を聞く。授業で 40 人分を集めると、同じ形の名前のファイルが並んで
+  // 誰のものか分からなかった。前に入れた名前を覚えておき、Enter だけで保存できるようにする
+  function askSaveName() {
+    return new Promise(function(resolve) {
+      let saved = '';
+      try { saved = localStorage.getItem('pyco-author-name') || ''; } catch (e) { /* noop */ }
+      const back = document.createElement('div');
+      back.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+      const box = document.createElement('div');
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-modal', 'true');
+      box.setAttribute('aria-labelledby', 'pyco-savename-title');
+      box.style.cssText = 'background:var(--bg-surface);color:var(--text-primary);border:1px solid var(--border-glow);border-radius:10px;padding:18px 20px;width:min(460px,94vw);font-size:15px;line-height:1.6;box-shadow:0 6px 24px rgba(0,0,0,.4);';
+      box.innerHTML = '<div id="pyco-savename-title" style="font-weight:bold;font-size:16px;margin-bottom:8px;">ブロックをファイルに保存</div>' +
+        '<label for="pyco-savename-input" style="display:block;margin-bottom:6px;">名前か出席番号（ファイル名に入ります。空でも保存できます）</label>' +
+        '<input id="pyco-savename-input" type="text" maxlength="30" autocomplete="off" style="width:100%;box-sizing:border-box;min-height:36px;padding:6px 8px;font-size:15px;border-radius:6px;border:1px solid var(--text-dim);background:var(--bg-base);color:var(--text-primary);">' +
+        '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">' +
+        '<button type="button" data-v="cancel" style="min-height:36px;padding:6px 14px;border-radius:6px;font-size:14px;cursor:pointer;background:transparent;color:var(--text-primary);border:1px solid var(--text-dim);">やめる</button>' +
+        '<button type="button" data-v="ok" style="min-height:36px;padding:6px 14px;border-radius:6px;font-size:14px;cursor:pointer;background:var(--accent-green);color:var(--bg-base);border:1px solid var(--accent-green);font-weight:bold;">保存する</button></div>';
+      back.appendChild(box);
+      const input = box.querySelector('input');
+      input.value = saved;
+      let release = null;
+      function close(v) {
+        if (back.parentNode) back.parentNode.removeChild(back);
+        if (release) release();
+        resolve(v);
+      }
+      function ok() {
+        const name = input.value.trim();
+        try { localStorage.setItem('pyco-author-name', name); } catch (e) { /* noop */ }
+        close(name);
+      }
+      box.querySelector('[data-v="ok"]').addEventListener('click', ok);
+      box.querySelector('[data-v="cancel"]').addEventListener('click', function() { close(null); });
+      input.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); ok(); } });
+      back.addEventListener('click', function(e) { if (e.target === back) close(null); });
+      document.body.appendChild(back);
+      release = holdModal(back, box, function() { close(null); });
+      input.focus(); input.select();
+    });
+  }
+  // ファイル名に使えない文字を除く
+  function safeFileName(s) { return String(s || '').replace(/[\\/:*?"<>|\s]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30); }
+
+  document.getElementById('btn-save-xml').addEventListener('click', async function() {
+    const author = await askSaveName();
+    if (author === null) return;
     const xml = Blockly.Xml.workspaceToDom(workspace);
     xml.setAttribute('mode', modeKey());
+    if (author) xml.setAttribute('author', author);
     const text = Blockly.Xml.domToText(xml);
     const blob = new Blob([text], { type: 'application/xml' });
     const a = document.createElement('a');
@@ -4938,7 +4986,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 「blocks.xml」ばかりが並ぶとどれが何か分からないので、モードと日時を名前に入れる
     const d = new Date();
     const z = function(n) { return String(n).padStart(2, '0'); };
-    a.download = 'pycoblocks_' + modeKey() + '_' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) +
+    const who = safeFileName(author);
+    a.download = 'pycoblocks_' + (who ? who + '_' : '') + modeKey() + '_' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) +
       '-' + z(d.getHours()) + z(d.getMinutes()) + '.xml';
     a.click();
     // ダウンロードは画面に何も出ないブラウザがあるので、保存した名前と開き方を知らせる
@@ -5143,7 +5192,9 @@ document.addEventListener('DOMContentLoaded', function() {
               const prev = document.getElementById('pyco-toast');
               if (prev && prev.classList.contains('err')) hideToast();
               if (document.body.classList.contains('mobile-mode')) return;
-              const run = document.getElementById(modeKey() === 'micropython' ? 'btn-run' : 'btn-run-python');
+              // micro:bit は（シミュレータでも）btn-run が実行ボタン。見えている方へ移す（以前は［ファイル］に戻り、Enter でメニューがまた開いていた）
+              const k = modeKey();
+              const run = document.getElementById(k === 'micropython' || k === 'microbit' ? 'btn-run' : 'btn-run-python');
               if (run && run.offsetParent) run.focus({ preventScroll: true });
             })
             .catch(function(err) { showToast('サンプルを開けませんでした：' + err, { type: 'err' }); });
@@ -5246,11 +5297,12 @@ document.addEventListener('DOMContentLoaded', function() {
           if (fw) fw.click();
         }));
         note.textContent = 'Pico がなくても、ブロック → コード → 配線図 までは試せます。' +
-          '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。つないだら［接続］→［▶ 実行］';
+          '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。つないだら［接続］→［▶ 実行］' +
+          (('serial' in navigator) ? '' : '。この端末（スマホ・タブレットなど）ではつなげません。つなぐのはパソコンの Chrome か Edge から');
       } else if (key === 'microbit') {
         h.textContent = 'はじめての micro:bit';
         row.appendChild(btn('サンプルを開く', 'primary', openSamples));
-        note.textContent = '左の［基本］から「アイコンを表示」を［最初だけ］の中へ入れて［▶ 実行］。右の micro:bit（シミュレータ）が光ります';
+        note.textContent = '左の［基本］から「アイコンを表示」を［最初だけ］の中へ入れて［▶ 実行］。下の micro:bit（シミュレータ）が光ります';
       }
       // 別のモードに作りかけがあれば、そこへ戻る道を出す（次の日にトップから入ると空の画面になり「消えた」と思っていた）
       const other = otherModeWithWork(key);
@@ -5281,12 +5333,23 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       return null;
     }
+    let focusedOnce = false;
     function update() {
       const key = modeKey();
       const show = !fileMode && !flyoutOpen &&
         (key === 'microbit' ? isStarterOnly() : workspace.getAllBlocks(false).length === 0);
       if (show && card.dataset.mode !== key) render(key);
       card.hidden = !show;
+      // キーボードの人がカードのボタンに届くように、開いた直後に 1 度だけ主ボタンへフォーカスを置く
+      //   （カードは Blockly の作業域の中にあり、Tab が作業域に取られてカードを飛ばしていた）
+      if (show && !focusedOnce && !document.body.classList.contains('mobile-mode')) {
+        focusedOnce = true;
+        setTimeout(function() {
+          const b = card.querySelector('button');
+          const a = document.activeElement;
+          if (!card.hidden && b && (!a || a === document.body)) b.focus({ preventScroll: true });
+        }, 300);
+      }
       if (show) {
         // 左のカテゴリ欄の右の空きにカードを置く（スマホではカテゴリ欄の下に半分隠れていた）
         const tb = workspace.getToolbox && workspace.getToolbox();
@@ -5359,6 +5422,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 共有URLモーダルを開いてURLを表示する
   var _shareCurrentUrl = '';
+  var _shareRelease = null;
   function _openShareModal(url) {
     var modal = document.getElementById('share-modal');
     var ta    = document.getElementById('share-url-text');
@@ -5374,7 +5438,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (nativeBtn) nativeBtn.style.display = (typeof navigator.share === 'function') ? '' : 'none';
     // モバイルではツールメニュー(ドロワー)を閉じてからモーダルを最前面に出す
     document.body.classList.remove('menu-open');
+    // 直前の知らせ（「〇〇.xml を保存しました」など）が窓に重なって、どちらを読むか迷っていた
+    try { hideToast(); } catch (e) { /* noop */ }
     modal.style.display = 'flex';
+    // フォーカスを窓の中にとどめる（Tab で背景のツールバーへ抜けていた）。Esc もここで閉じる
+    if (_shareRelease) _shareRelease();
+    _shareRelease = holdModal(modal, modal.firstElementChild, _closeShareModal);
     // PCでは全選択して即 Ctrl+C 可能に。モバイルは自動フォーカスでキーボードが
     // URLを隠すのを避け、「コピー」ボタン操作に委ねる
     if (!document.body.classList.contains('mobile-mode')) {
@@ -5384,11 +5453,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function _closeShareModal() {
     var modal = document.getElementById('share-modal');
     if (modal) modal.style.display = 'none';
+    if (_shareRelease) { var r = _shareRelease; _shareRelease = null; r(); }
   }
-  document.addEventListener('keydown', function(e) {
-    var modal = document.getElementById('share-modal');
-    if (e.key === 'Escape' && modal && modal.style.display === 'flex') { e.preventDefault(); _closeShareModal(); }
-  });
 
   var btnShareUrl = document.getElementById('btn-share-url');
   if (btnShareUrl) {
@@ -5612,7 +5678,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const name = (e && e.name) || '';
     const msg = (e && e.message) || String(e);
     if (name === 'NotFoundError' || /No port selected|cancel/i.test(msg)) {
-      return { text: board + ' が選ばれませんでした。USB をさし直して、もう一度［接続］。はじめての ' + board + ' は［MicroPython導入］から。', fw: true };
+      return { text: board + ' が見つからなかったか、選ばれませんでした。USB をさしてから、もう一度［接続］。はじめての ' + board + ' は［MicroPython導入］から。', fw: true, cancel: true };
     }
     if (name === 'InvalidStateError' || /already open/i.test(msg)) {
       return { text: board + ' はもうつながっています。［切断］してから、もう一度［接続］。', fw: false };
@@ -5631,10 +5697,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const f = friendlyConnectError(e);
     // 長い説明は上の知らせに出す。ここにも同じ文を出すと 2 か所に赤字が並ぶので、短い 1 行だけ残す
     // （知らせを閉じた後も、乗せれば全文が読めるよう title に入れる）
-    setSerialStatus(head, 'err');
+    // 一覧で何も選ばずに閉じただけ（f.cancel）は失敗ではないので、赤にしない（「こわれた」と思っていた）
+    setSerialStatus(head, f.cancel ? '' : 'err');
     statusEl.title = f.text;
-    showToast('つなげませんでした：' + f.text, {
-      type: 'err',
+    showToast(f.cancel ? f.text : 'つなげませんでした：' + f.text, {
+      type: f.cancel ? '' : 'err',
       action: (f.fw && btnFirmware) ? { label: 'MicroPython導入を開く', onClick: function() { btnFirmware.click(); } } : null,
     });
     hintFirmware(f.fw);
@@ -6291,7 +6358,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 押したら止めてから今のブロックで動かし直す（「実行中…」で押せず、変えても反映されないと迷っていた）
     const restartable = running && currentMode === 'game';
     btnRun.disabled    = running && !restartable;
-    btnRun.textContent = restartable ? '↻ もう一度動かす' : running ? '実行中…' : '▶ 実行';
+    btnRun.textContent = restartable ? '↻ もう一度実行' : running ? '実行中…' : '▶ 実行';
     btnRun.title = restartable ? '止めて、今のブロックでもう一度動かす（Ctrl+Enter）' : 'ブロック（コード）を実行する（Ctrl+Enter）';
     if (!running && _restartPending) { _restartPending = false; setTimeout(function() { runPython(); }, 0); }
     // micro:bit のシミュレータはツールバーの「■ シミュレータを止める」で止める。
@@ -6691,7 +6758,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const m = rawMsg.match(/name '(.+?)' is not defined/);
       const name = m ? `「${m[1]}」` : '変数・関数名';
       title = `NameError — ${name} が見つかりません`;
-      detail = `${name} はまだ定義されていません。\n・スペルミスがないか確認してください\n・変数を使う前に「変数に入れる」ブロックで値をセットしてください\n・関数を使う前に「関数を定義する」ブロックが必要です`;
+      detail = `${name} はまだ定義されていません。\n・スペルミスがないか確認してください\n・変数を使う前に［変数］の「変数 ○ を … にする」ブロックで値を入れてください\n・関数を使う前に「関数を定義する」ブロックが必要です`;
     } else if (tp === 'TypeError') {
       title = `TypeError — データの型が合っていません`;
       if (rawMsg.includes('unsupported operand') || rawMsg.includes('concatenate')) {
@@ -6721,7 +6788,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const m = rawMsg.match(/local variable '(.+?)'/);
       const name = m ? `「${m[1]}」` : 'その変数';
       title = `UnboundLocalError — ${name} に値を入れる前に使っています`;
-      detail = `関数の中で ${name} を、まだ値を入れていない状態で使おうとしています。\n・使う前に「変数に入れる」ブロックで ${name} に値をセットしてください\n・比較の == と 代入の = をまちがえていませんか（最初の代入は = ひとつです）\n　例:  biggest = a   ← まず値を入れる`;
+      detail = `関数の中で ${name} を、まだ値を入れていない状態で使おうとしています。\n・使う前に［変数］の「変数 ${name} を … にする」ブロックで値を入れてください\n・比較の == と 代入の = をまちがえていませんか（最初の代入は = ひとつです）\n　例:  biggest = a   ← まず値を入れる`;
     } else if (tp === 'KeyError') {
       title = `KeyError — 辞書にそのキーがありません`;
       detail = `辞書（ディクショナリ）に、指定したキーが存在しません。\n・キーのスペルが合っているか確認してください\n・キーがあるか先に確認するには  if キー in 辞書:  を使います\n（くわしい原因: ${rawMsg}）`;
@@ -8176,6 +8243,32 @@ document.addEventListener('DOMContentLoaded', function() {
       .catch(function(err) { console.warn('PycoBlocks: ?src= load failed:', err); });
   }
 
+  // 共有URLを開く前の作品にもどす（ファイルメニューと、開いた直後の知らせから）
+  function restoreBeforeShare() {
+    try {
+      var t = localStorage.getItem('pyco-autosave-' + modeKey() + '-before-share');
+      if (!t) { showToast('このモードには、共有を開く前の作品が残っていません。'); return; }
+      window.PycoWorkspaceIO.restore(t);
+      syncModeUrl(true);
+      showToast('共有を開く前の作品にもどしました。［↶ もどす］で共有のブロックに戻れます。', { ms: 6000 });
+    } catch (e) { console.warn('PycoBlocks: 前の作品に戻せませんでした:', e); }
+  }
+  (function() {
+    var b = document.getElementById('btn-restore-share');
+    var menu = document.getElementById('btn-menu-file');
+    if (!b) return;
+    function sync() {
+      var has = false;
+      try { has = !!localStorage.getItem('pyco-autosave-' + modeKey() + '-before-share'); } catch (e) { /* noop */ }
+      b.hidden = !has;
+    }
+    b.addEventListener('click', restoreBeforeShare);
+    if (menu) menu.addEventListener('click', sync, true);
+    var mm = document.getElementById('btn-mobile-menu');
+    if (mm) mm.addEventListener('click', sync, true);
+    sync();
+  })();
+
   // URL の共有ハッシュ（#x1= / #xml=）でワークスペースを復元
   //   #x1=  … 辞書v1付き deflate（現行）
   //   #xml= … 無辞書 deflate（旧形式・後方互換）
@@ -8205,33 +8298,53 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       // 共有URLを開くと、このブラウザの自動保存（自分の作品）が共有の中身で上書きされていた。
-      // 読み込む前に別の場所へ写し、知らせの［前の作品にもどす］で戻せるようにする
+      //   ・読み込む前に「-before-share」へ写す。［ファイル → 共有を開く前の作品にもどす］でいつでも戻せる
+      //   ・同じリンクをもう一度開いたとき（自動保存が前回読み込んだ共有の中身のまま）は写さない。
+      //     写すと、取っておいた自分の作品が配布版で上書きされていた（r3 teacher）
+      //   ・自分の作品があるときは、置きかえる前に聞く
       var _bkKey = 'pyco-autosave-' + modeKey();
       var _bk = null;
       try {
         _bk = localStorage.getItem(_bkKey);
-        if (_bk && /<block[\s>]/.test(_bk)) localStorage.setItem(_bkKey + '-before-share', _bk); else _bk = null;
+        if (!(_bk && /<block[\s>]/.test(_bk)) || _bk === localStorage.getItem(_bkKey + '-share-loaded')) _bk = null;
       } catch (e) { _bk = null; }
-      workspace.clear();
-      if (_rootName === 'project') {
-        _loadProjectXml(_dom);
-      } else {
-        Blockly.Xml.domToWorkspace(_dom, workspace);
-      }
-      if (typeof generateCode === 'function') generateCode();
-      fitAfterLoad();
-      if (_bk) {
+      var _doShareLoad = function() {
+        try { if (_bk) localStorage.setItem(_bkKey + '-before-share', _bk); } catch (e) { /* noop */ }
+        workspace.clear();
+        if (_rootName === 'project') {
+          _loadProjectXml(_dom);
+        } else {
+          Blockly.Xml.domToWorkspace(_dom, workspace);
+        }
+        if (typeof generateCode === 'function') generateCode();
+        fitAfterLoad();
+        // 読み込んだ中身を覚えておく（次に同じリンクを開いたとき、自分の作品と見分けるため）
         setTimeout(function() {
-          showToast('共有されたブロックを開きました。前に作っていた作品は残してあります。', {
-            ms: 12000,
-            action: { label: '前の作品にもどす', onClick: function() {
-              try {
-                var t = localStorage.getItem(_bkKey + '-before-share');
-                if (t) { window.PycoWorkspaceIO.restore(t); syncModeUrl(true); }
-              } catch (e) { console.warn('PycoBlocks: 前の作品に戻せませんでした:', e); }
-            } }
-          });
-        }, 600);
+          try { localStorage.setItem(_bkKey + '-share-loaded', window.PycoWorkspaceIO.serialize()); } catch (e) { /* noop */ }
+        }, 0);
+        if (_bk) {
+          setTimeout(function() {
+            showToast('共有されたブロックを開きました。前の作品は［ファイル → 共有を開く前の作品にもどす］でいつでも戻せます。', {
+              ms: 12000,
+              action: { label: '前の作品にもどす', onClick: restoreBeforeShare }
+            });
+          }, 600);
+        }
+      };
+      if (_bk) {
+        askChoice('共有されたブロックを開きますか？',
+          'このブラウザには、作りかけの作品があります。\n開くと画面は共有されたブロックに置きかわります（作りかけの作品は取っておくので、［ファイル → 共有を開く前の作品にもどす］で戻せます）。',
+          [
+            { label: '作りかけのまま（開かない）', value: 'keep' },
+            { label: '共有されたブロックを開く', value: 'open', primary: true },
+          ]).then(function(v) {
+          if (v === 'open') { _doShareLoad(); return; }
+          // 開かない：自分の作品を出し、URL から共有の部分を外す（再読込でまた聞かれないように）
+          try { window.PycoWorkspaceIO.restore(_bk); } catch (e) { console.warn('PycoBlocks: 作品を戻せませんでした:', e); }
+          syncModeUrl(true);
+        });
+      } else {
+        _doShareLoad();
       }
     } catch (err) {
       console.warn('PycoBlocks: 共有ハッシュの復元に失敗:', err);

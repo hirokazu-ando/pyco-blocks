@@ -72,7 +72,7 @@
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20261125b">
+  <link rel="stylesheet" href="css/style.css?v=20261125c">
   <link rel="stylesheet" href="css/firmware.css?v=20260907a">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
@@ -118,7 +118,7 @@
     <button id="btn-mobile-menu" type="button" aria-label="ツールメニュー" aria-expanded="false" title="ツールメニューを開く">☰ メニュー</button>
     <!-- ツールバー（B1：1366幅でも1行）。並びは「学習 │ 実行・停止 │ 実機の接続 │ 配線図 │ コード編集 │ ファイル▾ │ 表示▾」。
          実行はどのモードでも学習モードのすぐ右に来る（Python/ゲームは btn-run-python、Pico/micro:bit は btn-run）。
-         使う回数の少ないボタンは「ファイル ▾」「⚙ 表示 ▾」の中（.tb-menu）に入れる。ID は変えていない（JS がこの ID で動く）。
+         使う回数の少ないボタンは「ファイル ▾」「⚙ 見た目 ▾」の中（.tb-menu）に入れる。ID は変えていない（JS がこの ID で動く）。
          メニューの開閉は js/toolbar_menu.js。スマホのドロワー（☰）ではメニューを開かずに中身をそのまま並べる（CSS）。 -->
     <div class="toolbar">
       <button id="btn-tutorial" title="学習モード（チュートリアル）でステップ学習する">学習モード</button>
@@ -145,6 +145,7 @@
           <button id="btn-save-xml" title="今のブロックをファイル（.xml）に保存する">ブロックを保存</button>
           <button id="btn-load-xml" title="保存したブロックのファイル（.xml）を開く">ブロックを開く</button>
           <button id="btn-share-url" title="今のブロックを開ける URL を作る（次の画面でコピーできる）">共有URLを作る</button>
+          <button id="btn-restore-share" hidden title="共有URLを開いたときに取っておいた、前の作品を出す">共有を開く前の作品にもどす</button>
           <input type="file" id="xml-input" accept=".xml" style="display:none">
           <div class="toolbar-sep"></div>
           <button id="btn-download" title="Python のコードをファイル（.py）に保存する" aria-label="Python ファイル（.py）に保存">Python を保存（.py）</button>
@@ -153,7 +154,7 @@
         </div>
       </div>
       <div class="tb-menu" id="tb-menu-view">
-        <button type="button" class="tb-menu-btn" id="btn-menu-view" aria-expanded="false" aria-controls="tb-pop-view" title="文字の大きさ・画面の色・コードの説明・スマホ表示">⚙ 表示 <span class="tb-caret" aria-hidden="true">▼</span></button>
+        <button type="button" class="tb-menu-btn" id="btn-menu-view" aria-expanded="false" aria-controls="tb-pop-view" title="文字の大きさ・画面の色・コードの説明・スマホ表示">⚙ 見た目 <span class="tb-caret" aria-hidden="true">▼</span></button>
         <div class="tb-menu-pop" id="tb-pop-view" role="group" aria-label="表示">
           <div class="tb-menu-row">
             <span class="tb-menu-label">文字の大きさ</span>
@@ -231,7 +232,7 @@
             <button id="btn-monitor-clear" title="シリアルモニタとグラフの表示を消す">クリア</button>
           </div>
         </div>
-        <pre id="monitor-output"></pre>
+        <pre id="monitor-output" role="log" aria-live="polite"></pre>
         <!-- Part 2: matplotlib プロット表示エリア -->
         <div id="plot-resize-handle" class="plot-resize-handle" style="display:none;"></div>
         <div id="pyco-plot-row" style="display:none;">
@@ -2048,9 +2049,9 @@
   <script src="js/share_dict.js?v=20260526d"></script>
   <script src="js/microbit_sim.js?v=20261125a"></script>
   <script src="js/serial_plot.js?v=20261102q"></script>
-  <script src="js/app.js?v=20261125b"></script>
+  <script src="js/app.js?v=20261125c"></script>
   <script src="js/autosave.js?v=20261102j"></script>
-  <script src="js/toolbar_menu.js?v=20261102h"></script>
+  <script src="js/toolbar_menu.js?v=20261125c"></script>
   <!-- クラウド保存（Google ログイン + Firestore）。firebase_config.js が未設定なら
        cloud.js は何も表示せず SDK も読み込まない＝現状の動作に一切影響しない。 -->
   <script src="js/firebase_config.js?v=20260710a"></script>
@@ -2084,7 +2085,7 @@
   <script src="lessons/0-21.js?v=20260714c"></script>
   <script src="lessons/0-22.js?v=20260714c"></script>
   <script src="js/tutorial_progress.js?v=20260713b" defer></script>
-  <script src="js/tutorial.js?v=20261125a" defer></script>
+  <script src="js/tutorial.js?v=20261125c" defer></script>
 
   <!-- 実体配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -2108,14 +2109,14 @@
   </div>
 
   <!-- 共有URLモーダル -->
-  <div id="share-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
+  <div id="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-title" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
     <div style="background:#111827; border:1px solid #2d3748; border-radius:10px; padding:16px; width:min(640px,94vw); display:flex; flex-direction:column; gap:12px;">
       <div style="display:flex; align-items:center; justify-content:space-between;">
-        <span style="color:#68d391; font-weight:bold; font-size:1.05em;">共有URL</span>
+        <span id="share-title" style="color:#68d391; font-weight:bold; font-size:1.05em;">共有URL</span>
         <button id="share-close" style="background:none; border:none; color:#718096; font-size:.9em; cursor:pointer; line-height:1;">閉じる</button>
       </div>
       <p style="color:#a0aec0; font-size:.85em; margin:0; line-height:1.5;">このURLを開くと、いまのブロックがそのまま復元されます。下の枠を選んでコピーしてください。</p>
-      <textarea id="share-url-text" readonly style="width:100%; height:84px; resize:none; box-sizing:border-box; background:#0d1117; color:#e2e8f0; border:1px solid #2d3748; border-radius:6px; padding:8px; font-family:monospace; font-size:.82em; word-break:break-all;"></textarea>
+      <textarea id="share-url-text" aria-label="共有URL" readonly style="width:100%; height:84px; resize:none; box-sizing:border-box; background:#0d1117; color:#e2e8f0; border:1px solid #2d3748; border-radius:6px; padding:8px; font-family:monospace; font-size:.82em; word-break:break-all;"></textarea>
       <div style="display:flex; gap:8px; align-items:center;">
         <button id="share-copy" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">コピー</button>
         <button id="share-native" style="display:none; background:#1a4a7a; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">SNSで共有</button>

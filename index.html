@@ -137,12 +137,12 @@
       {
         "@type": "Question",
         "name": "何歳から使えますか？",
-        "acceptedAnswer": { "@type": "Answer", "text": "ブロックを動かす操作が中心なので、小学校中学年くらいから使えます。ループやリスト、辞書、関数、クラスまで扱えるため、中学生・高校生・高専生になっても同じ環境で学び続けられます。" }
+        "acceptedAnswer": { "@type": "Answer", "text": "ブロックを動かす操作が中心なので、小学校高学年から使えます。ループやリスト、辞書、関数、クラスまで扱えるため、中学生・高校生・高専生になっても同じ環境で学び続けられます。" }
       },
       {
         "@type": "Question",
         "name": "学校の授業で使えますか？",
-        "acceptedAnswer": { "@type": "Answer", "text": "使えます。インストールもアカウント登録も不要で、スマホやタブレットでも動くため、1人1台端末の授業に向いています。MIT ライセンスなので、教育目的での利用も自由です。" }
+        "acceptedAnswer": { "@type": "Answer", "text": "使えます。インストールもアカウント登録も不要で、スマホやタブレットでも動くため、1人1台端末の授業に向いています。MIT ライセンスなので、教育目的での利用も自由です。作品を先生に出すときは、［ファイル → ブロックを保存］でできるファイル（.xml・保存するときに名前を入れられます）を提出するのがかんたんです。" }
       }
     ]
   }
@@ -165,15 +165,16 @@
       --paper-3:    #efeee6;
       --ink:        #17150f;   /* 濃いインク */
       --ink-2:      #48453b;   /* 補助テキスト */
-      --ink-3:      #837d6c;   /* うすいラベル */
+      --ink-3:      #6b6658;   /* うすいラベル */
       --line:       #e4e1d5;
       --line-2:     #cfcbba;
 
       /* Blockly のカテゴリ色にそろえたベタ塗り（フラット） */
-      --green:      #1f9d55;   /* 主役／CTA（表示ブロック系の緑） */
+      --green:      #17804a;   /* 主役／CTA（表示ブロック系の緑） */
       --green-d:    #157a41;
-      --teal:       #0e9b96;   /* Python 入門 */
-      --amber:      #dd8b0e;   /* ゲーム制作 */
+      --teal:       #0a7773;   /* Python 入門 */
+      --amber:      #a86400;   /* ゲーム制作（白文字が読める濃さ・r3） */
+      --amber-l:    #dd8b0e;   /* 飾り（文字を載せない所） */
       --indigo:     #5651c4;   /* MicroPython・値ブロック系 */
       --rose:       #d83f45;   /* アクセント（少量） */
       --blue:       #2f6fb0;
@@ -272,7 +273,7 @@
       margin: 18px 0 0; color: var(--ink); text-wrap: balance;
     }
     .hero h1 .mark{ position: relative; color: var(--ink); white-space: nowrap; }
-    .hero h1 .mark::after{ content:''; position:absolute; left:-2px; right:-2px; bottom: .08em; height: .28em; background: var(--amber); z-index:-1; }
+    .hero h1 .mark::after{ content:''; position:absolute; left:-2px; right:-2px; bottom: .08em; height: .28em; background: var(--amber-l); z-index:-1; }
     .hero .lead{ margin: 24px 0 0; font-size: clamp(1rem, 1.4vw, 1.12rem); color: var(--ink-2); max-width: 40ch; }
     .hero .lead strong{ color: var(--ink); font-weight: 700; }
     .hero-cta{ display: flex; flex-wrap: wrap; align-items: center; gap: 22px 26px; margin-top: 40px; }
@@ -585,7 +586,7 @@
               <div>
                 <div class="m-head"><span class="m-tag">micro:bit</span></div>
                 <h3>シミュレータで動く micro:bit</h3>
-                <p>画面の中の micro:bit で、LED・ボタン・センサーのプログラムをすぐに試せます。本物の micro:bit（V2）をつなげば、同じプログラムを書き込めます。</p>
+                <p>画面の中の micro:bit で、LED・ボタン・センサーのプログラムをすぐに試せます。本物の micro:bit をつなげば、同じプログラムを書き込めます（書き込めるのは V2 だけです。V1 はシミュレータで試せます）。</p>
                 <a class="m-go" href="app.html?mode=microbit" style="display:inline-block;margin-top:14px;">micro:bit モードを開く &rarr;</a>
               </div>
             </div>
@@ -845,11 +846,12 @@
           </details>
           <details>
             <summary>何歳から使えますか？</summary>
-            <p>ブロックを動かす操作が中心なので、小学校中学年くらいから使えます。ループやリスト、辞書、関数、クラスまで扱えるため、中学生・高校生・高専生になっても同じ環境で学び続けられます。</p>
+            <p>ブロックを動かす操作が中心なので、小学校高学年から使えます。ループやリスト、辞書、関数、クラスまで扱えるため、中学生・高校生・高専生になっても同じ環境で学び続けられます。</p>
           </details>
           <details>
             <summary>学校の授業で使えますか？</summary>
             <p>使えます。インストールもアカウント登録も不要で、スマホやタブレットでも動くため、1人1台端末の授業に向いています。MIT ライセンスなので、教育目的での利用も自由です。</p>
+            <p>作品を先生に出すときは、［ファイル → ブロックを保存］でできるファイル（.xml）を Classroom などで提出するのがかんたんです。保存するときに名前（出席番号）を入れると、ファイル名に入ります。</p>
           </details>
         </div>
       </div>
@@ -865,20 +867,21 @@
             <h2>対応ブラウザ</h2>
           </div>
         </div>
-        <p class="lede">Python の実行とゲームはどのブラウザでも動きます。Pico への接続だけ、Chrome か Edge のデスクトップ版が必要です。</p>
+        <p class="lede">Python の実行とゲーム、micro:bit のシミュレータはどのブラウザでも動きます。Pico・micro:bit への接続だけ、Chrome か Edge（パソコン・Chromebook）が必要です。</p>
         <div class="table-scroll">
           <table>
             <thead>
-              <tr><th scope="col">ブラウザ</th><th scope="col">Python 実行 / ゲーム</th><th scope="col">Pico 接続</th></tr>
+              <tr><th scope="col">ブラウザ</th><th scope="col">Python 実行 / ゲーム</th><th scope="col">Pico・micro:bit 接続</th></tr>
             </thead>
             <tbody>
               <tr><th scope="row">Chrome / Edge（デスクトップ）</th><td class="yes">◎ 対応</td><td class="yes">◎ 対応</td></tr>
+              <tr><th scope="row">Chrome（Chromebook）</th><td class="yes">◎ 対応</td><td class="yes">◎ 対応</td></tr>
               <tr><th scope="row">Safari（iPad / Mac）</th><td class="yes">◎ 対応</td><td class="no">— 非対応</td></tr>
               <tr><th scope="row">Firefox</th><td class="yes">◎ 対応</td><td class="no">— 非対応</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="cap">※ Pico 接続には Web Serial API が必要なため、Chrome / Edge のデスクトップ版のみ対応します。</p>
+        <p class="cap">※ Pico・micro:bit の接続には Web Serial API が必要なため、Chrome / Edge のデスクトップ版と Chromebook だけで使えます。micro:bit に書き込めるのは V2 だけです（V1 はシミュレータで試せます）。</p>
       </div>
     </section>
   </main>

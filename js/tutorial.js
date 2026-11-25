@@ -1366,6 +1366,11 @@
     var btn = $('btn-tutorial');
     if (btn) btn.classList.add('tutorial-active');
     applyFontScale(); // 開くたびに保存済みの文字サイズ段階を再適用
+    // キーボード・読み上げの人のため、開いたらパネルの見出しへ移る（パネルは Tab 順の最後にあり届きにくかった）
+    if (els.lessonTitle && !document.body.classList.contains('mobile-mode')) {
+      els.lessonTitle.setAttribute('tabindex', '-1');
+      try { els.lessonTitle.focus({ preventScroll: true }); } catch (e) { /* noop */ }
+    }
     resizeBlockly();
     updateSheetHeightVar();
     setTimeout(updateSheetHeightVar, 320);
