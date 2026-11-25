@@ -148,6 +148,16 @@ const PicoFirmware = (() => {
     root.addEventListener('click', e => { if (e.target === root) close(); });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && root.style.display !== 'none') close();
+      // Tab で裏の画面へ出ないよう、ほかのダイアログと同じく中で回す（r5 a11y）
+      if (e.key === 'Tab' && root.style.display !== 'none') {
+        const f = Array.from(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+          .filter(el => !el.disabled && el.offsetParent !== null);
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (!root.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     });
     return root;
   }

@@ -3616,3 +3616,14 @@ body.mobile-mode #pyco-tut-panel .pyco-tut-level-btn, body.mobile-mode #pyco-tut
 /* r4：案内カードが右のズームボタン（［−］）にかからないよう、右に 64px あける */
 body:not(.mobile-mode) #ws-empty-hint { width: min(440px, calc(100% - var(--pyco-ws-tb, 120px) - 88px));
   left: calc(var(--pyco-ws-tb, 120px) + (100% - var(--pyco-ws-tb, 120px) - 64px) / 2); }
+/* r5：パソコンの micro:bit は作業域が低く、真ん中のカードが［ずっと］に重なっていた（kid/student/teacher/designer）。
+   「最初だけ／ずっと」は［基本］の一覧の右（x≈300）に置くので、カードは 2 つの下（右下）へ小さく寄せる */
+body:not(.mobile-mode) #ws-empty-hint[data-mode="microbit"] {
+  left: auto; right: 64px; top: auto; bottom: 10px; transform: none;
+  width: min(300px, calc(100% - var(--pyco-ws-tb, 120px) - 80px));
+  padding: 10px 12px 8px; font-size: 13.5px;
+}
+body:not(.mobile-mode) #ws-empty-hint[data-mode="microbit"] { padding: 8px 10px; }
+body:not(.mobile-mode) #ws-empty-hint[data-mode="microbit"] .ws-empty-title { display: none; }
+body:not(.mobile-mode) #ws-empty-hint[data-mode="microbit"] .ws-empty-btn { padding: 4px 12px; min-height: 32px; font-size: 13.5px; }
+body:not(.mobile-mode) #ws-empty-hint[data-mode="microbit"] .ws-empty-note { font-size: 12.5px; margin-top: 6px; text-align: left; }

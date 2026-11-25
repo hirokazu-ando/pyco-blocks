@@ -125,6 +125,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key !== 'Shift') cm.state.pycoEscTab = false;   // また打ち始めたら Tab は字下げに戻す
   });
   editor.on('focus', function(cm) { cm.state.pycoEscTab = false; });
+  // ブロックのときのコード欄は読むだけ。キーを打っても何も起きず「壊れた」と思われていた（r5 student）。
+  //   打とうとしたら、書く方法を 1 回だけ知らせる（続けて打っても何度も出さない）
+  let _roHintAt = 0;
+  editor.on('keydown', function(cm, e) {
+    if (!cm.getOption('readOnly') || e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
+    if (Date.now() - _roHintAt < 20000) return;
+    _roHintAt = Date.now();
+    const b = document.getElementById('btn-coding-mode');
+    showToast('ここはブロックから作ったコードを見る欄です。コードを打つときは［' + (b ? b.textContent.trim() : 'コード編集') + '］を押してください。', { ms: 5000 });
+  });
 
   // 上の出方を、読み上げと画面の両方で知らせる。知らないと Tab の罠と区別がつかない。
   //   読み上げ：入力欄（textarea）に名前と出方を付ける。画面：コード編集中だけ、見出しの右に小さく出す
@@ -151,6 +161,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   let codingMode = false;
+  // スマホには［ファイル］がなく［☰ メニュー］の中にある。案内の言葉を画面のボタン名に合わせる（r5 designer）
+  function fileMenuName() { return document.body.classList.contains('mobile-mode') ? '☰ メニュー' : 'ファイル'; }
   let syntaxCollapsed = false;
   let _errorLineNo = -1;   // コーディングモードでハイライト中のエラー行（0始まり・無しは-1）
   let currentMode = 'micropython'; // 初期値は後で applyMode('python') で上書き
@@ -3799,7 +3811,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveState = document.createElement('span');
     saveState.id = 'ws-save-state';
     saveState.setAttribute('role', 'status');
-    saveState.title = 'ブロックはこのブラウザに自動で保存されます。次に開いたときに戻ります（ほかの PC に持っていくときは［ファイル → ブロックを保存］）';
+    saveState.title = 'ブロックはこのブラウザに自動で保存されます。次に開いたときに戻ります（ほかの PC に持っていくときは［' + fileMenuName() + ' → ブロックを保存］）';
     bar.appendChild(saveState);
     document.addEventListener('pyco:autosaved', function(e) {
       const ok = !(e.detail && e.detail.ok === false);
@@ -4896,6 +4908,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!ans) return;
       if (ans === 'save') document.getElementById('btn-download').click();
     }
+    // 自分でブロックへもどった（保存か消すかを選んだ）ときは、とっておいた下書きも消す
+    if (ev && ev.isTrusted && codingMode) clearCodeDraft();
     closeReferenceDrawer();
     // 右クリックメニュー・ドロップダウンを出したままだと、コード欄の上に残る
     try { Blockly.hideChaff(); } catch (e) { /* noop */ }
@@ -4917,6 +4931,46 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(function() { Blockly.svgResize(workspace); }, 50);
     }
   });
+
+  // ===== コード編集の下書き =====
+  //   自動保存はブロックだけなので、［コード編集］で打ったコードは再読み込みやタブを閉じると消えていた（r5 student）。
+  //   打つたびにモードごとのキーへ下書きを取っておき、次に開いたとき（そのモードに入ったとき）に知らせて戻せるようにする。
+  //   ブロックへ自分でもどったとき（確認で「保存」か「消す」を選んだとき）に下書きを消す
+  const CODE_DRAFT_PREFIX = 'pyco-codedraft-';
+  let _codeDraftTimer = null;
+  function saveCodeDraftNow() {
+    clearTimeout(_codeDraftTimer);
+    if (!codingMode || activeFileIdx !== 0 || fileMode) return;
+    const v = editor.getValue();
+    try {
+      if (_codeAtCodingStart !== null && v !== _codeAtCodingStart && v.trim()) localStorage.setItem(CODE_DRAFT_PREFIX + modeKey(), v);
+      else localStorage.removeItem(CODE_DRAFT_PREFIX + modeKey());
+    } catch (e) { /* noop */ }
+  }
+  function clearCodeDraft() {
+    clearTimeout(_codeDraftTimer);
+    try { localStorage.removeItem(CODE_DRAFT_PREFIX + modeKey()); } catch (e) { /* noop */ }
+  }
+  editor.on('change', function() {
+    if (!codingMode) return;
+    clearTimeout(_codeDraftTimer);
+    _codeDraftTimer = setTimeout(saveCodeDraftNow, 600);
+  });
+  window.addEventListener('pagehide', saveCodeDraftNow);
+  function offerCodeDraft() {
+    if (codingMode || fileMode) return;
+    let v = null;
+    try { v = localStorage.getItem(CODE_DRAFT_PREFIX + modeKey()); } catch (e) { return; }
+    if (!v) return;
+    showToast('前に［コード編集］で書いたコードが残っています。', {
+      action: { label: 'コード編集で開く', onClick: function() {
+        if (!codingMode) btnCodingMode.click();
+        editor.setValue(v);
+        editor.focus();
+      } },
+    });
+  }
+  window.addEventListener('load', function() { setTimeout(offerCodeDraft, 1500); });
 
   const btnSyntaxToggle = document.getElementById('btn-syntax-toggle');
   if (btnSyntaxToggle) {
@@ -4995,7 +5049,7 @@ document.addEventListener('DOMContentLoaded', function() {
       '-' + z(d.getHours()) + z(d.getMinutes()) + '.xml';
     a.click();
     // ダウンロードは画面に何も出ないブラウザがあるので、保存した名前と開き方を知らせる
-    showToast(a.download + ' を保存しました（ダウンロードのフォルダ）。開くときは［ファイル → ブロックを開く］', { ms: 7000 });
+    showToast(a.download + ' を保存しました（ダウンロードのフォルダ）。開くときは［' + fileMenuName() + ' → ブロックを開く］', { ms: 7000 });
   });
 
   // ===== ブロック XML 読込 =====
@@ -5063,7 +5117,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 消える方（置きかえる）を主ボタン・Enter の既定にしない。うっかり Enter で作品が消えるため
       const ans = await askChoice('ブロックを読み込みます',
         '今のブロックがあります。「' + label + '」をどう読み込みますか？\n' +
-        '（置きかえると今のブロックは消えます。残したいときは先に［ファイル］→［ブロックを保存］）',
+        '（置きかえると今のブロックは消えます。残したいときは先に［' + fileMenuName() + '］→［ブロックを保存］）',
         [{ label: '置きかえる', value: 'replace' },
          { label: '今のブロックに足す', value: 'add' },
          { label: 'やめる', value: null, focus: true }]);
@@ -5244,7 +5298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     const ans = await askChoice('新しく作りますか？',
       '今のブロックをぜんぶ消します。消したあとでも［↶ もどす］で戻せます。\n' +
-      '残したいときは、先に［ファイル → ブロックを保存］を押してください。',
+      '残したいときは、先に［' + fileMenuName() + ' → ブロックを保存］を押してください。',
       [{ label: '消して新しく作る', value: 'new', primary: true },
        { label: 'やめる', value: null }]);
     if (ans !== 'new') return;
@@ -5312,7 +5366,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (key === 'microbit') {
         h.textContent = 'はじめての micro:bit';
         row.appendChild(btn('サンプルを開く', 'primary', openSamples));
-        note.textContent = '左の［基本］から「アイコンを表示」を［最初だけ］の中へ入れて［▶ 実行］。下の micro:bit（シミュレータ）が光ります';
+        note.textContent = '［基本］の「アイコンを表示」を［最初だけ］の中へ入れて［▶ 実行］。下の micro:bit が光ります';
       }
       // 別のモードに作りかけがあれば、そこへ戻る道を出す（次の日にトップから入ると空の画面になり「消えた」と思っていた）
       const other = otherModeWithWork(key);
@@ -5496,7 +5550,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // URLが長すぎる場合は共有を止め、サーバ設置(?src=)を案内する
       if (url.length > 8000) {
         showToast('作品が大きすぎて共有URLに収まりません（' + url.length + ' 文字）。'
-            + '［ファイル → ブロックを保存］でファイルにして渡してください。', { type: 'err', ms: 9000 });
+            + '［' + fileMenuName() + ' → ブロックを保存］でファイルにして渡してください。', { type: 'err', ms: 9000 });
         return;
       }
       _openShareModal(url);
@@ -6148,6 +6202,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mode === 'micropython') updateSerialUI();
 
     if (window.PycoEmptyHint) setTimeout(PycoEmptyHint.update, 0);
+    setTimeout(offerCodeDraft, 400);
   }
 
   // モードボタンのイベント
@@ -6220,6 +6275,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function switchMode(target, skipConfirm) {
     if (modeKey() === target) return;
+    // コード編集のまま移ると、前のモードのコードが次のモードの main.py に入っていた（r5 student）。
+    //   下書きに取ってからブロックにもどして移る（もどってきたら［コード編集で開く］で戻せる）
+    if (codingMode) { saveCodeDraftNow(); btnCodingMode.click(); }
     stopRunningSim();
     const AS = window.PycoAutosave;
     // 出る前に、今のモードのキーへ保存する（1秒待ちの保存を残さない）
@@ -8362,7 +8420,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 0);
         if (_bk) {
           setTimeout(function() {
-            showToast('共有されたブロックを開きました。前の作品は［ファイル → 共有を開く前の作品にもどす］でいつでも戻せます。', {
+            showToast('共有されたブロックを開きました。前の作品は［' + fileMenuName() + ' → 共有を開く前の作品にもどす］でいつでも戻せます。', {
               ms: 12000,
               action: { label: '前の作品にもどす', onClick: restoreBeforeShare }
             });
@@ -8371,7 +8429,7 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       if (_bk) {
         askChoice('共有されたブロックを開きますか？',
-          'このブラウザには、作りかけの作品があります。\n開くと画面は共有されたブロックに置きかわります（作りかけの作品は取っておくので、［ファイル → 共有を開く前の作品にもどす］で戻せます）。',
+          'このブラウザには、作りかけの作品があります。\n開くと画面は共有されたブロックに置きかわります（作りかけの作品は取っておくので、［' + fileMenuName() + ' → 共有を開く前の作品にもどす］で戻せます）。',
           [
             { label: '作りかけのまま（開かない）', value: 'keep' },
             { label: '共有されたブロックを開く', value: 'open', primary: true },
