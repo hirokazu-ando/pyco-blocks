@@ -117,6 +117,7 @@ const PicoFirmware = (() => {
           <li data-step="3"><span>3</span>書き込む</li>
           <li data-step="4"><span>4</span>つないで確かめる</li>
         </ol>
+        ${('serial' in navigator) ? '' : '<p class="fw-noserial" role="note">このブラウザ（スマホ・タブレットなど）では書き込めません。パソコンの Chrome か Edge で開いてください。ここでは手順を読むことだけできます。</p>'}
         <div class="fw-body" id="fw-body"></div>
         <footer class="fw-foot">
           <button type="button" class="fw-btn fw-btn--reset" id="fw-reset-open"

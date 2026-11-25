@@ -4942,7 +4942,7 @@ document.addEventListener('DOMContentLoaded', function() {
       '-' + z(d.getHours()) + z(d.getMinutes()) + '.xml';
     a.click();
     // ダウンロードは画面に何も出ないブラウザがあるので、保存した名前と開き方を知らせる
-    showToast(a.download + ' を保存しました（ダウンロードのフォルダ）。開くときは［ファイル → ブロックを開く］');
+    showToast(a.download + ' を保存しました（ダウンロードのフォルダ）。開くときは［ファイル → ブロックを開く］', { ms: 7000 });
   });
 
   // ===== ブロック XML 読込 =====
@@ -5233,7 +5233,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (window.PycoTutorial) window.PycoTutorial.start('0-00');
         }));
         row.appendChild(btn('サンプルを開く', '', openSamples));
-        note.textContent = 'または、左の［表示］を押して、ブロックをここへドラッグ → ［▶ 実行］';
+        note.textContent = 'または、左のカテゴリの［表示］を押して、ブロックをここへドラッグ → ［▶ 実行］';
       } else if (key === 'game') {
         h.textContent = 'まずはサンプルで遊んでみよう';
         row.appendChild(btn('サンプルを開く', 'primary', openSamples));
@@ -5247,15 +5247,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
         note.textContent = 'Pico がなくても、ブロック → コード → 配線図 までは試せます。' +
           '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。つないだら［接続］→［▶ 実行］';
+      } else if (key === 'microbit') {
+        h.textContent = 'はじめての micro:bit';
+        row.appendChild(btn('サンプルを開く', 'primary', openSamples));
+        note.textContent = '左の［基本］から「アイコンを表示」を［最初だけ］の中へ入れて［▶ 実行］。右の micro:bit（シミュレータ）が光ります';
+      }
+      // 別のモードに作りかけがあれば、そこへ戻る道を出す（次の日にトップから入ると空の画面になり「消えた」と思っていた）
+      const other = otherModeWithWork(key);
+      if (other) {
+        row.appendChild(btn('作りかけ（' + other.label + '）を開く', '', function() {
+          const b = document.getElementById(other.btn);
+          if (b) b.click();
+        }));
       }
       card.appendChild(h);
       card.appendChild(row);
       card.appendChild(note);
     }
+    function otherModeWithWork(key) {
+      const list = [
+        { k: 'python', label: 'Python', btn: 'btn-mode-python' },
+        { k: 'game', label: 'ゲーム', btn: 'btn-mode-game' },
+        { k: 'micropython', label: 'Pi Pico', btn: 'btn-mode-micropython' },
+        { k: 'microbit', label: 'micro:bit', btn: 'btn-mode-microbit' },
+      ];
+      for (const m of list) {
+        if (m.k === key) continue;
+        let v = null;
+        try { v = localStorage.getItem('pyco-autosave-' + m.k); } catch (e) { return null; }
+        // 中身のある作品だけ（空の <xml> や micro:bit のひな形だけは数えない）
+        if (v && /<block[\s>]/.test(v) && !(m.k === 'microbit' && (v.match(/<block[\s>]/g) || []).length <= 2 &&
+            /mb_on_start/.test(v) && /mb_forever/.test(v) && !/<statement/.test(v))) return m;
+      }
+      return null;
+    }
     function update() {
       const key = modeKey();
-      const show = !fileMode && !flyoutOpen && key !== 'microbit' &&
-        workspace.getAllBlocks(false).length === 0;
+      const show = !fileMode && !flyoutOpen &&
+        (key === 'microbit' ? isStarterOnly() : workspace.getAllBlocks(false).length === 0);
       if (show && card.dataset.mode !== key) render(key);
       card.hidden = !show;
       if (show) {
@@ -5356,6 +5385,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var modal = document.getElementById('share-modal');
     if (modal) modal.style.display = 'none';
   }
+  document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('share-modal');
+    if (e.key === 'Escape' && modal && modal.style.display === 'flex') { e.preventDefault(); _closeShareModal(); }
+  });
 
   var btnShareUrl = document.getElementById('btn-share-url');
   if (btnShareUrl) {
@@ -5795,6 +5828,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btn-mode-game').classList.toggle('mode-btn--active', mode === 'game');
     document.getElementById('btn-mode-micropython').classList.toggle('mode-btn--active', mode === 'micropython' && currentBoard === 'pico');
     document.getElementById('btn-mode-microbit').classList.toggle('mode-btn--active', mode === 'micropython' && currentBoard === 'microbit');
+    // 今のモードを色だけでなく読み上げにも伝える
+    document.querySelectorAll('.mode-btn').forEach(function(b) {
+      b.setAttribute('aria-pressed', b.classList.contains('mode-btn--active') ? 'true' : 'false');
+    });
 
     // ツールボックス切り替え（サブファイルなら module 用ツールボックスを優先）
     let toolboxId = 'toolbox-' + mode;
@@ -5987,6 +6024,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (circuitPreview) circuitPreview.style.display = mode === 'micropython' ? '' : 'none';
     // モード判別用クラス（CSS 側の !important 上書きを mode 別にするため）
     if (mainEl) mainEl.classList.toggle('mode-micropython', mode === 'micropython');
+    if (mainEl) mainEl.classList.toggle('mode-game', mode === 'game');
     if (mainEl) mainEl.classList.toggle('mode-microbit', mode === 'micropython' && currentBoard === 'microbit');
     const btnSensor = document.getElementById('btn-sensor-monitor');
     if (btnSensor) btnSensor.style.display = (mode === 'micropython' && currentBoard === 'microbit') ? '' : 'none';
@@ -6253,7 +6291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 押したら止めてから今のブロックで動かし直す（「実行中…」で押せず、変えても反映されないと迷っていた）
     const restartable = running && currentMode === 'game';
     btnRun.disabled    = running && !restartable;
-    btnRun.textContent = restartable ? '↻ やり直す' : running ? '実行中…' : '▶ 実行';
+    btnRun.textContent = restartable ? '↻ もう一度動かす' : running ? '実行中…' : '▶ 実行';
     btnRun.title = restartable ? '止めて、今のブロックでもう一度動かす（Ctrl+Enter）' : 'ブロック（コード）を実行する（Ctrl+Enter）';
     if (!running && _restartPending) { _restartPending = false; setTimeout(function() { runPython(); }, 0); }
     // micro:bit のシミュレータはツールバーの「■ シミュレータを止める」で止める。
@@ -6287,6 +6325,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const monOut = document.getElementById('monitor-output');
 
     monOut.innerHTML = '';
+    if (typeof codeOverride !== 'string' && !fileMode && pyFiles.length <= 1 && workspace.getAllBlocks(false).length === 0) {
+      // 何も置かずに実行すると「実行開始」「完了」だけが出て、何が起きたか分からなかった
+      appendShellText('まだブロックがありません。左のカテゴリからブロックを置いてから［▶ 実行］を押してください。\n', false, 'py-prompt');
+      return;
+    }
     appendShellText('>>> 実行開始\n', false, 'py-prompt');
 
     // センサーモニター（codeOverride）をプログラムの横で動かすときは、プログラムの止める印を消さない
@@ -7173,6 +7216,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('touchmove', e => { if (dragging) { e.preventDefault(); onMove(e.touches[0].clientX); } }, { passive: false });
     document.addEventListener('mouseup', () => { document.body.style.cursor = ''; endDrag(); });
     document.addEventListener('touchend', endDrag);
+  })();
+
+  // ゲーム画面ができた（初めて実行した）ときにブロック欄の高さが変わるので、Blockly の大きさを合わせ直す
+  //   実行前は下の枠をたたんでブロック欄を広く取っている（#game-left-column.game-idle・css）
+  (function() {
+    const area = document.getElementById('game-canvas-area');
+    if (!area || !window.MutationObserver) return;
+    const col = document.getElementById('game-left-column');
+    function sync() {
+      if (col) col.classList.toggle('game-idle', !area.querySelector('canvas'));
+      requestAnimationFrame(function() { try { Blockly.svgResize(workspace); } catch (e) { /* noop */ } });
+    }
+    new MutationObserver(sync).observe(area, { childList: true });
+    sync();
   })();
 
   // 上下リサイズ（コード表示 ↔ ゲーム画面）
@@ -8147,6 +8204,14 @@ document.addEventListener('DOMContentLoaded', function() {
           applyMode(_m, false);
         }
       }
+      // 共有URLを開くと、このブラウザの自動保存（自分の作品）が共有の中身で上書きされていた。
+      // 読み込む前に別の場所へ写し、知らせの［前の作品にもどす］で戻せるようにする
+      var _bkKey = 'pyco-autosave-' + modeKey();
+      var _bk = null;
+      try {
+        _bk = localStorage.getItem(_bkKey);
+        if (_bk && /<block[\s>]/.test(_bk)) localStorage.setItem(_bkKey + '-before-share', _bk); else _bk = null;
+      } catch (e) { _bk = null; }
       workspace.clear();
       if (_rootName === 'project') {
         _loadProjectXml(_dom);
@@ -8155,6 +8220,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       if (typeof generateCode === 'function') generateCode();
       fitAfterLoad();
+      if (_bk) {
+        setTimeout(function() {
+          showToast('共有されたブロックを開きました。前に作っていた作品は残してあります。', {
+            ms: 12000,
+            action: { label: '前の作品にもどす', onClick: function() {
+              try {
+                var t = localStorage.getItem(_bkKey + '-before-share');
+                if (t) { window.PycoWorkspaceIO.restore(t); syncModeUrl(true); }
+              } catch (e) { console.warn('PycoBlocks: 前の作品に戻せませんでした:', e); }
+            } }
+          });
+        }, 600);
+      }
     } catch (err) {
       console.warn('PycoBlocks: 共有ハッシュの復元に失敗:', err);
       showToast('共有URLのブロックを開けませんでした。URL が途中で切れていないか確かめてください。', { type: 'err', ms: 9000 });

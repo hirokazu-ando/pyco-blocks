@@ -1789,7 +1789,13 @@
     var step = steps()[stepIndex];
     if (!step) return;
     var passed = checkPasses(step);
-    if (passed) {
+    if (passed && !step.check && !step.quiz) {
+      // 読むだけのステップ。何もしていないのに「クリア！」が出ると、次に本当にできたときの手ごたえが弱まる
+      els.check.textContent = '読んだら［次へ］';
+      els.check.className = 'pyco-tut-check';
+      els.next.disabled = false;
+      step._runActive = false;
+    } else if (passed) {
       els.check.textContent = '✓ クリア！';
       els.check.className = 'pyco-tut-check done';
       els.next.disabled = false;

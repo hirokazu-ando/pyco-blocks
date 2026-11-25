@@ -1585,7 +1585,10 @@
       if (i === 0) vy -= 20;
       overlay.push('<text x="' + pico.cx + '" y="' + (vy + 40 + i * 16) + '" text-anchor="middle" font-size="12" fill="' + PAL.ng + '">GP' + bp.gp + ' は内部専用ピンです</text>');
     });
-    if (comps.length === 0 && !parsed.onboardLedOn && (parsed.badPins || []).length === 0) {
+    // ブロックが置いてあるのに部品が無いとき（Pico だけで動く）は、上の見出しが「つなぐ部品はありません」と言う。
+    // そこへ「ブロックを追加すると…」も出すとどちらが正しいか迷うので、ブロックが 1 つも無いときだけ出す
+    var _wsEmpty = !(workspace && workspace.getAllBlocks && workspace.getAllBlocks(false).length > 0);
+    if (_wsEmpty && comps.length === 0 && !parsed.onboardLedOn && (parsed.badPins || []).length === 0) {
       // 案内文は図の横幅の真ん中に置き、図が文より細いときは左右に同じだけ広げる。
       // 以前は Pico の中心（図の真ん中とは限らない）に置いていて、文の左端が図の外に出て
       // 「›Python ブロックを追加す」のように切れて見えた

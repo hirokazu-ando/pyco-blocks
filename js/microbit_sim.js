@@ -993,6 +993,15 @@ function hold(el, on, off) {
   el.addEventListener('pointerdown', down);
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
+  // キーボードでも押せるように（Tab で焦点が来て、Enter／スペースを押している間だけ押す）
+  if (el.getAttribute('role') === 'button') {
+    el.setAttribute('tabindex', '0');
+    el.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); on(); el.classList.add('on'); draw(); }
+    });
+    el.addEventListener('keyup', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); up(); } });
+    el.addEventListener('blur', up);
+  }
 }
 
 function press(k) { S.btn[k] = true; S.presses[k]++; flag(k); }
@@ -1125,7 +1134,7 @@ function mount(root, opts) {
         ${slider('x（mg）', 'ax', -2048, 2048, 8)}
         ${slider('y（mg）', 'ay', -2048, 2048, 8)}
         ${slider('z（mg）', 'az', -2048, 2048, 8)}
-        <label class="mbs-chk"><input type="checkbox" class="tilt" checked><span>ボードの上でマウスを動かして傾ける</span></label>
+        <label class="mbs-chk"><input type="checkbox" class="tilt" checked><span>${(window.matchMedia && matchMedia("(pointer: coarse)").matches) ? "ボードの上を指でなぞって傾ける" : "ボードの上でマウスを動かして傾ける"}</span></label>
         <div class="mbs-row"><select class="g">${GESTURE_UI.map(g => `<option value="${g[1]}">${g[0]}</option>`).join('')}</select><button class="g-go">動かす</button></div>
       </div>
       <div class="mbs-card">

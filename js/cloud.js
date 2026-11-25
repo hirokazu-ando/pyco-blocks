@@ -86,7 +86,7 @@
     if (/permission-denied|insufficient permissions/i.test(code))
       return '保存の権限がありません。ログイン状態やセキュリティルールを確認してください。';
     if (/unauthorized-domain/.test(code))
-      return 'このドメインは許可されていません（Firebase の承認済みドメインに追加してください）。';
+      return 'この URL ではクラウド保存が使えません。［ファイル → ブロックを保存］でパソコンに保存してください。';
     if (/operation-not-allowed/.test(code))
       return 'Google ログインが有効になっていません（Firebase の設定を確認してください）。';
     if (/api-key-not-valid|invalid-api-key/.test(code))
