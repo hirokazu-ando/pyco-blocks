@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vv">val</variable>
+  </variables>
+  <block type="pico_forever" id="c1" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_analog_read" id="c2">
+        <field name="PIN">26</field>
+        <field name="VAR" id="vv">val</field>
+        <next>
+          <block type="pico_led_on" id="c3">
+            <field name="PIN">15</field>
+            <next>
+              <block type="pico_wait" id="c4">
+                <value name="SEC">
+                  <block type="py_math_op" id="c5">
+                    <field name="OP">/</field>
+                    <value name="LEFT">
+                      <block type="py_math_op" id="c6">
+                        <field name="OP">+</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="c7"><field name="VAR" id="vv">val</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="c8"><field name="NUM">1000</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="c9"><field name="NUM">50000</field></block>
+                    </value>
+                  </block>
+                </value>
+                <next>
+                  <block type="pico_led_off" id="c10">
+                    <field name="PIN">15</field>
+                    <next>
+                      <block type="pico_wait" id="c11">
+                        <value name="SEC">
+                          <block type="py_math_op" id="c12">
+                            <field name="OP">/</field>
+                            <value name="LEFT">
+                              <block type="py_math_op" id="c13">
+                                <field name="OP">+</field>
+                                <value name="LEFT">
+                                  <block type="val_var" id="c14"><field name="VAR" id="vv">val</field></block>
+                                </value>
+                                <value name="RIGHT">
+                                  <block type="val_number" id="c15"><field name="NUM">1000</field></block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="RIGHT">
+                              <block type="val_number" id="c16"><field name="NUM">50000</field></block>
+                            </value>
+                          </block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

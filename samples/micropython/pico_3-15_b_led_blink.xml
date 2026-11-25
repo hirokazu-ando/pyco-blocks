@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_w_wifi_connect" id="b1" x="30" y="30">
+    <field name="SSID">your-ssid</field>
+    <field name="PASS">your-password</field>
+    <next>
+      <block type="pico_forever" id="b2">
+        <statement name="DO">
+          <block type="pico_w_led_on" id="b3">
+            <next>
+              <block type="pico_wait" id="b4">
+                <value name="SEC">
+                  <block type="val_number" id="b5"><field name="NUM">0.5</field></block>
+                </value>
+                <next>
+                  <block type="pico_w_led_off" id="b6">
+                    <next>
+                      <block type="pico_wait" id="b7">
+                        <value name="SEC">
+                          <block type="val_number" id="b8"><field name="NUM">0.5</field></block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vp">pot</variable>
+  </variables>
+  <block type="pico_forever" id="c1" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_analog_read" id="c2">
+        <field name="PIN">26</field>
+        <field name="VAR" id="vp">pot</field>
+        <next>
+          <block type="pico_dcmotor_run_val" id="c3">
+            <field name="IN1">2</field>
+            <field name="IN2">3</field>
+            <field name="EN">4</field>
+            <field name="DIR">fwd</field>
+            <value name="SPEED">
+              <block type="py_math_op" id="c4">
+                <field name="OP">/</field>
+                <value name="LEFT">
+                  <block type="py_math_op" id="c5">
+                    <field name="OP">*</field>
+                    <value name="LEFT">
+                      <block type="val_var" id="c6"><field name="VAR" id="vp">pot</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="c7"><field name="NUM">100</field></block>
+                    </value>
+                  </block>
+                </value>
+                <value name="RIGHT">
+                  <block type="val_number" id="c8"><field name="NUM">65535</field></block>
+                </value>
+              </block>
+            </value>
+            <next>
+              <block type="pico_wait" id="c9">
+                <value name="SEC">
+                  <block type="val_number" id="c10"><field name="NUM">0.05</field></block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

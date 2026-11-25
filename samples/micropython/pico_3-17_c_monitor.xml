@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_temp">temp</variable>
+    <variable id="var_humi">humi</variable>
+    <variable id="var_light">light</variable>
+  </variables>
+  <block type="pico_lcd_init" id="c1" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_forever" id="c2">
+        <statement name="DO">
+          <block type="pico_dht_read" id="c3">
+            <field name="PIN">16</field>
+            <field name="TVAR" id="var_temp">temp</field>
+            <field name="HVAR" id="var_humi">humi</field>
+            <next>
+              <block type="pico_analog_read" id="c4">
+                <field name="PIN">26</field>
+                <field name="VAR" id="var_light">light</field>
+                <next>
+                  <block type="pico_lcd_print" id="c5">
+                    <field name="VAR" id="var_lcd">lcd</field>
+                    <field name="ROW">0</field>
+                    <value name="TEXT">
+                      <block type="py_fstring2" id="c6">
+                        <field name="PRE">T:</field>
+                        <value name="VAR1">
+                          <block type="val_var" id="c7"><field name="VAR" id="var_temp">temp</field></block>
+                        </value>
+                        <field name="MID">C H:</field>
+                        <value name="VAR2">
+                          <block type="val_var" id="c8"><field name="VAR" id="var_humi">humi</field></block>
+                        </value>
+                        <field name="POST">%</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_lcd_print" id="c9">
+                        <field name="VAR" id="var_lcd">lcd</field>
+                        <field name="ROW">1</field>
+                        <value name="TEXT">
+                          <block type="py_fstring" id="c10">
+                            <field name="PRE">Light: </field>
+                            <value name="VAR">
+                              <block type="val_var" id="c11"><field name="VAR" id="var_light">light</field></block>
+                            </value>
+                            <field name="POST"></field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pico_if" id="c12">
+                            <mutation elseif="0" else="0"></mutation>
+                            <value name="IF0">
+                              <block type="cond_and" id="c13">
+                                <value name="A">
+                                  <block type="cond_compare" id="c14">
+                                    <field name="OP">&gt;=</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="c15"><field name="VAR" id="var_temp">temp</field></block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_number" id="c16"><field name="NUM">28</field></block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="cond_compare" id="c17">
+                                    <field name="OP">&lt;</field>
+                                    <value name="LEFT">
+                                      <block type="val_var" id="c18"><field name="VAR" id="var_light">light</field></block>
+                                    </value>
+                                    <value name="RIGHT">
+                                      <block type="val_number" id="c19"><field name="NUM">20000</field></block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <statement name="DO0">
+                              <block type="pico_buzzer_tone" id="c20">
+                                <field name="PIN">15</field>
+                                <field name="FREQ">880</field>
+                                <field name="DUR">0.3</field>
+                              </block>
+                            </statement>
+                            <next>
+                              <block type="pico_wait" id="c21">
+                                <value name="SEC">
+                                  <block type="val_number" id="c22"><field name="NUM">2</field></block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

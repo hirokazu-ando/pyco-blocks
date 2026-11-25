@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_dist">dist</variable>
+  </variables>
+  <block type="pico_forever" id="ff" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_ultrasonic_cm" id="us">
+        <field name="TRIG">14</field>
+        <field name="ECHO">15</field>
+        <field name="VAR" id="var_dist">dist</field>
+        <next>
+          <block type="pico_if" id="if1">
+            <mutation elseif="0" else="1"></mutation>
+            <value name="IF0">
+              <block type="cond_compare" id="cc1">
+                <field name="OP">&lt;</field>
+                <value name="LEFT">
+                  <block type="val_var" id="vv1"><field name="VAR" id="var_dist">dist</field></block>
+                </value>
+                <value name="RIGHT">
+                  <block type="val_number" id="cn1"><field name="NUM">10</field></block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="pico_led_on" id="lo1"><field name="PIN">25</field></block>
+            </statement>
+            <statement name="ELSE">
+              <block type="pico_led_off" id="lf1"><field name="PIN">25</field></block>
+            </statement>
+            <next>
+              <block type="pico_wait" id="w1">
+                <value name="SEC">
+                  <block type="val_number" id="wn1"><field name="NUM">0.1</field></block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

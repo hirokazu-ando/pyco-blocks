@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_ip">ip</variable>
+  </variables>
+  <block type="pico_lcd_init" id="d1" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_lcd_print" id="d2">
+        <field name="VAR" id="var_lcd">lcd</field>
+        <field name="ROW">0</field>
+        <value name="TEXT">
+          <block type="val_str" id="d3"><field name="TEXT">Connecting...</field></block>
+        </value>
+        <next>
+          <block type="pico_w_wifi_connect" id="d4">
+            <field name="SSID">your-ssid</field>
+            <field name="PASS">your-password</field>
+            <next>
+              <block type="var_set" id="d5">
+                <field name="VAR" id="var_ip">ip</field>
+                <value name="VALUE">
+                  <block type="pico_w_wifi_ip" id="d6"></block>
+                </value>
+                <next>
+                  <block type="pico_lcd_clear" id="d7">
+                    <field name="VAR" id="var_lcd">lcd</field>
+                    <next>
+                      <block type="pico_lcd_print" id="d8">
+                        <field name="VAR" id="var_lcd">lcd</field>
+                        <field name="ROW">0</field>
+                        <value name="TEXT">
+                          <block type="val_str" id="d9"><field name="TEXT">WiFi OK</field></block>
+                        </value>
+                        <next>
+                          <block type="pico_lcd_print" id="d10">
+                            <field name="VAR" id="var_lcd">lcd</field>
+                            <field name="ROW">1</field>
+                            <value name="TEXT">
+                              <block type="val_var" id="d11"><field name="VAR" id="var_ip">ip</field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

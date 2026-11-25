@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_dcmotor_run" id="a1" x="30" y="30">
+    <field name="IN1">2</field>
+    <field name="IN2">3</field>
+    <field name="EN">4</field>
+    <field name="SPEED">50</field>
+    <field name="DIR">fwd</field>
+    <next>
+      <block type="pico_wait" id="a2">
+        <value name="SEC">
+          <block type="val_number" id="a3"><field name="NUM">2</field></block>
+        </value>
+        <next>
+          <block type="pico_dcmotor_stop" id="a4">
+            <field name="IN1">2</field>
+            <field name="IN2">3</field>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

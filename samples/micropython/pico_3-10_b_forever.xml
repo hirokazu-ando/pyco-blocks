@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_temp">temp</variable>
+    <variable id="var_humi">humi</variable>
+  </variables>
+  <block type="pico_forever" id="ff" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_dht_read" id="dht1">
+        <field name="PIN">16</field>
+        <field name="TVAR" id="var_temp">temp</field>
+        <field name="HVAR" id="var_humi">humi</field>
+        <next>
+          <block type="py_print" id="pp1">
+            <value name="VALUE">
+              <block type="py_fstring" id="fs1">
+                <field name="PRE">T=</field>
+                <value name="VAR">
+                  <block type="val_var" id="vv_t"><field name="VAR" id="var_temp">temp</field></block>
+                </value>
+                <field name="POST">C</field>
+              </block>
+            </value>
+            <next>
+              <block type="py_print" id="pp2">
+                <value name="VALUE">
+                  <block type="py_fstring" id="fs2">
+                    <field name="PRE">H=</field>
+                    <value name="VAR">
+                      <block type="val_var" id="vv_h"><field name="VAR" id="var_humi">humi</field></block>
+                    </value>
+                    <field name="POST">%</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pico_wait" id="w1">
+                    <value name="SEC">
+                      <block type="val_number" id="wn1"><field name="NUM">2</field></block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

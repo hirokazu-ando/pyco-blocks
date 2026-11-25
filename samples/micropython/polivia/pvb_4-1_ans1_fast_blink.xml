@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 #01 演習1 解答：LED1 を 0.1 秒ごとに速く点滅 -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" id="d0" x="30" y="30">
+    <statement name="DO">
+      <block type="pvb_led_on" id="d1">
+        <field name="LED">11</field>
+        <next>
+          <block type="pico_wait" id="d2">
+            <value name="SEC"><block type="val_number" id="d2n"><field name="NUM">0.1</field></block></value>
+            <next>
+              <block type="pvb_led_off" id="d3">
+                <field name="LED">11</field>
+                <next>
+                  <block type="pico_wait" id="d4">
+                    <value name="SEC"><block type="val_number" id="d4n"><field name="NUM">0.1</field></block></value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

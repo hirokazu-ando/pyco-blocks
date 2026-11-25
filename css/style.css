@@ -3452,11 +3452,113 @@ body.mobile-mode .main.game-layout:not(.mode-micropython) > #game-left-column > 
   body:not(.mobile-mode) header .toolbar #cloud-toolbar {
     position: absolute;
     top: 6px;
-    right: calc(12px + var(--pyco-mode-toggle-w, 320px) + 24px);
+    right: calc(var(--pyco-mode-toggle-w, 332px) + 24px);   /* 変数＝ヘッダー右端からモード切替の左端まで */
     margin-left: 0;
   }
 }
 @media (min-width: 901px) and (max-width: 1100px) {
   body:not(.mobile-mode) header .toolbar button { padding: 0 8px; }
   body:not(.mobile-mode) header .toolbar { gap: 5px; }
+}
+
+/* ===== 空の作業域の案内（js/app.js setupEmptyHint）===== */
+#blockly-div { position: relative; }
+#ws-empty-hint {
+  position: absolute;
+  /* 左のカテゴリ欄（幅は app.js が --pyco-ws-tb に入れる）を除いた残りの真ん中に置く */
+  left: calc(var(--pyco-ws-tb, 120px) + (100% - var(--pyco-ws-tb, 120px)) / 2); top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  width: min(440px, calc(100% - var(--pyco-ws-tb, 120px) - 24px));
+  max-height: calc(100% - 24px); overflow: auto;
+  padding: 18px 20px 14px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+}
+#ws-empty-hint[hidden] { display: none; }
+#ws-empty-hint .ws-empty-title { font-weight: bold; font-size: 17px; margin-bottom: 12px; }
+#ws-empty-hint .ws-empty-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+#ws-empty-hint .ws-empty-btn {
+  min-height: 44px; padding: 8px 16px;
+  font-size: 15px; font-weight: bold; cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border-glow);
+  background: var(--bg-surface); color: var(--text-primary);
+}
+#ws-empty-hint .ws-empty-btn.primary {
+  background: var(--accent-green); border-color: var(--accent-green); color: #062006;
+}
+#ws-empty-hint .ws-empty-btn:focus-visible { outline: 3px solid var(--accent-cyan); outline-offset: 2px; }
+#ws-empty-hint .ws-empty-note { margin: 12px 0 0; font-size: 13.5px; color: var(--text-dim); }
+body.pyco-tut-open #ws-empty-hint { display: none; }
+body.mobile-mode #ws-empty-hint {
+  padding: 12px 12px 10px; font-size: 14px;
+}
+body.mobile-mode #ws-empty-hint .ws-empty-title { font-size: 15px; margin-bottom: 8px; }
+body.mobile-mode #ws-empty-hint .ws-empty-btn { width: 100%; padding: 8px 10px; font-size: 14px; }
+body.mobile-mode #ws-empty-hint .ws-empty-note { font-size: 12.5px; margin-top: 8px; }
+
+/* Pi Pico 未接続の［▶ 実行］：灰色に見せるが押せる（押すと「つなぎ方」のトーストが出る） */
+#btn-run.needs-connect {
+  color: var(--border-dim);
+  border-color: var(--border-dim);
+  text-shadow: none;
+  box-shadow: none;
+  opacity: 0.6;
+  cursor: help;
+}
+#btn-run.needs-connect:hover { background: transparent; color: var(--text-dim); box-shadow: none; }
+/* 押す場所を知らせる短い点滅（2 回） */
+@keyframes pyco-attn-pulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 3px var(--accent-amber), 0 0 16px var(--accent-amber); }
+}
+.pyco-attn { animation: pyco-attn-pulse .6s ease-in-out 3; }
+@media (prefers-reduced-motion: reduce) { .pyco-attn { animation: none; outline: 3px solid var(--accent-amber); } }
+#btn-mobile-run.needs-connect { opacity: 0.6; filter: grayscale(1); }
+
+/* 作業域の帯の「✓ 自動保存」（js/app.js #ws-save-state） */
+#ws-save-state { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; margin-right: 4px; cursor: help; }
+#ws-save-state.err { color: var(--accent-amber); }
+#ws-save-state.flash { animation: pyco-save-flash 1.2s ease-out; }
+@keyframes pyco-save-flash { 0% { color: var(--accent-green); } 100% { color: var(--text-dim); } }
+body.mobile-mode #ws-save-state { display: none; }
+
+/* 「つなげないブラウザ」の札（旧 DEMO MODE）。押すと説明のトーストが出る */
+button.demo-badge {
+  background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 12px; letter-spacing: 0; line-height: 1.4;
+  animation: none;
+}
+button.demo-badge:hover { background: rgba(255,183,0,0.12); }
+/* スマホでは上の帯が狭く、札に押されて［☰ メニュー］が画面の外へ出ていた。実行ボタンを押せば同じ説明が出るので札は出さない */
+body.mobile-mode .demo-badge { display: none !important; }
+
+/* ゲームのタッチ用キー（js/game_engine.js ensureTouchPad）。タッチ端末だけに出る */
+#game-touchpad {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-top: 8px; width: 100%;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+#game-touchpad .gtp-key {
+  min-width: 52px; min-height: 48px; padding: 0 10px;
+  font-size: 20px; font-weight: 700; line-height: 1;
+  color: var(--text-primary); background: rgba(255,255,255,0.06);
+  border: 1px solid var(--text-dim); border-radius: 10px; cursor: pointer;
+}
+#game-touchpad .gtp-wide { min-width: 110px; font-size: 16px; }
+#game-touchpad .gtp-key.on { background: rgba(0,255,65,0.22); }
+:root[data-theme="light"] #game-touchpad .gtp-key { color: #1a1a1a; background: #f3f4f6; border-color: #9ca3af; }
+:root[data-theme="light"] #game-touchpad .gtp-key.on { background: #c7f0d2; }
+
+/* タブレット（指で押す・パソコン表示）では上の帯のボタンが 32px で押しにくかった。指で押す端末だけ高くする */
+@media (pointer: coarse) {
+  body:not(.mobile-mode) header .toolbar button,
+  body:not(.mobile-mode) header .mode-btn { min-height: 40px; }
 }

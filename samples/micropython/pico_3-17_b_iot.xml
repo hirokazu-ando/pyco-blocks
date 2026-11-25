@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_dist">dist</variable>
+    <variable id="var_resp">resp</variable>
+  </variables>
+  <block type="pico_w_wifi_connect" id="bi1" x="30" y="30">
+    <field name="SSID">your-ssid</field>
+    <field name="PASS">your-password</field>
+    <next>
+      <block type="pico_lcd_init" id="bi2">
+        <field name="SDA">0</field>
+        <field name="SCL">1</field>
+        <field name="VAR" id="var_lcd">lcd</field>
+        <next>
+          <block type="pico_forever" id="bi3">
+            <statement name="DO">
+              <block type="pico_ultrasonic_cm" id="bi4">
+                <field name="TRIG">2</field>
+                <field name="ECHO">3</field>
+                <field name="VAR" id="var_dist">dist</field>
+                <next>
+                  <block type="pico_lcd_print" id="bi5">
+                    <field name="VAR" id="var_lcd">lcd</field>
+                    <field name="ROW">0</field>
+                    <value name="TEXT">
+                      <block type="py_fstring" id="bi6">
+                        <field name="PRE">Dist: </field>
+                        <value name="VAR">
+                          <block type="val_var" id="bi7"><field name="VAR" id="var_dist">dist</field></block>
+                        </value>
+                        <field name="POST"> cm</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_if" id="bi8">
+                        <mutation elseif="0" else="1"></mutation>
+                        <value name="IF0">
+                          <block type="cond_compare" id="bi9">
+                            <field name="OP">&lt;</field>
+                            <value name="LEFT">
+                              <block type="val_var" id="bi10"><field name="VAR" id="var_dist">dist</field></block>
+                            </value>
+                            <value name="RIGHT">
+                              <block type="val_number" id="bi11"><field name="NUM">15</field></block>
+                            </value>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <block type="pico_dcmotor_run" id="bi12">
+                            <field name="IN1">4</field>
+                            <field name="IN2">5</field>
+                            <field name="EN">6</field>
+                            <field name="SPEED">90</field>
+                            <field name="DIR">fwd</field>
+                            <next>
+                              <block type="pico_lcd_print" id="bi13">
+                                <field name="VAR" id="var_lcd">lcd</field>
+                                <field name="ROW">1</field>
+                                <value name="TEXT">
+                                  <block type="val_str" id="bi14"><field name="TEXT">Speed: HIGH    </field></block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <statement name="ELSE">
+                          <block type="pico_dcmotor_run" id="bi15">
+                            <field name="IN1">4</field>
+                            <field name="IN2">5</field>
+                            <field name="EN">6</field>
+                            <field name="SPEED">30</field>
+                            <field name="DIR">fwd</field>
+                            <next>
+                              <block type="pico_lcd_print" id="bi16">
+                                <field name="VAR" id="var_lcd">lcd</field>
+                                <field name="ROW">1</field>
+                                <value name="TEXT">
+                                  <block type="val_str" id="bi17"><field name="TEXT">Speed: LOW     </field></block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="pico_w_http_post" id="bi18">
+                            <field name="URL">https://ambidata.io/api/v2/channels/YOUR_CH_ID/data</field>
+                            <value name="DATA">
+                              <block type="py_fstring" id="bi19">
+                                <field name="PRE">{"writeKey":"YOUR_WRITE_KEY","d1":</field>
+                                <value name="VAR">
+                                  <block type="val_var" id="bi20"><field name="VAR" id="var_dist">dist</field></block>
+                                </value>
+                                <field name="POST">}</field>
+                              </block>
+                            </value>
+                            <field name="VAR" id="var_resp">resp</field>
+                            <next>
+                              <block type="pico_wait" id="bi21">
+                                <value name="SEC">
+                                  <block type="val_number" id="bi22"><field name="NUM">30</field></block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

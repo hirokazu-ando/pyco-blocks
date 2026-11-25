@@ -114,7 +114,7 @@
               title="micro:bit（V2）につないで MicroPython を動かすモード">micro:bit</button>
     </div>
     <span class="version-tag">v2.1 · UME</span>
-    <span class="demo-badge" id="demo-badge" style="display:none">DEMO MODE</span>
+    <button type="button" class="demo-badge" id="demo-badge" style="display:none" title="このブラウザは Pico・micro:bit につなげません。押すと説明が出ます">つなげないブラウザ</button>
     <button id="btn-mobile-menu" type="button" aria-label="ツールメニュー" aria-expanded="false" title="ツールメニューを開く">☰ メニュー</button>
     <!-- ツールバー（B1：1366幅でも1行）。並びは「学習 │ 実行・停止 │ 実機の接続 │ 配線図 │ コード編集 │ ファイル▾ │ 表示▾」。
          実行はどのモードでも学習モードのすぐ右に来る（Python/ゲームは btn-run-python、Pico/micro:bit は btn-run）。
@@ -126,7 +126,7 @@
       <button id="btn-run-python" class="tb-dup-mobile" style="display:none" title="ブロック（コード）を実行する（Ctrl+Enter）">▶ 実行</button>
       <button id="btn-stop-python" class="tb-dup-mobile" style="display:none" title="実行を止める">■ 停止</button>
       <div class="toolbar-sep" id="run-py-sep" style="display:none"></div>
-      <button id="btn-run" class="tb-dup-mobile" disabled title="先に［接続］を押すと使えます">▶ 実行</button>
+      <button id="btn-run" class="tb-dup-mobile needs-connect" title="Pico をつなぐと動かせます（押すと、つなぎ方が出ます）">▶ 実行</button>
       <button id="btn-stop" class="tb-dup-mobile" disabled title="先に［接続］を押すと使えます">■ 停止</button>
       <button id="btn-write" disabled title="先に［接続］を押すと使えます（ボードにプログラムを書き込み、電源を入れたら動くようにする）">書き込み</button>
       <div class="toolbar-sep" id="serial-sep"></div>
@@ -140,10 +140,11 @@
       <div class="tb-menu" id="tb-menu-file">
         <button type="button" class="tb-menu-btn" id="btn-menu-file" aria-expanded="false" aria-controls="tb-pop-file" title="保存・読み込み・共有">ファイル <span class="tb-caret" aria-hidden="true">▼</span></button>
         <div class="tb-menu-pop" id="tb-pop-file" role="group" aria-label="ファイル">
+          <button id="btn-new" title="今のブロックをぜんぶ消して、新しく作りはじめる（［もどす］で取り消せます）">新しく作る</button>
           <button id="btn-samples" title="今のモードのサンプル（記事の例・答え）を一覧から開く">サンプルを開く</button>
           <button id="btn-save-xml" title="今のブロックをファイル（.xml）に保存する">ブロックを保存</button>
           <button id="btn-load-xml" title="保存したブロックのファイル（.xml）を開く">ブロックを開く</button>
-          <button id="btn-share-url" title="今のブロックを復元できる共有URLをコピー">共有URLをコピー</button>
+          <button id="btn-share-url" title="今のブロックを開ける URL を作る（次の画面でコピーできる）">共有URLを作る</button>
           <input type="file" id="xml-input" accept=".xml" style="display:none">
           <div class="toolbar-sep"></div>
           <button id="btn-download" title="Python のコードをファイル（.py）に保存する" aria-label="Python ファイル（.py）に保存">Python を保存（.py）</button>
@@ -637,10 +638,10 @@
       <block type="val_bool" gap="8"></block>
     </category>
     <category name="表示" colour="#00ACC1">
+      <block type="print_text" gap="8"></block>
       <block type="py_print" gap="8"></block>
       <block type="py_print2" gap="8"></block>
       <block type="py_print_multi" gap="8"><mutation items="2"/></block>
-      <block type="print_text" gap="8"></block>
       <block type="print_var_label" gap="8"></block>
       <block type="print_separator" gap="8"></block>
       <sep gap="20"></sep>
@@ -660,10 +661,11 @@
   <xml id="toolbox-python" style="display:none">
     <!-- 0-0/0-1: print文 -->
     <category name="表示" colour="#00ACC1">
+      <!-- 初めての人がそのまま置いて動かせるよう、中身の入った「Hello を表示する」を先頭に置く -->
+      <block type="print_text" gap="8"></block>
       <block type="py_print" gap="8"></block>
       <block type="py_print2" gap="8"></block>
       <block type="py_print_multi" gap="8"><mutation items="2"/></block>
-      <block type="print_text" gap="8"></block>
       <block type="print_var_label" gap="8"></block>
       <block type="print_separator" gap="8"></block>
     </category>
@@ -2032,7 +2034,7 @@
   <script src="js/blocks/python_intro.js?v=20260509a"></script>
   <script src="js/blocks/data_analysis.js"></script>
   <script src="js/blocks/custom_python.js?v=20260429b"></script>
-  <script src="js/game_engine.js?v=20260507g"></script>
+  <script src="js/game_engine.js?v=20261125a"></script>
   <script src="js/blocks/game.js?v=20260507e"></script>
   <script src="js/ml_engine.js?v=20260503b"></script>
   <script src="js/blocks/ml.js?v=20260503b"></script>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" id="b1" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_dcmotor_run" id="b2">
+        <field name="IN1">2</field>
+        <field name="IN2">3</field>
+        <field name="EN">4</field>
+        <field name="SPEED">60</field>
+        <field name="DIR">fwd</field>
+        <next>
+          <block type="pico_wait" id="b3">
+            <value name="SEC">
+              <block type="val_number" id="b4"><field name="NUM">2</field></block>
+            </value>
+            <next>
+              <block type="pico_dcmotor_stop" id="b5">
+                <field name="IN1">2</field>
+                <field name="IN2">3</field>
+                <next>
+                  <block type="pico_wait" id="b6">
+                    <value name="SEC">
+                      <block type="val_number" id="b7"><field name="NUM">1</field></block>
+                    </value>
+                    <next>
+                      <block type="pico_dcmotor_run" id="b8">
+                        <field name="IN1">2</field>
+                        <field name="IN2">3</field>
+                        <field name="EN">4</field>
+                        <field name="SPEED">60</field>
+                        <field name="DIR">rev</field>
+                        <next>
+                          <block type="pico_wait" id="b9">
+                            <value name="SEC">
+                              <block type="val_number" id="b10"><field name="NUM">2</field></block>
+                            </value>
+                            <next>
+                              <block type="pico_dcmotor_stop" id="b11">
+                                <field name="IN1">2</field>
+                                <field name="IN2">3</field>
+                                <next>
+                                  <block type="pico_wait" id="b12">
+                                    <value name="SEC">
+                                      <block type="val_number" id="b13"><field name="NUM">1</field></block>
+                                    </value>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

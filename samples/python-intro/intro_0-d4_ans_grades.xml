@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vhy" type="function">hyouka</variable>
+    <variable id="vten">ten</variable>
+    <variable id="vss">seiseki</variable>
+    <variable id="vnm">namae</variable>
+  </variables>
+  <block type="py_def" x="30" y="30">
+    <field name="NAME" id="vhy" variabletype="function">hyouka</field>
+    <field name="PARAM" id="vten">ten</field>
+    <statement name="BODY">
+      <block type="pico_if">
+        <mutation elseif="1" else="1"></mutation>
+        <value name="IF0">
+          <block type="cond_compare">
+            <field name="OP">&gt;=</field>
+            <value name="LEFT"><block type="val_var"><field name="VAR" id="vten">ten</field></block></value>
+            <value name="RIGHT"><block type="val_number"><field name="NUM">80</field></block></value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="py_return"><value name="VALUE"><block type="val_str"><field name="TEXT">優</field></block></value></block>
+        </statement>
+        <value name="IF1">
+          <block type="cond_compare">
+            <field name="OP">&gt;=</field>
+            <value name="LEFT"><block type="val_var"><field name="VAR" id="vten">ten</field></block></value>
+            <value name="RIGHT"><block type="val_number"><field name="NUM">60</field></block></value>
+          </block>
+        </value>
+        <statement name="DO1">
+          <block type="py_return"><value name="VALUE"><block type="val_str"><field name="TEXT">合格</field></block></value></block>
+        </statement>
+        <statement name="ELSE">
+          <block type="py_return"><value name="VALUE"><block type="val_str"><field name="TEXT">不合格</field></block></value></block>
+        </statement>
+      </block>
+    </statement>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="vss">seiseki</field>
+        <value name="VALUE">
+          <block type="py_dict_literal">
+            <mutation items="4"></mutation>
+            <field name="COUNT">4</field>
+            <field name="KEY0">太郎</field>
+            <value name="PAIR0"><block type="val_number"><field name="NUM">82</field></block></value>
+            <field name="KEY1">花子</field>
+            <value name="PAIR1"><block type="val_number"><field name="NUM">95</field></block></value>
+            <field name="KEY2">次郎</field>
+            <value name="PAIR2"><block type="val_number"><field name="NUM">58</field></block></value>
+            <field name="KEY3">三郎</field>
+            <value name="PAIR3"><block type="val_number"><field name="NUM">71</field></block></value>
+          </block>
+        </value>
+        <next>
+          <block type="py_for_dict_items_sorted">
+            <field name="DICT" id="vss">seiseki</field>
+            <field name="KEY_VAR" id="vnm">namae</field>
+            <field name="VAL_VAR" id="vten">ten</field>
+            <statement name="DO">
+              <block type="py_print_multi">
+                <mutation items="4"></mutation>
+                <value name="ITEM0"><block type="val_var"><field name="VAR" id="vnm">namae</field></block></value>
+                <value name="ITEM1"><block type="val_var"><field name="VAR" id="vten">ten</field></block></value>
+                <value name="ITEM2"><block type="val_str"><field name="TEXT">点 →</field></block></value>
+                <value name="ITEM3">
+                  <block type="py_call_val">
+                    <field name="NAME" id="vhy" variabletype="function">hyouka</field>
+                    <value name="ARG"><block type="val_var"><field name="VAR" id="vten">ten</field></block></value>
+                  </block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

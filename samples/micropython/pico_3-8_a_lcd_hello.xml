@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+  </variables>
+  <block type="pico_lcd_init" id="li" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_lcd_print" id="lp1">
+        <field name="VAR" id="var_lcd">lcd</field>
+        <field name="ROW">0</field>
+        <value name="TEXT">
+          <block type="val_str" id="ls1"><field name="TEXT">Hello, Pico!</field></block>
+        </value>
+      </block>
+    </next>
+  </block>
+</xml>

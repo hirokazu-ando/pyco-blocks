@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vexp">invincible_until</variable>
+    <variable id="vinv">invincible</variable>
+  </variables>
+  <block type="game_timer_set" x="20" y="20">
+    <field name="VAR" id="vexp">invincible_until</field>
+    <value name="SEC"><block type="val_number"><field name="NUM">3</field></block></value>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="vinv">invincible</field>
+        <value name="VALUE"><block type="val_bool"><field name="BOOL">True</field></block></value>
+        <next>
+          <block type="pico_if">
+            <value name="IF0">
+              <block type="game_timer_done">
+                <field name="VAR" id="vexp">invincible_until</field>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="var_set">
+                <field name="VAR" id="vinv">invincible</field>
+                <value name="VALUE"><block type="val_bool"><field name="BOOL">False</field></block></value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_temp">temp</variable>
+    <variable id="var_humi">humi</variable>
+  </variables>
+  <block type="pico_lcd_init" id="a1" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_forever" id="a2">
+        <statement name="DO">
+          <block type="pico_dht_read" id="a3">
+            <field name="PIN">16</field>
+            <field name="TVAR" id="var_temp">temp</field>
+            <field name="HVAR" id="var_humi">humi</field>
+            <next>
+              <block type="pico_lcd_print" id="a4">
+                <field name="VAR" id="var_lcd">lcd</field>
+                <field name="ROW">0</field>
+                <value name="TEXT">
+                  <block type="py_fstring" id="a5">
+                    <field name="PRE">Temp: </field>
+                    <value name="VAR">
+                      <block type="val_var" id="a6"><field name="VAR" id="var_temp">temp</field></block>
+                    </value>
+                    <field name="POST"> C</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pico_if" id="a7">
+                    <mutation elseif="0" else="1"></mutation>
+                    <value name="IF0">
+                      <block type="cond_compare" id="a8">
+                        <field name="OP">&gt;=</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="a9"><field name="VAR" id="var_temp">temp</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="a10"><field name="NUM">28</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="pico_servo_angle" id="a11">
+                        <field name="PIN">15</field>
+                        <field name="ANGLE">90</field>
+                        <next>
+                          <block type="pico_lcd_print" id="a12">
+                            <field name="VAR" id="var_lcd">lcd</field>
+                            <field name="ROW">1</field>
+                            <value name="TEXT">
+                              <block type="val_str" id="a13"><field name="TEXT">Fan: ON     </field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <statement name="ELSE">
+                      <block type="pico_servo_angle" id="a14">
+                        <field name="PIN">15</field>
+                        <field name="ANGLE">0</field>
+                        <next>
+                          <block type="pico_lcd_print" id="a15">
+                            <field name="VAR" id="var_lcd">lcd</field>
+                            <field name="ROW">1</field>
+                            <value name="TEXT">
+                              <block type="val_str" id="a16"><field name="TEXT">Fan: OFF    </field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_wait" id="a17">
+                        <value name="SEC">
+                          <block type="val_number" id="a18"><field name="NUM">2</field></block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

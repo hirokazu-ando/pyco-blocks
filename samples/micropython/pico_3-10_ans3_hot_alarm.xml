@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_temp">temp</variable>
+    <variable id="var_humi">humi</variable>
+  </variables>
+  <block type="pico_forever" id="ff" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_dht_read" id="dht1">
+        <field name="PIN">16</field>
+        <field name="TVAR" id="var_temp">temp</field>
+        <field name="HVAR" id="var_humi">humi</field>
+        <next>
+          <block type="py_print" id="pp1">
+            <value name="VALUE">
+              <block type="py_fstring" id="fs1">
+                <field name="PRE">T=</field>
+                <value name="VAR">
+                  <block type="val_var" id="vv_t"><field name="VAR" id="var_temp">temp</field></block>
+                </value>
+                <field name="POST">C</field>
+              </block>
+            </value>
+            <next>
+              <block type="pico_if" id="if1">
+                <mutation elseif="0" else="1"></mutation>
+                <value name="IF0">
+                  <block type="cond_compare" id="cc1">
+                    <field name="OP">&gt;=</field>
+                    <value name="LEFT">
+                      <block type="val_var" id="vv_t2"><field name="VAR" id="var_temp">temp</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="cn1"><field name="NUM">28</field></block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="pico_buzzer_tone" id="bz1">
+                    <field name="PIN">15</field>
+                    <field name="FREQ">880</field>
+                    <field name="DUR">0.3</field>
+                  </block>
+                </statement>
+                <statement name="ELSE">
+                  <block type="pico_wait" id="we">
+                    <value name="SEC">
+                      <block type="val_number" id="wne"><field name="NUM">0.3</field></block>
+                    </value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pico_wait" id="w1">
+                    <value name="SEC">
+                      <block type="val_number" id="wn1"><field name="NUM">2</field></block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

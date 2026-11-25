@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" id="hf" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_7seg_show" id="h8">
+        <field name="NUM">8</field>
+        <field name="PIN_A">2</field>
+        <field name="PIN_B">3</field>
+        <field name="PIN_C">4</field>
+        <field name="PIN_D">5</field>
+        <field name="PIN_E">6</field>
+        <field name="PIN_F">7</field>
+        <field name="PIN_G">8</field>
+        <next>
+          <block type="pico_wait" id="h8w">
+            <value name="SEC">
+              <block type="val_number" id="h8wn"><field name="NUM">0.3</field></block>
+            </value>
+            <next>
+              <block type="pico_7seg_show" id="h0">
+                <field name="NUM">0</field>
+                <field name="PIN_A">2</field>
+                <field name="PIN_B">3</field>
+                <field name="PIN_C">4</field>
+                <field name="PIN_D">5</field>
+                <field name="PIN_E">6</field>
+                <field name="PIN_F">7</field>
+                <field name="PIN_G">8</field>
+                <next>
+                  <block type="pico_wait" id="h0w">
+                    <value name="SEC">
+                      <block type="val_number" id="h0wn"><field name="NUM">0.3</field></block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== 右クリックメニュー 日本語化 =====
   Object.assign(Blockly.Msg, {
+    // スマホ・タブレットでブロックの文字欄を押すと出る入力の窓（英語の「Change value:」だった）
+    CHANGE_VALUE_TITLE:  'あたいを入れてください：',
     DUPLICATE_BLOCK:     'ブロックを複製',
     ADD_COMMENT:         'コメントを追加',
     REMOVE_COMMENT:      'コメントを削除',
@@ -51,6 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     toolbox: document.getElementById('toolbox-python'),
     theme: pcbTheme,
     renderer: 'zelos',
+    // ズーム・ゴミ箱のアイコンと効果音。指定しないと blockly-demo.appspot.com を読みに行き 404 で絵が出ない（同梱した写し）
+    media: 'assets/blockly-media/',
     scrollbars: true,
     trashcan: true,
     zoom: { controls: true, wheel: true, pinch: true, startScale: 1.0, maxScale: 3, minScale: 0.3 },
@@ -3668,7 +3672,9 @@ document.addEventListener('DOMContentLoaded', function() {
       if (previewSummary) {
         previewSummary.textContent = result.compCount > 0
           ? `部品 ${result.compCount} / 接続 ${result.wireCount} (クリックで拡大)`
-          : 'ブロックを追加すると配線図が表示されます';
+          : (workspace.getAllBlocks(false).length > 0
+              ? 'このプログラムでは、つなぐ部品はありません（Pico だけで動きます）'
+              : 'LED やセンサーのブロックを置くと、ここに配線図が出ます');
       }
     } catch (err) {
       console.error('[circuit-preview]', err);
@@ -3788,6 +3794,19 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (e) { /* 下へ */ }
       try { workspace.getParentSvg().focus(); } catch (e) { /* noop */ }
     }
+    // 自動保存の知らせ。ブラウザに保存していることが画面のどこにも出ておらず、
+    // 「保存しないと消える？」と迷っていた。保存のたびに短く「✓ 自動保存」と出す（js/autosave.js が知らせる）
+    const saveState = document.createElement('span');
+    saveState.id = 'ws-save-state';
+    saveState.setAttribute('role', 'status');
+    saveState.title = 'ブロックはこのブラウザに自動で保存されます。次に開いたときに戻ります（ほかの PC に持っていくときは［ファイル → ブロックを保存］）';
+    bar.appendChild(saveState);
+    document.addEventListener('pyco:autosaved', function(e) {
+      const ok = !(e.detail && e.detail.ok === false);
+      saveState.textContent = ok ? '✓ 自動保存' : '⚠ 自動保存できません';
+      saveState.classList.toggle('err', !ok);
+      saveState.classList.remove('flash'); void saveState.offsetWidth; saveState.classList.add('flash');
+    });
     // 構文リファレンス（ブロック画面用）。押すと右から引き出しが出る
     const refBtn = document.createElement('button');
     refBtn.type = 'button';
@@ -4466,8 +4485,9 @@ document.addEventListener('DOMContentLoaded', function() {
     mainEl.classList.toggle('syntax-collapsed', codingMode && syntaxCollapsed);
     btn.style.display = codingMode ? 'inline-flex' : 'none';
     btn.classList.toggle('syntax-btn-floating', codingMode && syntaxCollapsed);
-    btn.textContent = syntaxCollapsed ? '▶ リファレンス表示' : '◀ リファレンス非表示';
-    btn.title = syntaxCollapsed ? '構文リファレンスを表示' : '構文リファレンスを隠す';
+    // 見出しの幅に収まる短い名前（「◀ リファレンス非表…」と切れていた）。呼び名は作業域の［書き方の一覧］とそろえる
+    btn.textContent = syntaxCollapsed ? '▶ 書き方の一覧' : '◀ たたむ';
+    btn.title = syntaxCollapsed ? '書き方の一覧（構文リファレンス）を出す' : '書き方の一覧（構文リファレンス）をたたむ';
     btn.setAttribute('aria-expanded', syntaxCollapsed ? 'false' : 'true');
   }
 
@@ -4628,13 +4648,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.documentElement.style.setProperty('--pyco-header-bottom', Math.round(header.getBoundingClientRect().bottom) + 'px');
     // 狭いパソコン幅（1180px 以下）では［ログイン］をモード切替の左に置く（css：F10）。その位置に使う幅
     const mt = header.querySelector('.mode-toggle');
-    if (mt && mt.offsetWidth) document.documentElement.style.setProperty('--pyco-mode-toggle-w', mt.offsetWidth + 'px');
+    // 右端からモード切替の左端までを測る（モード切替の右に「つなげないブラウザ」の札が出ても重ならないように）
+    if (mt && mt.offsetWidth) document.documentElement.style.setProperty('--pyco-mode-toggle-w',
+      Math.round(header.getBoundingClientRect().right - mt.getBoundingClientRect().left) + 'px');
   }
   (function trackHeaderBottom() {
     const header = document.querySelector('header');
     if (!header) return;
     measureHeaderBottom();
-    if (window.ResizeObserver) new ResizeObserver(measureHeaderBottom).observe(header);
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(measureHeaderBottom);
+      ro.observe(header);
+      const badge = document.getElementById('demo-badge');   // 札の出し入れでモード切替の位置が変わる
+      if (badge) ro.observe(badge);
+    }
     window.addEventListener('resize', measureHeaderBottom);
   })();
   let _toastClose = null;
@@ -4914,6 +4941,8 @@ document.addEventListener('DOMContentLoaded', function() {
     a.download = 'pycoblocks_' + modeKey() + '_' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) +
       '-' + z(d.getHours()) + z(d.getMinutes()) + '.xml';
     a.click();
+    // ダウンロードは画面に何も出ないブラウザがあるので、保存した名前と開き方を知らせる
+    showToast(a.download + ' を保存しました（ダウンロードのフォルダ）。開くときは［ファイル → ブロックを開く］');
   });
 
   // ===== ブロック XML 読込 =====
@@ -4960,7 +4989,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       dom = Blockly.utils.xml.textToDom(text);
     } catch (err) {
-      alert('XML の読み込みに失敗しました: ' + err.message);
+      showToast('ブロックのファイルを読み込めませんでした（' + err.message + '）。', { type: 'err', ms: 8000 });
       return false;
     }
     const target = guessXmlMode(dom);
@@ -4998,7 +5027,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!add) fitAfterLoad();
       return true;
     } catch (err) {
-      alert('XML の読み込みに失敗しました: ' + err.message);
+      showToast('ブロックのファイルを読み込めませんでした（' + err.message + '）。', { type: 'err', ms: 8000 });
       return false;
     }
   }
@@ -5052,10 +5081,35 @@ document.addEventListener('DOMContentLoaded', function() {
       const sm = document.createElement('summary');
       sm.textContent = g.title + '（' + g.items.length + '）';
       sm.style.cssText = 'cursor:pointer;padding:6px 0;font-weight:bold;';
+      // 章のひとこと説明（ゲーム）。番号だけでは何を作る章か分からないため
+      if (g.desc) {
+        const gd = document.createElement('span');
+        gd.textContent = g.desc;
+        gd.style.cssText = 'display:block;font-size:13px;color:var(--text-dim);font-weight:normal;margin:2px 0 0 18px;';
+        sm.appendChild(gd);
+      }
       d.appendChild(sm);
       const list = document.createElement('div');
       list.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px 12px;';
-      g.items.forEach(function(it) {
+      // ファイルを分けて作るゲームの「一部だけのファイル」（関数のファイル・プレイ中を描く…）は、
+      // 1 本で動く例と見分けがつかず数も多い（1 章 30 本以上）ので、章の中でさらにたたむ
+      const PART_RE = /（(関数のファイル|プレイ中の動き|プレイ中を描く|メインのファイル|終わりの画面を描く|終わりの間の動き)）\s*$/;
+      const wholes = g.items.filter(function(it) { return !PART_RE.test(it.title); });
+      const parts = g.items.filter(function(it) { return PART_RE.test(it.title); });
+      let partList = null;
+      if (parts.length) {
+        const pd = document.createElement('details');
+        pd.style.cssText = 'flex:1 1 100%;margin-top:4px;';
+        const ps = document.createElement('summary');
+        ps.textContent = 'ファイル分けした例の、1 ファイルずつ（' + parts.length + '）';
+        ps.style.cssText = 'cursor:pointer;font-size:13px;color:var(--text-dim);padding:4px 0;';
+        pd.appendChild(ps);
+        partList = document.createElement('div');
+        partList.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 4px 12px;';
+        pd.appendChild(partList);
+        list._partsDetails = pd;
+      }
+      wholes.concat(parts).forEach(function(it) {
         const b = document.createElement('button');
         b.type = 'button';
         b.textContent = it.title;
@@ -5081,10 +5135,22 @@ document.addEventListener('DOMContentLoaded', function() {
               const name = it.file.split('/').pop();
               return loadBlocksXmlText(text, name, it.title);
             })
+            .then(function(ok) {
+              // キーボードで操作する人のため、開いたら次に押す［▶ 実行］へ移る
+              // （以前は一覧を閉じるとページの先頭に戻り、Tab を最初から押し直していた）。スマホは画面が動くのでしない
+              if (ok !== true) return;
+              // 前に開けなかったときの赤い知らせが残っていたら消す（開けたのに「開けませんでした」が出たままだった）
+              const prev = document.getElementById('pyco-toast');
+              if (prev && prev.classList.contains('err')) hideToast();
+              if (document.body.classList.contains('mobile-mode')) return;
+              const run = document.getElementById(modeKey() === 'micropython' ? 'btn-run' : 'btn-run-python');
+              if (run && run.offsetParent) run.focus({ preventScroll: true });
+            })
             .catch(function(err) { showToast('サンプルを開けませんでした：' + err, { type: 'err' }); });
         });
-        list.appendChild(b);
+        (partList && PART_RE.test(it.title) ? partList : list).appendChild(b);
       });
+      if (list._partsDetails) list.appendChild(list._partsDetails);
       d.appendChild(list);
       body.appendChild(d);
     });
@@ -5106,6 +5172,107 @@ document.addEventListener('DOMContentLoaded', function() {
   // 学習モードの一覧（js/tutorial.js）からも開けるように公開する
   window.PycoSamples = { open: openSamples };
   window.PycoSwitchMode = function(m) { switchMode(m, true); };
+
+  // ［ファイル → 新しく作る］：共用 PC で前の人のブロックが残っていても、確認して空にできる。
+  // workspace.clear() は Blockly の履歴に積まれるので［もどす］で戻せる（自動保存は空の状態で上書きされる）
+  const btnNew = document.getElementById('btn-new');
+  if (btnNew) btnNew.addEventListener('click', async function() {
+    if (!fileMode && workspace.getAllBlocks(false).length === 0) {
+      showToast('もう空になっています。ブロックを置いて作りはじめましょう');
+      return;
+    }
+    const ans = await askChoice('新しく作りますか？',
+      '今のブロックをぜんぶ消します。消したあとでも［↶ もどす］で戻せます。\n' +
+      '残したいときは、先に［ファイル → ブロックを保存］を押してください。',
+      [{ label: '消して新しく作る', value: 'new', primary: true },
+       { label: 'やめる', value: null }]);
+    if (ans !== 'new') return;
+    fileMode = false;
+    workspace.clear();
+    if (modeKey() === 'microbit') placeMicrobitStarter();
+    generateCode();
+    showToast('新しく作りはじめます');
+  });
+
+  // ============================================================
+  // 空の作業域の案内（初めて開いた人が最初の 1 本にたどりつくための入口）
+  //   - ブロックが 1 つも無いときだけ、作業域の中ほどに小さなカードを出す
+  //   - Python は「学習モード #00」と「サンプル」、ゲーム・Pi Pico は「サンプル」
+  //   - Pi Pico は「機械なしでどこまで試せるか」と「動かすのに要るもの」もここで伝える
+  //   - micro:bit は最初から「最初だけ／ずっと」が置かれるので出さない
+  // ============================================================
+  (function setupEmptyHint() {
+    const host = document.getElementById('blockly-div');
+    if (!host) return;
+    const card = document.createElement('div');
+    card.id = 'ws-empty-hint';
+    card.setAttribute('role', 'note');
+    card.hidden = true;
+    host.appendChild(card);
+    let flyoutOpen = false;
+    function btn(label, cls, onClick) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ws-empty-btn' + (cls ? ' ' + cls : '');
+      b.textContent = label;
+      b.addEventListener('click', onClick);
+      return b;
+    }
+    function render(key) {
+      card.textContent = '';
+      card.dataset.mode = key;
+      const h = document.createElement('div');
+      h.className = 'ws-empty-title';
+      const row = document.createElement('div');
+      row.className = 'ws-empty-row';
+      const note = document.createElement('p');
+      note.className = 'ws-empty-note';
+      if (key === 'python') {
+        h.textContent = 'はじめての人は、ここから';
+        row.appendChild(btn('▶ 学習モード #00 で始める', 'primary', function() {
+          if (window.PycoTutorial) window.PycoTutorial.start('0-00');
+        }));
+        row.appendChild(btn('サンプルを開く', '', openSamples));
+        note.textContent = 'または、左の［表示］を押して、ブロックをここへドラッグ → ［▶ 実行］';
+      } else if (key === 'game') {
+        h.textContent = 'まずはサンプルで遊んでみよう';
+        row.appendChild(btn('サンプルを開く', 'primary', openSamples));
+        note.textContent = 'サンプルを開いて［▶ 実行］。ブロックの数字を変えて、もう一度［▶ 実行］すると動きが変わります';
+      } else if (key === 'micropython') {
+        h.textContent = 'Pi Pico をつかう';
+        row.appendChild(btn('サンプルを開く', 'primary', openSamples));
+        row.appendChild(btn('MicroPython導入', '', function() {
+          const fw = document.getElementById('btn-firmware');
+          if (fw) fw.click();
+        }));
+        note.textContent = 'Pico がなくても、ブロック → コード → 配線図 までは試せます。' +
+          '動かすには Pico と USB ケーブル（データ通信ができるもの）が要ります。つないだら［接続］→［▶ 実行］';
+      }
+      card.appendChild(h);
+      card.appendChild(row);
+      card.appendChild(note);
+    }
+    function update() {
+      const key = modeKey();
+      const show = !fileMode && !flyoutOpen && key !== 'microbit' &&
+        workspace.getAllBlocks(false).length === 0;
+      if (show && card.dataset.mode !== key) render(key);
+      card.hidden = !show;
+      if (show) {
+        // 左のカテゴリ欄の右の空きにカードを置く（スマホではカテゴリ欄の下に半分隠れていた）
+        const tb = workspace.getToolbox && workspace.getToolbox();
+        const w = tb && tb.getWidth ? Math.round(tb.getWidth()) : 0;
+        card.style.setProperty('--pyco-ws-tb', w + 'px');
+      }
+    }
+    workspace.addChangeListener(function(e) {
+      if (e.type === Blockly.Events.TOOLBOX_ITEM_SELECT) flyoutOpen = !!e.newItem;
+      if (e.isUiEvent && e.type !== Blockly.Events.TOOLBOX_ITEM_SELECT) return;
+      update();
+    });
+    window.PycoEmptyHint = { update: update };
+    setTimeout(update, 0);
+  })();
 
   document.getElementById('btn-load-xml').addEventListener('click', function() {
     document.getElementById('xml-input').click();
@@ -5194,12 +5361,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnShareUrl) {
     btnShareUrl.addEventListener('click', function() {
       if (typeof pako === 'undefined') {
-        alert('圧縮ライブラリ(pako)を読み込めませんでした。通信環境を確認してください。');
+        showToast('共有URLを作れませんでした（部品を読み込めません）。インターネットにつながっているか確かめてください。', { type: 'err', ms: 8000 });
         return;
       }
       var topBlocks = workspace.getTopBlocks(false);
       if (topBlocks.length === 0) {
-        alert('共有するブロックがありません。先にブロックを並べてください。');
+        showToast('共有するブロックがありません。先にブロックを並べてください。', { type: 'err' });
         return;
       }
       var xmlText = _workspaceToShareXmlText();
@@ -5219,8 +5386,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // URLが長すぎる場合は共有を止め、サーバ設置(?src=)を案内する
       if (url.length > 8000) {
-        alert('作品が大きすぎて共有URLに収まりません（' + url.length + '文字）。\n'
-            + '「ブロック保存」でXMLを書き出し、サーバに置いて ?src= で読み込む方法をご検討ください。');
+        showToast('作品が大きすぎて共有URLに収まりません（' + url.length + ' 文字）。'
+            + '［ファイル → ブロックを保存］でファイルにして渡してください。', { type: 'err', ms: 9000 });
         return;
       }
       _openShareModal(url);
@@ -5296,6 +5463,7 @@ document.addEventListener('DOMContentLoaded', function() {
         switchFile(idx);
       } else {
         fileMode = true;
+        if (window.PycoEmptyHint) PycoEmptyHint.update();
         editor.setValue(ev.target.result);
         document.getElementById('serial-status').textContent = file.name + ' を読み込みました';
         document.getElementById('serial-status').className = 'serial-status serial-status--ok';
@@ -5307,6 +5475,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== Web Serial 対応チェック =====
   const hasSerial = 'serial' in navigator;
+  // つなげないブラウザで出す説明（Pi Pico の実行ボタン・「つなげないブラウザ」の札から）
+  function noSerialMessage() {
+    return currentBoard === 'microbit'
+      ? 'このブラウザは micro:bit につなげません（パソコンの Chrome か Edge ならつなげます）。画面の micro:bit（シミュレータ）は［▶ 実行］で動かせます。'
+      : 'このブラウザは Pico につなげません。Pico を動かすときは、パソコンの Chrome か Edge で開いてください。ここでも、ブロック・Python のコード・配線図は見られます。';
+  }
 
   // ===== Web Serial：接続 / 書き込み =====
   const btnConnect   = document.getElementById('btn-connect');
@@ -5349,13 +5523,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const board = mb ? 'micro:bit' : 'Pico';
     const runBtn = document.getElementById('btn-run');
     const stopBtn = document.getElementById('btn-stop');
-    runBtn.disabled = (!connected && !mb) || (mb && !connected && _simRunning);
+    // Pico 未接続のときは灰色に見せるが押せるようにしておき、押したら「つなぎ方」を知らせる
+    // （disabled だと押しても何も起きず、初めての人は理由が分からない）
+    const needsConnect = !connected && !mb;
+    runBtn.disabled = mb && !connected && _simRunning;
+    runBtn.classList.toggle('needs-connect', needsConnect);
     stopBtn.disabled = !connected && !(mb && _simRunning);
     runBtn.textContent = (mb && !connected) ? '▶ 実行（シミュレータ）' : '▶ 実行';
     stopBtn.textContent = mb ? (connected ? '■ micro:bit を止める' : '■ シミュレータを止める') : '■ 停止';
     runBtn.title = connected ? board + ' でプログラムを動かします（Ctrl+Enter）'
       : mb ? 'つないでいないので、シミュレータで動かします（Ctrl+Enter）'
-      : '先に［接続］で Pico をつなぐと押せます';
+      : 'Pico をつなぐと動かせます（押すと、つなぎ方が出ます）';
     stopBtn.title = connected ? board + ' で動いているプログラムを止めます'
       : mb ? 'シミュレータで動いているプログラムを止めます'
       : '先に［接続］で Pico をつなぐと押せます';
@@ -5493,6 +5671,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (currentBoard === 'microbit') {
         if (window.PycoMicrobitSim && PycoMicrobitSim.unlockAudio) PycoMicrobitSim.unlockAudio();
         runPython();
+      } else {
+        showToast(hasSerial
+          ? '動かすには Pico をつなぎます。USB ケーブルでつないで［接続］を押してください。' +
+            'Pico がなくても、ブロック・Python のコード・配線図は見られます。'
+          : noSerialMessage());
+        if (hasSerial) { btnConnect.classList.remove('pyco-attn'); void btnConnect.offsetWidth; btnConnect.classList.add('pyco-attn'); }
       }
       return;
     }
@@ -5634,9 +5818,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // シリアル関連ボタン（MicroPython && Web Serial対応のみ表示）
     const showSerial = mode === 'micropython' && hasSerial;
-    ['btn-connect', 'btn-run', 'btn-stop', 'btn-write'].forEach(id => {
+    ['btn-connect', 'btn-write'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = showSerial ? '' : 'none';
+    });
+    // 実行・停止は、つなげないブラウザ（iPhone・iPad・Firefox など）でも出す。
+    // micro:bit はシミュレータで動き、Pi Pico は押すと「どこまで試せて、何があれば動くか」を知らせる
+    // （以前は隠していて、micro:bit のシミュレータをスマホで動かす道が無かった）
+    ['btn-run', 'btn-stop'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = mode === 'micropython' ? '' : 'none';
     });
     updateReconnectVisibility();
     // ボタンの説明（title）をボードに合わせる。micro:bit でも「Pico に…」と出ていたため
@@ -5663,6 +5854,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // DEMOバッジ（MicroPythonモードでWeb Serial非対応のみ表示）
     const demoBadge = document.getElementById('demo-badge');
     if (demoBadge) demoBadge.style.display = (mode === 'micropython' && !hasSerial) ? '' : 'none';
+    if (demoBadge && !demoBadge._wired) {
+      demoBadge._wired = true;
+      demoBadge.addEventListener('click', function() { showToast(noSerialMessage()); });
+    }
 
     // 配線図ボタン（MicroPythonモード・Pico のみ表示）
     const showCircuit = mode === 'micropython' && currentBoard === 'pico';
@@ -5835,8 +6030,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSyntaxCollapseUI();
     syncMainViewportHeight();
     syncModeUrl(false);
-    if (showSerial) updateSerialUI();
+    if (mode === 'micropython') updateSerialUI();
 
+    if (window.PycoEmptyHint) setTimeout(PycoEmptyHint.update, 0);
   }
 
   // モードボタンのイベント
@@ -6048,12 +6244,18 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   }
+  let _restartPending = false;
   function setPythonRunning(running) {
     const focusBefore = document.activeElement;
     const btnRun  = document.getElementById('btn-run-python');
     const btnStop = document.getElementById('btn-stop-python');
-    btnRun.disabled    = running;
-    btnRun.textContent = running ? '実行中…' : '▶ 実行';
+    // ゲームは動かしながらブロックを変えて試すことが多い。実行中も押せる［↻ やり直す］にして、
+    // 押したら止めてから今のブロックで動かし直す（「実行中…」で押せず、変えても反映されないと迷っていた）
+    const restartable = running && currentMode === 'game';
+    btnRun.disabled    = running && !restartable;
+    btnRun.textContent = restartable ? '↻ やり直す' : running ? '実行中…' : '▶ 実行';
+    btnRun.title = restartable ? '止めて、今のブロックでもう一度動かす（Ctrl+Enter）' : 'ブロック（コード）を実行する（Ctrl+Enter）';
+    if (!running && _restartPending) { _restartPending = false; setTimeout(function() { runPython(); }, 0); }
     // micro:bit のシミュレータはツールバーの「■ シミュレータを止める」で止める。
     // ここでも停止を出すと停止ボタンが 3 つ並び、どれが何を止めるか分からなくなる
     btnStop.style.display = (running && currentMode !== 'micropython') ? '' : 'none';
@@ -6578,6 +6780,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('btn-run-python').addEventListener('click', function() {
     if (warnEmptyInput()) return;
+    if (_simRunning && currentMode === 'game') {
+      // 実行中なら止めて、止まったら setPythonRunning(false) から動かし直す
+      _restartPending = true;
+      _pyStopRequested = true;
+      window.__pygameRunning = false;
+      return;
+    }
     runPython();
   });
   // センサーモニター（micro:bit）：選んだセンサーの値を 0.1 秒ごとに print するプログラムを動かし、グラフで見る。
@@ -7252,11 +7461,11 @@ document.addEventListener('DOMContentLoaded', function() {
   (function registerScreenshotMenu() {
     function captureWorkspaceAsPng() {
       const blocks = workspace.getAllBlocks(false);
-      if (blocks.length === 0) { alert('ブロックがありません'); return; }
+      if (blocks.length === 0) { showToast('画像にするブロックがありません。', { type: 'err' }); return; }
 
       const blockCanvas = workspace.getCanvas();
       const bbox = blockCanvas.getBBox();
-      if (!bbox || bbox.width === 0 || bbox.height === 0) { alert('ブロックがありません'); return; }
+      if (!bbox || bbox.width === 0 || bbox.height === 0) { showToast('画像にするブロックがありません。', { type: 'err' }); return; }
 
       const padding = 20;
 
@@ -7350,7 +7559,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       };
-      img.onerror = function() { URL.revokeObjectURL(url); alert('画像の生成に失敗しました'); };
+      img.onerror = function() { URL.revokeObjectURL(url); showToast('画像を作れませんでした。', { type: 'err' }); };
       img.src = url;
     }
 
@@ -7948,7 +8157,7 @@ document.addEventListener('DOMContentLoaded', function() {
       fitAfterLoad();
     } catch (err) {
       console.warn('PycoBlocks: 共有ハッシュの復元に失敗:', err);
-      alert('共有URLのブロックを復元できませんでした。URLが途中で切れていないか確認してください。');
+      showToast('共有URLのブロックを開けませんでした。URL が途中で切れていないか確かめてください。', { type: 'err', ms: 9000 });
     }
   }
 
@@ -8160,7 +8369,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const STOP_OF = { 'btn-run-python': 'btn-stop-python', 'btn-run': 'btn-stop' };
     // 実行中で、組の停止ボタンが押せるなら、その停止ボタンを返す
     function activeStopBtn(target) {
-      if (!target || !target.disabled) return null;
+      // ゲームの実行中は実体の実行ボタンが［↻ やり直す］として押せる。スマホの下のボタンは止めるほうを優先する
+      if (!target || !(target.disabled || _simRunning)) return null;
       const st = document.getElementById(STOP_OF[target.id]);
       if (!st || st.disabled || getComputedStyle(st).display === 'none') return null;
       return st;
@@ -8180,9 +8390,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // 使える実行ボタンが無いモード（例：MicroPython DEMO）は隠す
       runFab.style.display = target ? '' : 'none';
       runFab.disabled = stop ? false : (target ? target.disabled : true);
+      runFab.classList.toggle('needs-connect', !stop && !!(target && target.classList.contains('needs-connect')));
       const label = stop ? '■ 停止' : '▶ 実行';
       if (runFab.textContent !== label) runFab.textContent = label;
-      runFab.title = stop ? '実行を止める' : (target && target.disabled ? (target.title || '実行') : '実行');
+      runFab.title = stop ? '実行を止める' : (target && (target.disabled || target.classList.contains('needs-connect')) ? (target.title || '実行') : '実行');
       runFab.setAttribute('aria-label', stop ? '停止' : '実行');
     }
     if (runFab) {
@@ -8196,7 +8407,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const ro = new MutationObserver(syncRunFab);
       realRunBtns.concat(Object.values(STOP_OF).map(function(id) { return document.getElementById(id); }).filter(Boolean))
         .forEach(function(b) {
-          ro.observe(b, { attributes: true, attributeFilter: ['disabled', 'style'] });
+          ro.observe(b, { attributes: true, attributeFilter: ['disabled', 'style', 'class', 'title'] });
         });
     }
 

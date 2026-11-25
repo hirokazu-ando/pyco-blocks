@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vv">val</variable>
+  </variables>
+  <block type="pico_forever" id="a1" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_analog_read" id="a2">
+        <field name="PIN">26</field>
+        <field name="VAR" id="vv">val</field>
+        <next>
+          <block type="py_print" id="a3">
+            <value name="VALUE">
+              <block type="val_var" id="a4"><field name="VAR" id="vv">val</field></block>
+            </value>
+            <next>
+              <block type="pico_wait" id="a5">
+                <value name="SEC">
+                  <block type="val_number" id="a6"><field name="NUM">0.5</field></block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

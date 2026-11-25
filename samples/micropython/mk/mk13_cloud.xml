@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block x="30" y="30" type="pico_w_wifi_connect" id="b1">
+    <field name="SSID">your-ssid</field>
+    <field name="PASS">your-password</field>
+    <next>
+      <block type="pico_forever" id="b2">
+        <statement name="DO">
+          <block type="pico_analog_read" id="b3">
+            <field name="PIN">26</field>
+            <field name="VAR">light</field>
+            <next>
+              <block type="var_set" id="b4">
+                <field name="VAR">body</field>
+                <value name="VALUE">
+                  <block type="py_fstring" id="b5">
+                    <field name="PRE">{"writeKey":"WRITE_KEY","d1":</field>
+                    <field name="POST">}</field>
+                    <value name="VAR">
+                      <block type="val_var" id="b6">
+                        <field name="VAR">light</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <next>
+                  <block type="pico_w_http_post" id="b7">
+                    <field name="URL">https://ambidata.io/api/v2/channels/CH_ID/data</field>
+                    <field name="VAR">resp</field>
+                    <value name="DATA">
+                      <block type="val_var" id="b8">
+                        <field name="VAR">body</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_wait" id="b9">
+                        <value name="SEC">
+                          <block type="val_number" id="b10">
+                            <field name="NUM">5</field>
+                          </block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

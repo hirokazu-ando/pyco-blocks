@@ -123,7 +123,9 @@
       var mode = io.getMode();
       try {
         var text = io.serialize();
-        saveToStorage(mode, text);
+        var ok = saveToStorage(mode, text);
+        // 画面に「自動保存ずみ」を出すための知らせ（受け手は app.js の作業域の帯）
+        try { document.dispatchEvent(new CustomEvent('pyco:autosaved', { detail: { ok: ok } })); } catch (e2) { /* 古いブラウザ */ }
       } catch (e) {
         console.warn('PycoBlocks: シリアライズに失敗:', e);
       }

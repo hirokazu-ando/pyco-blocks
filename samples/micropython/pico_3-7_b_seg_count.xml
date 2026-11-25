@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_7seg_show" id="b0" x="30" y="30">
+    <field name="NUM">0</field>
+    <field name="PIN_A">2</field>
+    <field name="PIN_B">3</field>
+    <field name="PIN_C">4</field>
+    <field name="PIN_D">5</field>
+    <field name="PIN_E">6</field>
+    <field name="PIN_F">7</field>
+    <field name="PIN_G">8</field>
+    <next>
+      <block type="pico_wait" id="b0w">
+        <value name="SEC">
+          <block type="val_number" id="b0wn"><field name="NUM">0.5</field></block>
+        </value>
+        <next>
+          <block type="pico_7seg_show" id="b1">
+            <field name="NUM">1</field>
+            <field name="PIN_A">2</field>
+            <field name="PIN_B">3</field>
+            <field name="PIN_C">4</field>
+            <field name="PIN_D">5</field>
+            <field name="PIN_E">6</field>
+            <field name="PIN_F">7</field>
+            <field name="PIN_G">8</field>
+            <next>
+              <block type="pico_wait" id="b1w">
+                <value name="SEC">
+                  <block type="val_number" id="b1wn"><field name="NUM">0.5</field></block>
+                </value>
+                <next>
+                  <block type="pico_7seg_show" id="b2">
+                    <field name="NUM">2</field>
+                    <field name="PIN_A">2</field>
+                    <field name="PIN_B">3</field>
+                    <field name="PIN_C">4</field>
+                    <field name="PIN_D">5</field>
+                    <field name="PIN_E">6</field>
+                    <field name="PIN_F">7</field>
+                    <field name="PIN_G">8</field>
+                    <next>
+                      <block type="pico_wait" id="b2w">
+                        <value name="SEC">
+                          <block type="val_number" id="b2wn"><field name="NUM">0.5</field></block>
+                        </value>
+                        <next>
+                          <block type="pico_7seg_show" id="b3">
+                            <field name="NUM">3</field>
+                            <field name="PIN_A">2</field>
+                            <field name="PIN_B">3</field>
+                            <field name="PIN_C">4</field>
+                            <field name="PIN_D">5</field>
+                            <field name="PIN_E">6</field>
+                            <field name="PIN_F">7</field>
+                            <field name="PIN_G">8</field>
+                            <next>
+                              <block type="pico_wait" id="b3w">
+                                <value name="SEC">
+                                  <block type="val_number" id="b3wn"><field name="NUM">0.5</field></block>
+                                </value>
+                                <next>
+                                  <block type="pico_7seg_show" id="b4">
+                                    <field name="NUM">4</field>
+                                    <field name="PIN_A">2</field>
+                                    <field name="PIN_B">3</field>
+                                    <field name="PIN_C">4</field>
+                                    <field name="PIN_D">5</field>
+                                    <field name="PIN_E">6</field>
+                                    <field name="PIN_F">7</field>
+                                    <field name="PIN_G">8</field>
+                                    <next>
+                                      <block type="pico_wait" id="b4w">
+                                        <value name="SEC">
+                                          <block type="val_number" id="b4wn"><field name="NUM">0.5</field></block>
+                                        </value>
+                                        <next>
+                                          <block type="pico_7seg_show" id="b5">
+                                            <field name="NUM">5</field>
+                                            <field name="PIN_A">2</field>
+                                            <field name="PIN_B">3</field>
+                                            <field name="PIN_C">4</field>
+                                            <field name="PIN_D">5</field>
+                                            <field name="PIN_E">6</field>
+                                            <field name="PIN_F">7</field>
+                                            <field name="PIN_G">8</field>
+                                            <next>
+                                              <block type="pico_wait" id="b5w">
+                                                <value name="SEC">
+                                                  <block type="val_number" id="b5wn"><field name="NUM">0.5</field></block>
+                                                </value>
+                                                <next>
+                                                  <block type="pico_7seg_show" id="b6">
+                                                    <field name="NUM">6</field>
+                                                    <field name="PIN_A">2</field>
+                                                    <field name="PIN_B">3</field>
+                                                    <field name="PIN_C">4</field>
+                                                    <field name="PIN_D">5</field>
+                                                    <field name="PIN_E">6</field>
+                                                    <field name="PIN_F">7</field>
+                                                    <field name="PIN_G">8</field>
+                                                    <next>
+                                                      <block type="pico_wait" id="b6w">
+                                                        <value name="SEC">
+                                                          <block type="val_number" id="b6wn"><field name="NUM">0.5</field></block>
+                                                        </value>
+                                                        <next>
+                                                          <block type="pico_7seg_show" id="b7">
+                                                            <field name="NUM">7</field>
+                                                            <field name="PIN_A">2</field>
+                                                            <field name="PIN_B">3</field>
+                                                            <field name="PIN_C">4</field>
+                                                            <field name="PIN_D">5</field>
+                                                            <field name="PIN_E">6</field>
+                                                            <field name="PIN_F">7</field>
+                                                            <field name="PIN_G">8</field>
+                                                            <next>
+                                                              <block type="pico_wait" id="b7w">
+                                                                <value name="SEC">
+                                                                  <block type="val_number" id="b7wn"><field name="NUM">0.5</field></block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="pico_7seg_show" id="b8">
+                                                                    <field name="NUM">8</field>
+                                                                    <field name="PIN_A">2</field>
+                                                                    <field name="PIN_B">3</field>
+                                                                    <field name="PIN_C">4</field>
+                                                                    <field name="PIN_D">5</field>
+                                                                    <field name="PIN_E">6</field>
+                                                                    <field name="PIN_F">7</field>
+                                                                    <field name="PIN_G">8</field>
+                                                                    <next>
+                                                                      <block type="pico_wait" id="b8w">
+                                                                        <value name="SEC">
+                                                                          <block type="val_number" id="b8wn"><field name="NUM">0.5</field></block>
+                                                                        </value>
+                                                                        <next>
+                                                                          <block type="pico_7seg_show" id="b9">
+                                                                            <field name="NUM">9</field>
+                                                                            <field name="PIN_A">2</field>
+                                                                            <field name="PIN_B">3</field>
+                                                                            <field name="PIN_C">4</field>
+                                                                            <field name="PIN_D">5</field>
+                                                                            <field name="PIN_E">6</field>
+                                                                            <field name="PIN_F">7</field>
+                                                                            <field name="PIN_G">8</field>
+                                                                          </block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_temp">temp</variable>
+    <variable id="var_humi">humi</variable>
+  </variables>
+  <block type="pico_lcd_init" id="li" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_forever" id="ff">
+        <statement name="DO">
+          <block type="pico_dht_read" id="dht1">
+            <field name="PIN">16</field>
+            <field name="TVAR" id="var_temp">temp</field>
+            <field name="HVAR" id="var_humi">humi</field>
+            <next>
+              <block type="pico_lcd_print" id="lp_t">
+                <field name="VAR" id="var_lcd">lcd</field>
+                <field name="ROW">0</field>
+                <value name="TEXT">
+                  <block type="py_fstring" id="fs_t">
+                    <field name="PRE">Temp: </field>
+                    <value name="VAR">
+                      <block type="val_var" id="vv_t"><field name="VAR" id="var_temp">temp</field></block>
+                    </value>
+                    <field name="POST"> C</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pico_lcd_print" id="lp_h">
+                    <field name="VAR" id="var_lcd">lcd</field>
+                    <field name="ROW">1</field>
+                    <value name="TEXT">
+                      <block type="py_fstring" id="fs_h">
+                        <field name="PRE">Humi: </field>
+                        <value name="VAR">
+                          <block type="val_var" id="vv_h"><field name="VAR" id="var_humi">humi</field></block>
+                        </value>
+                        <field name="POST"> %</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_wait" id="w1">
+                        <value name="SEC">
+                          <block type="val_number" id="wn1"><field name="NUM">2</field></block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

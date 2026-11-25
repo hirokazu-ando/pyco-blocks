@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_buzzer_tone" id="a1" x="30" y="30">
+    <field name="PIN">15</field>
+    <field name="FREQ">440</field>
+    <field name="DUR">1</field>
+  </block>
+</xml>

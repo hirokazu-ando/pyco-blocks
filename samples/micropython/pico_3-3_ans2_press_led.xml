@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" id="c1" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_if" id="c2">
+        <mutation elseif="0" else="1"></mutation>
+        <value name="IF0">
+          <block type="cond_compare" id="c3">
+            <field name="OP">==</field>
+            <value name="LEFT">
+              <block type="pico_digital_read_val" id="c4">
+                <field name="PIN">14</field>
+                <field name="PULL">PULLUP_EXT</field>
+              </block>
+            </value>
+            <value name="RIGHT">
+              <block type="val_number" id="c5">
+                <field name="NUM">0</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="pico_led_on" id="c6">
+            <field name="PIN">15</field>
+          </block>
+        </statement>
+        <statement name="ELSE">
+          <block type="pico_led_off" id="c7">
+            <field name="PIN">15</field>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+</xml>

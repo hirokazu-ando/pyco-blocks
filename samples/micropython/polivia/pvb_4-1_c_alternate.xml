@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 #01 ステップ3：LED1 と LED2 を交互に点滅 -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" id="c0" x="30" y="30">
+    <statement name="DO">
+      <block type="pvb_led_on" id="c1">
+        <field name="LED">11</field>
+        <next>
+          <block type="pvb_led_off" id="c2">
+            <field name="LED">12</field>
+            <next>
+              <block type="pico_wait" id="c3">
+                <value name="SEC"><block type="val_number" id="c3n"><field name="NUM">0.5</field></block></value>
+                <next>
+                  <block type="pvb_led_off" id="c4">
+                    <field name="LED">11</field>
+                    <next>
+                      <block type="pvb_led_on" id="c5">
+                        <field name="LED">12</field>
+                        <next>
+                          <block type="pico_wait" id="c6">
+                            <value name="SEC"><block type="val_number" id="c6n"><field name="NUM">0.5</field></block></value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

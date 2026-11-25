@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vv">val</variable>
+    <variable id="vd">duty</variable>
+  </variables>
+  <block type="pico_forever" id="d1" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_analog_read" id="d2">
+        <field name="PIN">26</field>
+        <field name="VAR" id="vv">val</field>
+        <next>
+          <block type="var_set" id="d3">
+            <field name="VAR" id="vd">duty</field>
+            <value name="VALUE">
+              <block type="py_math_op" id="d4">
+                <field name="OP">/</field>
+                <value name="LEFT">
+                  <block type="py_math_op" id="d5">
+                    <field name="OP">*</field>
+                    <value name="LEFT">
+                      <block type="val_var" id="d6"><field name="VAR" id="vv">val</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="d7"><field name="NUM">100</field></block>
+                    </value>
+                  </block>
+                </value>
+                <value name="RIGHT">
+                  <block type="val_number" id="d8"><field name="NUM">65535</field></block>
+                </value>
+              </block>
+            </value>
+            <next>
+              <block type="pico_pwm_write_val" id="d9">
+                <field name="PIN">15</field>
+                <value name="DUTY">
+                  <block type="val_var" id="d10"><field name="VAR" id="vd">duty</field></block>
+                </value>
+                <next>
+                  <block type="pico_pwm_write_val" id="d11">
+                    <field name="PIN">14</field>
+                    <value name="DUTY">
+                      <block type="py_math_op" id="d12">
+                        <field name="OP">-</field>
+                        <value name="LEFT">
+                          <block type="val_number" id="d13"><field name="NUM">100</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_var" id="d14"><field name="VAR" id="vd">duty</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="pico_wait" id="d15">
+                        <value name="SEC">
+                          <block type="val_number" id="d16"><field name="NUM">0.02</field></block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

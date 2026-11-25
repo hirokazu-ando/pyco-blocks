@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_dist">dist</variable>
+  </variables>
+  <block type="pico_lcd_init" id="b1" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_forever" id="b2">
+        <statement name="DO">
+          <block type="pico_ultrasonic_cm" id="b3">
+            <field name="TRIG">2</field>
+            <field name="ECHO">3</field>
+            <field name="VAR" id="var_dist">dist</field>
+            <next>
+              <block type="pico_lcd_print" id="b4">
+                <field name="VAR" id="var_lcd">lcd</field>
+                <field name="ROW">0</field>
+                <value name="TEXT">
+                  <block type="py_fstring" id="b5">
+                    <field name="PRE">Dist: </field>
+                    <value name="VAR">
+                      <block type="val_var" id="b6"><field name="VAR" id="var_dist">dist</field></block>
+                    </value>
+                    <field name="POST"> cm</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="pico_if" id="b7">
+                    <mutation elseif="0" else="1"></mutation>
+                    <value name="IF0">
+                      <block type="cond_compare" id="b8">
+                        <field name="OP">&lt;</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="b9"><field name="VAR" id="var_dist">dist</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="b10"><field name="NUM">15</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="pico_dcmotor_run" id="b11">
+                        <field name="IN1">4</field>
+                        <field name="IN2">5</field>
+                        <field name="EN">6</field>
+                        <field name="SPEED">90</field>
+                        <field name="DIR">fwd</field>
+                        <next>
+                          <block type="pico_lcd_print" id="b12">
+                            <field name="VAR" id="var_lcd">lcd</field>
+                            <field name="ROW">1</field>
+                            <value name="TEXT">
+                              <block type="val_str" id="b13"><field name="TEXT">Speed: HIGH    </field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <statement name="ELSE">
+                      <block type="pico_dcmotor_run" id="b14">
+                        <field name="IN1">4</field>
+                        <field name="IN2">5</field>
+                        <field name="EN">6</field>
+                        <field name="SPEED">30</field>
+                        <field name="DIR">fwd</field>
+                        <next>
+                          <block type="pico_lcd_print" id="b15">
+                            <field name="VAR" id="var_lcd">lcd</field>
+                            <field name="ROW">1</field>
+                            <value name="TEXT">
+                              <block type="val_str" id="b16"><field name="TEXT">Speed: LOW     </field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_wait" id="b17">
+                        <value name="SEC">
+                          <block type="val_number" id="b18"><field name="NUM">0.3</field></block>
+                        </value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

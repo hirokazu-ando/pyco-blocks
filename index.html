@@ -127,7 +127,7 @@
       {
         "@type": "Question",
         "name": "実機（マイコン）がなくても使えますか？",
-        "acceptedAnswer": { "@type": "Answer", "text": "使えます。Python 入門モードとゲームモードはブラウザの中だけで動くので、マイコンは必要ありません。実機がいるのは、Raspberry Pi Pico につなぐ MicroPython モードだけです。" }
+        "acceptedAnswer": { "@type": "Answer", "text": "使えます。Python 入門モードとゲームモードはブラウザの中だけで動くので、マイコンは必要ありません。micro:bit モードも画面の中のシミュレータで動かせます。実機がいるのは、Raspberry Pi Pico につなぐ Pi Pico モードだけです（Pico がなくても、ブロック・コード・配線図までは試せます）。" }
       },
       {
         "@type": "Question",
@@ -480,7 +480,7 @@
       <a class="brand" href="/"><img src="assets/pycoblocks-icon.svg" alt="PycoBlocks ロゴ" width="32" height="32">PycoBlocks</a>
       <nav>
         <div class="nav-links">
-          <a class="nl" href="#modes">3つのモード</a>
+          <a class="nl" href="#modes">4つのモード</a>
           <a class="nl" href="#learn">学習モード</a>
           <a class="nl" href="#theme">色テーマ</a>
           <a class="nl" href="#login">ログイン</a>
@@ -499,15 +499,15 @@
       <div>
         <span class="eyebrow">無料・インストール不要・ブラウザ完結</span>
         <h1>ブロックをつなぐと、<br><span class="mark">Python</span> が書ける。</h1>
-        <p class="lead">PycoBlocks（ピコブロックス）は、ブロックを並べると <strong>Python / MicroPython</strong> のコードができあがる学習環境です。アカウント登録もインストールもいりません。<strong>Scratch の次の一歩</strong>として、高専の授業で使うために作りました。</p>
+        <p class="lead">PycoBlocks（ピコブロックス）は、ブロックを並べると <strong>Python / MicroPython</strong> のコードができあがる学習環境です。アカウント登録もインストールもいりません。<strong>Scratch の次の一歩</strong>として、高専の授業で使うために作りました。小学校高学年から高専生まで使えます。</p>
         <div class="hero-cta">
           <a class="cta-block" href="app.html">はじめる<span class="arw">▶</span></a>
-          <a class="text-link" href="#modes">3つのモードを見る &rarr;</a>
+          <a class="text-link" href="#modes">4つのモードを見る &rarr;</a>
         </div>
         <div class="hero-meta">
           <span>ブラウザ内でそのまま実行</span>
           <span>生成コードが常に見える</span>
-          <span>Raspberry Pi Pico 対応</span>
+          <span>Pi Pico・micro:bit 対応</span>
           <span>スマホ・タブレットOK</span>
         </div>
         <p class="cta-note">// 登録なし・数秒で編集画面がひらきます</p>
@@ -525,17 +525,17 @@
   </header>
 
   <main>
-    <!-- ===== 3つのモード ===== -->
+    <!-- ===== 4つのモード ===== -->
     <section id="modes" style="background:var(--paper-2);">
       <div class="wrap">
         <div class="unit">
           <div class="chip c-teal">1</div>
           <div class="htext">
-            <span class="eyebrow">3 modes</span>
-            <h2>目的に合わせて選べる 3 つのモード</h2>
+            <span class="eyebrow">4 modes</span>
+            <h2>目的に合わせて選べる 4 つのモード</h2>
           </div>
         </div>
-        <p class="lede">実機がなくても始められます。ブロックを組むと、そのまま動く Python のコードができます。目的に合わせて、3 つのモードから選べます。</p>
+        <p class="lede">実機がなくても始められます。ブロックを組むと、そのまま動く Python のコードができます。目的に合わせて、4 つのモードから選べます。</p>
 
         <div class="mode-stack">
           <!-- Python 入門 -->
@@ -569,6 +569,7 @@
                 <div class="m-head"><span class="m-tag">MicroPython</span></div>
                 <h3>Pico に直接つなぐ</h3>
                 <p>Web Serial API を使って、Raspberry Pi Pico や PoliviaBot にブラウザから直接つなぎます。プログラムの実行と main.py の書き込みができます。</p>
+                <p>つなぐのに要るもの：Pico と USB ケーブル（データ通信ができるもの）、パソコンの Chrome か Edge。Pico がなくても、ブロック・コード・配線図までは試せます。</p>
                 <a class="m-go" href="app.html?mode=micropython" style="display:inline-block;margin-top:14px;">Pi Pico モードを開く &rarr;</a>
               </div>
               <figure class="m-fig" style="margin:0;">
@@ -576,6 +577,17 @@
                      alt="MicroPython モードの実体配線図。Raspberry Pi Pico に LED・抵抗・ボタンを直結スタイルでつないだ図。"></div>
                 <figcaption class="m-figcap">図3　Pico と部品のつなぎ方がそのまま図になる。</figcaption>
               </figure>
+            </div>
+          </div>
+          <!-- micro:bit -->
+          <div class="pblock m-teal">
+            <div class="m-row">
+              <div>
+                <div class="m-head"><span class="m-tag">micro:bit</span></div>
+                <h3>シミュレータで動く micro:bit</h3>
+                <p>画面の中の micro:bit で、LED・ボタン・センサーのプログラムをすぐに試せます。本物の micro:bit（V2）をつなげば、同じプログラムを書き込めます。</p>
+                <a class="m-go" href="app.html?mode=microbit" style="display:inline-block;margin-top:14px;">micro:bit モードを開く &rarr;</a>
+              </div>
             </div>
           </div>
         </div>
@@ -651,7 +663,7 @@
             <h2>黒と白を切り替える 色テーマ</h2>
           </div>
         </div>
-        <p class="lede">ツールバーの「黒」ボタンを押すと、画面全体の配色が <strong>黒（ダーク）</strong> と <strong>白（ライト）</strong> で入れ替わります。ボタンには今の配色が出るので、押すたびに黒 ⇄ 白 と切り替わります。</p>
+        <p class="lede">ツールバーの［表示 ▼］→［白にする］を押すと、画面全体の配色が <strong>黒（ダーク）</strong> から <strong>白（ライト）</strong> に変わります。白のときは同じ場所が［黒にする］になり、押すたびに黒 ⇄ 白 と切り替わります。</p>
 
         <div class="theme-pair">
           <div class="theme-card">
@@ -825,7 +837,7 @@
           </details>
           <details>
             <summary>実機（マイコン）がなくても使えますか？</summary>
-            <p>使えます。Python 入門モードとゲームモードはブラウザの中だけで動くので、マイコンは必要ありません。実機がいるのは、Raspberry Pi Pico につなぐ MicroPython モードだけです。</p>
+            <p>使えます。Python 入門モードとゲームモードはブラウザの中だけで動くので、マイコンは必要ありません。micro:bit モードも画面の中のシミュレータで動かせます。実機がいるのは、Raspberry Pi Pico につなぐ Pi Pico モードだけです（Pico がなくても、ブロック・コード・配線図までは試せます）。</p>
           </details>
           <details>
             <summary>対応ブラウザは？</summary>

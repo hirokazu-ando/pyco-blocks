@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_state">state</variable>
+    <variable id="var_ip">ip</variable>
+  </variables>
+  <block type="var_set" id="c0" x="30" y="30">
+    <field name="VAR" id="var_state">state</field>
+    <value name="VALUE">
+      <block type="val_number" id="c0v"><field name="NUM">0</field></block>
+    </value>
+    <next>
+      <block type="pico_forever" id="c1">
+        <statement name="DO">
+          <block type="pico_if" id="c2">
+            <mutation elseif="0" else="0"></mutation>
+            <value name="IF0">
+              <block type="cond_and" id="c3">
+                <value name="A">
+                  <block type="cond_compare" id="c4">
+                    <field name="OP">==</field>
+                    <value name="LEFT">
+                      <block type="pico_digital_read_val" id="c5">
+                        <field name="PIN">14</field>
+                        <field name="PULL">PULLUP_EXT</field>
+                      </block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="c6"><field name="NUM">0</field></block>
+                    </value>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="cond_compare" id="c7">
+                    <field name="OP">==</field>
+                    <value name="LEFT">
+                      <block type="val_var" id="c8"><field name="VAR" id="var_state">state</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="c9"><field name="NUM">0</field></block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="pico_w_wifi_connect" id="c10">
+                <field name="SSID">your-ssid</field>
+                <field name="PASS">your-password</field>
+                <next>
+                  <block type="var_set" id="c11">
+                    <field name="VAR" id="var_ip">ip</field>
+                    <value name="VALUE">
+                      <block type="pico_w_wifi_ip" id="c12"></block>
+                    </value>
+                    <next>
+                      <block type="py_print" id="c13">
+                        <value name="VALUE">
+                          <block type="py_fstring" id="c14">
+                            <field name="PRE">Connected! IP: </field>
+                            <value name="VAR">
+                              <block type="val_var" id="c15"><field name="VAR" id="var_ip">ip</field></block>
+                            </value>
+                            <field name="POST"></field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="pico_w_led_on" id="c16">
+                            <next>
+                              <block type="var_set" id="c17">
+                                <field name="VAR" id="var_state">state</field>
+                                <value name="VALUE">
+                                  <block type="val_number" id="c18"><field name="NUM">1</field></block>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </statement>
+            <next>
+              <block type="pico_wait" id="c19">
+                <value name="SEC">
+                  <block type="val_number" id="c20"><field name="NUM">0.1</field></block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

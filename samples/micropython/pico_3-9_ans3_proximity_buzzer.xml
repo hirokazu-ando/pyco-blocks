@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_dist">dist</variable>
+  </variables>
+  <block type="pico_forever" id="ff" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_ultrasonic_cm" id="us">
+        <field name="TRIG">14</field>
+        <field name="ECHO">15</field>
+        <field name="VAR" id="var_dist">dist</field>
+        <next>
+          <block type="pico_if" id="if1">
+            <mutation elseif="1" else="1"></mutation>
+            <value name="IF0">
+              <block type="cond_compare" id="cc1">
+                <field name="OP">&lt;</field>
+                <value name="LEFT">
+                  <block type="val_var" id="vv1"><field name="VAR" id="var_dist">dist</field></block>
+                </value>
+                <value name="RIGHT">
+                  <block type="val_number" id="cn1"><field name="NUM">10</field></block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="pico_buzzer_tone" id="bz1">
+                <field name="PIN">16</field>
+                <field name="FREQ">880</field>
+                <field name="DUR">0.2</field>
+              </block>
+            </statement>
+            <value name="IF1">
+              <block type="cond_compare" id="cc2">
+                <field name="OP">&lt;</field>
+                <value name="LEFT">
+                  <block type="val_var" id="vv2"><field name="VAR" id="var_dist">dist</field></block>
+                </value>
+                <value name="RIGHT">
+                  <block type="val_number" id="cn2"><field name="NUM">30</field></block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO1">
+              <block type="pico_buzzer_tone" id="bz2">
+                <field name="PIN">16</field>
+                <field name="FREQ">440</field>
+                <field name="DUR">0.2</field>
+              </block>
+            </statement>
+            <statement name="ELSE">
+              <block type="pico_wait" id="we">
+                <value name="SEC">
+                  <block type="val_number" id="wne"><field name="NUM">0.5</field></block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

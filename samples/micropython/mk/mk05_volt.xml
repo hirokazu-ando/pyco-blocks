@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block x="30" y="30" type="pico_forever" id="b1">
+    <statement name="DO">
+      <block type="pico_analog_read" id="b2">
+        <field name="PIN">26</field>
+        <field name="VAR">val</field>
+        <next>
+          <block type="var_set" id="b3">
+            <field name="VAR">v</field>
+            <value name="VALUE">
+              <block type="py_math_op" id="b4">
+                <field name="OP">/</field>
+                <value name="LEFT">
+                  <block type="py_math_op" id="b5">
+                    <field name="OP">*</field>
+                    <value name="LEFT">
+                      <block type="val_var" id="b6">
+                        <field name="VAR">val</field>
+                      </block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="b7">
+                        <field name="NUM">3.3</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <value name="RIGHT">
+                  <block type="val_number" id="b8">
+                    <field name="NUM">65535</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <next>
+              <block type="print_var_label" id="b9">
+                <field name="LABEL">電圧 </field>
+                <field name="VAR">v</field>
+                <next>
+                  <block type="pico_wait" id="b10">
+                    <value name="SEC">
+                      <block type="val_number" id="b11">
+                        <field name="NUM">0.2</field>
+                      </block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

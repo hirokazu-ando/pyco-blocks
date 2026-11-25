@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vned">nedan</variable>
+    <variable id="vsh">shiharai</variable>
+    <variable id="vot">otsuri</variable>
+    <variable id="v500">c500</variable>
+    <variable id="v100">c100</variable>
+    <variable id="v10">c10</variable>
+    <variable id="v1">c1</variable>
+  </variables>
+  <block type="var_set" x="30" y="30">
+    <field name="VAR" id="vned">nedan</field>
+    <value name="VALUE"><block type="val_number"><field name="NUM">380</field></block></value>
+    <next>
+      <block type="var_set">
+        <field name="VAR" id="vsh">shiharai</field>
+        <value name="VALUE"><block type="val_number"><field name="NUM">1000</field></block></value>
+        <next>
+          <block type="var_set">
+            <field name="VAR" id="vot">otsuri</field>
+            <value name="VALUE">
+              <block type="py_math_op">
+                <field name="OP">-</field>
+                <value name="LEFT"><block type="val_var"><field name="VAR" id="vsh">shiharai</field></block></value>
+                <value name="RIGHT"><block type="val_var"><field name="VAR" id="vned">nedan</field></block></value>
+              </block>
+            </value>
+            <next>
+              <block type="py_print_multi">
+                <mutation items="3"></mutation>
+                <value name="ITEM0"><block type="val_str"><field name="TEXT">おつりは</field></block></value>
+                <value name="ITEM1"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                <value name="ITEM2"><block type="val_str"><field name="TEXT">円です</field></block></value>
+                <next>
+                  <block type="var_set">
+                    <field name="VAR" id="v500">c500</field>
+                    <value name="VALUE">
+                      <block type="py_math_op">
+                        <field name="OP">//</field>
+                        <value name="LEFT"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                        <value name="RIGHT"><block type="val_number"><field name="NUM">500</field></block></value>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="var_set">
+                        <field name="VAR" id="vot">otsuri</field>
+                        <value name="VALUE">
+                          <block type="py_math_op">
+                            <field name="OP">%</field>
+                            <value name="LEFT"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                            <value name="RIGHT"><block type="val_number"><field name="NUM">500</field></block></value>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="var_set">
+                            <field name="VAR" id="v100">c100</field>
+                            <value name="VALUE">
+                              <block type="py_math_op">
+                                <field name="OP">//</field>
+                                <value name="LEFT"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                                <value name="RIGHT"><block type="val_number"><field name="NUM">100</field></block></value>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="var_set">
+                                <field name="VAR" id="vot">otsuri</field>
+                                <value name="VALUE">
+                                  <block type="py_math_op">
+                                    <field name="OP">%</field>
+                                    <value name="LEFT"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                                    <value name="RIGHT"><block type="val_number"><field name="NUM">100</field></block></value>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="var_set">
+                                    <field name="VAR" id="v10">c10</field>
+                                    <value name="VALUE">
+                                      <block type="py_math_op">
+                                        <field name="OP">//</field>
+                                        <value name="LEFT"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                                        <value name="RIGHT"><block type="val_number"><field name="NUM">10</field></block></value>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="var_set">
+                                        <field name="VAR" id="v1">c1</field>
+                                        <value name="VALUE">
+                                          <block type="py_math_op">
+                                            <field name="OP">%</field>
+                                            <value name="LEFT"><block type="val_var"><field name="VAR" id="vot">otsuri</field></block></value>
+                                            <value name="RIGHT"><block type="val_number"><field name="NUM">10</field></block></value>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="py_print_multi">
+                                            <mutation items="3"></mutation>
+                                            <value name="ITEM0"><block type="val_str"><field name="TEXT">500円:</field></block></value>
+                                            <value name="ITEM1"><block type="val_var"><field name="VAR" id="v500">c500</field></block></value>
+                                            <value name="ITEM2"><block type="val_str"><field name="TEXT">枚</field></block></value>
+                                            <next>
+                                              <block type="py_print_multi">
+                                                <mutation items="3"></mutation>
+                                                <value name="ITEM0"><block type="val_str"><field name="TEXT">100円:</field></block></value>
+                                                <value name="ITEM1"><block type="val_var"><field name="VAR" id="v100">c100</field></block></value>
+                                                <value name="ITEM2"><block type="val_str"><field name="TEXT">枚</field></block></value>
+                                                <next>
+                                                  <block type="py_print_multi">
+                                                    <mutation items="3"></mutation>
+                                                    <value name="ITEM0"><block type="val_str"><field name="TEXT">10円:</field></block></value>
+                                                    <value name="ITEM1"><block type="val_var"><field name="VAR" id="v10">c10</field></block></value>
+                                                    <value name="ITEM2"><block type="val_str"><field name="TEXT">枚</field></block></value>
+                                                    <next>
+                                                      <block type="py_print_multi">
+                                                        <mutation items="3"></mutation>
+                                                        <value name="ITEM0"><block type="val_str"><field name="TEXT">1円:</field></block></value>
+                                                        <value name="ITEM1"><block type="val_var"><field name="VAR" id="v1">c1</field></block></value>
+                                                        <value name="ITEM2"><block type="val_str"><field name="TEXT">枚</field></block></value>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

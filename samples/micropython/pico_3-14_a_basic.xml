@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_stepper_step" id="a1" x="30" y="30">
+    <field name="IN1">8</field>
+    <field name="IN2">9</field>
+    <field name="IN3">10</field>
+    <field name="IN4">11</field>
+    <field name="STEPS">4096</field>
+    <field name="DELAY">2</field>
+  </block>
+</xml>

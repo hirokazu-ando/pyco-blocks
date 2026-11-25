@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+  </variables>
+  <block type="pico_lcd_init" id="li" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_forever" id="ff">
+        <statement name="DO">
+          <block type="pico_lcd_clear" id="lc1">
+            <field name="VAR" id="var_lcd">lcd</field>
+            <next>
+              <block type="pico_lcd_print" id="lp_s1">
+                <field name="VAR" id="var_lcd">lcd</field>
+                <field name="ROW">0</field>
+                <value name="TEXT">
+                  <block type="val_str" id="ls_s1"><field name="TEXT">  Welcome!</field></block>
+                </value>
+                <next>
+                  <block type="pico_lcd_print" id="lp_s2">
+                    <field name="VAR" id="var_lcd">lcd</field>
+                    <field name="ROW">1</field>
+                    <value name="TEXT">
+                      <block type="val_str" id="ls_s2"><field name="TEXT"> PycoBlocks</field></block>
+                    </value>
+                    <next>
+                      <block type="pico_wait" id="w1">
+                        <value name="SEC">
+                          <block type="val_number" id="wn1"><field name="NUM">1.5</field></block>
+                        </value>
+                        <next>
+                          <block type="pico_lcd_clear" id="lc2">
+                            <field name="VAR" id="var_lcd">lcd</field>
+                            <next>
+                              <block type="pico_lcd_print" id="lp_m1">
+                                <field name="VAR" id="var_lcd">lcd</field>
+                                <field name="ROW">0</field>
+                                <value name="TEXT">
+                                  <block type="val_str" id="ls_m1"><field name="TEXT">Pico is ready!</field></block>
+                                </value>
+                                <next>
+                                  <block type="pico_lcd_print" id="lp_m2">
+                                    <field name="VAR" id="var_lcd">lcd</field>
+                                    <field name="ROW">1</field>
+                                    <value name="TEXT">
+                                      <block type="val_str" id="ls_m2"><field name="TEXT">Press RESET...</field></block>
+                                    </value>
+                                    <next>
+                                      <block type="pico_wait" id="w2">
+                                        <value name="SEC">
+                                          <block type="val_number" id="wn2"><field name="NUM">2</field></block>
+                                        </value>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

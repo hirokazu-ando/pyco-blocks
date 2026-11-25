@@ -263,6 +263,59 @@
     return area;
   }
 
+  // タッチ端末（スマホ・タブレット）にはキーボードが無く、矢印キーで動かすゲームを操作できなかった。
+  // ゲーム画面の下に ◀ ▲ ▼ ▶ と［スペース］を出し、押している間はそのキーを押したことにする。
+  // キーの受け取りは上の keydown/keyup と同じ道を通るので、ゲームのプログラムは変えなくてよい。
+  var TOUCH_KEYS = [
+    { code: 'ArrowLeft',  key: 'ArrowLeft',  label: '◀', name: '左' },
+    { code: 'ArrowUp',    key: 'ArrowUp',    label: '▲', name: '上' },
+    { code: 'ArrowDown',  key: 'ArrowDown',  label: '▼', name: '下' },
+    { code: 'ArrowRight', key: 'ArrowRight', label: '▶', name: '右' },
+    { code: 'Space',      key: ' ',          label: 'スペース', name: 'スペース', wide: true }
+  ];
+  function isTouchDevice() {
+    try { return window.matchMedia('(pointer: coarse)').matches; } catch (e) { return false; }
+  }
+  function ensureTouchPad(area) {
+    if (!isTouchDevice()) return;
+    var pad = document.getElementById('game-touchpad');
+    if (!pad) {
+      pad = document.createElement('div');
+      pad.id = 'game-touchpad';
+      pad.setAttribute('role', 'group');
+      pad.setAttribute('aria-label', 'キーの代わりのボタン');
+      TOUCH_KEYS.forEach(function(k) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gtp-key' + (k.wide ? ' gtp-wide' : '');
+        b.textContent = k.label;
+        b.setAttribute('aria-label', k.name + 'のキー');
+        var down = false;
+        function send(type) {
+          window.dispatchEvent(new KeyboardEvent(type, { code: k.code, key: k.key, bubbles: true, cancelable: true }));
+        }
+        b.addEventListener('pointerdown', function(e) {
+          e.preventDefault();
+          if (down) return;
+          down = true; b.classList.add('on');
+          try { b.setPointerCapture(e.pointerId); } catch (err) {}
+          send('keydown');
+        });
+        function up() {
+          if (!down) return;
+          down = false; b.classList.remove('on');
+          send('keyup');
+        }
+        b.addEventListener('pointerup', up);
+        b.addEventListener('pointercancel', up);
+        b.addEventListener('lostpointercapture', up);
+        b.addEventListener('contextmenu', function(e) { e.preventDefault(); });   // 長押しのメニューを出さない
+        pad.appendChild(b);
+      });
+    }
+    area.appendChild(pad);   // いつもゲーム画面（canvas）の下に置く
+  }
+
   display.set_mode = new Sk.builtin.func(function(size_py) {
     ensureListeners();
     window.__pygameRunning = true;
@@ -279,6 +332,7 @@
       area.appendChild(cnv);
     }
     cnv.width = w; cnv.height = h;
+    ensureTouchPad(area);
     _mainSurface = makeSurface(cnv);
     return _mainSurface;
   });

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_resp">resp</variable>
+  </variables>
+  <block type="pico_w_wifi_connect" id="d1" x="30" y="30">
+    <field name="SSID">your-ssid</field>
+    <field name="PASS">your-password</field>
+    <next>
+      <block type="pico_w_http_get" id="d2">
+        <field name="URL">https://ambidata.io/api/v2/channels/YOUR_CH_ID/data?readKey=YOUR_READ_KEY&amp;n=1</field>
+        <field name="VAR" id="var_resp">resp</field>
+        <next>
+          <block type="py_print" id="d3">
+            <value name="VALUE">
+              <block type="val_var" id="d4"><field name="VAR" id="var_resp">resp</field></block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_dist">dist</variable>
+    <variable id="var_state">state</variable>
+  </variables>
+  <block type="var_set" id="d0" x="30" y="30">
+    <field name="VAR" id="var_state">state</field>
+    <value name="VALUE">
+      <block type="val_number" id="d_init"><field name="NUM">0</field></block>
+    </value>
+    <next>
+      <block type="pico_forever" id="d1">
+        <statement name="DO">
+          <block type="pico_ultrasonic_cm" id="d2">
+            <field name="TRIG">14</field>
+            <field name="ECHO">15</field>
+            <field name="VAR" id="var_dist">dist</field>
+            <next>
+              <block type="pico_if" id="d3">
+                <mutation elseif="0" else="1"></mutation>
+                <value name="IF0">
+                  <block type="cond_compare" id="d4">
+                    <field name="OP">&lt;</field>
+                    <value name="LEFT">
+                      <block type="val_var" id="d5"><field name="VAR" id="var_dist">dist</field></block>
+                    </value>
+                    <value name="RIGHT">
+                      <block type="val_number" id="d6"><field name="NUM">20</field></block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="pico_if" id="d7">
+                    <mutation elseif="0" else="0"></mutation>
+                    <value name="IF0">
+                      <block type="cond_compare" id="d8">
+                        <field name="OP">==</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="d9"><field name="VAR" id="var_state">state</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="d10"><field name="NUM">0</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="pico_stepper_angle" id="d11">
+                        <field name="IN1">8</field>
+                        <field name="IN2">9</field>
+                        <field name="IN3">10</field>
+                        <field name="IN4">11</field>
+                        <field name="ANGLE">90</field>
+                        <field name="DELAY">2</field>
+                        <next>
+                          <block type="var_set" id="d12">
+                            <field name="VAR" id="var_state">state</field>
+                            <value name="VALUE">
+                              <block type="val_number" id="d13"><field name="NUM">1</field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                  </block>
+                </statement>
+                <statement name="ELSE">
+                  <block type="pico_if" id="d14">
+                    <mutation elseif="0" else="0"></mutation>
+                    <value name="IF0">
+                      <block type="cond_compare" id="d15">
+                        <field name="OP">==</field>
+                        <value name="LEFT">
+                          <block type="val_var" id="d16"><field name="VAR" id="var_state">state</field></block>
+                        </value>
+                        <value name="RIGHT">
+                          <block type="val_number" id="d17"><field name="NUM">1</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="pico_stepper_angle" id="d18">
+                        <field name="IN1">8</field>
+                        <field name="IN2">9</field>
+                        <field name="IN3">10</field>
+                        <field name="IN4">11</field>
+                        <field name="ANGLE">-90</field>
+                        <field name="DELAY">2</field>
+                        <next>
+                          <block type="var_set" id="d19">
+                            <field name="VAR" id="var_state">state</field>
+                            <value name="VALUE">
+                              <block type="val_number" id="d20"><field name="NUM">0</field></block>
+                            </value>
+                          </block>
+                        </next>
+                      </block>
+                    </statement>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pico_wait" id="d21">
+                    <value name="SEC">
+                      <block type="val_number" id="d22"><field name="NUM">0.3</field></block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </next>
+  </block>
+</xml>

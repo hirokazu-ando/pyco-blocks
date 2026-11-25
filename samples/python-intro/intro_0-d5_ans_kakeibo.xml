@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="vkr" type="function">kiroku</variable>
+    <variable id="vgk" type="function">goukei</variable>
+    <variable id="vkg">kingaku</variable>
+    <variable id="vtot">total</variable>
+    <variable id="vln">lines</variable>
+    <variable id="vli">line</variable>
+    <variable id="vny">nyuuryoku</variable>
+  </variables>
+  <block type="py_def" x="30" y="30">
+    <field name="NAME" id="vkr" variabletype="function">kiroku</field>
+    <field name="PARAM" id="vkg">kingaku</field>
+    <statement name="BODY">
+      <block type="py_file_append">
+        <field name="FILENAME">kakeibo.txt</field>
+        <value name="CONTENT">
+          <block type="py_str_concat">
+            <value name="A">
+              <block type="py_type_cast">
+                <field name="TYPE">str</field>
+                <value name="VALUE"><block type="val_var"><field name="VAR" id="vkg">kingaku</field></block></value>
+              </block>
+            </value>
+            <value name="B"><block type="val_str"><field name="TEXT">\n</field></block></value>
+          </block>
+        </value>
+      </block>
+    </statement>
+    <next>
+      <block type="py_def_noarg">
+        <field name="NAME" id="vgk" variabletype="function">goukei</field>
+        <statement name="BODY">
+          <block type="var_set">
+            <field name="VAR" id="vtot">total</field>
+            <value name="VALUE"><block type="val_number"><field name="NUM">0</field></block></value>
+            <next>
+              <block type="py_try_except">
+                <field name="ETYPE">FileNotFoundError</field>
+                <statement name="BODY">
+                  <block type="py_file_readlines">
+                    <field name="FILENAME">kakeibo.txt</field>
+                    <field name="VAR" id="vln">lines</field>
+                    <next>
+                      <block type="py_for_list">
+                        <field name="VAR" id="vli">line</field>
+                        <field name="LIST" id="vln">lines</field>
+                        <statement name="DO">
+                          <block type="var_set">
+                            <field name="VAR" id="vli">line</field>
+                            <value name="VALUE"><block type="py_str_strip"><field name="VAR" id="vli">line</field></block></value>
+                            <next>
+                              <block type="pico_if">
+                                <mutation elseif="0" else="0"></mutation>
+                                <value name="IF0">
+                                  <block type="cond_compare">
+                                    <field name="OP">==</field>
+                                    <value name="LEFT"><block type="val_var"><field name="VAR" id="vli">line</field></block></value>
+                                    <value name="RIGHT"><block type="val_str"><field name="TEXT"></field></block></value>
+                                  </block>
+                                </value>
+                                <statement name="DO0"><block type="py_continue"></block></statement>
+                                <next>
+                                  <block type="py_try_except">
+                                    <field name="ETYPE">ValueError</field>
+                                    <statement name="BODY">
+                                      <block type="var_set">
+                                        <field name="VAR" id="vtot">total</field>
+                                        <value name="VALUE">
+                                          <block type="py_math_op">
+                                            <field name="OP">+</field>
+                                            <value name="LEFT"><block type="val_var"><field name="VAR" id="vtot">total</field></block></value>
+                                            <value name="RIGHT">
+                                              <block type="py_type_cast">
+                                                <field name="TYPE">int</field>
+                                                <value name="VALUE"><block type="val_var"><field name="VAR" id="vli">line</field></block></value>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </statement>
+                                    <statement name="HANDLER">
+                                      <block type="py_print">
+                                        <value name="VALUE">
+                                          <block type="py_str_concat">
+                                            <value name="A"><block type="val_str"><field name="TEXT">数値でない行をスキップ:</field></block></value>
+                                            <value name="B"><block type="val_var"><field name="VAR" id="vli">line</field></block></value>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </statement>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <statement name="HANDLER">
+                  <block type="py_print">
+                    <value name="VALUE"><block type="val_str"><field name="TEXT">まだ記録がありません</field></block></value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="py_return"><value name="VALUE"><block type="val_var"><field name="VAR" id="vtot">total</field></block></value></block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </statement>
+        <next>
+          <block type="py_input">
+            <field name="TYPE">str</field>
+            <field name="VAR" id="vny">nyuuryoku</field>
+            <field name="PROMPT">支出額を入力（数字）: </field>
+            <next>
+              <block type="py_try_except">
+                <field name="ETYPE">ValueError</field>
+                <statement name="BODY">
+                  <block type="var_set">
+                    <field name="VAR" id="vkg">kingaku</field>
+                    <value name="VALUE">
+                      <block type="py_type_cast">
+                        <field name="TYPE">int</field>
+                        <value name="VALUE"><block type="val_var"><field name="VAR" id="vny">nyuuryoku</field></block></value>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="py_call_stmt">
+                        <field name="NAME" id="vkr" variabletype="function">kiroku</field>
+                        <value name="ARG"><block type="val_var"><field name="VAR" id="vkg">kingaku</field></block></value>
+                        <next>
+                          <block type="py_print">
+                            <value name="VALUE"><block type="val_str"><field name="TEXT">記録しました</field></block></value>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </statement>
+                <statement name="HANDLER">
+                  <block type="py_print">
+                    <value name="VALUE"><block type="val_str"><field name="TEXT">数字を入力してください</field></block></value>
+                  </block>
+                </statement>
+                <next>
+                  <block type="py_print_multi">
+                    <mutation items="3"></mutation>
+                    <value name="ITEM0"><block type="val_str"><field name="TEXT">これまでの合計:</field></block></value>
+                    <value name="ITEM1">
+                      <block type="py_call_val">
+                        <field name="NAME" id="vgk" variabletype="function">goukei</field>
+                      </block>
+                    </value>
+                    <value name="ITEM2"><block type="val_str"><field name="TEXT">円</field></block></value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

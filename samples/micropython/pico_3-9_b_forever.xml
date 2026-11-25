@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_dist">dist</variable>
+  </variables>
+  <block type="pico_forever" id="ff" x="30" y="30">
+    <statement name="DO">
+      <block type="pico_ultrasonic_cm" id="us">
+        <field name="TRIG">14</field>
+        <field name="ECHO">15</field>
+        <field name="VAR" id="var_dist">dist</field>
+        <next>
+          <block type="py_print" id="pp">
+            <value name="VALUE">
+              <block type="val_var" id="vv_dist"><field name="VAR" id="var_dist">dist</field></block>
+            </value>
+            <next>
+              <block type="pico_wait" id="w1">
+                <value name="SEC">
+                  <block type="val_number" id="wn1"><field name="NUM">0.5</field></block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

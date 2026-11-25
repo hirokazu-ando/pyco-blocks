@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_7seg_show" id="a1" x="30" y="30">
+    <field name="NUM">3</field>
+    <field name="PIN_A">2</field>
+    <field name="PIN_B">3</field>
+    <field name="PIN_C">4</field>
+    <field name="PIN_D">5</field>
+    <field name="PIN_E">6</field>
+    <field name="PIN_F">7</field>
+    <field name="PIN_G">8</field>
+  </block>
+</xml>

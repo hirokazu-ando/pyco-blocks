@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_buzzer_tone" id="b1" x="30" y="30">
+    <field name="PIN">15</field>
+    <field name="FREQ">262</field>
+    <field name="DUR">0.4</field>
+    <next>
+      <block type="pico_buzzer_tone" id="b2">
+        <field name="PIN">15</field>
+        <field name="FREQ">294</field>
+        <field name="DUR">0.4</field>
+        <next>
+          <block type="pico_buzzer_tone" id="b3">
+            <field name="PIN">15</field>
+            <field name="FREQ">330</field>
+            <field name="DUR">0.4</field>
+            <next>
+              <block type="pico_buzzer_tone" id="b4">
+                <field name="PIN">15</field>
+                <field name="FREQ">349</field>
+                <field name="DUR">0.4</field>
+                <next>
+                  <block type="pico_buzzer_tone" id="b5">
+                    <field name="PIN">15</field>
+                    <field name="FREQ">392</field>
+                    <field name="DUR">0.4</field>
+                    <next>
+                      <block type="pico_buzzer_tone" id="b6">
+                        <field name="PIN">15</field>
+                        <field name="FREQ">440</field>
+                        <field name="DUR">0.4</field>
+                        <next>
+                          <block type="pico_buzzer_tone" id="b7">
+                            <field name="PIN">15</field>
+                            <field name="FREQ">494</field>
+                            <field name="DUR">0.4</field>
+                            <next>
+                              <block type="pico_buzzer_tone" id="b8">
+                                <field name="PIN">15</field>
+                                <field name="FREQ">523</field>
+                                <field name="DUR">0.4</field>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

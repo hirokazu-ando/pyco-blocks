@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_lcd">lcd</variable>
+    <variable id="var_i">i</variable>
+  </variables>
+  <block type="pico_lcd_init" id="li" x="30" y="30">
+    <field name="SDA">0</field>
+    <field name="SCL">1</field>
+    <field name="VAR" id="var_lcd">lcd</field>
+    <next>
+      <block type="pico_lcd_print" id="lp_title">
+        <field name="VAR" id="var_lcd">lcd</field>
+        <field name="ROW">0</field>
+        <value name="TEXT">
+          <block type="val_str" id="ls_title"><field name="TEXT">Count:</field></block>
+        </value>
+        <next>
+          <block type="pico_for_range" id="fr">
+            <field name="VAR" id="var_i">i</field>
+            <value name="N">
+              <block type="val_number" id="vn10"><field name="NUM">10</field></block>
+            </value>
+            <statement name="DO">
+              <block type="pico_lcd_print" id="lp_num">
+                <field name="VAR" id="var_lcd">lcd</field>
+                <field name="ROW">1</field>
+                <value name="TEXT">
+                  <block type="val_var" id="vv_i"><field name="VAR" id="var_i">i</field></block>
+                </value>
+                <next>
+                  <block type="pico_wait" id="w1">
+                    <value name="SEC">
+                      <block type="val_number" id="wn1"><field name="NUM">0.5</field></block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

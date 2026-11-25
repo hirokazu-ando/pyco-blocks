@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part 2 #01 演習3 解答：SW1 で LED1、SW2 で LED2（押している間だけ点灯・電池の電源 ON が必要） -->
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="pico_forever" id="f0" x="30" y="30">
+    <statement name="DO">
+      <block type="pvb_led_off" id="f1">
+        <field name="LED">11</field>
+        <next>
+          <block type="pvb_led_off" id="f2">
+            <field name="LED">12</field>
+            <next>
+              <block type="pvb_if_switch" id="f3">
+                <field name="SW">13</field>
+                <statement name="DO">
+                  <block type="pvb_led_on" id="f4">
+                    <field name="LED">11</field>
+                  </block>
+                </statement>
+                <next>
+                  <block type="pvb_if_switch" id="f5">
+                    <field name="SW">14</field>
+                    <statement name="DO">
+                      <block type="pvb_led_on" id="f6">
+                        <field name="LED">12</field>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="pico_wait" id="f7">
+                        <value name="SEC"><block type="val_number" id="f7n"><field name="NUM">0.05</field></block></value>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
