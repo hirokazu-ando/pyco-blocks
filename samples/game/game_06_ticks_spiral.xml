@@ -8,7 +8,7 @@
       <block type="val_number"><field name="NUM">320</field></block>
     </value>
     <value name="TITLE">
-      <block type="val_str"><field name="TEXT">Sample 05 Ticks + math</field></block>
+      <block type="val_str"><field name="TEXT">サンプル 05 時間と計算</field></block>
     </value>
     <next>
       <block type="game_loop">
@@ -76,7 +76,7 @@
                     <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#58a6ff</field></block></value>
                     <next>
                       <block type="game_draw_text">
-                        <value name="TEXT"><block type="val_str"><field name="TEXT">get_ticks + nested math</field></block></value>
+                        <value name="TEXT"><block type="val_str"><field name="TEXT">get_ticks と計算の組み合わせ</field></block></value>
                         <value name="X"><block type="val_number"><field name="NUM">40</field></block></value>
                         <value name="Y"><block type="val_number"><field name="NUM">10</field></block></value>
                         <value name="SIZE"><block type="val_number"><field name="NUM">18</field></block></value>

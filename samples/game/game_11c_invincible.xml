@@ -23,7 +23,7 @@
         </value>
         <value name="TITLE">
           <block type="val_str">
-            <field name="TEXT">Invincible</field>
+            <field name="TEXT">無敵</field>
           </block>
         </value>
         <next>

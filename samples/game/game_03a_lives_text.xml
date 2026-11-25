@@ -7,7 +7,7 @@
   <block type="game_init" x="20" y="20">
     <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
     <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
-    <value name="TITLE"><block type="val_str"><field name="TEXT">Lives</field></block></value>
+    <value name="TITLE"><block type="val_str"><field name="TEXT">残り</field></block></value>
     <next>
       <block type="var_set">
         <field name="VAR" id="vli">lives</field>
@@ -54,7 +54,7 @@
                         </statement>
                         <next>
                           <block type="game_draw_text">
-                            <value name="TEXT"><block type="val_str"><field name="TEXT">Lives</field></block></value>
+                            <value name="TEXT"><block type="val_str"><field name="TEXT">残り</field></block></value>
                             <value name="X"><block type="val_number"><field name="NUM">270</field></block></value>
                             <value name="Y"><block type="val_number"><field name="NUM">180</field></block></value>
                             <value name="SIZE"><block type="val_number"><field name="NUM">36</field></block></value>

@@ -23,7 +23,7 @@
         </value>
         <value name="TITLE">
           <block type="val_str">
-            <field name="TEXT">Enemy Collide</field>
+            <field name="TEXT">敵とぶつかる</field>
           </block>
         </value>
         <next>

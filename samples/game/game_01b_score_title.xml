@@ -12,7 +12,7 @@
         <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
         <value name="TITLE">
           <block type="py_fstring">
-            <field name="PRE">Score: </field>
+            <field name="PRE">スコア: </field>
             <field name="POST"></field>
             <value name="VAR"><block type="val_var"><field name="VAR" id="vs">score</field></block></value>
           </block>
@@ -32,7 +32,7 @@
                           <block type="game_draw_text">
                             <value name="TEXT">
                               <block type="py_fstring">
-                                <field name="PRE">Score: </field>
+                                <field name="PRE">スコア: </field>
                                 <field name="POST"></field>
                                 <value name="VAR"><block type="val_var"><field name="VAR" id="vs">score</field></block></value>
                               </block>

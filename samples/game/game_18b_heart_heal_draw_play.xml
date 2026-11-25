@@ -35,7 +35,7 @@
                   <block type="game_draw_text">
                     <value name="TEXT">
                       <block type="py_fstring">
-                        <field name="PRE">Lives: </field>
+                        <field name="PRE">残り: </field>
                         <field name="POST"></field>
                         <value name="VAR"><block type="val_var"><field name="VAR" id="vli">lives</field></block></value>
                       </block>

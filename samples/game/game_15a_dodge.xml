@@ -341,9 +341,9 @@
                                                                                                                 <block type="game_draw_text">
                                                                                                                   <value name="TEXT">
                                                                                                                     <block type="py_fstring2_expr">
-                                                                                                                      <field name="PRE">Score:</field>
-                                                                                                                      <field name="MID">  Time:</field>
-                                                                                                                      <field name="POST">s</field>
+                                                                                                                      <field name="PRE">スコア:</field>
+                                                                                                                      <field name="MID">  時間:</field>
+                                                                                                                      <field name="POST">秒</field>
                                                                                                                       <value name="VAR1"><block type="val_var"><field name="VAR" id="vsc">score</field></block></value>
                                                                                                                       <value name="VAR2">
                                                                                                                         <block type="py_int">
@@ -387,7 +387,7 @@
                                                                       </value>
                                                                       <statement name="DO1">
                                                                         <block type="game_draw_text">
-                                                                          <value name="TEXT"><block type="val_str"><field name="TEXT">GAME OVER</field></block></value>
+                                                                          <value name="TEXT"><block type="val_str"><field name="TEXT">ゲームオーバー</field></block></value>
                                                                           <value name="X"><block type="val_number"><field name="NUM">180</field></block></value>
                                                                           <value name="Y"><block type="val_number"><field name="NUM">160</field></block></value>
                                                                           <value name="SIZE"><block type="val_number"><field name="NUM">48</field></block></value>
@@ -451,7 +451,7 @@
                                                                       </statement>
                                                                       <statement name="ELSE">
                                                                         <block type="game_draw_text">
-                                                                          <value name="TEXT"><block type="val_str"><field name="TEXT">CLEAR!</field></block></value>
+                                                                          <value name="TEXT"><block type="val_str"><field name="TEXT">クリア！</field></block></value>
                                                                           <value name="X"><block type="val_number"><field name="NUM">230</field></block></value>
                                                                           <value name="Y"><block type="val_number"><field name="NUM">160</field></block></value>
                                                                           <value name="SIZE"><block type="val_number"><field name="NUM">48</field></block></value>

@@ -7,7 +7,7 @@
   <block type="game_init" x="20" y="20">
     <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
     <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
-    <value name="TITLE"><block type="val_str"><field name="TEXT">Click Stars</field></block></value>
+    <value name="TITLE"><block type="val_str"><field name="TEXT">星をクリック</field></block></value>
     <next>
       <block type="var_set">
         <field name="VAR" id="vm">marks</field>

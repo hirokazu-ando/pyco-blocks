@@ -10,7 +10,7 @@
   <block type="game_init" x="8" y="8">
     <value name="W"><block type="val_number"><field name="NUM">480</field></block></value>
     <value name="H"><block type="val_number"><field name="NUM">320</field></block></value>
-    <value name="TITLE"><block type="val_str"><field name="TEXT">Sample 09 Sky Dodge</field></block></value>
+    <value name="TITLE"><block type="val_str"><field name="TEXT">サンプル 09 空でよける</field></block></value>
     <next>
       <block type="var_set">
         <field name="VAR" id="v9px">player_x</field>
@@ -212,7 +212,7 @@
                                                                           <block type="game_draw_text">
                                                                             <value name="TEXT">
                                                                               <block type="py_fstring">
-                                                                                <field name="PRE">Score </field>
+                                                                                <field name="PRE">スコア </field>
                                                                                 <value name="VAR"><block type="val_var"><field name="VAR" id="v9sc">score</field></block></value>
                                                                                 <field name="POST"></field>
                                                                               </block>
@@ -225,7 +225,7 @@
                                                                               <block type="game_draw_text">
                                                                                 <value name="TEXT">
                                                                                   <block type="py_fstring">
-                                                                                    <field name="PRE">Lives </field>
+                                                                                    <field name="PRE">残り </field>
                                                                                     <value name="VAR"><block type="val_var"><field name="VAR" id="v9lv">lives</field></block></value>
                                                                                     <field name="POST"></field>
                                                                                   </block>
@@ -236,8 +236,8 @@
                                                                                 <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#f472b6</field></block></value>
                                                                                 <next>
                                                                                   <block type="game_draw_text">
-                                                                                    <value name="TEXT"><block type="val_str"><field name="TEXT">Arrows move ship | Meteor miss below +15 score | Hit -1 life</field></block></value>
-                                                                                    <value name="X"><block type="val_number"><field name="NUM">12</field></block></value>
+                                                                                    <value name="TEXT"><block type="val_str"><field name="TEXT">矢印で動く｜よけたら +15｜当たると残り -1</field></block></value>
+                                                                                    <value name="X"><block type="val_number"><field name="NUM">90</field></block></value>
                                                                                     <value name="Y"><block type="val_number"><field name="NUM">296</field></block></value>
                                                                                     <value name="SIZE"><block type="val_number"><field name="NUM">13</field></block></value>
                                                                                     <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#64748b</field></block></value>
@@ -252,7 +252,7 @@
                                                                                         </value>
                                                                                         <statement name="DO0">
                                                                                           <block type="game_draw_text">
-                                                                                            <value name="TEXT"><block type="val_str"><field name="TEXT">GAME OVER - reload sample XML to retry</field></block></value>
+                                                                                            <value name="TEXT"><block type="val_str"><field name="TEXT">ゲームオーバー（サンプルを開き直すともう一度）</field></block></value>
                                                                                             <value name="X"><block type="val_number"><field name="NUM">36</field></block></value>
                                                                                             <value name="Y"><block type="val_number"><field name="NUM">140</field></block></value>
                                                                                             <value name="SIZE"><block type="val_number"><field name="NUM">28</field></block></value>

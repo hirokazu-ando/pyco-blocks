@@ -34,7 +34,7 @@
           <block type="game_draw_text">
             <value name="TEXT">
               <block type="py_fstring">
-                <field name="PRE">Time: </field>
+                <field name="PRE">時間: </field>
                 <field name="POST"/>
                 <value name="VAR"><block type="val_var"><field name="VAR" id="vrem">remain</field></block></value>
               </block>

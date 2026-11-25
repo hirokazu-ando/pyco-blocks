@@ -13,7 +13,7 @@
       <block type="game_init">
         <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
         <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
-        <value name="TITLE"><block type="val_str"><field name="TEXT">Heart HUD</field></block></value>
+        <value name="TITLE"><block type="val_str"><field name="TEXT">ハートの表示</field></block></value>
         <next>
           <block type="var_set">
             <field name="VAR" id="vpx">px</field>
@@ -204,8 +204,8 @@
                                             </statement>
                                             <statement name="ELSE">
                                               <block type="game_draw_text">
-                                                <value name="TEXT"><block type="val_str"><field name="TEXT">GAME OVER</field></block></value>
-                                                <value name="X"><block type="val_number"><field name="NUM">220</field></block></value>
+                                                <value name="TEXT"><block type="val_str"><field name="TEXT">ゲームオーバー</field></block></value>
+                                                <value name="X"><block type="val_number"><field name="NUM">180</field></block></value>
                                                 <value name="Y"><block type="val_number"><field name="NUM">160</field></block></value>
                                                 <value name="SIZE"><block type="val_number"><field name="NUM">40</field></block></value>
                                                 <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#ff3232</field></block></value>

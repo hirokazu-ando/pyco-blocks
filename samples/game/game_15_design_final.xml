@@ -315,7 +315,7 @@
                                                                                                                   <block type="game_draw_text">
                                                                                                                     <value name="TEXT">
                                                                                                                       <block type="py_fstring">
-                                                                                                                        <field name="PRE">Score: </field>
+                                                                                                                        <field name="PRE">スコア: </field>
                                                                                                                         <field name="POST" />
                                                                                                                         <value name="VAR"><block type="val_var"><field name="VAR" id="vsc">score</field></block></value>
                                                                                                                       </block>
@@ -328,7 +328,7 @@
                                                                                                                       <block type="game_draw_text">
                                                                                                                         <value name="TEXT">
                                                                                                                           <block type="py_fstring">
-                                                                                                                            <field name="PRE">Time: </field>
+                                                                                                                            <field name="PRE">時間: </field>
                                                                                                                             <field name="POST" />
                                                                                                                             <value name="VAR"><block type="val_var"><field name="VAR" id="vrm">remain</field></block></value>
                                                                                                                           </block>
@@ -370,7 +370,7 @@
                                                                         </value>
                                                                         <statement name="DO1">
                                                                           <block type="game_draw_text">
-                                                                            <value name="TEXT"><block type="val_str"><field name="TEXT">GAME OVER</field></block></value>
+                                                                            <value name="TEXT"><block type="val_str"><field name="TEXT">ゲームオーバー</field></block></value>
                                                                             <value name="X"><block type="val_number"><field name="NUM">180</field></block></value>
                                                                             <value name="Y"><block type="val_number"><field name="NUM">160</field></block></value>
                                                                             <value name="SIZE"><block type="val_number"><field name="NUM">48</field></block></value>
@@ -449,7 +449,7 @@
                                                                         </value>
                                                                         <statement name="DO2">
                                                                           <block type="game_draw_text">
-                                                                            <value name="TEXT"><block type="val_str"><field name="TEXT">CLEAR!</field></block></value>
+                                                                            <value name="TEXT"><block type="val_str"><field name="TEXT">クリア！</field></block></value>
                                                                             <value name="X"><block type="val_number"><field name="NUM">230</field></block></value>
                                                                             <value name="Y"><block type="val_number"><field name="NUM">160</field></block></value>
                                                                             <value name="SIZE"><block type="val_number"><field name="NUM">48</field></block></value>

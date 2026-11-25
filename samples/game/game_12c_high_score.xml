@@ -23,7 +23,7 @@
         </value>
         <value name="TITLE">
           <block type="val_str">
-            <field name="TEXT">High Score</field>
+            <field name="TEXT">最高記録</field>
           </block>
         </value>
         <next>

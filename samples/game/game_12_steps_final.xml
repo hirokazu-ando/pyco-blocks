@@ -10,7 +10,7 @@
         <next><block type="game_init">
     <value name="W"><block type="val_number"><field name="NUM">640</field></block></value>
     <value name="H"><block type="val_number"><field name="NUM">400</field></block></value>
-    <value name="TITLE"><block type="val_str"><field name="TEXT">Score HUD</field></block></value>
+    <value name="TITLE"><block type="val_str"><field name="TEXT">スコアの表示</field></block></value>
     <next>
           <block type="var_set">
             <field name="VAR" id="vpx">px</field>
@@ -129,7 +129,7 @@
                                                           <block type="game_draw_text">
                                                             <value name="TEXT">
                                                               <block type="py_fstring">
-                                                                <field name="PRE">Score: </field>
+                                                                <field name="PRE">スコア: </field>
                                                                 <field name="POST" />
                                                                 <value name="VAR"><block type="val_var"><field name="VAR" id="vs">score</field></block></value>
                                                               </block>

@@ -22,7 +22,7 @@
         </value>
         <value name="TITLE">
           <block type="val_str">
-            <field name="TEXT">Coin Collect</field>
+            <field name="TEXT">コイン集め</field>
           </block>
         </value>
         <next>

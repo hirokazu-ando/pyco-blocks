@@ -12,7 +12,7 @@
       <block type="val_number"><field name="NUM">320</field></block>
     </value>
     <value name="TITLE">
-      <block type="val_str"><field name="TEXT">Sample 02 Arrow keys</field></block>
+      <block type="val_str"><field name="TEXT">サンプル 02 矢印キー</field></block>
     </value>
     <next>
       <block type="var_set" id="set0">
@@ -84,7 +84,7 @@
                                             <value name="COLOR"><block type="colour_picker"><field name="COLOUR">#00bcd4</field></block></value>
                                             <next>
                                               <block type="game_draw_text" id="ht">
-                                                <value name="TEXT"><block type="val_str"><field name="TEXT">Move with arrows</field></block></value>
+                                                <value name="TEXT"><block type="val_str"><field name="TEXT">矢印キーで動かそう</field></block></value>
                                                 <value name="X"><block type="val_number"><field name="NUM">120</field></block></value>
                                                 <value name="Y"><block type="val_number"><field name="NUM">8</field></block></value>
                                                 <value name="SIZE"><block type="val_number"><field name="NUM">22</field></block></value>

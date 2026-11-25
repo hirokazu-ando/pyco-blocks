@@ -24,7 +24,7 @@
         </value>
         <value name="TITLE">
           <block type="val_str">
-            <field name="TEXT">Time Bonus</field>
+            <field name="TEXT">時間ボーナス</field>
           </block>
         </value>
         <next>
