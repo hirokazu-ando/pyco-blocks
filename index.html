@@ -142,7 +142,7 @@
       {
         "@type": "Question",
         "name": "学校の授業で使えますか？",
-        "acceptedAnswer": { "@type": "Answer", "text": "使えます。インストールもアカウント登録も不要で、スマホやタブレットでも動くため、1人1台端末の授業に向いています。MIT ライセンスなので、教育目的での利用も自由です。作品を先生に出すときは、［ファイル → ブロックを保存］でできるファイル（.xml・保存するときに名前を入れられます）を提出するのがかんたんです。" }
+        "acceptedAnswer": { "@type": "Answer", "text": "使えます。インストールもアカウント登録も不要で、スマホやタブレットでも動くため、1人1台端末の授業に向いています。MIT ライセンスなので、教育目的での利用も自由です。作品を先生に出すときは、［ファイル → ブロックを保存］でできるファイル（.xml・保存するときに名前を入れられます）を提出するのがかんたんです。教室で画面を映すときは、［⚙ 見た目］で白い画面にして文字を大きく（A+）すると見やすくなります。" }
       }
     ]
   }
@@ -471,9 +471,12 @@
       html{ scroll-behavior: auto; }
       .btn, .cta-block{ transition: none; }
     }
-  </style>
+      .skip-link{ position:absolute; left:8px; top:-60px; z-index:1000; background:var(--green); color:#fff; padding:10px 14px; font-weight:700; }
+    .skip-link:focus{ top:8px; }
+</style>
 </head>
 <body>
+  <a class="skip-link" href="app.html">アプリを開く（PycoBlocks をはじめる）</a>
 
   <!-- ===== トップバー（右上に常時 CTA） ===== -->
   <div class="topbar">
@@ -576,7 +579,7 @@
               <figure class="m-fig" style="margin:0;">
                 <div class="frame"><img src="assets/lp/circuit-direct.webp" width="899" height="1451" loading="lazy"
                      alt="MicroPython モードの実体配線図。Raspberry Pi Pico に LED・抵抗・ボタンを直結スタイルでつないだ図。"></div>
-                <figcaption class="m-figcap">図3　Pico と部品のつなぎ方がそのまま図になる。</figcaption>
+                <figcaption class="m-figcap">図2　Pico と部品のつなぎ方がそのまま図になる。</figcaption>
               </figure>
             </div>
           </div>
@@ -636,7 +639,7 @@
               <img src="assets/lp/tutorial-guide.webp" width="1400" height="880" loading="lazy"
                    alt="PycoBlocks の学習モード。画面右のガイドパネルに解説とステップが表示され、同じ画面でブロックを組んでいる様子。">
             </div>
-            <p class="cap"><b>図4</b>右のガイドを読みながら、同じ画面でブロックを組んで進める。ステップごとに「クリア」の判定が入る。</p>
+            <p class="cap"><b>図3</b>右のガイドを読みながら、同じ画面でブロックを組んで進める。ステップごとに「クリア」の判定が入る。</p>
           </div>
           <div class="split-body">
             <div class="stat-row">
@@ -747,7 +750,7 @@
                 </g>
               </svg>
             </div>
-            <p class="cap"><b>図5</b>学校で保存した作品を、家のパソコンからそのまま開ける。作品はアカウントにひもづく。</p>
+            <p class="cap"><b>図4</b>学校で保存した作品を、家のパソコンからそのまま開ける。作品はアカウントにひもづく。</p>
           </div>
           <div class="split-body">
             <ul class="pointlist">
@@ -852,6 +855,7 @@
             <summary>学校の授業で使えますか？</summary>
             <p>使えます。インストールもアカウント登録も不要で、スマホやタブレットでも動くため、1人1台端末の授業に向いています。MIT ライセンスなので、教育目的での利用も自由です。</p>
             <p>作品を先生に出すときは、［ファイル → ブロックを保存］でできるファイル（.xml）を Classroom などで提出するのがかんたんです。保存するときに名前（出席番号）を入れると、ファイル名に入ります。</p>
+            <p>教室で画面を映すときは、［⚙ 見た目］で白い画面にして、文字を大きく（A+）すると後ろの席からも読みやすくなります。</p>
           </details>
         </div>
       </div>

@@ -459,3 +459,6 @@
   .toolbar button#btn-firmware.fw-hint { animation: none; }
   .fw-progress-bar { transition: none; }
 }
+
+/* 暗い背景で既定の青（約 2:1）になっていたリンク（r4 a11y） */
+.fw-note a { color: var(--accent-cyan, #00d4ff); font-size: 13px; text-decoration: underline; }

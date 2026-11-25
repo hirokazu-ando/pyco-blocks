@@ -3803,7 +3803,9 @@ document.addEventListener('DOMContentLoaded', function() {
     bar.appendChild(saveState);
     document.addEventListener('pyco:autosaved', function(e) {
       const ok = !(e.detail && e.detail.ok === false);
-      saveState.textContent = ok ? '✓ 自動保存' : '⚠ 自動保存できません';
+      // スマホでは「✓」だけ見せる（ボタンの下に潜って「保存」だけはみ出していた・r4 designer）。読み上げは全文
+      saveState.innerHTML = ok ? '✓<span class="ss-word"> 自動保存</span>' : '⚠<span class="ss-word"> 自動保存できません</span>';
+      saveState.setAttribute('aria-label', ok ? '自動保存ずみ' : '自動保存できません');
       saveState.classList.toggle('err', !ok);
       saveState.classList.remove('flash'); void saveState.offsetWidth; saveState.classList.add('flash');
     });
@@ -3861,7 +3863,8 @@ document.addEventListener('DOMContentLoaded', function() {
     //   見た目は css/style.css の #tb-scope と .tb-scope-btn（[aria-pressed="true"] が今の方）
     const COMMON_CATS = ['表示', '値', '変数', '計算', '繰り返し', '分岐', '入力', '時間'];
     const SCOPE_KEY = 'pyco-tb-scope-python';
-    let scope = 'all';
+    // はじめては「よく使うもの」（22 のカテゴリから［表示］を探して止まっていた・r4 kid/student/designer）
+    let scope = 'common';
     try {
       let v = localStorage.getItem(SCOPE_KEY);
       // 古い共通キーからの引っ越し（1 回だけ）
@@ -3870,7 +3873,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem(SCOPE_KEY, v);
       }
       localStorage.removeItem('pyco-tb-scope');
-      if (v === 'common') scope = 'common';
+      if (v === 'all') scope = 'all';
     } catch (e) { /* noop */ }
     const scopeBox = document.createElement('div');
     scopeBox.id = 'tb-scope';
@@ -4736,9 +4739,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 読む時間：1 文字 0.25 秒（エラー）／0.12 秒。短くてもエラーは 10 秒、ふつうは 4 秒。
     // 長い文でもエラー 15 秒・ふつう 8 秒で打ち切る（乗せている間は消えないので、読みたい子は止められる）
     const len = String(msg).length;
-    const ms = opts.ms || (err ? Math.min(15000, Math.max(10000, len * 250)) : Math.min(8000, Math.max(4000, len * 120)));
+    // ボタンのある知らせは自動で消さない（キーボード・読み上げの人がボタンに届く前に消えていた・r4 a11y）
+    const ms = opts.ms || (opts.action ? 0 : null) || (err ? Math.min(15000, Math.max(10000, len * 250)) : Math.min(8000, Math.max(4000, len * 120)));
     let timer = null, hold = 0;
-    function arm() { clearTimeout(timer); timer = setTimeout(function() { if (!hold) close(); }, ms); }
+    function arm() { clearTimeout(timer); if (opts.action && !opts.ms) return; timer = setTimeout(function() { if (!hold) close(); }, ms); }
     // 乗せている・フォーカスしている間は消さない。離れたらもう一度 ms 待つ
     el.addEventListener('mouseenter', function() { hold++; });
     el.addEventListener('mouseleave', function() { hold = Math.max(0, hold - 1); if (!hold) arm(); });
@@ -5033,6 +5037,7 @@ document.addEventListener('DOMContentLoaded', function() {
   //   ・今のブロックがあれば、黙って消さずに「置きかえる／足す／やめる」を聞く
   //   label：確認の文に出す名前（サンプルは一覧と同じ題名。無ければファイル名）
   async function loadBlocksXmlText(text, name, label) {
+    const fromFile = !label;  // ［ブロックを開く］から（サンプルは題名が来る）
     label = label || name;
     let dom;
     try {
@@ -5072,6 +5077,11 @@ document.addEventListener('DOMContentLoaded', function() {
       else Blockly.Xml.domToWorkspace(dom, workspace);
       window.__PCO_LAST_XML_SRC = name;
       generateCode();
+      // 開いたことと、だれの作品か（保存のときに入れた名前）を出す。提出物を続けて開く先生が取り違えないように（r4 teacher/student）
+      if (name && fromFile) {
+        const who = dom.getAttribute && dom.getAttribute('author');
+        showToast('「' + name + '」を開きました' + (who ? '（' + who + ' の作品）' : '') + '。', { ms: 6000 });
+      }
       // 置きかえたときは読み込んだブロックが見える位置へ（足したときは今の見え方を変えない）
       if (!add) fitAfterLoad();
       return true;
@@ -5280,7 +5290,7 @@ document.addEventListener('DOMContentLoaded', function() {
       note.className = 'ws-empty-note';
       if (key === 'python') {
         h.textContent = 'はじめての人は、ここから';
-        row.appendChild(btn('▶ 学習モード #00 で始める', 'primary', function() {
+        row.appendChild(btn('▶ 学習モードで始める', 'primary', function() {
           if (window.PycoTutorial) window.PycoTutorial.start('0-00');
         }));
         row.appendChild(btn('サンプルを開く', '', openSamples));
@@ -5307,7 +5317,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 別のモードに作りかけがあれば、そこへ戻る道を出す（次の日にトップから入ると空の画面になり「消えた」と思っていた）
       const other = otherModeWithWork(key);
       if (other) {
-        row.appendChild(btn('作りかけ（' + other.label + '）を開く', '', function() {
+        row.appendChild(btn(other.label + ' モードにもどる（作りかけあり）', '', function() {
           const b = document.getElementById(other.btn);
           if (b) b.click();
         }));
@@ -5773,8 +5783,8 @@ document.addEventListener('DOMContentLoaded', function() {
         runPython();
       } else {
         showToast(hasSerial
-          ? '動かすには Pico をつなぎます。USB ケーブルでつないで［接続］を押してください。' +
-            'Pico がなくても、ブロック・Python のコード・配線図は見られます。'
+          ? '動かすには Pico をつなぎます。USB ケーブルでつないで［接続］を押してください（はじめての Pico は、先に［MicroPython導入］）。' +
+            'Pico がなくても、ブロック・MicroPython のコード・配線図は見られます。'
           : noSerialMessage());
         if (hasSerial) { btnConnect.classList.remove('pyco-attn'); void btnConnect.offsetWidth; btnConnect.classList.add('pyco-attn'); }
       }
@@ -6159,7 +6169,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const rec = Blockly.Events.getRecordUndo();
     Blockly.Events.setRecordUndo(false);
     try {
-      Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(MB_STARTER_XML), workspace);
+      // パソコンでは［基本］の一覧（約 280px）の右に置く。左端だと一覧が 2 つを隠し、入れる先が見えなかった（r4 kid/student）
+      const sx = document.body.classList.contains('mobile-mode') ? 30 : Math.round(300 / (workspace.scale || 1));
+      Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(MB_STARTER_XML.replace(/x="30"/g, 'x="' + sx + '"')), workspace);
       generateCode();
     } catch (e) { console.warn('PycoBlocks: micro:bit の初期ブロックを置けませんでした:', e); }
     finally { Blockly.Events.setRecordUndo(rec); }
@@ -6340,6 +6352,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!before || !/^btn-run(-python)?$/.test(before.id) || usable(before)) return;
       const to = ['btn-stop-python', 'btn-stop'].map(function(id) { return document.getElementById(id); }).find(usable);
       if (to) { _runFocusFrom = before; try { to.focus(); } catch (e) { /* noop */ } }
+    } else if (!_runFocusFrom && before && /^btn-stop(-python)?$/.test(before.id) && lost()) {
+      // Ctrl+Enter などで動かして［■ 停止］を押したときも、止まったら［▶ 実行］へ（body に落ちていた・r4 a11y）
+      const to = [document.getElementById('btn-run-python'), document.getElementById('btn-run')].find(usable);
+      if (to) { try { to.focus(); } catch (e) { /* noop */ } }
     } else if (_runFocusFrom) {
       const back = _runFocusFrom;
       _runFocusFrom = null;
@@ -6349,8 +6365,18 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   }
+  // ゲームを動かしながらブロックを変えても、次に実行するまで動きは変わらない。1 回の実行で 1 度だけ知らせる（r4 designer）
+  let _editHintShown = false;
+  workspace.addChangeListener(function(e) {
+    if (e.isUiEvent || currentMode !== 'game' || _pyRuns.size === 0 || _editHintShown) return;
+    if (e.type !== Blockly.Events.BLOCK_CHANGE && e.type !== Blockly.Events.BLOCK_MOVE &&
+        e.type !== Blockly.Events.BLOCK_CREATE && e.type !== Blockly.Events.BLOCK_DELETE) return;
+    _editHintShown = true;
+    showToast('変えた所は［↻ もう一度実行］を押すと、動きに入ります。', { ms: 5000 });
+  });
   let _restartPending = false;
   function setPythonRunning(running) {
+    if (running) _editHintShown = false;
     const focusBefore = document.activeElement;
     const btnRun  = document.getElementById('btn-run-python');
     const btnStop = document.getElementById('btn-stop-python');
@@ -6392,7 +6418,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const monOut = document.getElementById('monitor-output');
 
     monOut.innerHTML = '';
-    if (typeof codeOverride !== 'string' && !fileMode && pyFiles.length <= 1 && workspace.getAllBlocks(false).length === 0) {
+    if (typeof codeOverride !== 'string' && codingMode && !String(code).trim()) {
+      // コード編集中はブロックの有無ではなくコードで見る（打った print が「ブロックがありません」で動かなかった・r4 student）
+      appendShellText('まだコードがありません。右のコード欄に書いてから［▶ 実行］を押してください。\n', false, 'py-prompt');
+      return;
+    }
+    if (typeof codeOverride !== 'string' && !codingMode && !fileMode && pyFiles.length <= 1 && workspace.getAllBlocks(false).length === 0) {
       // 何も置かずに実行すると「実行開始」「完了」だけが出て、何が起きたか分からなかった
       appendShellText('まだブロックがありません。左のカテゴリからブロックを置いてから［▶ 実行］を押してください。\n', false, 'py-prompt');
       return;
@@ -6780,7 +6811,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (tp === 'ValueError') {
       title = `ValueError — 値の形式が正しくありません`;
       if (rawMsg.includes('invalid literal') && rawMsg.includes('int')) {
-        detail = `文字列を整数（int）に変換しようとしましたが、数字以外の文字が含まれています。\n・入力した文字列が「123」のような数字だけかどうか確認してください`;
+        detail = `数字（123 など）にできない文字が入りました。\n・入力の窓には、数字だけを入れてください（「ご」や空のまま・キャンセルだと止まります）`;
       } else {
         detail = `値の形式が正しくありません。\n原因: ${rawMsg}`;
       }
@@ -8272,6 +8303,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // URL の共有ハッシュ（#x1= / #xml=）でワークスペースを復元
   //   #x1=  … 辞書v1付き deflate（現行）
   //   #xml= … 無辞書 deflate（旧形式・後方互換）
+  // 開いているタブのアドレス欄に共有URLを貼っても、# の後ろだけが変わるので何も起きなかった（r4 teacher/designer）。
+  // 読み直して、新しいタブで開いたときと同じ流れ（作りかけがあれば聞く）にする。自動保存は読み直す前に済ませる
+  window.addEventListener('hashchange', function() {
+    if (!/[#&](x1|xml)=/.test(window.location.hash)) return;
+    try { if (window.PycoAutosave && PycoAutosave.flush) PycoAutosave.flush(); } catch (e) { /* noop */ }
+    window.location.reload();
+  });
   var _hash = window.location.hash || '';
   var _hashV1 = _hash.match(/[#&]x1=([^&]+)/);
   var _hashLegacy = _hash.match(/[#&]xml=([^&]+)/);

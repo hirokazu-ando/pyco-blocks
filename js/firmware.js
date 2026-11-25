@@ -171,7 +171,7 @@ const PicoFirmware = (() => {
   function renderStep1() {
     const cards = boards.map(b => `
       <button type="button" class="fw-card${selected && selected.id === b.id ? ' is-selected' : ''}"
-              data-board="${b.id}" aria-pressed="${selected && selected.id === b.id}">
+              data-board="${b.id}" aria-pressed="${!!(selected && selected.id === b.id)}">
         <div class="fw-card-art">${PicoArt.board({
           wireless: b.wireless, label: silkLabel(b.id), height: 150,
         })}</div>
@@ -513,6 +513,9 @@ const PicoFirmware = (() => {
           localStorage.setItem(LS_BOARD, selected.id);
           setMsg('');
           render();
+          // 作り直したカードへフォーカスを戻す（キーボードで選ぶと body に落ちていた・r4 a11y）
+          const again = root.querySelector('.fw-card[data-board="' + selected.id + '"]');
+          if (again) again.focus();
         });
       });
     }
@@ -656,13 +659,20 @@ const PicoFirmware = (() => {
     root.style.display = 'flex';
     setMsg('');
     render();
+    // 閉じたら開いたボタンへ戻す（Esc・閉じるで body に落ちていた・r4 a11y）
+    const a = document.activeElement;
+    opener = (a && a !== document.body && !root.contains(a)) ? a : document.getElementById('btn-firmware');
     const focusable = root.querySelector('.fw-card, .fw-btn');
     if (focusable) focusable.focus();
   }
 
+  let opener = null;
   function close() {
     if (!root) return;
     root.style.display = 'none';
+    const back = opener;
+    opener = null;
+    if (back && back.offsetParent !== null) { try { back.focus(); } catch (e) { /* noop */ } }
   }
 
   function isOpen() { return !!root && root.style.display !== 'none'; }

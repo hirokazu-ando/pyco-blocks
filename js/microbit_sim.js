@@ -867,6 +867,7 @@ function boardSvg() {
   <rect class="mbs-w mbs-bar" data-w="sound" x="360" y="110" width="20" height="160" rx="5" ry="5" fill="url(#mbs-g-sound)"><title>まわりの音（上下にドラッグ）</title></rect>
   <text class="mbs-t mbs-w" data-w="sound" data-t="sound" x="370" y="90"></text>
   <g class="mbs-w mbs-shake" data-w="acc" role="button" aria-label="ゆさぶる"><title>ゆさぶる</title>
+    <rect x="388" y="98" width="72" height="34" fill="transparent"/>
     <circle cx="404" cy="115" r="12" fill="${TH.virtualButtonUp}"/>
     <text class="mbs-ts" x="420" y="122">SHAKE</text>
   </g>
@@ -1199,6 +1200,11 @@ function mount(root, opts) {
   shake.addEventListener('pointerdown', e => { e.preventDefault(); shakeDot.setAttribute('fill', TH.buttonDown); });
   shake.addEventListener('pointerleave', () => shakeDot.setAttribute('fill', TH.virtualButtonUp));
   shake.addEventListener('pointerup', () => { shakeDot.setAttribute('fill', TH.virtualButtonUp); doGesture('shake'); });
+  // キーボードでも［ゆさぶる］を押せるように（tabindex が無く Tab で届かなかった・r4 a11y）
+  shake.setAttribute('tabindex', '0');
+  shake.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); doGesture('shake'); }
+  });
   attachTilt(root.querySelector('.mbs-board'), svg);
 
   ui.sliders.forEach(el => el.addEventListener('input', () => setSensors({ [el.dataset.s]: Number(el.value) })));

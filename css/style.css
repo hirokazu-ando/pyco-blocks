@@ -3606,3 +3606,13 @@ body.mobile-mode #ws-save-state { white-space: nowrap; }
 /* r3：スマホの上のモード切替を押しやすく（38px → 44px） */
 body.mobile-mode header .mode-btn { min-height: 44px; }
 #pyco-savename-input:focus { outline: 2px solid var(--accent-green); outline-offset: 1px; }
+/* r4：ファイルメニューの用途の一言 */
+.tb-menu-sub { display: block; font-size: 11.5px; font-weight: normal; color: var(--text-dim); margin-top: 2px; }
+/* r4：スマホの「✓ 自動保存」は ✓ だけ */
+body.mobile-mode #ws-save-state .ss-word { display: none; }
+/* r4：学習パネルの［やさしい／くわしい］［A− A＋］も 32px（スマホ 44px） */
+#pyco-tut-panel .pyco-tut-level-btn, #pyco-tut-fs-dec, #pyco-tut-fs-inc { min-height: 32px; min-width: 32px; }
+body.mobile-mode #pyco-tut-panel .pyco-tut-level-btn, body.mobile-mode #pyco-tut-fs-dec, body.mobile-mode #pyco-tut-fs-inc { min-height: 44px; min-width: 44px; }
+/* r4：案内カードが右のズームボタン（［−］）にかからないよう、右に 64px あける */
+body:not(.mobile-mode) #ws-empty-hint { width: min(440px, calc(100% - var(--pyco-ws-tb, 120px) - 88px));
+  left: calc(var(--pyco-ws-tb, 120px) + (100% - var(--pyco-ws-tb, 120px) - 64px) / 2); }

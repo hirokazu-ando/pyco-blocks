@@ -72,8 +72,8 @@
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20261125c">
-  <link rel="stylesheet" href="css/firmware.css?v=20260907a">
+  <link rel="stylesheet" href="css/style.css?v=20261125d">
+  <link rel="stylesheet" href="css/firmware.css?v=20261125d">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -142,13 +142,13 @@
         <div class="tb-menu-pop" id="tb-pop-file" role="group" aria-label="ファイル">
           <button id="btn-new" title="今のブロックをぜんぶ消して、新しく作りはじめる（［もどす］で取り消せます）">新しく作る</button>
           <button id="btn-samples" title="今のモードのサンプル（記事の例・答え）を一覧から開く">サンプルを開く</button>
-          <button id="btn-save-xml" title="今のブロックをファイル（.xml）に保存する">ブロックを保存</button>
+          <button id="btn-save-xml" title="今のブロックをファイル（.xml）に保存する">ブロックを保存<span class="tb-menu-sub">あとで続きをする・提出する用</span></button>
           <button id="btn-load-xml" title="保存したブロックのファイル（.xml）を開く">ブロックを開く</button>
           <button id="btn-share-url" title="今のブロックを開ける URL を作る（次の画面でコピーできる）">共有URLを作る</button>
-          <button id="btn-restore-share" hidden title="共有URLを開いたときに取っておいた、前の作品を出す">共有を開く前の作品にもどす</button>
+          <button id="btn-restore-share" hidden title="共有URLを開いたときに取っておいた、前の作品を出す">共有を開く前の作品にもどす<span class="tb-menu-sub">共有URLで置きかわる前の作品</span></button>
           <input type="file" id="xml-input" accept=".xml" style="display:none">
           <div class="toolbar-sep"></div>
-          <button id="btn-download" title="Python のコードをファイル（.py）に保存する" aria-label="Python ファイル（.py）に保存">Python を保存（.py）</button>
+          <button id="btn-download" title="Python のコードをファイル（.py）に保存する" aria-label="Python ファイル（.py）に保存">Python を保存（.py）<span class="tb-menu-sub">パソコンの Python で動かす用</span></button>
           <button id="btn-load" title="Python のファイル（.py）を開く" aria-label="Python ファイル（.py）を開く">Python を開く（.py）</button>
           <input type="file" id="file-input" accept=".py" style="display:none">
         </div>
@@ -2016,7 +2016,7 @@
   <script src="js/block_palette.js?v=20261102f"></script>
   <script src="js/serial.js?v=20261102c"></script>
   <script src="js/firmware_art.js?v=20261102j"></script>
-  <script src="js/firmware.js?v=20261125a"></script>
+  <script src="js/firmware.js?v=20261125d"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <!-- 実体配線図レンダラ。読込順=legacy→bb→direct、後勝ちで direct が既定。
@@ -2047,9 +2047,9 @@
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/microbit_sim.js?v=20261125a"></script>
+  <script src="js/microbit_sim.js?v=20261125d"></script>
   <script src="js/serial_plot.js?v=20261102q"></script>
-  <script src="js/app.js?v=20261125c"></script>
+  <script src="js/app.js?v=20261125d"></script>
   <script src="js/autosave.js?v=20261102j"></script>
   <script src="js/toolbar_menu.js?v=20261125c"></script>
   <!-- クラウド保存（Google ログイン + Firestore）。firebase_config.js が未設定なら
@@ -2085,7 +2085,7 @@
   <script src="lessons/0-21.js?v=20260714c"></script>
   <script src="lessons/0-22.js?v=20260714c"></script>
   <script src="js/tutorial_progress.js?v=20260713b" defer></script>
-  <script src="js/tutorial.js?v=20261125c" defer></script>
+  <script src="js/tutorial.js?v=20261125d" defer></script>
 
   <!-- 実体配線図モーダル -->
   <div id="circuit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:9000; align-items:center; justify-content:center;">
@@ -2113,9 +2113,9 @@
     <div style="background:#111827; border:1px solid #2d3748; border-radius:10px; padding:16px; width:min(640px,94vw); display:flex; flex-direction:column; gap:12px;">
       <div style="display:flex; align-items:center; justify-content:space-between;">
         <span id="share-title" style="color:#68d391; font-weight:bold; font-size:1.05em;">共有URL</span>
-        <button id="share-close" style="background:none; border:none; color:#718096; font-size:.9em; cursor:pointer; line-height:1;">閉じる</button>
+        <button id="share-close" style="background:none; border:1px solid #718096; color:#cbd5e0; font-size:.9em; cursor:pointer; line-height:1; min-width:44px; min-height:44px; padding:0 10px;">閉じる</button>
       </div>
-      <p style="color:#a0aec0; font-size:.85em; margin:0; line-height:1.5;">このURLを開くと、いまのブロックがそのまま復元されます。下の枠を選んでコピーしてください。</p>
+      <p style="color:#a0aec0; font-size:.85em; margin:0; line-height:1.5;">このURLを開くと、いまのブロックがそのまま復元されます。［コピー］を押して、相手に送ってください。</p>
       <textarea id="share-url-text" aria-label="共有URL" readonly style="width:100%; height:84px; resize:none; box-sizing:border-box; background:#0d1117; color:#e2e8f0; border:1px solid #2d3748; border-radius:6px; padding:8px; font-family:monospace; font-size:.82em; word-break:break-all;"></textarea>
       <div style="display:flex; gap:8px; align-items:center;">
         <button id="share-copy" style="background:#2d6a4f; color:#fff; border:none; border-radius:4px; padding:7px 18px; cursor:pointer; font-size:.9em;">コピー</button>
