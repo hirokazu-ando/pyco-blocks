@@ -590,6 +590,46 @@ h1 {
 .main.mode-microbit #circuit-preview-header,
 .main.mode-microbit #circuit-preview-svg { display: none !important; }
 .main.mode-microbit #mb-sim { display: flex !important; }
+/* PoliviaBot のブロックがあるときは、配線図の場所に上から見たコースを出す（js/pvb_sim.js）。
+   配線図を畳んでいてもシミュレータは出す（実行して動きを見る場所なので） */
+.main.pvb-on #circuit-preview-header,
+.main.pvb-on #circuit-preview-svg { display: none !important; }
+.main.pvb-on #pvb-sim { display: flex !important; }
+.main.game-layout.mode-micropython.pvb-on #circuit-preview-area { flex: 1 1 0 !important; }
+#pvb-sim { flex: 1 1 0; min-height: 0; flex-direction: column; gap: 6px; padding: 8px; box-sizing: border-box;
+  color: #e2e8f0; font-size: 13px; }
+[data-theme="light"] #pvb-sim { color: #1a202c; }
+#pvb-sim .pvs-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#pvb-sim .pvs-top select { font-size: 13px; padding: 3px 4px; border-radius: 6px; }
+#pvb-sim .pvs-btn { font-size: 13px; padding: 3px 10px; border-radius: 6px; border: 1px solid #4a5568;
+  background: #2d3748; color: #e2e8f0; cursor: pointer; }
+[data-theme="light"] #pvb-sim .pvs-btn { background: #fff; color: #1a202c; border-color: #a0aec0; }
+#pvb-sim .pvs-body { flex: 1 1 0; min-height: 0; display: flex; gap: 8px; }
+#pvb-sim .pvs-field-wrap { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+#pvb-sim .pvs-field { display: block; border-radius: 6px; touch-action: none; cursor: grab; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
+#pvb-sim .pvs-side { flex: 0 0 176px; display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; }
+#pvb-sim .pvs-oled { width: 176px; height: 88px; image-rendering: pixelated; background: #000; border-radius: 4px;
+  box-shadow: 0 0 0 3px #1a365d; }
+#pvb-sim .pvs-leds, #pvb-sim .pvs-sws { display: flex; gap: 6px; }
+#pvb-sim .pvs-led { flex: 1; text-align: center; padding: 3px 0; border-radius: 12px; background: #2d3748; color: #a0aec0; font-weight: bold; }
+#pvb-sim .pvs-led.on { background: #f6e05e; color: #1a202c; box-shadow: 0 0 10px #f6e05e; }
+#pvb-sim .pvs-sw { flex: 1; min-height: 36px; border-radius: 8px; border: 2px solid #718096; background: #4a5568; color: #fff;
+  font-weight: bold; font-size: 14px; cursor: pointer; touch-action: none; user-select: none; }
+#pvb-sim .pvs-sw.down { background: #ed8936; border-color: #c05621; }
+#pvb-sim .pvs-sw.pvs-attn { animation: pvs-attn 1s ease-in-out infinite; }
+@keyframes pvs-attn { 50% { box-shadow: 0 0 0 4px #f6ad55; } }
+@media (prefers-reduced-motion: reduce) { #pvb-sim .pvs-sw.pvs-attn { animation: none; box-shadow: 0 0 0 3px #f6ad55; } }
+#pvb-sim .pvs-read { display: flex; flex-direction: column; gap: 3px; font-size: 12px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+#pvb-sim .pvs-line { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 4px; }
+#pvb-sim .pvs-cap { grid-column: 1 / -1; }
+#pvb-sim .pvs-cell { display: flex; flex-direction: column; align-items: center; padding: 2px 0; border-radius: 4px; background: rgba(127,127,127,.15); }
+#pvb-sim .pvs-k { font-size: 11px; opacity: .75; }
+#pvb-sim .pvs-v { font-weight: bold; }
+#pvb-sim .pvs-hint { color: #f6ad55; font-weight: bold; }
+[data-theme="light"] #pvb-sim .pvs-hint { color: #c05621; }
+#pvb-sim .pvs-note { margin: 0; font-size: 11.5px; opacity: .8; }
+#pvb-sim.pvs-stopped .pvs-field { filter: grayscale(.5) brightness(.85); }
+/* 幅が足りないときはコースの下に OLED などを並べる */
 /* センサーモニターのセンサー選び（シリアルモニタの右上に出る） */
 #mb-sensor-pop { position: absolute; right: 8px; top: 34px; z-index: 30; width: 300px; padding: 10px 12px;
   background: #1a202c; color: #e2e8f0; border: 1px solid #4a5568; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.45); font-size: 13px; }
@@ -3749,3 +3789,21 @@ ruby.pyco-furi { ruby-position: over; ruby-align: center; }
 ruby.pyco-furi rt { font-size: .52em; line-height: 1; font-weight: normal; letter-spacing: 0; opacity: .9; }
 body.furigana header .toolbar button,
 body.furigana header .mode-toggle .mode-btn { line-height: 1.15; padding-top: 2px; padding-bottom: 2px; }
+
+/* PoliviaBot シミュレータ（スマホ）。配線図を畳んだときの決まり（.circuit-collapsed）より後に置いて、
+   シミュレータは畳まずに出す。コースの下に OLED・LED・スイッチ・値を並べる */
+body.mobile-mode .main.game-layout.pvb-on > #game-left-column > #circuit-preview-area,
+body.mobile-mode .main.game-layout.pvb-on > #game-left-column.circuit-collapsed > #circuit-preview-area { flex: 3 1 0 !important; }
+body.mobile-mode .main.game-layout.pvb-on > #game-left-column > #blockly-div,
+body.mobile-mode .main.game-layout.pvb-on > #game-left-column.circuit-collapsed > #blockly-div { flex: 2 1 0 !important; }
+body.mobile-mode #pvb-sim .pvs-body { flex-direction: column; }
+body.mobile-mode #pvb-sim .pvs-side { flex: 0 0 auto; display: grid; grid-template-columns: 128px 1fr; gap: 4px 8px; align-items: start; }
+body.mobile-mode #pvb-sim .pvs-oled { width: 128px; height: 64px; grid-row: span 2; }
+body.mobile-mode #pvb-sim .pvs-read { grid-column: 1 / -1; }
+body.mobile-mode #pvb-sim .pvs-note { display: none; }
+/* スマホを横にしたとき：高さが足りないので、コースの右にパネルを並べる（パネルは中でスクロール） */
+@media (orientation: landscape) and (max-height: 500px) {
+  body.mobile-mode #pvb-sim { padding: 4px 8px; gap: 4px; }
+  body.mobile-mode #pvb-sim .pvs-body { flex-direction: row; }
+  body.mobile-mode #pvb-sim .pvs-side { flex: 0 0 300px; overflow-y: auto; }
+}

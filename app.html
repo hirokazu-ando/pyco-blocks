@@ -72,8 +72,8 @@
         integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
   <link rel="icon" type="image/svg+xml" href="assets/pycoblocks-icon.svg">
   <link rel="apple-touch-icon" href="assets/pycoblocks-icon.svg">
-  <link rel="stylesheet" href="css/style.css?v=20261126a">
-  <link rel="stylesheet" href="css/firmware.css?v=20261126a">
+  <link rel="stylesheet" href="css/style.css?v=20261126b">
+  <link rel="stylesheet" href="css/firmware.css?v=20261126b">
   <script src="https://unpkg.com/blockly@12.5.1/blockly.min.js"
           integrity="sha384-SxxR8fpocVLJMl6kYyBm33uuy9U1yy0gMrMavfyCd3lQRer3qaBMlcVb0VSAfzop" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@blockly/field-colour@6.0.12/dist/index.js" crossorigin="anonymous"></script>
@@ -240,6 +240,8 @@
         <div id="circuit-preview-svg" style="flex:1; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="クリックで拡大表示"></div>
         <!-- micro:bit モードでは配線図の代わりにシミュレータを出す（js/microbit_sim.js） -->
         <div id="mb-sim" style="display:none"></div>
+        <!-- Pico モードで PoliviaBot のブロックを置くと、配線図の代わりに上から見たコースを出す（js/pvb_sim.js） -->
+        <div id="pvb-sim" style="display:none"></div>
       </div>
       <div id="monitor-panel-anchor"></div>
       <div id="monitor-panel">
@@ -2036,7 +2038,7 @@
   <script src="js/block_palette.js?v=20261102f"></script>
   <script src="js/serial.js?v=20261102c"></script>
   <script src="js/firmware_art.js?v=20261102j"></script>
-  <script src="js/firmware.js?v=20261126a"></script>
+  <script src="js/firmware.js?v=20261126b"></script>
   <script src="js/blocks/gpio.js?v=20260511c"></script>
   <script src="js/circuit_viewer.js?v=20260514ab"></script>
   <!-- 実体配線図レンダラ。読込順=legacy→bb→direct、後勝ちで direct が既定。
@@ -2067,12 +2069,13 @@
   <script src="js/stats_engine.js?v=20260506b"></script>
   <script src="js/csv_engine.js?v=20260506a"></script>
   <script src="js/share_dict.js?v=20260526d"></script>
-  <script src="js/microbit_sim.js?v=20261126a"></script>
+  <script src="js/microbit_sim.js?v=20261126b"></script>
+  <script src="js/pvb_sim.js?v=20261126b"></script>
   <script src="js/serial_plot.js?v=20261102q"></script>
-  <script src="js/app.js?v=20261126a"></script>
+  <script src="js/app.js?v=20261126b"></script>
   <script src="js/autosave.js?v=20261102j"></script>
   <script src="js/toolbar_menu.js?v=20261125c"></script>
-  <script src="js/furigana.js?v=20261126a"></script>
+  <script src="js/furigana.js?v=20261126b"></script>
   <!-- クラウド保存（Google ログイン + Firestore）。firebase_config.js が未設定なら
        cloud.js は何も表示せず SDK も読み込まない＝現状の動作に一切影響しない。 -->
   <script src="js/firebase_config.js?v=20260710a"></script>
@@ -2081,32 +2084,32 @@
        firebase_config.js の後に読み込む（進捗のクラウド同期に config を参照するため）。
        レッスン定義は lessons/*.js（tools/build_lessons.py が lessons/*.json から自動生成。
        file:// 直開きでは fetch が使えないため script タグで事前読込する）。 -->
-  <script src="lessons/index.js?v=20261126a"></script>
-  <script src="lessons/0-00.js?v=20261126a"></script>
-  <script src="lessons/0-01.js?v=20261126a"></script>
-  <script src="lessons/0-02.js?v=20261126a"></script>
-  <script src="lessons/0-03.js?v=20261126a"></script>
-  <script src="lessons/0-04.js?v=20261126a"></script>
-  <script src="lessons/0-05.js?v=20261126a"></script>
-  <script src="lessons/0-06.js?v=20261126a"></script>
-  <script src="lessons/0-07.js?v=20261126a"></script>
-  <script src="lessons/0-08.js?v=20261126a"></script>
-  <script src="lessons/0-09.js?v=20261126a"></script>
-  <script src="lessons/0-10.js?v=20261126a"></script>
-  <script src="lessons/0-11.js?v=20261126a"></script>
-  <script src="lessons/0-12.js?v=20261126a"></script>
-  <script src="lessons/0-13.js?v=20261126a"></script>
-  <script src="lessons/0-14.js?v=20261126a"></script>
-  <script src="lessons/0-15.js?v=20261126a"></script>
-  <script src="lessons/0-16.js?v=20261126a"></script>
-  <script src="lessons/0-17.js?v=20261126a"></script>
-  <script src="lessons/0-18.js?v=20261126a"></script>
-  <script src="lessons/0-19.js?v=20261126a"></script>
-  <script src="lessons/0-20.js?v=20261126a"></script>
-  <script src="lessons/0-21.js?v=20261126a"></script>
-  <script src="lessons/0-22.js?v=20261126a"></script>
+  <script src="lessons/index.js?v=20261126b"></script>
+  <script src="lessons/0-00.js?v=20261126b"></script>
+  <script src="lessons/0-01.js?v=20261126b"></script>
+  <script src="lessons/0-02.js?v=20261126b"></script>
+  <script src="lessons/0-03.js?v=20261126b"></script>
+  <script src="lessons/0-04.js?v=20261126b"></script>
+  <script src="lessons/0-05.js?v=20261126b"></script>
+  <script src="lessons/0-06.js?v=20261126b"></script>
+  <script src="lessons/0-07.js?v=20261126b"></script>
+  <script src="lessons/0-08.js?v=20261126b"></script>
+  <script src="lessons/0-09.js?v=20261126b"></script>
+  <script src="lessons/0-10.js?v=20261126b"></script>
+  <script src="lessons/0-11.js?v=20261126b"></script>
+  <script src="lessons/0-12.js?v=20261126b"></script>
+  <script src="lessons/0-13.js?v=20261126b"></script>
+  <script src="lessons/0-14.js?v=20261126b"></script>
+  <script src="lessons/0-15.js?v=20261126b"></script>
+  <script src="lessons/0-16.js?v=20261126b"></script>
+  <script src="lessons/0-17.js?v=20261126b"></script>
+  <script src="lessons/0-18.js?v=20261126b"></script>
+  <script src="lessons/0-19.js?v=20261126b"></script>
+  <script src="lessons/0-20.js?v=20261126b"></script>
+  <script src="lessons/0-21.js?v=20261126b"></script>
+  <script src="lessons/0-22.js?v=20261126b"></script>
   <script src="js/tutorial_progress.js?v=20260713b" defer></script>
-  <script src="js/tutorial.js?v=20261126a" defer></script>
+  <script src="js/tutorial.js?v=20261126b" defer></script>
 
   <!-- 実体配線図モーダル -->
   <div id="circuit-modal" class="pyco-dlg-back" style="display:none;">

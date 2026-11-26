@@ -212,6 +212,13 @@ document.addEventListener('DOMContentLoaded', function() {
   function modeKey() {
     return (currentMode === 'micropython' && currentBoard === 'microbit') ? 'microbit' : currentMode;
   }
+  // PoliviaBot のシミュレータ（js/pvb_sim.js）を出すか。Pico モードで pvb_ のブロックがあるとき
+  // （コード編集中はコードで見る）。出すと配線図の場所がシミュレータになり、未接続の［▶ 実行］で動かせる
+  function pvbSimActive() {
+    if (currentMode !== 'micropython' || currentBoard === 'microbit' || !window.PycoPvbSim) return false;
+    if (codingMode) return /\b_pvb_(drive|sonar_cm)\b/.test(editor.getValue());
+    return workspace.getAllBlocks(false).some(function(b) { return b.type.indexOf('pvb_') === 0; });
+  }
   // serial.js / firmware.js からボードを知るための窓口
   window.PycoBoard = { get: function() { return currentBoard; } };
 
@@ -5834,23 +5841,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // 「動かない」と思われるので、未接続ならツールバーの実行・停止をシミュレータにつなぐ（MakeCode と同じ）。
     // 停止は何を止めるのかを言葉で示し、シミュレータ用の停止ボタンを別に増やさない。
     const mb = currentMode === 'micropython' && currentBoard === 'microbit';
+    // PoliviaBot のブロックがあれば、Pico でもシミュレータで動かせる
+    const sim = mb || pvbSimActive();
     const board = mb ? 'micro:bit' : 'Pico';
     const runBtn = document.getElementById('btn-run');
     const stopBtn = document.getElementById('btn-stop');
     // Pico 未接続のときは灰色に見せるが押せるようにしておき、押したら「つなぎ方」を知らせる
     // （disabled だと押しても何も起きず、初めての人は理由が分からない）
-    const needsConnect = !connected && !mb;
-    runBtn.disabled = mb && !connected && _simRunning;
+    const needsConnect = !connected && !sim;
+    runBtn.disabled = sim && !connected && _simRunning;
     runBtn.classList.toggle('needs-connect', needsConnect);
-    stopBtn.disabled = !connected && !(mb && _simRunning);
+    stopBtn.disabled = !connected && !(sim && _simRunning);
     // 呼び名はモードでそろえる（2026-11-25 先生判断 14）。シミュレータで動くことは title で伝える
     runBtn.textContent = '▶ 実行';
     stopBtn.textContent = '■ 止める';
     runBtn.title = connected ? board + ' でプログラムを動かします（Ctrl+Enter）'
-      : mb ? 'つないでいないので、シミュレータで動かします（Ctrl+Enter）'
+      : sim ? 'つないでいないので、シミュレータで動かします（Ctrl+Enter）'
       : 'Pico をつなぐと動かせます（押すと、つなぎ方が出ます）';
     stopBtn.title = connected ? board + ' で動いているプログラムを止めます'
-      : mb ? 'シミュレータで動いているプログラムを止めます'
+      : sim ? 'シミュレータで動いているプログラムを止めます'
       : '先に［接続］で Pico をつなぐと押せます';
     btnWrite.title = !connected ? '先に［接続］で ' + board + ' をつなぐと押せます'
       : mb ? 'プログラムを micro:bit に main.py として保存します（電池だけでも動くようになります）'
@@ -5984,8 +5993,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (warnEmptyInput()) return;
     // micro:bit を未接続で押したらシミュレータで動かす（updateSerialUI の説明を参照）
     if (!PicoSerial.isConnected()) {
-      if (currentBoard === 'microbit') {
-        if (window.PycoMicrobitSim && PycoMicrobitSim.unlockAudio) PycoMicrobitSim.unlockAudio();
+      if (currentBoard !== 'microbit' && pvbSimActive() && /^import (network|socket)\b/m.test(editor.getValue())) {
+        // Wi-Fi・通信はシミュレータでは動かせない。動かしてから分かりにくいエラーを出すより、先に知らせる
+        showToast('Wi-Fi・通信のブロックは、シミュレータでは動きません。Pico W をつないで［▶ 実行］してください。', { ms: 6000 });
+        return;
+      }
+      if (currentBoard === 'microbit' || pvbSimActive()) {
+        if (currentBoard === 'microbit' && window.PycoMicrobitSim && PycoMicrobitSim.unlockAudio) PycoMicrobitSim.unlockAudio();
         runPython();
       } else {
         showToast(hasSerial
@@ -6315,6 +6329,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mainEl) mainEl.classList.toggle('mode-micropython', mode === 'micropython');
     if (mainEl) mainEl.classList.toggle('mode-game', mode === 'game');
     if (mainEl) mainEl.classList.toggle('mode-microbit', mode === 'micropython' && currentBoard === 'microbit');
+    if (window.__pycoUpdatePvbView) window.__pycoUpdatePvbView();
     const btnSensor = document.getElementById('btn-sensor-monitor');
     if (btnSensor) btnSensor.style.display = (mode === 'micropython' && currentBoard === 'microbit') ? '' : 'none';
     // MicroPython 以外に切り替えたら配線図モーダルを閉じる
@@ -6596,6 +6611,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showToast('変えた所は［↻ もう一度実行］を押すと、動きに入ります。', { ms: 5000 });
   });
   let _restartPending = false;
+  let _pvbSimRun = false;   // いま動いているのが PoliviaBot のシミュレータか
   function setPythonRunning(running) {
     if (running) _editHintShown = false;
     const focusBefore = document.activeElement;
@@ -6613,6 +6629,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btnStop.style.display = (running && currentMode !== 'micropython') ? '' : 'none';
     _simRunning = running;
     if (window.PycoMicrobitSim) PycoMicrobitSim.setRunning(running);
+    if (window.PycoPvbSim) PycoPvbSim.setRunning(running && _pvbSimRun);
     // 止まったシミュレータは盤面を少し暗くする（MakeCode と同じ。LED が光ったままだと止まっていないように見える）。
     // 見た目は css/style.css の #mb-sim.mbs-stopped。最初の実行の前は付けない
     const simEl = document.getElementById('mb-sim');
@@ -6721,6 +6738,15 @@ document.addEventListener('DOMContentLoaded', function() {
       // 横で動かすモニターは、動いているプログラムの LED・音を消さない
       if (!sideBySide) PycoMicrobitSim.reset();
     }
+    // PoliviaBot：Pico をつないでいないときは machine / utime / framebuf をシミュレータ用に差しかえる
+    const _pvbSim = !_mbSim && currentMode === 'micropython' && !PicoSerial.isConnected() && pvbSimActive();
+    if (_pvbSim) {
+      PycoPvbSim.installIntoSkulpt(Sk);
+      PycoPvbSim.suggest(code);
+      PycoPvbSim.reset();
+      _pvbSimRun = true;
+      PycoPvbSim.setRunning(true);
+    }
 
     // Sk.configure の後に pygame を登録（configure が builtinFiles をリセットするため必ず後に呼ぶ）
     if (currentMode === 'game' && window.PycoPygame && typeof window.PycoPygame.installIntoSkulpt === 'function') {
@@ -6790,6 +6816,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (_pyRuns.size === 0) {
         setPythonRunning(false);
         if (_mbSim) PycoMicrobitSim.halt();
+        if (_pvbSim) { PycoPvbSim.halt(); _pvbSimRun = false; PycoPvbSim.setRunning(false); }
       } else if (isMonitor && _sensorMonRunning && !PicoSerial.isConnected()) {
         // モニターだけ止まった：プログラムはそのまま動いている
         setSensorMonRunning(false);
@@ -7274,6 +7301,27 @@ document.addEventListener('DOMContentLoaded', function() {
       run: runPython,
       stop: function() { _pyStopRequested = true; },
     });
+  }
+  // PoliviaBot シミュレータ（Pico モードで pvb_ のブロックを置くと配線図の場所に出る）
+  if (window.PycoPvbSim) {
+    PycoPvbSim.mount(document.getElementById('pvb-sim'));
+    let _pvbOn = null, _pvbTimer = 0;
+    const updatePvbView = function() {
+      _pvbTimer = 0;
+      const on = pvbSimActive();
+      const mainEl = document.querySelector('.main');
+      if (mainEl) mainEl.classList.toggle('pvb-on', on);
+      if (on && !_pyRuns.size) PycoPvbSim.suggest(editor.getValue());
+      if (on !== _pvbOn) {
+        _pvbOn = on;
+        updateSerialUI();
+        requestAnimationFrame(function() { Blockly.svgResize(workspace); });
+      }
+    };
+    window.__pycoUpdatePvbView = function() { if (!_pvbTimer) _pvbTimer = setTimeout(updatePvbView, 50); };
+    workspace.addChangeListener(function(e) { if (!e.isUiEvent) window.__pycoUpdatePvbView(); });
+    editor.on('change', function() { if (codingMode) window.__pycoUpdatePvbView(); });
+    updatePvbView();
   }
   document.getElementById('btn-stop-python').addEventListener('click', function() {
     _pyStopRequested = true;
