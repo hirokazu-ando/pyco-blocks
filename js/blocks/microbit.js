@@ -722,14 +722,16 @@ const EDGE_TYPES = ['mb_on_button', 'mb_on_pin_pressed', 'mb_on_logo'];
 
 // 生成コードの先頭。blockTypes はワークスペースにあるブロックの種類（Set）
 function header(blockTypes, showComments) {
+  // 説明はその行の右に付ける（行を増やさない・2026-11-26 先生指示）。r(説明, 行) → 「行  # 説明\n」
+  const r = (s, line) => line + (showComments ? `  # ${s}` : '') + '\n';
   const c = s => (showComments ? `# ${s}\n` : '');
   const has = list => list.some(t => blockTypes.has(t));
-  let h = c('micro:bit の LED 表示・ボタン・センサー・端子') + 'from microbit import *\n' +
-          c('時間待機用（MicroPython版 time モジュール）') + 'import utime\n';
-  if (has(MUSIC_TYPES)) h += c('音を鳴らす') + 'import music\n';
-  if (has(RADIO_TYPES)) h += c('無線（micro:bit どうしで送り合う）') + 'import radio\n';
-  if (blockTypes.has('mb_pulse_in')) h += c('パルスの長さを測る') + 'import machine\n';
-  if (blockTypes.has('py_random_int')) h += c('乱数生成用') + 'import random\n';
+  let h = r('micro:bit の LED 表示・ボタン・センサー・端子', 'from microbit import *') +
+          r('時間待機用（MicroPython版 time モジュール）', 'import utime');
+  if (has(MUSIC_TYPES)) h += r('音を鳴らす', 'import music');
+  if (has(RADIO_TYPES)) h += r('無線（micro:bit どうしで送り合う）', 'import radio');
+  if (blockTypes.has('mb_pulse_in')) h += r('パルスの長さを測る', 'import machine');
+  if (blockTypes.has('py_random_int')) h += r('乱数生成用', 'import random');
   // 無線は電源を入れないと送れない・受け取れない。グループを決めなければ 0 番
   if (has(RADIO_TYPES)) h += '\nradio.on()\nreceived_string = ""\n';
   // 補助の関数（_mb_num・_mb_edge）は、ブロック 1 つで 6 行ほど先頭に出る。初めての人がどこからが
@@ -737,17 +739,15 @@ function header(blockTypes, showComments) {
   const helpers = blockTypes.has('mb_received_number') || has(EDGE_TYPES);
   if (helpers && showComments) h += '\n# ── ここから自動で入る部分（ブロックが使う道具。さわらなくてよい）──';
   if (blockTypes.has('mb_received_number')) {
-    h += '\n' + c('受信した文字を数にする（読めないときは 0）') +
-      'def _mb_num(s):\n' +
+    h += '\n' + r('受信した文字を数にする（読めないときは 0）', 'def _mb_num(s):') +
       '    try:\n' +
       '        return float(s) if "." in s else int(s)\n' +
       '    except (ValueError, TypeError):\n' +
       '        return 0\n';
   }
   if (has(EDGE_TYPES)) {
-    h += '\n' + c('押した・離した「瞬間」を見分ける（前の周の状態と比べる）') +
-      '_mb_prev = {}\n' +
-      'def _mb_edge(key, now, rising=True):\n' +
+    h += '\n' + '_mb_prev = {}\n' +
+      r('押した・離した「瞬間」を見分ける（前の周の状態と比べる）', 'def _mb_edge(key, now, rising=True):') +
       '    before = _mb_prev.get(key, False)\n' +
       '    _mb_prev[key] = now\n' +
       '    return (now and not before) if rising else (before and not now)\n';

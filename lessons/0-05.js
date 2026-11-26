@@ -72,7 +72,7 @@ window.PYCO_LESSONS["0-05"] = {
       "title": "コードを読もう",
       "autoCode": true,
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">name = input(\"名前を入力してください\")\nprint(name)</pre><ul><li><b>1行目</b>：<code>input(...)</code> はキーボードから文字を受け取る命令です。<code>( )</code> の中の <code>\"名前を入力してください\"</code> は、画面に出る <b>案内文</b> です。受け取った値を <code>=</code> で変数 <code>name</code> に入れます。</li><li><b>2行目</b>：<code>print(name)</code> で、打ち込んだ内容（<code>name</code> の中身）を表示します。</li></ul>",
-      "bodyEasy": "<p>コードエリア（スマホは「コード・実行」タブ）に、次の2行が出ています。</p><pre class=\"code-lines\">name = input(\"名前を入力してください\")\nprint(name)</pre><ul><li><b>1行目</b>：<code>input(...)</code> はキーボードから文字を受け取る命令です。<code>( )</code> の中の <code>\"名前を入力してください\"</code> は、画面に出る <b>案内文</b> です。受け取った値を <code>=</code> で変数 <code>name</code> に入れます。</li><li><b>2行目</b>：<code>print(name)</code> で、打ち込んだ内容（<code>name</code> の中身）を表示します。</li></ul>",
+      "bodyEasy": "<p>コードの場所（スマホは「コード・実行」タブ）に、次の2行が出ています。</p><pre class=\"code-lines\">name = input(\"名前を入力してください\")\nprint(name)</pre><ul><li><b>1行目</b>：<code>input(...)</code> はキーボードから文字を受け取る命令です。<code>( )</code> の中の <code>\"名前を入力してください\"</code> は、画面に出る <b>案内文</b> です。受け取った値を <code>=</code> で変数 <code>name</code> に入れます。</li><li><b>2行目</b>：<code>print(name)</code> で、打ち込んだ内容（<code>name</code> の中身）を表示します。</li></ul>",
       "callout": {
         "target": "code",
         "text": "右上に同じ name = input(...) / print(name) が出ています",
@@ -172,7 +172,7 @@ window.PYCO_LESSONS["0-05"] = {
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>8</code> と表示しましょう。文字列 <code>\"5\"</code> と <code>\"3\"</code> を <code>int( )</code> で数値に変えて、足し算した結果を表示してください。</p><pre class=\"code-lines\">8</pre>",
-      "bodyEasy": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>8</code> と表示しましょう。文字列 <code>\"5\"</code> と <code>\"3\"</code> を <code>int( )</code> で数値に変えて、足し算した結果を表示してください。</p><pre class=\"code-lines\">8</pre>",
+      "bodyEasy": "<p><b>コード編集モード</b> でPythonを直接書いて、答えの場所に <code>8</code> と表示しましょう。文字列 <code>\"5\"</code> と <code>\"3\"</code> を <code>int( )</code> で数値に変えて、足し算した結果を表示してください。</p><pre class=\"code-lines\">8</pre>",
       "hint": "a = int(\"5\") と b = int(\"3\") を作り、print(a + b) で表示します。",
       "check": {
         "codeRun": {

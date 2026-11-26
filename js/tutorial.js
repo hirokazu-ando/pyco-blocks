@@ -18,6 +18,7 @@
   // ---- 定数 ----
   var LESSON_BASE  = 'lessons/';                 // レッスン JSON の置き場所
   var BACKUP_KEY   = 'pyco-tutorial-backup-';    // レッスン開始前の作品退避キー（+mode）
+  var RESUME_KEY   = 'pyco-tutorial-resume';     // 途中でやめたレッスンの続き {id, track, step, xml}（k1：開き直すと 1 からだった）
   var LEVEL_KEY    = 'pyco-tutorial-level';      // 解説レベル（'easy' / 'detailed'）。全レッスン共通・既定=くわしい
   var FS_KEY       = 'pyco-tutorial-fontsize';   // 説明エリアの文字サイズ段階（0-4）。全レッスン共通
   var FS_SCALES    = [0.9, 1.0, 1.1, 1.24, 1.38];// 読み物領域の倍率。既定(index=1)=1.0は現行サイズと同一
@@ -120,12 +121,13 @@
     targetEl.replaceChildren(frag);
   }
 
-  // 解説レベル（やさしい / くわしい）。localStorage に保存し全レッスン共通。既定=くわしい。
+  // 解説レベル（やさしい / くわしい）。localStorage に保存し全レッスン共通。
+  // 既定=やさしい（小学生レビュー k1：くわしいの説明ページが続いて読み進められなかった）。
   function getLevel() {
     try {
       var v = window.localStorage.getItem(LEVEL_KEY);
-      return (v === 'easy') ? 'easy' : 'detailed';
-    } catch (e) { return 'detailed'; }
+      return (v === 'detailed') ? 'detailed' : 'easy';
+    } catch (e) { return 'easy'; }
   }
   function setLevel(v) {
     var lvl = (v === 'easy') ? 'easy' : 'detailed';
@@ -344,6 +346,7 @@
     + '.pyco-tut-choice.wrong{border-color:#e05252;color:#e05252;background:rgba(224,82,82,.1);}'
     + '.pyco-tut-foot{border-top:1px solid var(--border-dim,#1a341a);padding:10px 12px;flex-shrink:0;}'
     + '.pyco-tut-check{font-size:.82rem;margin-bottom:8px;color:var(--text-dim,#5a8a5a);}'
+    + '.pyco-tut-check.wrong{color:#e05252;font-weight:bold;}'
     + '.pyco-tut-check.done{color:var(--accent-green,#00ff41);font-weight:bold;}'
     + '.pyco-tut-skip{display:block;background:none;border:none;padding:4px 0;margin:0 0 6px;font-size:.8rem;'
     +   'color:var(--text-dim,#5a8a5a);text-decoration:underline;cursor:pointer;min-height:32px;}'
@@ -355,6 +358,10 @@
     + 'border-radius:6px;transition:all .15s ease;}'
     + '.pyco-tut-navbtns button.primary{border-color:var(--accent-green,#00ff41);color:var(--accent-green,#00ff41);}'
     + '.pyco-tut-navbtns button:disabled{opacity:.4;cursor:not-allowed;}'
+    // 完了画面：いちばん先に押すボタンを 1 行使って塗りつぶす（小学生レビュー k1：どれを押すか迷った）
+    + '.pyco-tut-navbtns.is-done{flex-wrap:wrap;}'
+    + '.pyco-tut-navbtns.is-done button.primary{flex:1 1 100%;background:var(--accent-green,#00ff41);color:#062006;font-weight:bold;font-size:1rem;min-height:44px;}'
+    + '.pyco-tut-navbtns.is-done button.primary:not(:disabled):hover{background:var(--accent-cyan,#00d4ff);color:#062006;}'
     + '.pyco-tut-navbtns button:not(:disabled):hover{border-color:var(--accent-cyan,#00d4ff);color:var(--accent-cyan,#00d4ff);}'
     // 完了画面
     + '.pyco-tut-done{text-align:center;padding:20px 6px;}'
@@ -1216,6 +1223,8 @@
     io = window.PycoWorkspaceIO || io;
     var ws = getWs();
     if (!ws) { toast('ワークスペースの準備ができていません。少し待ってからお試しください。', 'error'); return; }
+    // 一覧を通らずに始めたとき（URL・PycoTutorial.start）も、完了画面で［次のレッスンへ］が出るように目次を読んでおく
+    loadIndex().catch(function() { /* 目次が無くても学習はできる */ });
 
     loadLesson(id).then(function(def) {
       // モード不一致は案内のみ（クロスモードは後続対応）
@@ -1239,6 +1248,7 @@
       } catch (e) { backupXml = null; }
 
       lesson = def;
+      resumeOff = false;
       currentTrack = wantTrack;
       stepIndex = 0;
       wrongCount = 0;
@@ -1250,6 +1260,15 @@
       try { ws.clear(); } catch (e) { /* noop */ }
       applyLessonToolbox(def);
 
+      // 前回とちゅうでやめたレッスンなら、その手順とブロックから続ける
+      var resume = readResume();
+      var resumed = false;
+      if (resume && resume.id === def.id && resume.track === currentTrack && resume.step > 0) {
+        stepIndex = resume.step;
+        if (resume.xml && io && io.restore) { try { io.restore(resume.xml); } catch (e) { /* noop */ } }
+        resumed = true;
+      }
+
       openPanel();
       // 前回のレッスンを完了画面（ナビ差し替え済み）のまま閉じた場合に備え、
       // 既定の「もどる／次へ」ナビを復元してから描画する。
@@ -1258,6 +1277,10 @@
       renderStep();
       startMonitorObserver();
       syncLessonHash(id, currentTrack);
+      // 作っていたブロックが黙って消えたように見えた（k1）。しまってあること・続きからのことを知らせる
+      var startMsg = (resumed ? '前回のつづき（' + (stepIndex + 1) + ' / ' + steps().length + '）から始めます。' : '')
+        + (backupXml ? '今までのブロックはしまってあります。学習をやめると元にもどります。' : '');
+      if (startMsg) toast(startMsg, 'ok');
     }).catch(function(err) {
       console.warn('PycoBlocks: レッスンの読み込みに失敗:', err);
       toast('レッスンを読み込めませんでした（' + id + '）。', 'error');
@@ -1276,9 +1299,28 @@
   // 同一レッスン内でトラックを切り替えて続行する（ブロック課題→コード課題）。
   //   作品の退避・ツールボックスは startLesson 時のものを流用し、
   //   ステップ・スコアだけをそのトラック用にリセットして描画し直す。
+  function readResume() {
+    try {
+      var r = JSON.parse(window.localStorage.getItem(RESUME_KEY) || 'null');
+      return (r && typeof r.id === 'string' && typeof r.step === 'number') ? r : null;
+    } catch (e) { return null; }
+  }
+  var resumeOff = false;   // 完了画面のあいだは保存しない（開き直すと最後の手順から始まってしまう）
+  function saveResume() {
+    if (!lesson || resumeOff) return;
+    try {
+      var xml = (io && io.serialize) ? io.serialize() : '';
+      window.localStorage.setItem(RESUME_KEY, JSON.stringify({ id: lesson.id, track: currentTrack, step: stepIndex, xml: xml }));
+    } catch (e) { /* noop */ }
+  }
+  function clearResume() {
+    try { window.localStorage.removeItem(RESUME_KEY); } catch (e) { /* noop */ }
+  }
+
   function beginTrack(track) {
     if (!lesson) return;
     currentTrack = (track === 'code') ? 'code' : 'block';
+    resumeOff = false;
     stepIndex = 0;
     wrongCount = 0;
     recomputeQuizTotal();
@@ -1358,6 +1400,21 @@
       }
     });
     try { ws.updateToolbox(xml); } catch (e) { console.warn('PycoBlocks: ツールボックス差し替えに失敗:', e); }
+  }
+  // ブロックを置く手順では、レッスンのブロックの一覧を開いておく（k1：閉じていて見つけられなかった）
+  function maybeOpenLessonCategory(step) {
+    if (!step || !step.check || step.quiz) return;
+    if (!(step.check.blocksRequired || step.check.blocksMin || step.check.xmlEquals)) return;
+    if (!lesson || !Array.isArray(lesson.toolbox) || !lesson.toolbox.length) return;
+    try {
+      var ws = getWs();
+      var tb = ws && ws.getToolbox && ws.getToolbox();
+      if (!tb || !tb.getToolboxItems) return;
+      var fl = tb.getFlyout && tb.getFlyout();
+      if (fl && fl.isVisible && fl.isVisible()) return;  // 開いているものを押し直すと閉じてしまう
+      var it = tb.getToolboxItems().filter(function(x) { return x.isSelectable && x.isSelectable(); })[0];
+      if (it) tb.setSelectedItem(it);
+    } catch (e) { /* noop */ }
   }
   function restoreToolbox() {
     var ws = getWs();
@@ -1554,6 +1611,8 @@
     els.check.dataset.run = (step.check && (step.check.outputEquals != null || step.check.codeRun || step.run)) ? '1' : '';
 
     evaluateCurrent();
+    saveResume();
+    maybeOpenLessonCategory(step);
 
     // autoCode: 「コードを読もう」ステップでコード編集モードをONにし、
     //   解説のコードを実エディタへ入力する（学習者が「▶ 実行」で試せる状態に）。
@@ -1793,7 +1852,11 @@
         } else {
           b.classList.add('wrong');
           b.disabled = true;
+          if (b.textContent.indexOf('✗ ') !== 0) b.textContent = '✗ ' + b.textContent;
           wrongCount++;
+          // 押しても何も変わらないように見えた（k1）。ちがうことをはっきり言う
+          els.check.textContent = '✗ ちがうよ。ほかの答えをえらんでみよう';
+          els.check.className = 'pyco-tut-check wrong';
         }
       });
       wrap.appendChild(b);
@@ -1832,7 +1895,8 @@
     } else {
       els.check.textContent = step._failMsg
         ? step._failMsg
-        : (els.check.dataset.run ? '○ 「▶ 実行」を押して確かめよう' : '○ 待機中');
+        : (outputMismatchMsg(step)
+          || (els.check.dataset.run ? '○ 「▶ 実行」を押して確かめよう' : '○ まだだよ（できると ✓ に変わります）'));
       els.check.className = 'pyco-tut-check';
       els.next.disabled = true;
       // codeRun クイズ: 実行1回ごとに誤答としてカウント。
@@ -1849,6 +1913,20 @@
         }
       }
     }
+  }
+
+  // outputEquals の手順で、実行は終わったのに表示が違うとき、黙って止まらないよう何が違うかを言う（k1）
+  function outputMismatchMsg(step) {
+    var chk = step && step.check;
+    if (!chk || chk.outputEquals == null || chk.codeRun) return '';
+    var out = ($('monitor-output') || {}).textContent || '';
+    if (!/>>> *完了/.test(out)) return '';
+    var want = String(chk.outputEquals);
+    var got = normOutput();
+    if (!got) return '△ なにも表示されませんでした。ブロックの白いところに文字を入れて、もう一度「▶ 実行」';
+    var msg = '△ 表示が「' + got.split('\n')[0] + '」でした。「' + want + '」と同じ文字にして、もう一度「▶ 実行」';
+    if (/[!-~]/.test(want)) msg += '（英語の文字は、日本語入力を切って打とう）';
+    return msg;
   }
 
   function checkPasses(step) {
@@ -1889,8 +1967,11 @@
     });
     return normText(lines.join('\n'));
   }
+  // 全角の英数字・記号（Ｈｅｌｌｏ！）は半角にそろえて比べる。日本語入力のまま打っても通るように（k1）
   function normText(s) {
-    return String(s == null ? '' : s).replace(/\r/g, '').replace(/[ \t]+$/gm, '').replace(/\n+$/,'').trim();
+    s = String(s == null ? '' : s);
+    if (s.normalize) s = s.normalize('NFKC');
+    return s.replace(/\r/g, '').replace(/[ \t]+$/gm, '').replace(/\n+$/,'').trim();
   }
 
   // コード記述テストの判定。
@@ -2004,6 +2085,8 @@
   // レッスン完了
   // =============================================================
   function completeLesson() {
+    clearResume();
+    resumeOff = true;
     var id = lesson.id;
     var group = lesson.group || null;
     var track = currentTrack;
@@ -2028,7 +2111,9 @@
       + '<p class="pyco-tut-text">「' + escapeHtml(lesson.title || '') + '」の' + escapeHtml(kindLabel) + 'をクリアしました。</p>'
       + (quizTotal > 0 ? '<p class="pyco-tut-text">得点: <b>' + score + '</b> 点</p>' : '')
       + (isBlock && hasCode
-          ? '<p class="pyco-tut-text">つづけてコードを直接読み書きする<b>コード課題</b>に挑戦できます。</p>'
+          ? (nextId && getLevel() === 'easy'
+              ? '<p class="pyco-tut-text">［次のレッスンへ］で、つづきのブロックを学べます。Python のコードを打つ<b>コード課題</b>もあります。</p>'
+              : '<p class="pyco-tut-text">つづけてコードを直接読み書きする<b>コード課題</b>に挑戦できます。</p>')
           : '')
       + '</div>';
     els.body.innerHTML = doneHtml;
@@ -2042,19 +2127,25 @@
     if (els.prev.parentNode) els.prev.parentNode.removeChild(els.prev);
     if (els.next.parentNode) els.next.parentNode.removeChild(els.next);
     navwrap.innerHTML = '';
+    navwrap.classList.add('is-done');
 
-    // ブロック課題完了 → 同じレッスンのコード課題へ進むボタン（最優先）
+    // ブロック課題完了 → 同じレッスンのコード課題へ進むボタン（「くわしい」では最優先）。
+    // 「やさしい」ではブロックで次のレッスンへ進むのを先にする（小学生レビュー k1：コード課題が主のボタンで、
+    // Python を打つ画面へ進んで止まった）。コード課題は 2 番目のボタンとして残す
+    var easyFirst = !!(nextId && getLevel() === 'easy');
+    var cb = null;
     if (isBlock && hasCode) {
-      var cb = document.createElement('button');
-      cb.type = 'button'; cb.className = 'primary';
+      cb = document.createElement('button');
+      cb.type = 'button';
+      if (!easyFirst) cb.className = 'primary';
       cb.textContent = 'コード課題に挑戦する ▶';
       cb.addEventListener('click', function() { beginTrack('code'); });
-      navwrap.appendChild(cb);
+      if (!easyFirst) navwrap.appendChild(cb);
     }
     if (nextId) {
       var nb = document.createElement('button');
       nb.type = 'button';
-      if (!(isBlock && hasCode)) nb.className = 'primary';
+      if (easyFirst || !(isBlock && hasCode)) nb.className = 'primary';
       nb.textContent = '次のレッスンへ ▶';
       nb.addEventListener('click', function() {
         rebuildNav();
@@ -2062,6 +2153,7 @@
       });
       navwrap.appendChild(nb);
     }
+    if (cb && easyFirst) navwrap.appendChild(cb);
     var lb = document.createElement('button');
     lb.type = 'button';
     lb.textContent = '一覧へ';
@@ -2079,6 +2171,7 @@
   // 完了画面で差し替えたナビを既定の prev/next に戻す
   function rebuildNav() {
     els.nav.innerHTML = '';
+    els.nav.classList.remove('is-done');
     els.nav.appendChild(els.prev);
     els.nav.appendChild(els.next);
   }
@@ -2360,6 +2453,7 @@
       positionGuide(); // ガイドも全イベントで再算出・追従（配置・先回りに整合）
       if (ev && ev.isUiEvent) return;
       evaluateCurrent();
+      saveResume();
     });
     wsListenerAttached = true;
   }

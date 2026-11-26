@@ -233,6 +233,16 @@
     .cta-block:hover{ text-decoration:none; color:#fff; transform: translate(-2px,-2px); box-shadow: 8px 8px 0 var(--ink); }
     .cta-block:active{ transform: translate(3px,3px); box-shadow: 2px 2px 0 var(--ink); }
     .cta-block .arw{ font-weight: 700; font-size: .9em; }
+    /* 小学生の入口（ゲームモード＋ふりがなで開く・小学生レビュー k1）。「はじめる」の次に目立つ白いボタン */
+    .cta-kids{
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-head); font-weight: 900; font-size: clamp(1rem, 2vw, 1.2rem);
+      padding: 14px 22px; border-radius: 12px; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .cta-kids:hover{ text-decoration:none; color: var(--ink); transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--ink); }
+    .cta-kids small{ display:block; font-size:.72em; font-weight:700; color: var(--ink-3); }
     .cta-note{ margin-top: 26px; font-size: .9rem; color: var(--ink-3); font-family: var(--font-mono); letter-spacing:.04em; }
 
     .text-link{ font-family: var(--font-head); font-weight: 700; color: var(--green-d); }
@@ -506,6 +516,7 @@
         <p class="lead">PycoBlocks（ピコブロックス）は、ブロックを並べると <strong>Python / MicroPython</strong> のコードができあがる学習環境です。アカウント登録もインストールもいりません。<strong>Scratch の次の一歩</strong>として、高専の授業で使うために作りました。小学校高学年から高専生まで使えます。</p>
         <div class="hero-cta">
           <a class="cta-block" href="app.html">はじめる<span class="arw">▶</span></a>
+          <a class="cta-kids" href="app.html?mode=game&amp;furigana=1"><span><ruby>小学生<rt>しょうがくせい</rt></ruby>はここから<small>ゲームで ためす・<ruby>漢字<rt>かんじ</rt></ruby>に ふりがな</small></span><span class="arw">▶</span></a>
           <a class="text-link" href="#modes">4つのモードを見る &rarr;</a>
         </div>
         <div class="hero-meta">

@@ -64,8 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
     media: 'assets/blockly-media/',
     scrollbars: true,
     trashcan: true,
-    zoom: { controls: true, wheel: true, pinch: true, startScale: 1.0, maxScale: 3, minScale: 0.3 },
-    move: { drag: true, wheel: false, scrollbars: true }
+    // ホイールはスクロール、Ctrl（Mac は ⌘）＋ホイールで拡大・縮小（小学生レビュー k1：回すとブロックが小さくなって戻せなかった）。
+    // 縮小の下限は 0.5（0.3 だと文字が読めない大きさまで縮んだ）
+    zoom: { controls: true, wheel: true, pinch: true, startScale: 1.0, maxScale: 3, minScale: 0.5 },
+    move: { drag: true, wheel: true, scrollbars: true }
   });
   if (KbNav) {
     try { window.pycoKbNav = new KbNav(workspace); } catch (e) { console.warn('[kbnav] init', e); }
@@ -970,14 +972,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // コメント行を生成（トップレベルは区切り線付き、ネストは▶スタイル）
-  function commentLine(block, indent) {
-    const label = blockLabel(block);
-    if (indent === '') {
-      const bar = '─'.repeat(Math.max(0, 40 - label.length));
-      return `# ┌─ ${label} ${bar}\n`;
+  // ブロックの説明コメントは、そのブロックの最初の行の右に「  # 説明」で付ける（先生指示 2026-11-26：
+  // 以前は上に 1 行ずつ足していて、コードの行数がほぼ 2 倍になっていた）。
+  // 行は増やさないので、行番号の対応（blockLineMap）はそのまま使える。
+  // 付けられない行（空行・自前のコメント行・三重引用符・行の継続 \）のときは付けない
+  function addInlineComment(code, label) {
+    if (!code || !label) return code;
+    let start = 0;
+    while (start < code.length) {
+      let end = code.indexOf('\n', start);
+      if (end < 0) end = code.length;
+      const line = code.slice(start, end);
+      if (line.trim() === '') { start = end + 1; continue; }
+      const t = line.trim();
+      // すでに右にコメントがある行（「ずっと」の中の最初の行など）には重ねない
+      if (/  # [^"']*$/.test(line)) return code;
+      if (t.charAt(0) === '#' || line.indexOf('"""') >= 0 || line.indexOf("'''") >= 0 || /\\$/.test(line)) return code;
+      return code.slice(0, end) + '  # ' + label + code.slice(end);
     }
-    return `${indent}# ▶ ${label}\n`;
+    return code;
   }
 
   // コメント表示フラグ（トグルボタンで切り替え）
@@ -1698,13 +1711,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ブロックをMicroPythonコードに変換（再帰）
   function blockToCode(block, indent) {
+    const code = blockToCodeRaw(block, indent);
+    return showComments ? addInlineComment(code, blockLabel(block)) : code;
+  }
+  function blockToCodeRaw(block, indent) {
     if (!block) return '';
     indent = indent || '';
     const blockOwnFrom = _emitCtx.line;
     let code = '';
-    if (showComments) {
-      code = appendLocal(code, commentLine(block, indent));
-    }
 
     switch (block.type) {
 
@@ -3338,7 +3352,10 @@ document.addEventListener('DOMContentLoaded', function() {
         code = appendLocal(code, indent + `pass  # 未対応ブロック: ${block.type}\n`);
     }
 
-    if (indent === '') {
+    const next = block.getNextBlock ? block.getNextBlock() : null;
+    // トップレベルでは区切りに空行を入れる。ただし 1 行で終わるブロックが続くときは入れない
+    // （以前は上の区切り線のコメントとセットで毎回入れていた。コメントを右へ移した 2026-11-26 に合わせて詰めた）
+    if (indent === '' && (!next || _nl(code) > 1)) {
       code = appendLocal(code, '\n');
     }
 
@@ -3347,7 +3364,6 @@ document.addEventListener('DOMContentLoaded', function() {
       to: Math.max(blockOwnFrom, _emitCtx.line - 1)
     });
 
-    const next = block.getNextBlock ? block.getNextBlock() : null;
     if (next) {
       code += blockToCode(next, indent);
     }
@@ -3380,8 +3396,7 @@ document.addEventListener('DOMContentLoaded', function() {
       init.push.apply(init, PycoMicrobit.hat(b, valueToCode, i).init);
     });
     if (init.length) code = appendLocal(code, init.join('\n') + '\n');
-    if (showComments) code = appendLocal(code, '# 「ずっと」と「…とき」を順に調べ続ける\n');
-    code = appendLocal(code, 'while True:\n');
+    code = appendLocal(code, 'while True:' + (showComments ? '  # 「ずっと」と「…とき」を順に調べ続ける' : '') + '\n');
     loops.forEach(function(b) { code += blockToCode(b, '    '); });
     // MakeCode の「ずっと」と同じく 1 周ごとに少し休み、無線やボタンの処理に時間を渡す
     code = appendLocal(code, '    sleep(20)\n');
@@ -3410,8 +3425,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const needsTime   = blockTypes.has('pico_wait');
       const needsRandom = blockTypes.has('py_random_int');
       const importLines = [];
-      if (needsTime)   importLines.push((showComments ? '# 時間待機（time.sleep）用\n' : '') + `${cm}import time`);
-      if (needsRandom) importLines.push((showComments ? '# 乱数生成（random.randint）用\n' : '') + `${cm}import random`);
+      if (needsTime)   importLines.push(`${cm}import time` + (showComments ? `  # 時間待機（time.sleep）用` : ''));
+      if (needsRandom) importLines.push(`${cm}import random` + (showComments ? `  # 乱数生成（random.randint）用` : ''));
       // 自作モジュール呼び出しブロックで使われているモジュールを収集してimport
       const usedModules = new Set();
       allBlocks.forEach(function(b) {
@@ -3421,13 +3436,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       usedModules.forEach(function(mod) {
-        importLines.push((showComments ? `# 自作モジュール ${mod} をインポート\n` : '') + `${cm}import ${mod}`);
+        importLines.push(`${cm}import ${mod}` + (showComments ? `  # 自作モジュール ${mod} をインポート` : ''));
       });
       header = importLines.length ? importLines.join('\n') + '\n\n' : '';
     } else if (currentMode === 'game') {
       const needsRandom = blockTypes.has('py_random_int');
       const importLines = [];
-      importLines.push((showComments ? '# ゲーム（pygame互換）\n' : '') + `${cm}import pygame`);
+      importLines.push(`${cm}import pygame` + (showComments ? `  # ゲーム（pygame互換）` : ''));
       if (needsRandom) importLines.push(`${cm}import random`);
       // 自作モジュール呼び出しブロックで使われているモジュールを収集してimport
       const usedModules = new Set();
@@ -3438,7 +3453,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       usedModules.forEach(function(mod) {
-        importLines.push((showComments ? `# 自作モジュール ${mod} をインポート\n` : '') + `${cm}import ${mod}`);
+        importLines.push(`${cm}import ${mod}` + (showComments ? `  # 自作モジュール ${mod} をインポート` : ''));
       });
       header = importLines.join('\n') + '\n\n';
     } else if (currentBoard === 'microbit') {
@@ -3476,16 +3491,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const needsRandom = blockTypes.has('py_random_int');
       const machineImports = 'Pin, PWM, ADC' + (hasSonar ? ', time_pulse_us' : '') + ((hasOled || hasLcd) ? ', I2C' : '');
       const baseHeader =
-        (showComments ? '# Picoのピン・PWM・ADC制御用\n' : '') + `${cm}from machine import ${machineImports}\n` +
-        (showComments ? '# 時間待機用（MicroPython版 time モジュール）\n' : '') + `${cm}import utime\n` +
-        (hasOled ? ((showComments ? '# OLED画面の描画用\n' : '') + `${cm}import framebuf\n`) : '') +
-        (hasLcd ? ((showComments ? '# LCD1602 のドライバ（lcd1602.py を Pico に保存しておく）\n' : '') + `${cm}from lcd1602 import LCD1602\n`) : '') +
-        (hasDht ? ((showComments ? '# DHT11 温湿度センサー用\n' : '') + `${cm}from dht import DHT11\n`) : '') +
-        (hasHttp ? ((showComments ? '# HTTP 通信用（Pico W）\n' : '') + `${cm}import urequests\n`) : '') +
-        ((hasWifiAp || hasUdp) ? ((showComments ? '# Wi-Fi（Pico W）\n' : '') + `${cm}import network\n`) : '') +
-        ((hasWeb || hasUdp) ? ((showComments ? '# 操縦ページ・合図の通信（Pico W）\n' : '') + `${cm}import socket\n`) : '') +
+        `${cm}from machine import ${machineImports}` + (showComments ? `  # Picoのピン・PWM・ADC制御用` : '') + '\n' +
+        `${cm}import utime` + (showComments ? `  # 時間待機用（MicroPython版 time モジュール）` : '') + '\n' +
+        (hasOled ? (`${cm}import framebuf` + (showComments ? `  # OLED画面の描画用` : '') + '\n') : '') +
+        (hasLcd ? (`${cm}from lcd1602 import LCD1602` + (showComments ? `  # LCD1602 のドライバ（lcd1602.py を Pico に保存しておく）` : '') + '\n') : '') +
+        (hasDht ? (`${cm}from dht import DHT11` + (showComments ? `  # DHT11 温湿度センサー用` : '') + '\n') : '') +
+        (hasHttp ? (`${cm}import urequests` + (showComments ? `  # HTTP 通信用（Pico W）` : '') + '\n') : '') +
+        ((hasWifiAp || hasUdp) ? (`${cm}import network` + (showComments ? `  # Wi-Fi（Pico W）` : '') + '\n') : '') +
+        ((hasWeb || hasUdp) ? (`${cm}import socket` + (showComments ? `  # 操縦ページ・合図の通信（Pico W）` : '') + '\n') : '') +
         (hasWeb ? `${cm}import json\n` : '') +
-        (needsRandom ? ((showComments ? '# 乱数生成用\n' : '') + `${cm}import random\n`) : '') +
+        (needsRandom ? (`${cm}import random` + (showComments ? `  # 乱数生成用` : '') + '\n') : '') +
         '\n';
       const ultraHelper =
         'def _us_dist(tr, ec):\n' +
@@ -3526,8 +3541,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // show() はページ単位に分割転送する（100kHz・基板にプルアップ無しのため
       // 一括転送だと I2C タイムアウトで ETIMEDOUT になる。2026-06-12 実機確認済み）。
       const oledSetup =
-        (showComments ? '# OLED(SSD1306) ドライバとI2C初期化（SDA=GP4 / SCL=GP5 / 0x3C）\n' : '') +
-        'class SSD1306_I2C(framebuf.FrameBuffer):\n' +
+        'class SSD1306_I2C(framebuf.FrameBuffer):' + (showComments ? '  # OLED(SSD1306) ドライバとI2C初期化（SDA=GP4 / SCL=GP5 / 0x3C）' : '') + '\n' +
         '    def __init__(self, w, h, i2c, addr=0x3C):\n' +
         '        self.i2c = i2c; self.addr = addr; self.w = w; self.pages = h // 8\n' +
         '        self.buffer = bytearray(self.pages * w)\n' +
@@ -5328,11 +5342,29 @@ document.addEventListener('DOMContentLoaded', function() {
               // 前に開けなかったときの赤い知らせが残っていたら消す（開けたのに「開けませんでした」が出たままだった）
               const prev = document.getElementById('pyco-toast');
               if (prev && prev.classList.contains('err')) hideToast();
+              // 「まずはこれ」のサンプルには、最初に変えてみる数の案内を付ける（小学生レビュー k1：どの数が速さか分からなかった）。
+              // 変える数のブロックを選んだ状態（黄色の枠）にして場所を見せる。サンプルの中身は変えない（記事と同じ）
+              let tryBlock = null;
+              if (it.try && it.try.text) {
+                showToast(it.try.text, { ms: 15000 });
+                if (it.try.num != null) {
+                  const nb = workspace.getAllBlocks(true).find(function(bk) {
+                    return bk.getField && bk.getField('NUM') && String(bk.getFieldValue('NUM')) === String(it.try.num);
+                  });
+                  if (nb) { tryBlock = nb; selectTry(); }
+                }
+              }
+              function selectTry() {
+                if (!tryBlock) return;
+                try { if (Blockly.common && Blockly.common.setSelected) Blockly.common.setSelected(tryBlock); else tryBlock.select(); } catch (e) { /* noop */ }
+              }
               if (document.body.classList.contains('mobile-mode')) return;
               // micro:bit は（シミュレータでも）btn-run が実行ボタン。見えている方へ移す（以前は［ファイル］に戻り、Enter でメニューがまた開いていた）
               const k = modeKey();
               const run = document.getElementById(k === 'micropython' || k === 'microbit' ? 'btn-run' : 'btn-run-python');
               if (run && run.offsetParent) run.focus({ preventScroll: true });
+              // ［▶ 実行］へ移ると選択が外れるので、案内のブロックをもう一度選ぶ
+              selectTry();
             })
             .catch(function(err) { showToast('サンプルを開けませんでした：' + err, { type: 'err' }); });
         });
@@ -5469,6 +5501,8 @@ document.addEventListener('DOMContentLoaded', function() {
         { k: 'micropython', label: 'Pi Pico', btn: 'btn-mode-micropython' },
         { k: 'microbit', label: 'micro:bit', btn: 'btn-mode-microbit' },
       ];
+      // 直前にいたモードを先に調べる
+      list.sort(function(a, b) { return (b.k === _prevModeKey) - (a.k === _prevModeKey); });
       for (const m of list) {
         if (m.k === key) continue;
         let v = null;
@@ -5790,6 +5824,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const connected = PicoSerial.isConnected();
     btnConnect.textContent = connected ? '切断' : '接続';
     btnConnect.classList.toggle('connected', connected);
+    // つないでいない間は、つなぐボタンのまとまりを控えめにし「ボードをつなぐとき」と添える
+    // （小学生レビュー k1：機械のない教室で［▶ 実行］と同じ強さに見えて押してしまう）
+    const steps = btnConnect.closest('.tb-steps');
+    if (steps) steps.classList.toggle('idle', !connected);
     btnReconnect.disabled = false;   // 抜き差し後の復帰に使うため常に押せる
     btnWrite.disabled = !connected;
     // micro:bit はつないでいなくてもシミュレータで動かせる。押せない灰色の「実行」を置くと
@@ -6062,8 +6100,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // モードを切り替える（clearWorkspace=trueのときワークスペースをクリア）
   // mode は 'python' / 'game' / 'micropython'（Pico）/ 'microbit'
+  // 直前にいたモード（空のカードの「○○ モードにもどる」はここを先に出す。k1：別のモードが出て迷った）
+  //   var にするのは、初期化中に案内カードが先に読んでも TDZ で落ちないため
+  var _prevModeKey = null;
   function applyMode(mode, clearWorkspace) {
     if (window.PycoGameFull) window.PycoGameFull.exit();
+    try { const _old = modeKey(); if (_old && _old !== mode) _prevModeKey = _old; } catch (e) { /* noop */ }
     if (mode === 'microbit') { currentBoard = 'microbit'; mode = 'micropython'; }
     else if (mode === 'micropython') currentBoard = 'pico';
     currentMode = mode;
@@ -6341,7 +6383,12 @@ document.addEventListener('DOMContentLoaded', function() {
     Blockly.Events.setRecordUndo(false);
     try {
       // パソコンでは［基本］の一覧（約 280px）の右に置く。左端だと一覧が 2 つを隠し、入れる先が見えなかった（r4 kid/student）
-      const sx = document.body.classList.contains('mobile-mode') ? 30 : Math.round(300 / (workspace.scale || 1));
+      // iPad（タッチなので mobile-mode）でも作業域が広ければ同じく右に置く（小学生レビュー k1：iPad 1080px で一覧の裏に隠れた）。
+      // 判定は作業域の見える幅で行う（スマホ縦の約 300px では左端のまま）
+      let vw = 0;
+      try { vw = workspace.getMetrics().viewWidth || 0; } catch (e) { vw = 0; }
+      const wide = vw ? vw >= 480 : !document.body.classList.contains('mobile-mode');
+      const sx = wide ? Math.round(300 / (workspace.scale || 1)) : 30;
       Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(MB_STARTER_XML.replace(/x="30"/g, 'x="' + sx + '"')), workspace);
       generateCode();
     } catch (e) { console.warn('PycoBlocks: micro:bit の初期ブロックを置けませんでした:', e); }

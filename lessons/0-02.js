@@ -77,7 +77,7 @@ window.PYCO_LESSONS["0-02"] = {
       "title": "コードを読もう",
       "autoCode": true,
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>score = 80</code> の <code>=</code> は「右の値を左の変数に入れる」という記号（代入）です。<code>score</code> という名前の箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、変数 <code>score</code> の中身（<code>80</code>）を取り出して表示します。<code>\"</code> で囲まないので、名前ではなく中身が出ます。</li></ul>",
-      "bodyEasy": "<p>コードエリア（スマホは「コード・実行」タブ）に、次の2行が出ています。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>=</code> は「右の値を左の箱に入れる」記号（代入）です。<code>score</code> という箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、箱 <code>score</code> の中身（<code>80</code>）を取り出して表示します。</li></ul>",
+      "bodyEasy": "<p>コードの場所（スマホは「コード・実行」タブ）に、次の2行が出ています。</p><pre class=\"code-lines\">score = 80\nprint(score)</pre><ul><li><b>1行目</b>：<code>=</code> は「右の値を左の箱に入れる」記号（代入）です。<code>score</code> という箱に <code>80</code> を入れます。「等しい」ではありません。</li><li><b>2行目</b>：<code>print(score)</code> は、箱 <code>score</code> の中身（<code>80</code>）を取り出して表示します。</li></ul>",
       "callout": {
         "target": "code",
         "text": "右上に同じ score = 80 / print(score) が出ています",
@@ -94,7 +94,7 @@ window.PYCO_LESSONS["0-02"] = {
       "track": "block",
       "title": "手順3：10ずつ増やして表示する",
       "body": "<p>下の図のように並べて実行しましょう。</p><ol><li><b>変数を 0 にする</b></li><li><b>10だけ増やす</b>→<b>表示する</b> を3回くり返す</li></ol><p>実行結果が <code>10</code>・<code>20</code>・<code>30</code> と3行出れば成功です。</p>",
-      "bodyEasy": "<p>下の図のように並べて実行しましょう。</p><ol><li><b>変数を 0 にする</b></li><li><b>10だけ増やす</b>→<b>表示する</b> を3回くり返す</li></ol><p>実行結果に <code>10</code>・<code>20</code>・<code>30</code> と3行出れば成功です。</p>",
+      "bodyEasy": "<p>下の図のように並べて実行しましょう。</p><ol><li><b>変数を 0 にする</b></li><li><b>10だけ増やす</b>→<b>表示する</b> を3回くり返す</li></ol><p>答えの場所に <code>10</code>・<code>20</code>・<code>30</code> と3行出れば成功です。</p>",
       "hint": "増やす→表示、増やす→表示、増やす→表示、の順に縦へ並べます。",
       "run": true,
       "check": {
@@ -178,7 +178,7 @@ window.PYCO_LESSONS["0-02"] = {
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>7</code> と表示しましょう。ただし <code>7</code> を直接 <code>print</code> せず、<b>変数に入れてから</b> 表示してください。</p><pre class=\"code-lines\">7</pre>",
-      "bodyEasy": "<p><b>コード編集モード</b> でPythonを書いて、実行結果に <code>7</code> と表示しましょう。ただし <code>7</code> をそのまま <code>print</code> せず、<b>変数に入れてから</b> 表示してください。</p><pre class=\"code-lines\">7</pre>",
+      "bodyEasy": "<p><b>コード編集モード</b> でPythonを書いて、答えの場所に <code>7</code> と表示しましょう。ただし <code>7</code> をそのまま <code>print</code> せず、<b>変数に入れてから</b> 表示してください。</p><pre class=\"code-lines\">7</pre>",
       "hint": "n = 7 のように変数に入れて、print(n) で表示します。",
       "check": {
         "codeRun": {

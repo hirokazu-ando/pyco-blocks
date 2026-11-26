@@ -3668,6 +3668,13 @@ body:not(.mobile-mode) #ws-empty-hint[data-mode="microbit"] .ws-empty-note { fon
   border: 1px solid var(--border-dim, #555); border-radius: 6px; }
 .tb-steps:not(:has(> button:not([style*="display: none"]))) { display: none; }
 body.mobile-mode .tb-steps { display: contents; }
+/* つないでいない間：枠を点線・文字を小さく・色を控えめに。前に「ボードをつなぐとき」の小さな見出し（ひらがな） */
+body:not(.mobile-mode) .tb-steps.idle { border-style: dashed; }
+body:not(.mobile-mode) .tb-steps.idle::before { content: "ボードを\A つなぐとき"; font-size: 10px; line-height: 1.2;
+  color: var(--text-dim, #8a9a8a); white-space: pre; text-align: center; }
+body:not(.mobile-mode) .tb-steps.idle > button { font-size: .86em; opacity: .8; }
+body:not(.mobile-mode) .tb-steps.idle > button:hover,
+body:not(.mobile-mode) .tb-steps.idle > button:focus-visible { opacity: 1; }
 /* 案内カードの 2 番手の道（文字のリンク） */
 #ws-empty-hint .ws-empty-btn.link { background: none; border: 0; padding: 4px 0; min-height: 0; margin-top: 4px;
   color: var(--accent-cyan); text-decoration: underline; font-size: inherit; cursor: pointer; box-shadow: none; }
@@ -3736,3 +3743,9 @@ body:not(.mobile-mode) header .toolbar button { height: auto; min-height: calc(3
   body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-key:nth-child(4) { grid-area: right; }
   body.mobile-mode #game-canvas-area:not(.game-full):not(:fullscreen) > #game-touchpad .gtp-wide { grid-area: sp; width: 100%; }
 }
+
+/* ふりがな（js/furigana.js・小学生レビュー k1）。読みは小さく上に。ボタンの高さが大きく変わらないよう行の高さを詰める */
+ruby.pyco-furi { ruby-position: over; ruby-align: center; }
+ruby.pyco-furi rt { font-size: .52em; line-height: 1; font-weight: normal; letter-spacing: 0; opacity: .9; }
+body.furigana header .toolbar button,
+body.furigana header .mode-toggle .mode-btn { line-height: 1.15; padding-top: 2px; padding-bottom: 2px; }

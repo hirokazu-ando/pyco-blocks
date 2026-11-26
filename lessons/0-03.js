@@ -89,7 +89,7 @@ window.PYCO_LESSONS["0-03"] = {
       "track": "block",
       "title": "手順4：変数と計算を組み合わせる",
       "body": "<p>変数に計算結果を入れることもできます。下の図のように組み立てましょう。</p><ol><li><b>変数〜を〜にする</b> の値に <b>算術演算</b>（<code>10 + 20</code>）をはめる</li><li>その下に <b>値を表示する</b> を置き、同じ変数をはめる</li></ol><p>実行結果に <code>30</code> と出れば成功です。</p><pre>total = 10 + 20\nprint(total)</pre>",
-      "bodyEasy": "<p>変数に計算の答えを入れることもできます。下の図のように組みましょう。</p><ol><li><b>変数～を～にする</b> の値に <b>算術演算</b>（<code>10 + 20</code>）をはめる</li><li>その下に <b>値を表示する</b> を置き、同じ変数をはめる</li></ol><p>実行結果に <code>30</code> と出れば成功です。</p><pre>total = 10 + 20\nprint(total)</pre>",
+      "bodyEasy": "<p>変数に計算の答えを入れることもできます。下の図のように組みましょう。</p><ol><li><b>変数～を～にする</b> の値に <b>算術演算</b>（<code>10 + 20</code>）をはめる</li><li>その下に <b>値を表示する</b> を置き、同じ変数をはめる</li></ol><p>答えの場所に <code>30</code> と出れば成功です。</p><pre>total = 10 + 20\nprint(total)</pre>",
       "hint": "変数ブロックの値のあなに算術演算ブロックを入れます。実行結果に 30。",
       "run": true,
       "check": {
@@ -105,7 +105,7 @@ window.PYCO_LESSONS["0-03"] = {
       "title": "コードを読もう",
       "autoCode": true,
       "body": "<p>コードエリア（スマホでは「コード・実行」タブ）には、次の2行が出ています。1行ずつ意味を確認しましょう。</p><pre class=\"code-lines\">total = 10 + 20\nprint(total)</pre><ul><li><b>1行目</b>：右がわの <code>10 + 20</code> が先に計算されて <code>30</code> になり、その結果を <code>=</code> で変数 <code>total</code> に入れます。「計算してから代入する」という順番です。</li><li><b>2行目</b>：<code>print(total)</code> で <code>total</code> の中身（<code>30</code>）を表示します。</li></ul>",
-      "bodyEasy": "<p>コードエリア（スマホは「コード・実行」タブ）に、次の2行が出ています。</p><pre class=\"code-lines\">total = 10 + 20\nprint(total)</pre><ul><li><b>1行目</b>：右がわの <code>10 + 20</code> が先に計算されて <code>30</code> になり、それを <code>=</code> で変数 <code>total</code> に入れます。「計算してから代入」の順です。</li><li><b>2行目</b>：<code>print(total)</code> で <code>total</code> の中身（<code>30</code>）を表示します。</li></ul>",
+      "bodyEasy": "<p>コードの場所（スマホは「コード・実行」タブ）に、次の2行が出ています。</p><pre class=\"code-lines\">total = 10 + 20\nprint(total)</pre><ul><li><b>1行目</b>：右がわの <code>10 + 20</code> が先に計算されて <code>30</code> になり、それを <code>=</code> で変数 <code>total</code> に入れます。「計算してから代入」の順です。</li><li><b>2行目</b>：<code>print(total)</code> で <code>total</code> の中身（<code>30</code>）を表示します。</li></ul>",
       "callout": {
         "target": "code",
         "text": "右上に同じ total = 10 + 20 / print(total) が出ています",
@@ -167,7 +167,7 @@ window.PYCO_LESSONS["0-03"] = {
       "quiz": true,
       "title": "コード記述テスト",
       "body": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>100</code> と表示しましょう。ただし <code>100</code> をそのまま書かず、<b>かけ算の式</b> で求めてください。</p><pre class=\"code-lines\">100</pre>",
-      "bodyEasy": "<p><b>コード編集モード</b> でPythonを直接書いて、実行結果に <code>100</code> と表示しましょう。ただし <code>100</code> をそのまま書かず、<b>かけ算の式</b> で求めてください。</p><pre class=\"code-lines\">100</pre>",
+      "bodyEasy": "<p><b>コード編集モード</b> でPythonを直接書いて、答えの場所に <code>100</code> と表示しましょう。ただし <code>100</code> をそのまま書かず、<b>かけ算の式</b> で求めてください。</p><pre class=\"code-lines\">100</pre>",
       "hint": "print(25 * 4) のように、かけ算（*）の式を書きます。",
       "check": {
         "codeRun": {
