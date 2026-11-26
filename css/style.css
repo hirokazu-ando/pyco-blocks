@@ -607,24 +607,44 @@ h1 {
 #pvb-sim .pvs-body { flex: 1 1 0; min-height: 0; display: flex; gap: 8px; }
 #pvb-sim .pvs-field-wrap { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
 #pvb-sim .pvs-field { display: block; border-radius: 6px; touch-action: none; cursor: grab; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
-#pvb-sim .pvs-side { flex: 0 0 176px; display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; }
-#pvb-sim .pvs-oled { width: 176px; height: 88px; image-rendering: pixelated; background: #000; border-radius: 4px;
+#pvb-sim .pvs-side { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; }
+#pvb-sim .pvs-oled { width: 220px; height: 110px; flex: 0 0 auto; image-rendering: pixelated; background: #000; border-radius: 4px;
   box-shadow: 0 0 0 3px #1a365d; }
-#pvb-sim .pvs-leds, #pvb-sim .pvs-sws { display: flex; gap: 6px; }
-#pvb-sim .pvs-led { flex: 1; text-align: center; padding: 3px 0; border-radius: 12px; background: #2d3748; color: #a0aec0; font-weight: bold; }
-#pvb-sim .pvs-led.on { background: #f6e05e; color: #1a202c; box-shadow: 0 0 10px #f6e05e; }
-#pvb-sim .pvs-sw { flex: 1; min-height: 36px; border-radius: 8px; border: 2px solid #718096; background: #4a5568; color: #fff;
-  font-weight: bold; font-size: 14px; cursor: pointer; touch-action: none; user-select: none; }
-#pvb-sim .pvs-sw.down { background: #ed8936; border-color: #c05621; }
+/* ロボットの絵（前が上）。LED・押しボタン・電源スイッチを部品の場所に重ねる */
+#pvb-sim .pvs-robot { position: relative; width: 100%; aspect-ratio: 704 / 856; flex: 0 0 auto; user-select: none; -webkit-user-select: none; }
+#pvb-sim .pvs-robot-img { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+#pvb-sim .pvs-led { position: absolute; width: 9%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
+  pointer-events: none; opacity: 0; transition: opacity .06s; }
+#pvb-sim .pvs-led.on { opacity: 1; background: radial-gradient(circle, #fffbe0 0 18%, rgba(255,226,90,.9) 30%, rgba(255,200,40,.35) 55%, rgba(255,200,40,0) 72%); }
+#pvb-sim .pvs-led-pwr { width: 6%; }
+#pvb-sim .pvs-led-pwr.on { background: radial-gradient(circle, #ffe4dc 0 18%, rgba(255,70,50,.85) 32%, rgba(255,60,40,0) 70%); }
+#pvb-sim .pvs-sw, #pvb-sim .pvs-pwr { position: absolute; width: 13%; aspect-ratio: 1; transform: translate(-50%, -50%); padding: 0; margin: 0;
+  border-radius: 50%; border: 2px solid rgba(246,173,85,.85); background: transparent; cursor: pointer; touch-action: none; }
+#pvb-sim .pvs-pwr { border-radius: 6px; }
+#pvb-sim .pvs-sw:hover, #pvb-sim .pvs-pwr:hover { background: rgba(246,173,85,.22); }
+#pvb-sim .pvs-sw:focus-visible, #pvb-sim .pvs-pwr:focus-visible { outline: 3px solid #63b3ed; outline-offset: 1px; }
+#pvb-sim .pvs-sw.down { background: rgba(0,0,0,.35); border-color: #ed8936; box-shadow: inset 0 0 0 3px rgba(237,137,54,.7); }
 #pvb-sim .pvs-sw.pvs-attn { animation: pvs-attn 1s ease-in-out infinite; }
 @keyframes pvs-attn { 50% { box-shadow: 0 0 0 4px #f6ad55; } }
 @media (prefers-reduced-motion: reduce) { #pvb-sim .pvs-sw.pvs-attn { animation: none; box-shadow: 0 0 0 3px #f6ad55; } }
+#pvb-sim .pvs-tag { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, -3px); white-space: nowrap; pointer-events: none;
+  font-size: 10.5px; line-height: 1; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,.72); color: #fff; }
+#pvb-sim .pvs-lever { position: absolute; transform: translate(-50%, -50%); background: linear-gradient(90deg, #f2f4f7, #9aa0a8);
+  border-radius: 1px; box-shadow: 0 0 0 1px rgba(0,0,0,.5); pointer-events: none; transition: left .12s; }
+#pvb-sim .pvs-pwr[aria-checked="false"] { border-color: rgba(160,174,192,.9); }
+#pvb-sim .pvs-sw .pvs-tag { bottom: auto; top: 50%; left: auto; right: 100%; transform: translate(-2px, -50%); }
+#pvb-sim .pvs-sw.pvs-sw-r .pvs-tag { right: auto; left: 100%; transform: translate(2px, -50%); }
+/* OLED は使ったときだけ出す（使わないプログラムではロボットの絵を大きく見せる） */
+#pvb-sim .pvs-oled[hidden] { display: none; }
 #pvb-sim .pvs-read { display: flex; flex-direction: column; gap: 3px; font-size: 12px; line-height: 1.4; font-variant-numeric: tabular-nums; }
-#pvb-sim .pvs-line { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 4px; }
-#pvb-sim .pvs-cap { grid-column: 1 / -1; }
-#pvb-sim .pvs-cell { display: flex; flex-direction: column; align-items: center; padding: 2px 0; border-radius: 4px; background: rgba(127,127,127,.15); }
-#pvb-sim .pvs-k { font-size: 11px; opacity: .75; }
-#pvb-sim .pvs-v { font-weight: bold; }
+#pvb-sim .pvs-chip { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; white-space: nowrap;
+  font-size: 10.5px; line-height: 1.15; font-weight: bold; font-variant-numeric: tabular-nums; padding: 1px 4px; border-radius: 4px;
+  background: rgba(10,12,16,.78); color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+#pvb-sim .pvs-chip-line { display: flex; flex-direction: column; align-items: center; min-width: 34px; }
+#pvb-sim .pvs-chip-line.pvs-black { background: rgba(197,48,48,.9); }
+#pvb-sim .pvs-chip .pvs-k { font-size: 9.5px; opacity: .8; }
+#pvb-sim .pvs-chip-mot { min-width: 24px; text-align: center; }
 #pvb-sim .pvs-hint { color: #f6ad55; font-weight: bold; }
 [data-theme="light"] #pvb-sim .pvs-hint { color: #c05621; }
 #pvb-sim .pvs-note { margin: 0; font-size: 11.5px; opacity: .8; }
@@ -3796,14 +3816,16 @@ body.mobile-mode .main.game-layout.pvb-on > #game-left-column > #circuit-preview
 body.mobile-mode .main.game-layout.pvb-on > #game-left-column.circuit-collapsed > #circuit-preview-area { flex: 3 1 0 !important; }
 body.mobile-mode .main.game-layout.pvb-on > #game-left-column > #blockly-div,
 body.mobile-mode .main.game-layout.pvb-on > #game-left-column.circuit-collapsed > #blockly-div { flex: 2 1 0 !important; }
-body.mobile-mode #pvb-sim .pvs-body { flex-direction: column; }
-body.mobile-mode #pvb-sim .pvs-side { flex: 0 0 auto; display: grid; grid-template-columns: 128px 1fr; gap: 4px 8px; align-items: start; }
-body.mobile-mode #pvb-sim .pvs-oled { width: 128px; height: 64px; grid-row: span 2; }
-body.mobile-mode #pvb-sim .pvs-read { grid-column: 1 / -1; }
+/* コースの右に、ロボットの絵（OLED を使ったときはその上に OLED）を細く並べる */
+body.mobile-mode #pvb-sim .pvs-side { flex: 0 0 140px; gap: 4px; }
+body.mobile-mode #pvb-sim .pvs-oled { width: 128px; height: 64px; align-self: center; }
+body.mobile-mode #pvb-sim .pvs-chip { font-size: 9px; padding: 1px 2px; }
+body.mobile-mode #pvb-sim .pvs-chip .pvs-k { font-size: 8px; }
+body.mobile-mode #pvb-sim .pvs-chip-line { min-width: 26px; }
+body.mobile-mode #pvb-sim .pvs-tag { font-size: 9px; padding: 1px 2px; }
 body.mobile-mode #pvb-sim .pvs-note { display: none; }
 /* スマホを横にしたとき：高さが足りないので、コースの右にパネルを並べる（パネルは中でスクロール） */
 @media (orientation: landscape) and (max-height: 500px) {
   body.mobile-mode #pvb-sim { padding: 4px 8px; gap: 4px; }
-  body.mobile-mode #pvb-sim .pvs-body { flex-direction: row; }
-  body.mobile-mode #pvb-sim .pvs-side { flex: 0 0 300px; overflow-y: auto; }
+  body.mobile-mode #pvb-sim .pvs-side { flex: 0 0 130px; overflow-y: auto; }
 }

@@ -14,38 +14,57 @@
 //   - OLED：SSD1306（128×64）。framebuf の fill / fill_rect / text / pixel などを画面に描く
 //   - Wi-Fi・通信（network / socket）は動かない。読み込むと案内のエラーにする
 //
-//   ★ ロボットの大きさ・速さ・センサーの位置は仮の値（GEOM・VMAX・DEAD）。実物の寸法が決まったら直す。
+//   ロボットの大きさとセンサーの位置は KiCad の基板（UME V2・Pico カード V2）から取った（GEOM）。
+//   ★ 車輪の大きさ・左右の間と、速さ（VMAX・DEAD）は仮の値。実物が決まったら直す。
+//   ロボットの絵は assets/pvb/pvb_top.png（tools/pvb_sprite/build_sprite.py で KiCad の 3D 書き出しから作る）
 // =============================================================
 (function () {
   'use strict';
 
-  // ---------------------------------------------------------------- 仮の値（cm・cm/s）
+  // ---------------------------------------------------------------- 寸法（cm）。（ ）は UME V2 の KiCad 座標 mm。車軸は y=120（モーター台 H3/H8）
   const GEOM = {
-    track: 10,        // 左右の車輪の間
-    bodyW: 12,        // 車体の幅
-    bodyF: 9,         // 車軸から前の端まで
-    bodyB: 5,         // 車軸から後ろの端まで
-    lineAhead: 7,     // 車軸からラインセンサーまで（前へ）
-    lineGap: 1.6,     // ラインセンサーの左右の間
-    sonarAhead: 9,    // 車軸から距離センサーまで
+    track: 7.3,       // 左右の車輪の間（車輪の幅 12mm・内側が切り欠きの奥 x120 / 180 から 0.5mm → 中心 x113.5 / 186.5）
+    bodyW: 8.5,       // 車体の幅（車輪の外側 x107.5〜192.5）
+    bodyF: 8.3,       // 車軸から前の端まで（距離センサーの筒の先 y≈37。筒の長さは仮）
+    bodyB: 2.2,       // 車軸から後ろの端まで（車輪の直径 44mm → y142）
+    lineAhead: 4.4,   // 車軸からラインセンサーまで（TCRT5000 U6〜U8 y76）
+    lineGap: 2.2,     // ラインセンサーの左右の間（x128 / 150 / 172）
+    sonarAhead: 8.3,  // 車軸から距離センサーの筒の先まで
   };
+  // ロボットの絵（前が右）。絵の範囲は y143〜36・x106〜194 → 車軸から後ろ 2.3・前 8.4、左右 ±4.4
+  const SPRITE = { src: 'assets/pvb/pvb_top.png', x: -2.3, y: -4.4, w: 10.7, h: 8.8 };
+  // 横の欄の大きなロボット（前が上）。部品の位置は KiCad 座標 mm（Pico カードは 2mm 前へずらした値）
+  const BOARD = {
+    led: { 11: [118, 68], 12: [182, 68] },        // D3 / D4（Pico の上下）
+    sw: { 13: [136, 136], 14: [164, 136] },       // SW1 / SW2（電源スイッチの上下の押しボタン）
+    power: [150, 136], powerLed: [142, 136],      // 電源スイッチ SW3（電池の左）と電源の LED D2
+  };
+  // 電源スイッチのレバー：ON は x149・OFF は x151（★仮：動く幅 2mm）、y138〜143 で基板の後ろへ出る
+  const LEVER = { on: 149, off: 151, y0: 138, y1: 143, w: 1.6 };
+  // GP11 / GP12 の LED（Pico カード D3 / D4。カードは UME より 2mm 前に重なる）
+  const LEDPOS = { 11: [5.2, -3.2], 12: [5.2, 3.2] };
+  const BOARD_SRC = 'assets/pvb/pvb_board.png';
+  // KiCad 座標 mm → 横の欄の絵（前が上・x106〜194 × y36〜143）の中の % 位置
+  function pct(x, y) { return [((x - 106) / 88 * 100).toFixed(2) + '%', ((y - 36) / 107 * 100).toFixed(2) + '%']; }
+  // KiCad 座標 mm → ロボットの中の座標 cm（車軸 y120・中心 x150）
+  function loc(x, y) { return [(120 - y) / 10, (x - 150) / 10]; }
   const VMAX = 40;    // 出力 100 のときの速さ（cm/s）
   const DEAD = 15;    // これより小さい出力では動かない（%）。#05 の「動き出す出力」用
   const WHITE = 2500, BLACK = 20000;
-  const FIELD_W = 180, FIELD_H = 120;   // コースの大きさ（cm）
+  const FIELD_W = 42, FIELD_H = 30;     // コースの大きさ（cm）。A3 の紙（42×29.7cm）くらい
   const PX = 4;                          // 線の判定用の絵の細かさ（1cm あたりの点）
 
   // ---------------------------------------------------------------- コース
   const COURSES = {
-    floor: { label: 'なにもない床', start: [30, 60, 0], boxes: [], draw: function () {} },
+    floor: { label: 'なにもない床', start: [10, 15, 0], boxes: [], draw: function () {} },
     stopline: {
-      label: '止まる線', start: [30, 60, 0], boxes: [],
-      draw: function (g) { g.fillRect(130, 8, 2.5, FIELD_H - 16); },
+      label: '止まる線', start: [10, 15, 0], boxes: [],
+      draw: function (g) { g.fillRect(32, 3, 2, FIELD_H - 6); },
     },
     box: {
-      label: '線でかこんだ場', start: [90, 60, 0], boxes: [],
+      label: '線でかこんだ場', start: [21, 15, 0], boxes: [],
       draw: function (g) {
-        const m = 10, w = 2.5;
+        const m = 1.5, w = 2;
         g.fillRect(m, m, FIELD_W - 2 * m, w);
         g.fillRect(m, FIELD_H - m - w, FIELD_W - 2 * m, w);
         g.fillRect(m, m, w, FIELD_H - 2 * m);
@@ -53,14 +72,14 @@
       },
     },
     oval: {
-      label: 'だ円のコース', start: [90 - GEOM.lineAhead, 100, 0], boxes: [],
+      label: 'だ円のコース', start: [21 - GEOM.lineAhead, 25, 0], boxes: [],
       draw: function (g) {
-        g.lineWidth = 2;
-        g.beginPath(); g.ellipse(90, 60, 65, 40, 0, 0, Math.PI * 2); g.stroke();
+        g.lineWidth = 1.8;
+        g.beginPath(); g.ellipse(21, 15, 14, 10, 0, 0, Math.PI * 2); g.stroke();
       },
     },
     wall: {
-      label: 'かべと箱', start: [30, 60, 0], boxes: [{ x: 120, y: 48, w: 14, h: 24 }],
+      label: '箱を置いた紙', start: [4, 15, 0], boxes: [{ x: 37, y: 9, w: 4, h: 12 }],
       draw: function () {},
     },
   };
@@ -74,6 +93,7 @@
     duty: { 0: 0, 1: 0, 2: 0, 3: 0 },
     pins: { 11: 0, 12: 0 },
     sw: { 13: 0, 14: 0 },
+    power: 1,                        // 電源スイッチ（OFF だとモーターは回らない。Pico は USB の電気で動く）
     running: false,
     lastFrame: 0,
     swWaitSince: 0,                  // SW1 を待っている間（押してと知らせる）
@@ -135,11 +155,7 @@
   function rayHit(ox, oy, dx, dy) {
     let best = Infinity;
     const rects = S.boxes.slice();
-    // コースのまわりのかべ（内側から当たる）
-    if (dx > 0) best = Math.min(best, (FIELD_W - ox) / dx);
-    if (dx < 0) best = Math.min(best, -ox / dx);
-    if (dy > 0) best = Math.min(best, (FIELD_H - oy) / dy);
-    if (dy < 0) best = Math.min(best, -oy / dy);
+    // コースは A3 の紙なので、まわりにかべは無い（超音波が当たるのは箱だけ）
     rects.forEach(function (r) {
       let t0 = -Infinity, t1 = Infinity;
       const ax = [[ox, dx, r.x, r.x + r.w], [oy, dy, r.y, r.y + r.h]];
@@ -182,13 +198,15 @@
     });
   }
   function blocked(x, y, th) {
+    // 紙の端から車体がはみ出すのはよい。車軸の中心が紙の外へ出るときだけ止める（画面から消えないように）
+    if (x < 0 || y < 0 || x > FIELD_W || y > FIELD_H) return true;
     return corners(x, y, th).some(function (p) {
-      if (p[0] < 0 || p[1] < 0 || p[0] > FIELD_W || p[1] > FIELD_H) return true;
       return S.boxes.some(function (r) { return p[0] > r.x && p[0] < r.x + r.w && p[1] > r.y && p[1] < r.y + r.h; });
     });
   }
 
   function step(dt) {
+    if (!S.power) return;
     const vl = wheelV(motorOut(0, 1)), vr = wheelV(motorOut(2, 3));
     const v = (vl + vr) / 2;
     const w = (vl - vr) / GEOM.track;   // 右が速いと左へ曲がる（画面では反時計回り＝th が減る）
@@ -255,7 +273,7 @@
       const t = String(s);
       for (let i = 0; i < t.length; i++) oledG.fillText(t[i], x + i * 8 + 1, y);
     },
-    oled_show: function () { S.oledDirty = true; },
+    oled_show: function () { S.oledDirty = true; S.oledUsed = true; },
   };
 
   const BRIDGE_JS = `var $builtinmodule = function(name) {
@@ -438,6 +456,8 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
     S.t0 = performance.now();
     placeStart();
     oledInit();
+    S.oledUsed = false;
+    if (ui) ui.oled.hidden = true;
   }
   function halt() {
     S.duty = { 0: 0, 1: 0, 2: 0, 3: 0 };
@@ -511,16 +531,23 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
     const oled = el('canvas', 'pvs-oled');
     oled.width = 128; oled.height = 64;
     oled.setAttribute('role', 'img'); oled.setAttribute('aria-label', 'OLED 画面');
-    const leds = el('div', 'pvs-leds');
+    oled.hidden = true;   // 使ったときだけ出す
+    // ロボットの絵：LED はその場所で光り、押しボタン・電源スイッチは絵の上で操作する（micro:bit のシミュレータと同じ考え）
+    const robot = el('div', 'pvs-robot');
+    const rimg = el('img', 'pvs-robot-img');
+    rimg.src = BOARD_SRC; rimg.alt = 'PoliviaBot を上から見た絵（上が前）'; rimg.draggable = false;
+    robot.appendChild(rimg);
+    function put(e, xy) { const q = pct(xy[0], xy[1]); e.style.left = q[0]; e.style.top = q[1]; robot.appendChild(e); return e; }
     const ledEls = {};
-    [[11, 'LED1'], [12, 'LED2']].forEach(function (p) {
-      const s = el('span', 'pvs-led', p[1]); ledEls[p[0]] = s; leds.appendChild(s);
+    [[11, 'GP11 の LED'], [12, 'GP12 の LED']].forEach(function (p) {
+      const e = el('span', 'pvs-led'); e.title = p[1]; ledEls[p[0]] = put(e, BOARD.led[p[0]]);
     });
-    const sws = el('div', 'pvs-sws');
+    const pwrLed = put(el('span', 'pvs-led pvs-led-pwr'), BOARD.powerLed); pwrLed.title = '電源の LED';
     const swEls = {};
     [[13, 'SW1'], [14, 'SW2']].forEach(function (p) {
-      const b = el('button', 'pvs-sw', p[1]);
+      const b = el('button', p[0] === 14 ? 'pvs-sw pvs-sw-r' : 'pvs-sw');
       b.type = 'button';
+      b.appendChild(el('span', 'pvs-tag', p[1]));
       b.title = p[1] + '（押している間だけ押したことになる）';
       const down = function (e) { e.preventDefault(); S.sw[p[0]] = 1; b.classList.add('down'); };
       const up = function () { S.sw[p[0]] = 0; b.classList.remove('down'); };
@@ -530,32 +557,52 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
       b.addEventListener('pointercancel', up);
       b.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { if (!e.repeat) down(e); } });
       b.addEventListener('keyup', function (e) { if (e.key === ' ' || e.key === 'Enter') up(); });
-      swEls[p[0]] = b; sws.appendChild(b);
+      swEls[p[0]] = put(b, BOARD.sw[p[0]]);
     });
-    // センサーの値：ラインセンサーは 左・中・右 を表にする（1 行に並べると狭い幅で折り返して読めなかった）
-    const read = el('div', 'pvs-read');
-    const lineT = el('div', 'pvs-line');
+    // 電源スイッチ（押すたびに ON / OFF）。レバーは基板の後ろ（下）へ出ている
+    const pwr = el('button', 'pvs-pwr');
+    pwr.type = 'button';
+    pwr.setAttribute('role', 'switch');
+    const lever = el('span', 'pvs-lever');
+    const pwrTag = el('span', 'pvs-tag', '電源');
+    pwr.append(lever, pwrTag);
+    put(pwr, BOARD.power);
+    robot.appendChild(lever);
+    function paintPower() {
+      pwr.setAttribute('aria-checked', S.power ? 'true' : 'false');
+      pwr.title = '電源スイッチ：' + (S.power ? 'ON' : 'OFF') + '（押すと切りかわる。OFF だとモーターは回らない）';
+      pwrTag.textContent = '電源 ' + (S.power ? 'ON' : 'OFF');
+      const q = pct(S.power ? LEVER.on : LEVER.off, (LEVER.y0 + LEVER.y1) / 2);
+      lever.style.left = q[0]; lever.style.top = q[1];
+      lever.style.width = (LEVER.w / 88 * 100).toFixed(2) + '%';
+      lever.style.height = ((LEVER.y1 - LEVER.y0) / 107 * 100).toFixed(2) + '%';
+    }
+    pwr.addEventListener('click', function () { S.power = S.power ? 0 : 1; paintPower(); });
+    paintPower();
+    // センサーとモーターの値は、ロボットの絵の上の部品の場所に出す
+    //   ラインセンサー：TCRT5000（x128 / 150 / 172・y76）、距離：超音波センサーの前、モーター：左右の車輪の上
+    function chip(xy, cls, title) { const c = el('span', 'pvs-chip ' + cls); c.title = title; return put(c, xy); }
     const lineV = {};
-    lineT.appendChild(el('span', 'pvs-cap', 'ラインセンサー'));
-    [[26, '左'], [27, '中'], [28, '右']].forEach(function (q) {
-      const c = el('span', 'pvs-cell');
+    [[26, '左', 128], [27, '中', 150], [28, '右', 172]].forEach(function (q) {
+      const c = chip([q[2], 76], 'pvs-chip-line', 'ラインセンサー（' + q[1] + '）の値。黒い線の上だと大きくなる');
       c.appendChild(el('span', 'pvs-k', q[1]));
       lineV[q[0]] = el('span', 'pvs-v', '0');
       c.appendChild(lineV[q[0]]);
-      lineT.appendChild(c);
     });
-    const distT = el('div', 'pvs-row');
-    const motT = el('div', 'pvs-row');
+    const distT = chip([150, 40], 'pvs-chip-dist', '超音波センサーで測ったきょり');
+    const motT = { L: chip([113.5, 120], 'pvs-chip-mot', '左のモーターの出力（−100〜100）'),
+      R: chip([186.5, 120], 'pvs-chip-mot', '右のモーターの出力（−100〜100）') };
+    const read = el('div', 'pvs-read');
     const hint = el('div', 'pvs-hint', '▶ SW1 を押すとスタート');
     hint.hidden = true;
-    read.append(lineT, distT, motT, hint);
-    side.append(oled, leds, sws, read);
+    read.append(hint);
+    side.append(oled, robot, read);
     body.append(fieldWrap, side);
 
-    const note = el('p', 'pvs-note', 'ロボットと箱はドラッグで動かせます。大きさ・速さ・センサーの位置は仮の値で、実物とは少しちがいます。');
+    const note = el('p', 'pvs-note', 'ロボットと箱はドラッグで動かせます。コースは A3 の紙の大きさ。ロボットの大きさとセンサーの位置は実物どおり、速さは仮の値です。');
     root.append(top, body, note);
 
-    ui = { root: root, sel: sel, field: field, oled: oled, ledEls: ledEls, swEls: swEls, lineV: lineV, distT: distT, motT: motT, hint: hint,
+    ui = { root: root, sel: sel, field: field, oled: oled, ledEls: ledEls, pwrLed: pwrLed, swEls: swEls, lineV: lineV, distT: distT, motT: motT, hint: hint,
       started: false, opts: opts || {} };
 
     sel.addEventListener('change', function () { setCourse(sel.value); });
@@ -625,11 +672,11 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
     // 10cm ごとの目もり
     g.strokeStyle = 'rgba(0,0,0,.07)'; g.lineWidth = 1 / k;
     g.beginPath();
-    for (let x = 10; x < FIELD_W; x += 10) { g.moveTo(x, 0); g.lineTo(x, FIELD_H); }
-    for (let y = 10; y < FIELD_H; y += 10) { g.moveTo(0, y); g.lineTo(FIELD_W, y); }
+    for (let x = 5; x < FIELD_W; x += 5) { g.moveTo(x, 0); g.lineTo(x, FIELD_H); }
+    for (let y = 5; y < FIELD_H; y += 5) { g.moveTo(0, y); g.lineTo(FIELD_W, y); }
     g.stroke();
-    g.strokeStyle = '#8a6d3b'; g.lineWidth = 1.2;
-    g.strokeRect(0.6, 0.6, FIELD_W - 1.2, FIELD_H - 1.2);
+    g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1.5 / k;   // A3 の紙の縁（かべではない）
+    g.strokeRect(0.1, 0.1, FIELD_W - 0.2, FIELD_H - 0.2);
     S.boxes.forEach(function (r) {
       g.fillStyle = '#c8a26a'; g.fillRect(r.x, r.y, r.w, r.h);
       g.strokeStyle = '#7a5a2a'; g.lineWidth = 0.5; g.strokeRect(r.x, r.y, r.w, r.h);
@@ -645,17 +692,28 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
     // 車体
     g.save();
     g.translate(S.x, S.y); g.rotate(S.th);
-    const hw = GEOM.bodyW / 2;
-    g.fillStyle = '#2c7a7b'; g.strokeStyle = '#1d4044'; g.lineWidth = 0.4;
-    g.beginPath(); g.rect(-GEOM.bodyB, -hw, GEOM.bodyF + GEOM.bodyB, GEOM.bodyW); g.fill(); g.stroke();
-    g.fillStyle = '#1a202c';
-    g.fillRect(-3, -hw - 1.6, 6, 1.6); g.fillRect(-3, hw, 6, 1.6);   // 車輪
-    // 前の目じるし（距離センサー）
-    g.fillStyle = '#cbd5e0'; g.fillRect(GEOM.bodyF - 1.2, -2.6, 1.2, 5.2);
-    // LED
-    [[11, -2.5], [12, 2.5]].forEach(function (p) {
-      g.fillStyle = S.pins[p[0]] ? '#f6e05e' : '#2d3748';
-      g.beginPath(); g.arc(-2.5, p[1], 0.9, 0, Math.PI * 2); g.fill();
+    const img = robotImg();
+    if (img) {
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(img, SPRITE.x, SPRITE.y, SPRITE.w, SPRITE.h);
+    } else {   // 絵を読み込むまで・読み込めなかったとき
+      const hw = GEOM.bodyW / 2;
+      g.fillStyle = '#1a1a1c'; g.strokeStyle = '#000'; g.lineWidth = 0.3;
+      g.beginPath(); g.rect(-GEOM.bodyB, -hw, GEOM.bodyF + GEOM.bodyB, GEOM.bodyW); g.fill(); g.stroke();
+    }
+    // 電源スイッチのレバー
+    const lv = loc(S.power ? LEVER.on : LEVER.off, LEVER.y1);
+    g.fillStyle = '#d9dce1'; g.fillRect(lv[0], lv[1] - LEVER.w / 20, (LEVER.y1 - LEVER.y0) / 10, LEVER.w / 10);
+    if (S.power) {
+      const pl = loc(BOARD.powerLed[0], BOARD.powerLed[1]);
+      g.fillStyle = 'rgba(255,80,60,.5)'; g.beginPath(); g.arc(pl[0], pl[1], 0.6, 0, Math.PI * 2); g.fill();
+    }
+    // LED（光っているときだけ重ねる）
+    [11, 12].forEach(function (n) {
+      if (!S.pins[n]) return;
+      const p = LEDPOS[n];
+      g.fillStyle = 'rgba(246,224,94,.45)'; g.beginPath(); g.arc(p[0], p[1], 1.3, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#fff3a0'; g.beginPath(); g.arc(p[0], p[1], 0.55, 0, Math.PI * 2); g.fill();
     });
     g.restore();
     // ラインセンサー（黒の上は赤）
@@ -663,8 +721,14 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
       const p = linePos(k2);
       const on = blackRatio(p[0], p[1]) > 0.5;
       g.fillStyle = on ? '#e53e3e' : '#fff'; g.strokeStyle = '#1a202c'; g.lineWidth = 0.3;
-      g.beginPath(); g.arc(p[0], p[1], 0.7, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.beginPath(); g.arc(p[0], p[1], 0.55, 0, Math.PI * 2); g.fill(); g.stroke();
     });
+  }
+
+  let robotImgEl = null;
+  function robotImg() {
+    if (!robotImgEl) { robotImgEl = new Image(); robotImgEl.src = SPRITE.src; }
+    return robotImgEl.complete && robotImgEl.naturalWidth ? robotImgEl : null;
   }
 
   function setText(e, t) { if (e.textContent !== t) e.textContent = t; }
@@ -683,16 +747,23 @@ raise ImportError('Wi-Fi・通信のブロックは、シミュレータでは�
       g.imageSmoothingEnabled = false;
       g.drawImage(oledDraw, 0, 0);
       S.oledDirty = false;
+      if (S.oledUsed) ui.oled.hidden = false;
     }
     ui.ledEls[11].classList.toggle('on', !!S.pins[11]);
     ui.ledEls[12].classList.toggle('on', !!S.pins[12]);
+    ui.pwrLed.classList.toggle('on', !!S.power);
     // SW1 を待ったまま 1 秒たったら、押せばはじまることを知らせる
     const waiting = S.running && S.swWaitSince && t - S.swWaitSince > 1000 && !S.sw[13];
     ui.swEls[13].classList.toggle('pvs-attn', !!waiting);
     [26, 27, 28].forEach(function (ch) { setText(ui.lineV[ch], String(adc(ch))); });
-    setText(ui.distT, 'きょり　' + (S.sonarCm < 0 ? '—（遠い）' : S.sonarCm.toFixed(1) + ' cm'));
-    setText(ui.motT, 'モーター　左 ' + Math.round(motorOut(0, 1)) + '・右 ' + Math.round(motorOut(2, 3)));
-    ui.hint.hidden = !waiting;
+    setText(ui.distT, 'きょり ' + (S.sonarCm < 0 ? '遠い' : S.sonarCm.toFixed(1) + 'cm'));
+    setText(ui.motT.L, String(Math.round(motorOut(0, 1))));
+    setText(ui.motT.R, String(Math.round(motorOut(2, 3))));
+    [26, 27, 28].forEach(function (ch) { ui.lineV[ch].parentNode.classList.toggle('pvs-black', adc(ch) > (WHITE + BLACK) / 2); });
+    // 電源が OFF のままモーターを回そうとしていたら知らせる
+    const noPower = S.running && !S.power && (Math.abs(motorOut(0, 1)) >= DEAD || Math.abs(motorOut(2, 3)) >= DEAD);
+    setText(ui.hint, noPower ? '電源スイッチが OFF なので、モーターが回りません' : '▶ SW1 を押すとスタート');
+    ui.hint.hidden = !(waiting || noPower);
   }
 
   window.PycoPvbSim = {
